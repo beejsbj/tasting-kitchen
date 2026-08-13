@@ -1,0 +1,60 @@
+{
+  "id": "map-the-fog-before-the-fix",
+  "title": "Map the fog before the fix",
+  "family": "Map the fog before the fix",
+  "summary": "Build a trustworthy map of a consequential technical situation before choosing an intervention.",
+  "whyItExists": "This family preserves recurring encounters where framing, ownership, and verification surface mattered before a change could be safe.",
+  "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E001", "E003", "E019"], "rationale": "Reconstructed from recurring technical collaboration patterns; names, systems, and records are fictional."},
+  "effortEstimate": {"label": "medium", "minutes": 35},
+  "version": "1.0.0",
+  "status": "ready",
+  "setup": {"context": "Use each dish in a fresh chat. Paste the turns in order and retain the prior response before moving to the next turn.", "assets": []},
+  "dishes": [
+    {
+      "id": "degraded-compose-topology",
+      "title": "A degraded service after a topology change",
+      "summary": "Reason from a small fictional service topology and health evidence without assuming the first plausible fix.",
+      "whyItExists": "An ordinary representative encounter for locating dependencies before editing a live configuration.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E001", "E003"], "rationale": "Fictional compose-style topology based on recurring troubleshooting evidence."},
+      "effortEstimate": {"label": "medium", "minutes": 12}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "All details below are fictional. Treat the supplied evidence as the current state; do not assume access to any machine.", "assets": []},
+      "turns": [
+        {"id": "initial-prompt", "kind": "prompt", "label": "Map the situation", "prompt": "A fictional Compose deployment changed this morning. `gateway` is healthy at `/ready`; `catalog` now reports `GET http://db:5432: connection refused`; and `db` logs show it is listening on 5432. The current service names are `gateway`, `catalog-api`, and `warehouse-db`. A previous file used `catalog` and `db` as hostnames. We need to restore service safely. Talk me through how you would understand the situation and decide what to inspect or change first."},
+        {"id": "follow-up", "kind": "follow-up", "label": "Choose the next proof", "prompt": "Assume the only change was a service rename in the Compose file, and the application image has not changed. What is the smallest next step you would take, and what would it prove?"}
+      ],
+      "observationLenses": ["Whether it distinguishes service names, network aliases, and process state.", "Whether it states what is known, inferred, and still worth checking.", "Whether its proposed validation matches the stated failure."],
+      "repeatVariationGuidance": "Change one hostname, health endpoint, or dependency relationship while keeping the evidence compact. Do not add hidden facts after the model has committed.",
+      "externalCorrectnessChecks": [{"title": "Configuration and health check", "method": "In an equivalent fixture, inspect rendered service names and test the named dependency from the caller container."}]
+    },
+    {
+      "id": "storage-cleanup-recovery",
+      "title": "Storage cleanup with linked automations",
+      "summary": "Recover from a proposed cleanup after a correction reveals that a path has downstream ownership.",
+      "whyItExists": "Tests whether a changed premise reshapes the plan instead of being patched locally.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E019"], "rationale": "Fictionalized from repeated concerns about durable paths, cleanup, and preservation."},
+      "effortEstimate": {"label": "medium", "minutes": 14}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "This is a fictional directory map. No destructive action is being requested.", "assets": []},
+      "turns": [
+        {"id": "initial-prompt", "kind": "prompt", "label": "Assess the cleanup", "prompt": "A fictional workstation has 4 GB free. `/data/archive` is 280 GB, `/data/staging` is 95 GB, and `/data/current` is a symlink to `/data/staging/current`. A nightly script reads `/data/current/export.json` and publishes a report. An operator proposes deleting `/data/staging` after moving the archive to another disk. How would you approach this safely?"},
+        {"id": "correction", "kind": "correction", "label": "A changed ownership fact", "prompt": "Correction: the move plan also relocates `/data/staging/current` into the archive, and the nightly script cannot be changed until next week. Reassess the plan from this updated fact."},
+        {"id": "follow-up", "kind": "follow-up", "label": "Leave a receipt", "prompt": "What would you record before anyone acts so another operator can verify the outcome and recover if needed?"}
+      ],
+      "observationLenses": ["Whether it treats the correction as a changed plan, not a footnote.", "Whether it preserves originals and distinguishes a move, copy, and deletion.", "Whether it makes ownership and rollback visible."],
+      "repeatVariationGuidance": "Vary the symlink target or dependent job, but retain a concrete dependent path and a constrained change window.",
+      "externalCorrectnessChecks": [{"title": "Path and manifest check", "method": "Verify symlink resolution, scheduled-script references, copied-file integrity, and a reversible migration record before deletion."}]
+    },
+    {
+      "id": "client-visible-state",
+      "title": "A client cannot connect",
+      "summary": "Separate a healthy remote service from the state visible on a fictional mobile client.",
+      "whyItExists": "An ordinary encounter for reconciling server evidence with the device that must actually work.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E004"], "rationale": "Sanitized cross-device troubleshooting pattern."},
+      "effortEstimate": {"label": "short", "minutes": 9}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "The service, client, and observations are fictional.", "assets": []},
+      "turns": [{"id": "initial-prompt", "kind": "prompt", "label": "Reconcile the surfaces", "prompt": "A fictional remote service answers its health endpoint from a desktop browser. A phone app stays on its loading screen after the same user signs in. The phone can open ordinary websites. The app has a setting called “Use relay connection,” currently off. A server log records no request from the phone. How would you frame the investigation and choose the next observation?"}],
+      "observationLenses": ["Whether it avoids declaring the service fixed from a desktop-only check.", "Whether it maps the distinct server, network, client, and account surfaces.", "Whether it proposes a specific next observation rather than a generic reset."],
+      "repeatVariationGuidance": "Change the visible client symptom or one relevant setting; keep server-side and device-side evidence separate.",
+      "externalCorrectnessChecks": [{"title": "Device-visible check", "method": "Test the intended sign-in and content path on the affected client while recording whether a request reaches the service."}]
+    }
+  ]
+}

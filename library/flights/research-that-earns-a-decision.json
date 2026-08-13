@@ -1,0 +1,39 @@
+{
+  "id": "research-that-earns-a-decision",
+  "title": "Research that earns a decision",
+  "family": "Research that earns a decision",
+  "summary": "Turn supplied technical evidence into a bounded recommendation without mistaking suggestive clues for support.",
+  "whyItExists": "This family reflects recurring requests to expose consequential options, inspect the right source, and leave a decision-ready result.",
+  "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E005", "E009", "E011", "E027"], "rationale": "Fictional research materials preserve task shape while avoiding historical products and configurations."},
+  "effortEstimate": {"label": "medium", "minutes": 32}, "version": "1.0.0", "status": "ready",
+  "setup": {"context": "Use the supplied excerpts as the complete evidence set unless a turn explicitly says otherwise. This flight asks for reasoning, not live browsing.", "assets": []},
+  "dishes": [
+    {
+      "id": "protocol-support-or-symbol", "title": "Protocol support or a suggestive symbol", "summary": "Decide what a compact code and documentation set actually establishes.", "whyItExists": "An ordinary representative encounter for source discipline before a capability claim.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E009", "E011"], "rationale": "Reconstructed from repeated documentation and source-code comparison work."}, "effortEstimate": {"label": "short", "minutes": 10}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "All names and excerpts are fictional.", "assets": []},
+      "turns": [{"id": "initial-prompt", "kind": "prompt", "label": "Assess the evidence", "prompt": "A fictional SDK has a `ProtocolAdapter` type and a `sendEnvelope()` method. Its local guide says “adapters normalize outbound messages.” The upstream protocol guide requires an authenticated handshake, acknowledgement handling, and reconnect semantics. No supplied test mentions those behaviors. A team asks whether the SDK supports the protocol end-to-end. How would you answer and decide what to investigate next?"}],
+      "observationLenses": ["Whether it separates naming resemblance from demonstrated behavior.", "Whether it identifies the evidence needed for an end-to-end claim.", "Whether it communicates a useful level of uncertainty."], "repeatVariationGuidance": "Swap the protocol obligations or add one partial test; retain a distinction between a local abstraction and end-to-end support.",
+      "externalCorrectnessChecks": [{"title": "Evidence trace", "method": "Map each required protocol behavior to an authoritative specification and an implementation or test that demonstrates it."}]
+    },
+    {
+      "id": "model-route-under-constraints", "title": "A default route with bounded fallbacks", "summary": "Make a route recommendation from fictional task and operating constraints.", "whyItExists": "Tests whether a model can show meaningful tradeoffs without producing an indiscriminate fallback list.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E005", "E010"], "rationale": "Sanitized routing and option-mapping pattern."}, "effortEstimate": {"label": "medium", "minutes": 12}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "The catalog is fictional and deliberately incomplete.", "assets": []},
+      "turns": [{"id": "initial-prompt", "kind": "prompt", "label": "Recommend a route", "prompt": "A fictional team handles short planning chats, code changes, and occasional image interpretation. Model Cedar is quick and available for all three but has only basic image support. Model Lumen is slower, strongest on code and images, and has a small weekly quota. Model Reed is fast, text-only, and best for routine classification. The team needs a simple default with specialist fallbacks, clear handoff conditions, and no automatic provider integration. What decision structure would you propose?"}],
+      "observationLenses": ["Whether it distinguishes task fit, availability, and operational complexity.", "Whether the default is simple enough to run manually.", "Whether it names deferred uncertainties without inventing performance facts."], "repeatVariationGuidance": "Vary one constraint such as quota, modality, or latency. Keep the catalog finite and avoid asking for a ranking.",
+      "externalCorrectnessChecks": [{"title": "Catalog and probe check", "method": "Compare any final routing statement with the supplied catalog and a small documented manual probe plan."}]
+    },
+    {
+      "id": "unsupported-configuration-recovery", "title": "Plausible keys, unsupported configuration", "summary": "Recover cleanly when an attractive community example conflicts with an authoritative schema.", "whyItExists": "A correction-centered encounter for changing course without defending an invalid proposal.",
+      "provenance": {"sanitized": true, "evidenceGrade": "recurring", "evidenceIds": ["E027"], "rationale": "Fictional configuration-validation recovery."}, "effortEstimate": {"label": "short", "minutes": 10}, "version": "1.0.0", "status": "ready",
+      "setup": {"context": "The schema and snippets are fictional. Treat the stated schema as authoritative.", "assets": []},
+      "turns": [
+        {"id": "initial-prompt", "kind": "prompt", "label": "Evaluate the proposal", "prompt": "A fictional tool accepts a `workers` array with `name`, `command`, and optional `timeoutSeconds`. A popular forum snippet adds `parallelism`, `memoryProfile`, and `autoResume`. A teammate wants to copy it because the keys sound useful. How would you evaluate the proposal and preserve the team’s underlying need?"},
+        {"id": "correction", "kind": "correction", "label": "The schema rejects it", "prompt": "The official validator rejects all three added keys. The teammate still needs a way to limit concurrent work and resume safely after interruption. What changes in your recommendation?"}
+      ],
+      "observationLenses": ["Whether it gives the authoritative schema priority.", "Whether it adopts the correction fully and looks for supported mechanisms.", "Whether it distinguishes a configuration claim from an operational practice."], "repeatVariationGuidance": "Replace the unsupported keys and underlying needs with a different fictional schema conflict.",
+      "externalCorrectnessChecks": [{"title": "Schema validation", "method": "Validate the resulting configuration with the stated official schema and document any operational convention separately."}]
+    }
+  ]
+}

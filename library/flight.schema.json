@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model-tasting-kitchen.example/schema/flight.schema.json",
+  "title": "Model Tasting Kitchen flight",
+  "description": "A public-safe, manually runnable collection of staged model encounters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "family", "summary", "whyItExists", "provenance", "effortEstimate", "version", "status", "setup", "dishes"],
+  "properties": {
+    "id": { "$ref": "#/$defs/id" },
+    "title": { "$ref": "#/$defs/text" },
+    "family": { "$ref": "#/$defs/text" },
+    "summary": { "$ref": "#/$defs/text" },
+    "whyItExists": { "$ref": "#/$defs/text" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "effortEstimate": { "$ref": "#/$defs/effortEstimate" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "status": { "enum": ["ready", "draft", "retired"] },
+    "setup": { "$ref": "#/$defs/setup" },
+    "dishes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/dish" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "text": { "type": "string", "minLength": 1 },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sanitized", "evidenceGrade", "evidenceIds", "rationale"],
+      "properties": {
+        "sanitized": { "const": true },
+        "evidenceGrade": { "enum": ["recurring", "strong", "plausible", "one-off"] },
+        "evidenceIds": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^E[0-9]{3}$" } },
+        "rationale": { "$ref": "#/$defs/text" }
+      }
+    },
+    "effortEstimate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["label", "minutes"],
+      "properties": {
+        "label": { "enum": ["short", "medium", "long"] },
+        "minutes": { "type": "integer", "minimum": 1, "maximum": 180 }
+      }
+    },
+    "asset": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "mediaType", "content"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "mediaType": { "enum": ["text/plain", "text/markdown", "application/json"] },
+        "content": { "$ref": "#/$defs/text" }
+      }
+    },
+    "setup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["context", "assets"],
+      "properties": {
+        "context": { "$ref": "#/$defs/text" },
+        "assets": { "type": "array", "items": { "$ref": "#/$defs/asset" } }
+      }
+    },
+    "turn": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "label", "prompt"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["prompt", "correction", "follow-up"] },
+        "label": { "$ref": "#/$defs/text" },
+        "prompt": { "$ref": "#/$defs/text" }
+      }
+    },
+    "externalCheck": {
+      "type": "object", "additionalProperties": false,
+      "required": ["title", "method"],
+      "properties": {
+        "title": { "$ref": "#/$defs/text" },
+        "method": { "$ref": "#/$defs/text" }
+      }
+    },
+    "dish": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "summary", "whyItExists", "provenance", "effortEstimate", "version", "status", "setup", "turns", "observationLenses", "repeatVariationGuidance", "externalCorrectnessChecks"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "summary": { "$ref": "#/$defs/text" },
+        "whyItExists": { "$ref": "#/$defs/text" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "effortEstimate": { "$ref": "#/$defs/effortEstimate" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "status": { "enum": ["ready", "draft", "retired"] },
+        "setup": { "$ref": "#/$defs/setup" },
+        "turns": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/turn" } },
+        "observationLenses": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+        "repeatVariationGuidance": { "$ref": "#/$defs/text" },
+        "externalCorrectnessChecks": { "type": "array", "items": { "$ref": "#/$defs/externalCheck" } }
+      }
+    }
+  }
+}
