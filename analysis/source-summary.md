@@ -2,52 +2,75 @@
 
 Cutoff: **2026-08-13**
 
-## Available source classes
+## Evidence map
 
-| Source class | Available before cutoff | Observed range | Role in analysis |
-|---|---:|---|---|
-| Active Codex sessions | 33 sessions / 56 user turns | Mar–Aug 2026 | Recent and still-active encounters |
-| Archived Codex sessions | 137 sessions / 877 user turns | Mar–Aug 2026 | Main longitudinal interaction record |
-| Claude project sessions | 48 sessions / 2,140 user turns | Jul–Aug 2026 | Long agentic development and orchestration work |
-| Codex prompt history | 124 rows | Mar–Jun 2026 | Secondary coverage where full sessions were absent |
-| Claude prompt history | 336 rows | Feb–Aug 2026 | Earlier prompts and missing-session coverage |
-| Project workspaces | Large local tree | Contemporary | Corroboration of reuse, tests, deployment, and durable artifacts; not bulk-read |
-| Journal/note/archive candidates | Nine candidate roots | Mixed | Inventoried only; raw personal corpora are not model encounters |
+| Domain | Exact available coverage | Role in the final synthesis | Main caution |
+|---|---|---|---|
+| Mac Codex | 257 active + 890 archived transcripts; 4,363 user turns; 23 prompt rows; Feb 12–Aug 12 | Primary technical, research, writing, design, and orchestration encounters | Branches, replays, and workers are correlated |
+| Mac Claude | 122 transcripts; 8,952 user turns; 223 prompt rows; Feb 18–Aug 9 | Primary long project arcs, prototype selection, semantic corrections, and agent design | Response evidence is recent; prompt history lacks outcomes |
+| Linux coding agents | 218 sessions; 3,073 user turns; 460 prompt rows; Feb 13–Aug 13 | Secondary technical and historical coverage | Seven sessions overlap Mac exactly |
+| Unified chat archive | 5,397 canonical sessions: 1,885 ChatGPT, 1,191 Claude, 2,321 Gemini; Apr 2023–Aug 2026 | Primary conversation, writing, rubber-duck, reflective, ordinary, and negative encounters | Volume is not preference weight |
+| Journals | 796 date-eligible Linux notes; about 492 Rosebud-marked; 398 Mac Markdown variants; 2022–2026 | Authentic unfinished thought, prose, voice, and dialogue task shapes | Journal form does not by itself imply desired model behavior |
+| Hermes/OpenClaw | 391 Hermes sessions / 1,131 user rows; 263 OpenClaw memory files; 52 exports; 27 room states; Feb–Aug 2026 | Primary ongoing-assistant relationship, memory, proactivity, permission, routing, and presence | Harness mechanisms are deeply confounded with model behavior |
+| Authored design/code | 32 graded records across more than 20 substantive projects/experiments | Demonstrated visual, interaction, motion, and creative-code task grammar | Repository traits are not response preferences; authorship varies |
 
-Counts describe availability, not claims of exhaustive reading. Precise roots are private.
+The final private ledger retains **390 independent units** after removing exact machine duplicates, worker corroboration, retry/export inflation, synchronized journal variants, and cross-source summary rows.
 
-## Sampled use areas
+## What the broader evidence overturned
 
-| Use area | Coverage in the retained evidence | Confidence about task prevalence |
+### Direct journaling is established, not absent
+
+The unified chat archive and journal corpus contain extensive Rosebud/Rose dialogue, conversational-journal design, voice-note journals, and explicit discussion of conversation itself as the journal. The earlier claim that direct journaling dialogue was unsupported was false. Evidence: CJ009–CJ010, CJ031–CJ034, CJ053–CJ060, CJ091–CJ096; AO046–AO058.
+
+### The ongoing assistant relationship is observed, not hypothetical
+
+Hermes and OpenClaw show a named, persistent, multi-surface relationship used for ordinary questions, emotional presence, family work, reminders, email, research, machine operation, and worker coordination. The relevant question is not whether a conversational front door is attractive, but whether one dependable presence can change modes without stale memory, nagging, permission overreach, or machinery leakage. Evidence: AO001–AO068.
+
+### Visual taste is not universal quiet restraint
+
+Authored artifacts range from dense noir-neon instrument, soft clay day dial, and theatrical punk lottery to conventional client IA and corporate system work. The invariant is that expression, motion, and sensory channels carry domain meaning and causality. “Quiet shell, vivid signal” survives only as one register. Evidence: DA001–DA032; MCL040–MCL047; MC009, MC024, MC047, MC081–MC086.
+
+### Conversation can be the work
+
+Many interactions seek a better next thought, not an immediate artifact. Premature critique, diagnosis, taxonomy, or planning can steal the live object. This does not negate structured deliverables; it makes the transition from conversation to artifact an explicit mode change. Evidence: CJ023–CJ049, CJ055–CJ076, CJ091–CJ096; AO049–AO054.
+
+## Findings that survived all domains
+
+- Corrections often change the world model, target, mode, or authority—not merely wording.
+- Current authoritative state must outrank stale memory, cached status, tool receipts, and convenient-machine assumptions.
+- Voice-bearing specificity should survive organization and editing.
+- One accountable thread should coordinate workers, tools, and surfaces.
+- Completion belongs on the human-visible surface and must state unpaid checks.
+- Durable artifacts are continuation interfaces when they record current truth, open judgment, and next proof.
+- Research should explore enough to expose the decision, then compress when a choice is requested.
+
+## Findings that became conditional
+
+- **Clarify before acting:** useful when a load-bearing ambiguity exists; annoying when a rich brief or exact mode already resolves it.
+- **Minimalism:** useful when it protects salience; wrong when the product needs dense instrumentation or theatrical consequence.
+- **Metaphor:** often a reasoning and interaction substrate, not decoration; harmful when literalized or allowed to replace the actual object.
+- **Validation:** recognition can be valuable, but agreement theatre and automatic praise are disconnects. Disagreement can land when the thought has first been received accurately.
+- **Proactivity:** wanted when relevant, quiet, reversible, current, and self-expiring; rejected when it manufactures activity or leaks machinery.
+- **Memory:** valuable when provenanced and reconciled with current state; harmful when old interpretation masquerades as the person now.
+- **Delegation:** useful for bounded expertise and parallel specimens; harmful when it fragments accountability or substitutes activity for delivery.
+
+## Confidence by use area
+
+| Use area | Confidence | Why |
 |---|---|---|
-| Development and infrastructure | Many short and long episodes across the full observed period | High |
-| UI/UX and cross-device interaction | Several dashboard, board, chat, and mobile-client episodes | High |
-| Correction and recovery | Present in nearly every major technical cluster and in historical analysis | High |
-| Research and option mapping | Official-doc, local-code, provider, architecture, and product-option work | High |
-| Agent orchestration | Planning, worker routing, status recovery, PR work, and role corrections | High |
-| Accepted/durable outputs | Goal files, runbooks, checkpoints, tested configurations, live artifacts | High |
-| Personal-assistant operations | Reminders, monitoring, storage, transfer, cleanup, and continuity work | Medium |
-| Ideation | Skill evaluation, architecture, routing, and interaction-model exploration | Medium |
-| Writing and instruction design | Agent identity files, operational briefs, research synthesis, long-form analysis | Medium-high |
-| Reflective/journaling support | Workflow design, evidence-grounded self-analysis, and one high-stakes preparation turn | Low-medium |
-| Multimodal transformation | One mixed-language audio pilot that was scaled after acceptance | Low; one-off |
+| Conversation, rubber-duck thinking, and recovery | High | 84 deep-read multi-provider episodes plus journal task shapes |
+| Writing, editing, and voice preservation | High | Repeated explicit transformation corrections and continued artifacts |
+| Ongoing assistant relationship | High at relationship level | Recurs across two harness generations and many surfaces |
+| Raw-model memory/proactivity ability | Low to medium | Strongly harness-dependent |
+| Development, research, and orchestration | High | Dense independent Mac/Linux project evidence |
+| Design/UX/motion/creative code task grammar | High | Provenance-strong authored artifacts plus comparative model encounters |
+| Universal visual style preference | Unsupported | Deliberate registers vary by product and client context |
+| Provider ranking | Unsupported | Corpora and harnesses are not controlled comparisons |
 
-## What the sample can and cannot support
+## Remaining gaps
 
-It strongly supports flights about complex technical collaboration, UI judgment, research-to-decision work, correction/recovery, durable instructions, orchestration, and evidence-rich synthesis. It supports personal-assistant and reflective flights only when they stay close to evidenced structures: preserving context, separating observation from inference, preparing a careful summary, or managing a bounded operational task.
-
-It does **not** support a broad creative-writing flight, a medical-advice flight, a generic relationship-advice flight, or a portrait of Burooj's personality. Those would require invention or would overread sparse evidence.
-
-## Gaps and bias
-
-- Technical work dominates both the archive and the retained sample.
-- Early Claude material often survives only as user prompts, limiting response and recovery analysis.
-- Calendar and email appear mainly inside broader assistant systems, not as many ordinary standalone encounters.
-- Journal archives contain personal material but are not evidence of AI interaction unless a session shows how the model used them.
-- Model/provider availability and product behavior were time-specific; future tasting dishes must not rely on historical product facts without current checks.
-- Several session files are duplicates, continuations, or replayed histories and were de-duplicated conceptually.
-
-## Saturation result
-
-All major evidenced use areas were sampled. Two further varied batches produced no important new category. The only new narrow variant was multilingual audio transformation, retained as a one-off candidate rather than promoted to a full family.
-
+- No controlled same-prompt, same-context comparison spans all historical providers and harnesses.
+- Ordinary low-stakes conversation is less richly sampled than reflective and project work.
+- The assistant corpus cannot fully separate persona prompt, durable memory, model, tool, and delivery effects.
+- Some design lineages lack complete source history or unassisted authorship.
+- High-stakes helpfulness has important negative cases but is not a domain for tasting without supplied authority and a safe fictional fixture.

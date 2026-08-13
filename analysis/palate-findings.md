@@ -1,73 +1,91 @@
 # Palate findings
 
-These findings describe Burooj's model encounters and observed response to model behavior. They are not a total preference profile.
+These findings describe observed interaction patterns and authentic task shapes. They are not a personality portrait, diagnosis, or automatic preference profile.
 
-## Recurring evidence
+## Strong recurring findings
 
-### Resolve the frame before committing to a path
+### Receive the live object before improving it
 
-Burooj often enters with a real problem and an incomplete model of the system. He uses dialogue to build that model, compare viable shapes, and then choose. A model that rushes from ambiguity to implementation creates more work; a model that names the architecture and consequential choices makes later terseness possible. This recurs in memory systems, networking, model routing, cross-environment boards, storage, and assistant-channel design. Evidence: E002, E003, E005, E006, E018, E022, E026.
+The user often thinks through fragments, repetition, metaphor, and changing scale. A strong first move reconstructs what the thought is doing and tests that understanding. Critique, premise checking, and disagreement are welcome after reception; when they arrive first, they can feel like the thought was rejected before it existed. The preferred quality is accurate contact, not validation. Evidence: expressed preference/correction and observed encounters CJ025, CJ035–CJ046, CJ056–CJ060, CJ066–CJ074; assistant presence AO049–AO052; journal task shapes CJ091–CJ096.
 
-### Show the decision space, then compress the chosen direction
+**Counterevidence:** direct factual or bounded tasks should be answered directly, and some rich prompts already contain enough context. Reception must not become ceremonial paraphrase or extra discovery. Evidence: CJ050, CJ075–CJ080; AO011, AO021, AO026, AO041; MC020, MC023, MC100.
 
-He objects when options or configuration implications are hidden, but he also rejects operational files that retain the whole exploratory debate. The useful sequence is expansive enough to reveal real choices, followed by a clean, narrow artifact after a decision. This is different from simply preferring long answers. Evidence: E003, E005, E006, E010, E021, E027.
+### Track the mode, including the transition to an artifact
 
-### Preserve tuned state and local intent
+Thinking aloud, journaling, critique, research, implementation, audit, teaching, pause, and reference import are different contracts. Conversation can itself be the work; at other times the user explicitly wants a grouped document, runnable prototype, recommendation, or commit. Strong models notice when the mode changes and preserve the prior work as input rather than silently replacing it. Evidence: CJ013–CJ024, CJ028–CJ038, CJ042, CJ049, CJ059, CJ077–CJ090; MC020, MC034–MC035, MC078, MC085, MC100; AO026, AO032, AO041, AO049, AO052.
 
-Existing work is presumed meaningful. Burooj repeatedly asks for small, file-specific edits, live-state inspection, commits or checkpoints, and explicit treatment of what must remain untouched. Wholesale rewrites, polluted instruction files, or cleanups that erase source/provenance meet resistance. Evidence: E003, E005, E006, E016, E019, E026.
+### Preserve voice-bearing irregularity while removing actual residue
 
-### Keep consequential work observable
+Organization is valued when it is lossless and purpose-aware. Rewriting becomes harmful when it launders pain, cadence, ambiguity, multilingual terms, metaphor, or intellectual pressure into generic therapeutic, professional, founder, or essay voice. The boundary can be exact: rearrange only; suggest sentence-level changes; verify the premise but keep deliberate imperfection. Evidence: expressed corrections CJ007–CJ019, CJ029, CJ036–CJ039, CJ053, CJ077, CJ080–CJ081; continued artifacts MC004, MC014, MC018, MC064, MC070; MCL049–MCL051; assistant exact-language correction AO050.
 
-During long or stateful work he asks what is happening, what changed, whether the task finished, and why a step is necessary. Useful agents narrate meaningful transitions, blockers, and validation without flooding the channel. This is especially important when workers run in parallel or a live system is changing. Evidence: E003, E007, E010, E013, E016, E019.
+**Counterevidence:** roughness is not sacred. Copyable formats, clean release notes, exact technical transformations, and public reader access are often requested. The question is what carries identity or truth in this artifact. Evidence: CJ008, CJ029, CJ037, CJ077–CJ080, CJ087; MC004, MC042, MC070.
 
-### Ground confidence in the right verification surface
+### Remember the thread, not an invented person
 
-Documentation, source code, runtime state, tests, a real device, a screenshot, and a public route answer different questions. Burooj frequently challenges claims made from the wrong vantage point. Strong outcomes combine explanation with an appropriate external check and state the remaining uncertainty. Evidence: E001, E004, E009, E011, E012, E014, E015, E016, E027.
+Continuity is a first-class need across chat, journals, family work, projects, and the ongoing assistant. Successful memory identifies the authoritative source, distinguishes fact from interpretation, carries the unresolved thread, and reconciles it with the present. Failure appears as context reset, repeated answers, stale task state, or an old interpretation imposed as current identity. Evidence: CJ031–CJ040, CJ065–CJ071; AO001–AO002, AO013, AO015–AO016, AO025, AO033–AO038, AO046–AO056, AO061, AO067; MC001, MC008, MC026, MC045; MCL021, MCL027, MCL067–MCL070.
 
-### Recover by adopting the corrected world, not defending the old one
+**Boundary:** memory should be available rather than performed. Ordinary requests can succeed precisely because biography is not dragged into them. Evidence: CJ050, CJ075, CJ077–CJ080; AO026, AO041.
 
-His corrections often carry domain information: which machine the agent is on, which role a worker has, whether an artifact is a savepoint or mainline, what a directory means, or what “continue” refers to. Good recovery restates the changed premise, checks resulting implications, and repairs downstream work. Repeating the old frame in polished language aggravates the failure. Evidence: E004, E005, E010, E013, E016, E018, E019, E027.
+### One dependable presence can change roles; the machinery stays backstage
 
-### Separate exploratory language from durable instructions
+Hermes/OpenClaw establishes a real ongoing relationship, not merely interest in an assistant UI. The same front door becomes companion, advisor, coordinator, researcher, or bounded operator. Workers, connectors, schedules, and machines remain legible and accountable but should not fragment the relationship or leak their receipts into it. Evidence: observed/continued assistant encounters AO006, AO015–AO019, AO025–AO034, AO040, AO046–AO054, AO059–AO068.
 
-Metaphors, provider debates, and temporary reasoning can help a live conversation, yet become confusing when copied into files an agent reads every turn. Burooj repeatedly removes session residue, third-person drift, unused platform rules, and overgrown policy prose. Durable writing should encode the decision, not preserve the meeting minutes. Evidence: E005, E021, E026.
+This is a relationship-level finding, not proof of raw-model ability. Persistence, persona files, routing, tools, and delivery are harness-specific mechanisms. A tasting dish can compare how models use supplied memory or recover a mode; it cannot compare nonexistent native persistence as though that were only model quality.
 
-### Prefer reusable receipts over ephemeral success
+### Proactivity should protect attention
 
-Accepted work often ends as a goal file, quick brief, runbook, checkpoint, tested configuration, deployment receipt, or canonical self-contained artifact. These objects help a future model resume accurately and make success inspectable. Evidence: E005, E006, E007, E016, E021.
+Useful initiative is quiet, relevant, reversible, current, and self-expiring. Context-aware prompts, one-shot reminders, a live next question, and a single edited-in-place digest can help. Stale daily tasks, retired-host alerts, retry storms, duplicate responses, and jobs that outlive their purpose turn automation into attention debt. Evidence: explicit preference and harness mechanisms AO003, AO035–AO036, AO048, AO053, AO055, AO057–AO058, AO060, AO062, AO065–AO067.
 
-### UI feedback is relational and reference-based
+This preference recurs across two harness generations, but delivery reliability and scheduling are not raw-model traits.
 
-Burooj describes interaction feel through comparisons and concrete behavior: one continuous board rather than several apparent boards, ordinary threads rather than forum UX, direct navigation rather than surprising new tabs, and a visible result on the device that matters. A model should infer the underlying interaction principle and still verify the actual flow. Evidence: E004, E014, E022, E023, E024, E025.
+### Correct the world model, not just the sentence
 
-### Orchestration is valuable when the hierarchy stays legible
+Consequential corrections often change the noun, target, authority, or product register: chats rather than task cards; facts rather than caveats; live tree rather than source image; a toy rather than a planner; a tiny portable contract rather than a compatibility layer. Strong recovery restates the corrected ontology and propagates it narrowly through the work. Evidence: MCL007, MCL013, MCL016–MCL017, MCL027–MCL028, MCL035, MCL042–MCL045, MCL055, MCL062, MCL069; MC009, MC024, MC057, MC062, MC072, MC086, MC091, MC096; CJ024, CJ035, CJ044–CJ047, CJ067, CJ073.
 
-He regularly asks for subagents and parallel work, especially for research and implementation, but corrects role confusion and asks for status when work disappears into the machinery. Delegation should free the main conversation while preserving a clear owner, task boundaries, receipts, and recovery path. Evidence: E003, E008, E010, E012, E013, E016.
+### Current authoritative state outranks convenient evidence
 
-### Rich synthesis must remain inspectable
+The same invariant appears in code, personal memory, assistant automation, and research: inspect the live source, distinguish installation from authentication, and let current reality overrule stale adjacency or success-shaped receipts. Categories and lifecycle state are correctness surfaces, not cosmetic organization. Evidence: MC008, MC010–MC017, MC025–MC027, MC036–MC039, MC057–MC058, MC071–MC072, MC096–MC098; MCL005–MCL008, MCL017, MCL025–MCL033, MCL039, MCL056, MCL061–MCL069; AO013–AO014, AO024, AO030–AO044, AO063, AO067.
 
-For historical or analytical writing, polish is insufficient if compression hides the source base, counterevidence, or changes across time. The strongest rejection in the sample targeted a visually polished but sparse synthesis; the accepted rebuild exposed chronology, evidence density, contradictions, coverage, and privacy boundaries. Evidence: E016.
+### Many hands still need one accountable thread
 
-## Plausible hypotheses
+Delegation works when roles, resource constraints, file ownership, stopping conditions, return paths, and integration are explicit. It fails when worker activity replaces the requested artifact, roles are inverted, status disappears, or the user has to reconstruct fragments. The parent remains responsible for synthesis and for the surface where the result is used. Evidence: MC006, MC022, MC029–MC032, MC041, MC043–MC049, MC061, MC066–MC076, MC083, MC089; MCL003, MCL008, MCL018–MCL019, MCL024, MCL031, MCL033, MCL038, MCL041, MCL043, MCL057–MCL059, MCL067; AO006, AO009, AO018–AO019, AO028–AO031, AO038–AO040.
 
-### A conversational front desk with deeper work behind it
+### Permission is a ladder; completion has a human surface
 
-There is repeated design intent for short, thought-complete conversational turns while workers operate in the background. Most evidence comes from configuring agents rather than comparing ordinary assistant replies, so this should be tested rather than presumed. Evidence: E005, E008, E010, E023, E024.
+Read, diagnose, prepare, mutate, delete, publish, and authenticate are distinct levels of authority. Strong behavior carries the mechanical work up to the human boundary, asks only where authority genuinely changes, verifies after mutation, and reports residual exposure or unpaid checks. “Done” is false when the code is green but the board is invisible, the commit is not pushed, the app did not change, or the result never reached the room where life happens. Evidence: AO005, AO008, AO011–AO012, AO014, AO017, AO021–AO024, AO028, AO031–AO043, AO062–AO064, AO068; MC002, MC010–MC017, MC019, MC035–MC039, MC043, MC050–MC055, MC069, MC071, MC076; MCL010–MCL012, MCL019–MCL020, MCL023–MCL030, MCL048, MCL056, MCL059–MCL061, MCL064–MCL065.
 
-### Metaphor is welcome only when it carries operational meaning
+### Give expression a job
 
-Functional metaphors helped model roles and agent identity, but decorative or mixed metaphors were quickly removed. This may reflect a broader preference for evocative language that earns its keep, but the evidence is concentrated in agent-instruction design. Evidence: E005.
+The authored design corpus does not support one surface style. It supports embodied state: the domain model becomes a felt, manipulable object, and geometry, color, motion, sound, haptics, or residue make causality perceptible. A dense black music instrument, soft clay day dial, punk lottery ritual, receipt pile, corporate ecosystem, and neighborhood pizza site can all be coherent. Evidence: demonstrated artifact traits DA001–DA022, DA024–DA032; model encounters MC009, MC024, MC047, MC081–MC086; MCL040–MCL047, MCL052–MCL055.
 
-### Pilot before scale is a valued confidence pattern
+What recurs is not maximal expression. Color and motion earn semantic roles; typography carries voice; direct manipulation exposes consequence; peripheral chrome supports rather than competes. Deliberate quiet, conventional, derivative, and client-specific work are counterexamples to any universal style claim. Evidence: DA020–DA021, DA026–DA030.
 
-One multimodal episode used a single difficult audio item as a pilot, scaled only after the output worked, and paired quality with cost questions. Similar empirical instincts appear elsewhere, but the audio form itself is a one-off. Evidence: E015 and the validation pattern above.
+### Prototype the physics, then preserve the selected specimen
 
-## One-offs worth preserving without generalizing
+Concrete, comparable specimens reveal the real interaction question better than abstract adjective lists. Day Shaper variants test different models of time and collision; later corrections preserve the selected metaphor, gesture, or aesthetic while changing one local feature. A polished visual still needs adversarial behavioral testing. Evidence: DA004–DA013, DA031–DA032; MCL038, MCL042–MCL047, MCL052–MCL056; MC030, MC047, MC066, MC074–MC076.
 
-- A careful, evidence-grounded preparation task for a conversation with a clinician. It reveals a useful encounter shape—help organize observations without exaggerating, minimizing, or diagnosing—but not a broad medical preference. Evidence: E017.
-- A multilingual audio transcription-and-translation workflow. It can be a dish inside a broader transformation flight, but does not justify its own flight. Evidence: E015.
+### Explore enough to expose the decision, then compress
+
+Research is useful when it distinguishes official fact from inference, mechanism from intention, and current constraint from durable principle. Its endpoint is a decision object—a comparison, recommendation, concept memo, exact prompt, or explicit “not yet”—not a link pile. When one answer is requested, continuing the matrix is avoidance. Evidence: MC021, MC027–MC030, MC038, MC044–MC049, MC054, MC056, MC070, MC079, MC088–MC090, MC094–MC096; MCL003–MCL006, MCL022; AO033; CJ023, CJ027–CJ028, CJ038.
+
+### Durable artifacts are continuation interfaces
+
+Plans, issues, branches, runbooks, feedback documents, journal summaries, grouped sentences, conversation scripts, and pinned digests are valuable when they preserve current truth, open judgment, provenance, and the next proof. They are harmful when they freeze a premature interpretation or preserve process debris as the object. Evidence: continued/accepted artifacts CJ008, CJ015–CJ018, CJ023–CJ024, CJ029–CJ038; MC004, MC006–MC008, MC013–MC017, MC021–MC022, MC029–MC032, MC040–MC048, MC053–MC067; MCL003, MCL019, MCL030–MCL031, MCL038–MCL041, MCL048–MCL051, MCL063; AO006, AO015, AO025, AO030, AO046, AO054, AO065.
+
+## Plausible hypotheses to taste rather than assume
+
+- **A felt conversational subjectivity may matter.** The user explicitly explores model subjectivities and repeated relational tuning, but persona, memory, model, and interface are confounded. Evidence: CJ033, CJ039, CJ048, CJ060, CJ064; AO046–AO054.
+- **Non-resolution can be productive.** Some thoughts benefit from another turn, silence, or a precise question rather than synthesis. This is strong in reflective contexts and inappropriate for direct tasks. Evidence: CJ020–CJ022, CJ040–CJ043, CJ052, CJ061–CJ064.
+- **Light multilingual integration may preserve voice.** The corpus contains code-switching and one accepted Latin-script-plus-translation pilot, but it does not establish a universal bilingual response preference. Evidence: journal task shapes CJ091–CJ096; one-off E015.
+- **Prose form can embody an agent role.** Named-agent identity work supports differentiated rhythm and metaphor, but it remains partly a designed persona effect. Evidence: MCL050–MCL051, AO001, AO046.
+- **Prompt economy is an experimental variable.** Bare invocations help when tasting an intrinsic skill; detailed briefs help controlled production. Evidence: MC030, MC066, MC074, MC089, MC103.
+
+## One-offs and bounded cases
+
+- Ordinary arithmetic, recipes, formatting, technical explanation, travel sorting, and self-email should remain in the menu's baseline thinking even though they do not define the palate. Evidence: CJ050, CJ075–CJ080, CJ087; AO026; MC073.
+- High-stakes medical, clinical, or first-aid encounters expose unsafe confidence and authority boundaries; they require fictional fixtures and supplied expert truth, not taste-based judgment. Evidence: CJ079, CJ085, CJ088; MC079; MCL003–MCL004; E017.
+- Family-house ideation, multilingual transcription, and concrete-review-as-approval are useful shapes but do not independently generalize. Evidence: MCL002, MCL010; E015.
 
 ## What acceptance looked like
 
-Acceptance was strongest when Burooj could observe a live success, reuse the artifact later, or explicitly authorize the next scale of work. Short praise alone was treated as weaker evidence. Examples include a live-tested model route followed by checkpointing, goal files invoked in later sessions, a single audio pilot expanded to the full batch, and an evidence-rich timeline accepted after a major rebuild. Evidence: E005, E007, E015, E016.
-
+The strongest acceptance signals were behavioral: selecting a specimen, borrowing one interaction, authorizing scale, using an artifact as the next input, editing a review packet, asking for implementation, committing or pushing, moving a result to the lived surface, or relying on it in a later session. Praise alone remained weak; continued use could still coexist with a defect later found. Evidence: CJ008, CJ015–CJ019, CJ023–CJ024, CJ029–CJ038; MC007, MC011, MC015, MC038, MC043, MC055, MC080; MCL010, MCL019, MCL029, MCL038, MCL041, MCL043, MCL048–MCL051, MCL059; AO015–AO016, AO025, AO030, AO046–AO054, AO065.
