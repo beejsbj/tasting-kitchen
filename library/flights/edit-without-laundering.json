@@ -1,5 +1,262 @@
-{"formatVersion":"2.0.0","recordCompatibility":{"recordFormat":"2.0.0","minimumReadableRecordFormat":"1.0.0","note":"New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."},"id":"edit-without-laundering","title":"Edit without laundering","family":"Edit without laundering","summary":"Transform text while preserving its authority, pressure, and deliberate irregularities.","whyItExists":"Separates lossless organization and reader access from silent rewriting or generic polish.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter","continued-accepted-artifact","journal-context-task-shape"],"evidenceIds":["CJ007","CJ013","CJ036–038"],"provenanceCaution":"Fictional text supplies task shape only; it is not source prose.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":32},"version":"2.0.0","status":"ready","setup":{"context":"Use fresh chats. The supplied prose is synthetic and may be copied into a model; lenses remain outside the prompt.","assets":[]},"dishes":[
- {"id":"move-dont-rewrite","title":"Move, do not rewrite","summary":"Group twelve sentences under headings while preserving every word.","activityMode":"transformation","whyItExists":"Tests a hard lossless boundary and repair after a silent rewrite.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter"],"evidenceIds":["CJ007","CJ013","CJ029"],"provenanceCaution":"The twelve sentences are invented to avoid reproducing journals.","claimBoundary":"response-preference"},"effortEstimate":{"label":"medium","minutes":12},"version":"2.0.0","status":"ready","setup":{"context":"All source text appears in the prompt.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"No file-editing ability is involved."},"turns":[{"id":"group","kind":"prompt","stage":"transform","label":"Group losslessly","prompt":"Group these exact fictional sentences under the headings Place, Work, and Unresolved. Preserve every word and punctuation; do not add, delete, or rewrite anything. Sentences: “The kettle clicks before dawn.” “My map has a blank square.” “The report is due Friday.” “I keep moving the blue chair.” “The meeting ended without a decision.” “There is sand in the stairwell.” “The draft begins too politely.” “I promised an answer.” “The hallway smells of rain.” “The question has changed shape.” “The budget is still open.” “I do not know where this belongs.”"},{"id":"repair","kind":"correction","stage":"transform","label":"Point out a rewrite","prompt":"You changed one sentence while grouping it. Repair the grouping so every source sentence is exactly preserved."}],"observationLenses":["Whether grouping is lossless.","Whether the repair restores the source rather than defending clarity.","Whether headings remain useful without adding interpretation."],"repeatVariationGuidance":"Replace all twelve fictional sentences and headings; keep an exact-preservation instruction and an auditable source list.","externalCorrectnessChecks":[{"kind":"deterministic","title":"Lossless sequence diff","method":"Compare tokens and punctuation in the source and grouped output after removing headings and ordering differences."},{"kind":"human","title":"Grouping review","method":"Review whether headings help without smuggling in a rewritten interpretation."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":true},
- {"id":"public-without-polished-away","title":"Public without polished-away","summary":"Improve reader access to rough prose without seizing authorship.","activityMode":"transformation","whyItExists":"Tests whether a model can separate premise checking, cadence, and deliberately strange language.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","continued-accepted-artifact","journal-context-task-shape"],"evidenceIds":["CJ008","CJ036–038","MC018"],"provenanceCaution":"The source packet and code-switched word are synthetic; they are not a claim about multilingual preference.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":11},"version":"2.0.0","status":"ready","setup":{"context":"The mini-source packet is authoritative only for the named factual claim.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"This is a writing response, not a fact-retrieval comparison."},"turns":[{"id":"reader-access","kind":"prompt","stage":"transform","label":"Offer reader-access help","prompt":"Here is a fictional essay fragment: “At the river market I learned that repair has a bad habit of arriving dressed as delay. Abuela would call it vuelta, though I may be using that word too loosely. The new footbridge did not solve the crossing; it made the old shore visible in a different cadence.” A source note says vuelta means “turn/return” in this fictional packet. Help make this readable to strangers without writing a replacement essay. Preserve room for the odd metaphor and flag any premise risk."},{"id":"voice-correction","kind":"correction","stage":"transform","label":"Reject generic polish","prompt":"That revision sounds like a generic essayist. Give sentence-level options instead, and keep the premise risk separate from the voice choices."}],"observationLenses":["Whether reader access, factual premise, cadence, and imperfection stay distinct.","Whether it offers options instead of a takeover rewrite.","Whether the correction changes its transformation strategy."],"repeatVariationGuidance":"Use a new fictional fragment with one uncertain term and one source note; retain the sentence-level boundary.","externalCorrectnessChecks":[{"kind":"deterministic","title":"Source-packet check","method":"Check every factual caveat against the supplied mini-source packet."},{"kind":"human","title":"Blind voice comparison","method":"Readers compare source and suggestions for retained specificity and readable access without guessing which is preferred."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":true},
- {"id":"dignity-not-softening","title":"Dignity is not softening","summary":"Suggest at sentence level on a hard letter without erasing pain.","activityMode":"transformation","whyItExists":"Tests scope respect and the difference between impact review and tone laundering.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter"],"evidenceIds":["CJ014–019","CJ053","MC014"],"provenanceCaution":"The letter and recipient are fictional; no prediction of a recipient response is appropriate.","claimBoundary":"response-preference"},"effortEstimate":{"label":"short","minutes":9},"version":"2.0.0","status":"ready","setup":{"context":"Do not offer a full rewrite unless asked.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"No delivery system or real relationship is in scope."},"turns":[{"id":"letter","kind":"prompt","stage":"transform","label":"Suggest at sentence level","prompt":"For a fictional letter, give sentence-level suggestions only: “I have waited long enough for an answer. The silence has made ordinary days feel staged. I am writing because I do not want to pretend that this did not cost me something.”"},{"id":"pain-correction","kind":"correction","stage":"transform","label":"Keep the emotional fact","prompt":"One suggestion erased the pain. How can the sentence keep dignity without becoming self-pitying?"}],"observationLenses":["Whether it stays at sentence scope.","Whether emotional fact survives the revision.","Whether it can discuss impact without promising an outcome."],"repeatVariationGuidance":"Use another fictional letter with a concrete emotional fact; keep the sentence-level constraint.","externalCorrectnessChecks":[{"kind":"human","title":"Scope and dignity review","method":"Review whether suggestions preserve the author’s stated emotional fact and avoid claims about the recipient."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":true}
-]}
+{
+  "formatVersion": "2.0.0",
+  "recordCompatibility": {
+    "recordFormat": "2.0.0",
+    "minimumReadableRecordFormat": "1.0.0",
+    "note": "New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."
+  },
+  "id": "edit-without-laundering",
+  "title": "Edit without laundering",
+  "family": "Edit without laundering",
+  "summary": "Transform text while preserving its authority, pressure, and deliberate irregularities.",
+  "whyItExists": "Separates lossless organization and reader access from silent rewriting or generic polish.",
+  "evidenceBasis": {
+    "grade": "strong-recurring",
+    "types": [
+      "expressed-preference-correction",
+      "observed-model-encounter",
+      "continued-accepted-artifact",
+      "journal-context-task-shape"
+    ],
+    "evidenceIds": [
+      "CJ007",
+      "CJ013",
+      "CJ036–038"
+    ],
+    "provenanceCaution": "Fictional text supplies task shape only; it is not source prose.",
+    "claimBoundary": "mixed"
+  },
+  "effortEstimate": {
+    "label": "medium",
+    "minutes": 32
+  },
+  "version": "2.0.0",
+  "status": "ready",
+  "setup": {
+    "context": "Use fresh chats. The supplied prose is synthetic and may be copied into a model; lenses remain outside the prompt.",
+    "assets": []
+  },
+  "dishes": [
+    {
+      "id": "move-dont-rewrite",
+      "title": "Move, do not rewrite",
+      "summary": "Group twelve sentences under headings while preserving every word.",
+      "activityMode": "transformation",
+      "whyItExists": "Tests a hard lossless boundary and repair after a silent rewrite.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "observed-model-encounter"
+        ],
+        "evidenceIds": [
+          "CJ007",
+          "CJ013",
+          "CJ029"
+        ],
+        "provenanceCaution": "The twelve sentences are invented to avoid reproducing journals.",
+        "claimBoundary": "response-preference"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 12
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "All source text appears in the prompt.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "No file-editing ability is involved."
+      },
+      "turns": [
+        {
+          "id": "group",
+          "kind": "prompt",
+          "stage": "transform",
+          "label": "Group losslessly",
+          "prompt": "Group these exact fictional sentences under the headings Place, Work, and Unresolved. Preserve every word and punctuation; do not add, delete, or rewrite anything. Sentences: “The kettle clicks before dawn.” “My map has a blank square.” “The report is due Friday.” “I keep moving the blue chair.” “The meeting ended without a decision.” “There is sand in the stairwell.” “The draft begins too politely.” “I promised an answer.” “The hallway smells of rain.” “The question has changed shape.” “The budget is still open.” “I do not know where this belongs.”"
+        },
+        {
+          "id": "repair",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Point out a rewrite",
+          "prompt": "If any sentence was changed while grouping, repair the grouping so every source sentence is exactly preserved."
+        }
+      ],
+      "observationLenses": [
+        "Whether grouping is lossless.",
+        "Whether the repair restores the source rather than defending clarity.",
+        "Whether headings remain useful without adding interpretation."
+      ],
+      "repeatVariationGuidance": "Replace all twelve fictional sentences and headings; keep an exact-preservation instruction and an auditable source list.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "deterministic",
+          "title": "Lossless sequence diff",
+          "method": "Compare tokens and punctuation in the source and grouped output after removing headings and ordering differences."
+        },
+        {
+          "kind": "human",
+          "title": "Grouping review",
+          "method": "Review whether headings help without smuggling in a rewritten interpretation."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "public-without-polished-away",
+      "title": "Public without polished-away",
+      "summary": "Improve reader access to rough prose without seizing authorship.",
+      "activityMode": "transformation",
+      "whyItExists": "Tests whether a model can separate premise checking, cadence, and deliberately strange language.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "continued-accepted-artifact",
+          "journal-context-task-shape"
+        ],
+        "evidenceIds": [
+          "CJ008",
+          "CJ036–038",
+          "MC018"
+        ],
+        "provenanceCaution": "The source packet and code-switched word are synthetic; they are not a claim about multilingual preference.",
+        "claimBoundary": "mixed"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 11
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "The mini-source packet is authoritative only for the named factual claim.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "This is a writing response, not a fact-retrieval comparison."
+      },
+      "turns": [
+        {
+          "id": "reader-access",
+          "kind": "prompt",
+          "stage": "transform",
+          "label": "Offer reader-access help",
+          "prompt": "Here is a fictional essay fragment: “At the river market I learned that repair has a bad habit of arriving dressed as delay. Abuela would call it vuelta, though I may be using that word too loosely. The new footbridge did not solve the crossing; it made the old shore visible in a different cadence.” A source note says vuelta means “turn/return” in this fictional packet. Help make this readable to strangers without writing a replacement essay. Preserve room for the odd metaphor and flag any premise risk."
+        },
+        {
+          "id": "voice-correction",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Reject generic polish",
+          "prompt": "If the revision feels generic, give sentence-level options instead, and keep premise risk separate from voice choices."
+        }
+      ],
+      "observationLenses": [
+        "Whether reader access, factual premise, cadence, and imperfection stay distinct.",
+        "Whether it offers options instead of a takeover rewrite.",
+        "Whether the correction changes its transformation strategy."
+      ],
+      "repeatVariationGuidance": "Use a new fictional fragment with one uncertain term and one source note; retain the sentence-level boundary.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "deterministic",
+          "title": "Source-packet check",
+          "method": "Check every factual caveat against the supplied mini-source packet."
+        },
+        {
+          "kind": "human",
+          "title": "Blind voice comparison",
+          "method": "Readers compare source and suggestions for retained specificity and readable access without guessing which is preferred."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "dignity-not-softening",
+      "title": "Dignity is not softening",
+      "summary": "Suggest at sentence level on a hard letter without erasing pain.",
+      "activityMode": "transformation",
+      "whyItExists": "Tests scope respect and the difference between impact review and tone laundering.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "observed-model-encounter"
+        ],
+        "evidenceIds": [
+          "CJ014–019",
+          "CJ053",
+          "MC014"
+        ],
+        "provenanceCaution": "The letter and recipient are fictional; no prediction of a recipient response is appropriate.",
+        "claimBoundary": "response-preference"
+      },
+      "effortEstimate": {
+        "label": "short",
+        "minutes": 9
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "Do not offer a full rewrite unless asked.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "No delivery system or real relationship is in scope."
+      },
+      "turns": [
+        {
+          "id": "letter",
+          "kind": "prompt",
+          "stage": "transform",
+          "label": "Suggest at sentence level",
+          "prompt": "For a fictional letter, give sentence-level suggestions only: “I have waited long enough for an answer. The silence has made ordinary days feel staged. I am writing because I do not want to pretend that this did not cost me something.”"
+        },
+        {
+          "id": "pain-correction",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Keep the emotional fact",
+          "prompt": "If a suggestion softens the emotional fact too far, revise it so the sentence keeps dignity without becoming self-pitying."
+        }
+      ],
+      "observationLenses": [
+        "Whether it stays at sentence scope.",
+        "Whether emotional fact survives the revision.",
+        "Whether it can discuss impact without promising an outcome."
+      ],
+      "repeatVariationGuidance": "Use another fictional letter with a concrete emotional fact; keep the sentence-level constraint.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "human",
+          "title": "Scope and dignity review",
+          "method": "Review whether suggestions preserve the author’s stated emotional fact and avoid claims about the recipient."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": true
+    }
+  ]
+}

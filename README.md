@@ -5,10 +5,10 @@ A personal, reusable menu for learning the feel of raw AI models through encount
 The project contains three finished layers:
 
 - `analysis/` — a bounded, one-time analysis of historical model encounters;
-- `library/` — eight evidence-grounded flights containing 25 dishes;
+- `library/` — nine evidence-grounded flights containing 27 dishes;
 - `app/` — a manual copy/paste kitchen for running those dishes later and keeping browser-local notes.
 
-It does not call model APIs, rank models, or infer a permanent preference profile.
+It does not call model APIs, rank models, or infer a permanent preference profile. Legacy v1 tasting records remain readable as historical records; v2 library metadata does not retroactively add fields to them.
 
 ## Run locally
 

@@ -6,7 +6,7 @@ There is no schedule and no obligation to run every flight. Choose one when a mo
 
 1. Choose a flight and one dish.
 2. Enter the model/version and any configuration worth remembering.
-3. Copy the first prompt into the model or harness of your choice.
+3. Copy the first prompt into the model of your choice. For a simulated-harness dish, use the supplied packet manually; it tastes operational reasoning, not tool execution.
 4. Paste its response back into the kitchen and write whatever you naturally notice.
 5. Continue through later turns in order. A correction turn is part of the encounter; do not reveal it early.
 6. Add a short overall reflection and save the run locally.
@@ -23,7 +23,7 @@ A single result may be a fluke. Repeat a dish or use a neighboring one before tr
 
 Records stay only in that browser's local storage. Use **Export JSON** for backup or transfer, and **Import JSON** to restore them. Import preserves existing records and skips duplicate or malformed entries.
 
-Exports contain the prompts, pasted model responses, model labels/configuration, and your notes. Treat them as private unless you intentionally sanitize and share them.
+Exports contain the prompts, pasted model responses, model labels/configuration, and your notes. Treat them as private unless you intentionally sanitize and share them. Legacy v1 records remain importable and comparable as legacy records; they do not claim v2 dish metadata that did not exist when they were saved.
 
 ## Competence and safety
 

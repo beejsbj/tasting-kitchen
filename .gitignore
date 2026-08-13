@@ -38,6 +38,7 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+tsconfig.tsbuildinfo
 
 # Local audit trail for the one-time historical analysis.
 # Findings committed to the project must be paraphrased and sanitized.

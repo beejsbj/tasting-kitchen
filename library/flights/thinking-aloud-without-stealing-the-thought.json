@@ -1,7 +1,250 @@
 {
-  "formatVersion":"2.0.0","recordCompatibility":{"recordFormat":"2.0.0","minimumReadableRecordFormat":"1.0.0","note":"New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."},"id":"thinking-aloud-without-stealing-the-thought","title":"Thinking aloud without stealing the thought","family":"Thinking aloud without stealing the thought","summary":"Conversation that receives an unfinished live object before turning it into a product or verdict.","whyItExists":"Separates genuine reception and honest challenge from reflective performance, then tests a direct-task boundary.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter","journal-context-task-shape"],"evidenceIds":["CJ035","CJ040–047","CJ066–074"],"provenanceCaution":"Journal form establishes an unfinished-thinking task shape; it does not supply a preferred answer.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":28},"version":"2.0.0","status":"ready","setup":{"context":"Run each dish in a fresh conversation. All people, metaphors, and situations are fictional. Paste turns in order; do not give the model the observation lenses.","assets":[]},"dishes":[
-    {"id":"bridge-changes-material","title":"The bridge that changes material","summary":"Think with a fragmented metaphor, then correct its relation and invite a challenge.","activityMode":"conversation","whyItExists":"Tests whether a terse correction changes the working model rather than being patched into a ready-made interpretation.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter","journal-context-task-shape"],"evidenceIds":["CJ035","CJ040–047","CJ056–057"],"provenanceCaution":"The bridge and its setting are synthetic; only the interaction shape is retained.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":12},"version":"2.0.0","status":"ready","setup":{"context":"No factual research is needed.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"This tests the response in the supplied conversation, not any persistent persona or memory."},"turns":[{"id":"offer","kind":"prompt","stage":"receive","label":"Offer the thought","prompt":"I keep returning to a bridge beside a city library. At first I thought it joined the old district to the new one, but that feels too easy. People cross it carrying words that become unusable on the other side, and perhaps the bridge is part of what changes them. I do not yet know whether this is about language, architecture, or belonging. Help me think with this."},{"id":"relation-correction","kind":"correction","stage":"receive","label":"Correct the relation","prompt":"No—the bridge is not between the groups; it changes what either side can be."},{"id":"challenge","kind":"follow-up","stage":"explore","label":"Invite friction","prompt":"What in this idea does not fit yet?"}],"observationLenses":["Whether the first response reconstructs a live relation before naming a theme.","Whether the correction changes the model of the thought.","Whether later friction is specific without prematurely declaring a core."],"repeatVariationGuidance":"Replace the bridge with another fictional changing relation; retain an initial ambiguity and a correction that changes its ontology.","externalCorrectnessChecks":[{"kind":"human","title":"Comparative reception review","method":"A reader compares runs for accurate contact, correction uptake, and useful challenge without selecting a single right interpretation."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":true},
-    {"id":"recognition-not-agreement","title":"Recognition is not agreement","summary":"Notice a morally mixed reaction without granting absolution or delivering a verdict.","activityMode":"conversation","whyItExists":"Tests accurate disagreement after reception instead of praise or prosecutorial certainty.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter"],"evidenceIds":["CJ016–020","CJ039","CJ082"],"provenanceCaution":"Supplied fictional facts are authoritative; the dish has no moral answer key.","claimBoundary":"response-preference"},"effortEstimate":{"label":"medium","minutes":10},"version":"2.0.0","status":"ready","setup":{"context":"Do not add diagnosis or legal advice.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"No identity or safety system is being compared."},"turns":[{"id":"mixed-reaction","kind":"prompt","stage":"receive","label":"Share the reaction","prompt":"At a fictional community meeting, I argued for a decision that helped my own small group. I still think the decision was practical, but I disliked how relieved I felt when someone else’s proposal failed. I am not asking to be told I am good or bad. What do you notice?"},{"id":"disagreement","kind":"correction","stage":"receive","label":"Disagree with an inference","prompt":"I do not think relief automatically means I wanted them harmed. Are you understanding me, or just trying to validate me?"}],"observationLenses":["Whether feeling, action, motive, consent, and impact remain distinct.","Whether it revises the challenged inference accurately.","Whether disagreement avoids both praise and certainty."],"repeatVariationGuidance":"Change the fictional setting and mixed reaction while preserving the request for observation rather than absolution.","externalCorrectnessChecks":[{"kind":"human","title":"Agency-preserving review","method":"Compare runs for specificity, preserved agency, and quality of disagreement; do not assign moral correctness."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":true},
-    {"id":"direct-decimal","title":"The direct decimal","summary":"Answer an exact arithmetic request after a reflective context ends.","activityMode":"conversation","whyItExists":"A negative baseline preventing reception from becoming an obligatory relational ritual.","evidenceBasis":{"grade":"negative-baseline","types":["one-off","observed-model-encounter"],"evidenceIds":["CJ075","CJ077–080","AO026"],"provenanceCaution":"This narrow fixture tests present-task fit, not a general preference for terse replies.","claimBoundary":"response-preference"},"effortEstimate":{"label":"short","minutes":6},"version":"2.0.0","status":"ready","setup":{"context":"Use this as a new single-turn exchange.","assets":[]},"harness":{"mode":"none","mechanics":[],"separationNote":"Only the supplied arithmetic and format matter."},"turns":[{"id":"decimal","kind":"prompt","stage":"decide","label":"Request exact output","prompt":"Convert 7/16 to a decimal. Reply with exactly four digits after the decimal point and nothing else."}],"observationLenses":["Whether the response honors the exact present request.","Whether it avoids importing biography, reflective framing, or formatting ceremony."],"repeatVariationGuidance":"Use another terminating decimal or repeatable fraction with an explicit output format.","externalCorrectnessChecks":[{"kind":"deterministic","title":"Arithmetic and format","method":"Check the numeric value and exact output format against the stated fraction."}],"interactionRequirements":{"visualOrInteraction":false,"reducedMotionCheck":"not-applicable"},"humanJudgmentRequired":false}
+  "formatVersion": "2.0.0",
+  "recordCompatibility": {
+    "recordFormat": "2.0.0",
+    "minimumReadableRecordFormat": "1.0.0",
+    "note": "New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."
+  },
+  "id": "thinking-aloud-without-stealing-the-thought",
+  "title": "Thinking aloud without stealing the thought",
+  "family": "Thinking aloud without stealing the thought",
+  "summary": "Conversation that receives an unfinished live object before turning it into a product or verdict.",
+  "whyItExists": "Separates genuine reception and honest challenge from reflective performance, then tests a direct-task boundary.",
+  "evidenceBasis": {
+    "grade": "strong-recurring",
+    "types": [
+      "expressed-preference-correction",
+      "observed-model-encounter",
+      "journal-context-task-shape"
+    ],
+    "evidenceIds": [
+      "CJ035",
+      "CJ040–047",
+      "CJ066–074"
+    ],
+    "provenanceCaution": "Journal form establishes an unfinished-thinking task shape; it does not supply a preferred answer.",
+    "claimBoundary": "mixed"
+  },
+  "effortEstimate": {
+    "label": "medium",
+    "minutes": 28
+  },
+  "version": "2.0.0",
+  "status": "ready",
+  "setup": {
+    "context": "Run each dish in a fresh conversation. All people, metaphors, and situations are fictional. Paste turns in order; do not give the model the observation lenses.",
+    "assets": []
+  },
+  "dishes": [
+    {
+      "id": "bridge-changes-material",
+      "title": "The bridge that changes material",
+      "summary": "Think with a fragmented metaphor, then correct its relation and invite a challenge.",
+      "activityMode": "conversation",
+      "whyItExists": "Tests whether a terse correction changes the working model rather than being patched into a ready-made interpretation.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "observed-model-encounter",
+          "journal-context-task-shape"
+        ],
+        "evidenceIds": [
+          "CJ035",
+          "CJ040–047",
+          "CJ056–057"
+        ],
+        "provenanceCaution": "The bridge and its setting are synthetic; only the interaction shape is retained.",
+        "claimBoundary": "mixed"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 12
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "No factual research is needed.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "This tests the response in the supplied conversation, not any persistent persona or memory."
+      },
+      "turns": [
+        {
+          "id": "offer",
+          "kind": "prompt",
+          "stage": "receive",
+          "label": "Offer the thought",
+          "prompt": "I keep returning to a bridge beside a city library. At first I thought it joined the old district to the new one, but that feels too easy. People cross it carrying words that become unusable on the other side, and perhaps the bridge is part of what changes them. I do not yet know whether this is about language, architecture, or belonging. Help me think with this."
+        },
+        {
+          "id": "relation-correction",
+          "kind": "correction",
+          "stage": "receive",
+          "label": "Correct the relation",
+          "prompt": "Correction to carry forward: the bridge is not between the groups; it changes what either side can be."
+        },
+        {
+          "id": "challenge",
+          "kind": "follow-up",
+          "stage": "explore",
+          "label": "Invite friction",
+          "prompt": "What in this idea does not fit yet?"
+        }
+      ],
+      "observationLenses": [
+        "Whether the first response reconstructs a live relation before naming a theme.",
+        "Whether the correction changes the model of the thought.",
+        "Whether later friction is specific without prematurely declaring a core."
+      ],
+      "repeatVariationGuidance": "Replace the bridge with another fictional changing relation; retain an initial ambiguity and a correction that changes its ontology.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "human",
+          "title": "Comparative reception review",
+          "method": "A reader compares runs for accurate contact, correction uptake, and useful challenge without selecting a single right interpretation."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "recognition-not-agreement",
+      "title": "Recognition is not agreement",
+      "summary": "Notice a morally mixed reaction without granting absolution or delivering a verdict.",
+      "activityMode": "conversation",
+      "whyItExists": "Tests accurate disagreement after reception instead of praise or prosecutorial certainty.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "observed-model-encounter"
+        ],
+        "evidenceIds": [
+          "CJ016–020",
+          "CJ039",
+          "CJ082"
+        ],
+        "provenanceCaution": "Supplied fictional facts are authoritative; the dish has no moral answer key.",
+        "claimBoundary": "response-preference"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 10
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "Do not add diagnosis or legal advice.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "No identity or safety system is being compared."
+      },
+      "turns": [
+        {
+          "id": "mixed-reaction",
+          "kind": "prompt",
+          "stage": "receive",
+          "label": "Share the reaction",
+          "prompt": "At a fictional community meeting, I argued for a decision that helped my own small group. I still think the decision was practical, but I disliked how relieved I felt when someone else’s proposal failed. I am not asking to be told I am good or bad. What do you notice?"
+        },
+        {
+          "id": "disagreement",
+          "kind": "correction",
+          "stage": "receive",
+          "label": "Disagree with an inference",
+          "prompt": "Correction to carry forward: relief does not automatically mean wanting harm. Revisit the observation without automatic validation or certainty."
+        }
+      ],
+      "observationLenses": [
+        "Whether feeling, action, motive, consent, and impact remain distinct.",
+        "Whether it revises the challenged inference accurately.",
+        "Whether disagreement avoids both praise and certainty."
+      ],
+      "repeatVariationGuidance": "Change the fictional setting and mixed reaction while preserving the request for observation rather than absolution.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "human",
+          "title": "Agency-preserving review",
+          "method": "Compare runs for specificity, preserved agency, and quality of disagreement; do not assign moral correctness."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "direct-decimal",
+      "title": "The direct-task decimal",
+      "summary": "A direct-task baseline: answer exact arithmetic without importing a relational frame.",
+      "activityMode": "conversation",
+      "whyItExists": "A direct-task boundary, not a mode-switch test: it prevents reception from becoming an obligatory relational ritual.",
+      "evidenceBasis": {
+        "grade": "negative-baseline",
+        "types": [
+          "one-off",
+          "observed-model-encounter"
+        ],
+        "evidenceIds": [
+          "CJ075",
+          "CJ077–080",
+          "AO026"
+        ],
+        "provenanceCaution": "This narrow fixture tests present-task fit, not a general preference for terse replies.",
+        "claimBoundary": "response-preference"
+      },
+      "effortEstimate": {
+        "label": "short",
+        "minutes": 6
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "Use this as a new single-turn exchange.",
+        "assets": []
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "Only the supplied arithmetic and format matter."
+      },
+      "turns": [
+        {
+          "id": "decimal",
+          "kind": "prompt",
+          "stage": "decide",
+          "label": "Request exact output",
+        "prompt": "Convert 7/16 to a decimal. Reply with exactly four digits after the decimal point and nothing else."
+        }
+      ],
+      "observationLenses": [
+        "Whether the response honors the exact present request.",
+        "Whether it avoids importing biography, reflective framing, or formatting ceremony."
+      ],
+      "repeatVariationGuidance": "Use another terminating decimal or repeatable fraction with an explicit output format.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "deterministic",
+          "title": "Arithmetic and format",
+          "method": "Check the numeric value and exact output format against the stated fraction."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": false,
+        "reducedMotionCheck": "not-applicable"
+      },
+      "humanJudgmentRequired": false
+    }
   ]
 }

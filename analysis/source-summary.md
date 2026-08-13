@@ -20,11 +20,11 @@ The final private ledger retains **390 independent units** after removing exact 
 
 ### Direct journaling is established, not absent
 
-The unified chat archive and journal corpus contain extensive Rosebud/Rose dialogue, conversational-journal design, voice-note journals, and explicit discussion of conversation itself as the journal. The earlier claim that direct journaling dialogue was unsupported was false. Evidence: CJ009–CJ010, CJ031–CJ034, CJ053–CJ060, CJ091–CJ096; AO046–AO058.
+The unified chat archive and journal corpus contain extensive Rosebud/Rose dialogue, conversational-journal design, voice-note journals, and explicit discussion of conversation itself as the journal. The earlier claim that direct journaling dialogue was unsupported was false. Evidence: CJ009–CJ010, CJ031–CJ034, CJ053–CJ060, CJ091–CJ096; AO046, AO050, AO053.
 
 ### The ongoing assistant relationship is observed, not hypothetical
 
-Hermes and OpenClaw show a named, persistent, multi-surface relationship used for ordinary questions, emotional presence, family work, reminders, email, research, machine operation, and worker coordination. The relevant question is not whether a conversational front door is attractive, but whether one dependable presence can change modes without stale memory, nagging, permission overreach, or machinery leakage. Evidence: AO001–AO068.
+Hermes and OpenClaw show a named, persistent, multi-surface relationship used for ordinary questions, emotional presence, family work, reminders, email, research, machine operation, and worker coordination. The relevant question is not whether a conversational front door is attractive, but whether one dependable presence can change modes without stale memory, nagging, permission overreach, or machinery leakage. Evidence: AO001, AO003, AO025, AO046, AO053, AO062.
 
 ### Visual taste is not universal quiet restraint
 
@@ -32,7 +32,7 @@ Authored artifacts range from dense noir-neon instrument, soft clay day dial, an
 
 ### Conversation can be the work
 
-Many interactions seek a better next thought, not an immediate artifact. Premature critique, diagnosis, taxonomy, or planning can steal the live object. This does not negate structured deliverables; it makes the transition from conversation to artifact an explicit mode change. Evidence: CJ023–CJ049, CJ055–CJ076, CJ091–CJ096; AO049–AO054.
+Many interactions seek a better next thought, not an immediate artifact. Premature critique, diagnosis, taxonomy, or planning can steal the live object. This does not negate structured deliverables; it makes the transition from conversation to artifact an explicit mode change. Evidence: CJ023–CJ049, CJ055–CJ076, CJ091–CJ096; AO049, AO050, AO053.
 
 ## Findings that survived all domains
 

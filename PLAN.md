@@ -19,16 +19,15 @@ The project is finished when it has:
 
 - one bounded historical analysis, with a fixed source cutoff and no continuing ingestion;
 - a private, gitignored evidence ledger plus sanitized committed findings;
-- exactly eight flights containing 24–32 dishes total;
-- at least two dishes centered on correction or recovery;
+- exactly nine flights containing 27 dishes total;
 - a stable, validated, sanitized flight schema and static library;
 - a working root Sites app that loads the library generically;
-- manual prompt copying and response pasting, free-form notes, browser-local records, two-run comparison, and JSON export/import;
+- manual prompt copying and response pasting, free-form notes, browser-local records, two-run comparison, and JSON export/import with legacy v1 tasting records still readable;
 - concise usage, provenance/privacy, and future-calibration documentation;
 - passing privacy checks, tests, and production build;
 - no actual model responses, tastings, rankings, or inferred preference profile.
 
-The investigator determines the eight flight families from evidence. Workers must not pad weak categories to satisfy symmetry.
+The investigator determines the nine flight families from evidence. Workers must not pad weak categories to satisfy symmetry.
 
 ## Lane 1 — one-time historical investigation
 
@@ -77,14 +76,15 @@ Begin after the investigator's findings, disconnects, and candidates stabilize.
 
 A good flight is genuinely related to Burooj's use, historically grounded, context-equivalent across models, open enough to reveal a model's natural tendencies, compound rather than atomized, non-leading, sanitized, and independently runnable. It says what to notice without supplying a numerical score. Taste alone must not stand in for correctness; any safety- or competence-sensitive dish needs an external check.
 
+Scheduler, worker, permission, memory, and delivery scenarios are controlled manual role-play. They compare reasoning over the same supplied state; they do not prove that a raw model can operate tools. Visual and development fixtures may be opened or handed to an external harness, while the kitchen itself remains a notebook rather than an execution engine.
+
 ### Deliverables
 
 - `library/flight.schema.json`
 - `library/menu.json`
 - `library/flights/<flight-id>.json`
 - safe supporting assets only where a dish truly needs them
-- exactly eight flights and 24–32 dishes total
-- at least two correction/recovery dishes
+- exactly nine flights and 27 dishes total
 - ordinary representative encounters as well as historically discriminating ones
 
 First freeze the schema and produce two representative fixture flights. Hand those to the website worker, then complete the remaining library in parallel with website construction.

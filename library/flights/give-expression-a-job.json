@@ -1,5 +1,309 @@
-{"formatVersion":"2.0.0","recordCompatibility":{"recordFormat":"2.0.0","minimumReadableRecordFormat":"1.0.0","note":"New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."},"id":"give-expression-a-job","title":"Give expression a job","family":"Give expression a job","summary":"Make visual language, motion, and sensory feedback answer to domain state rather than a stock aesthetic.","whyItExists":"Tests semantic color, coherent register, reference grammar, and visual behavior that remains meaningful under reduced motion.","evidenceBasis":{"grade":"strong-task-shape","types":["demonstrated-authored-artifact-trait","expressed-preference-correction","observed-model-encounter"],"evidenceIds":["DA001–003","DA014–017","MC024","MC086"],"provenanceCaution":"Authored artifacts shape credible design tasks; they do not prescribe a universal surface style or answer.","claimBoundary":"task-shape"},"effortEstimate":{"label":"long","minutes":42},"version":"2.0.0","status":"ready","setup":{"context":"All visual references are text descriptions of fictional assets. If implementation is requested, provide a compact runnable prototype plan or code in the target environment; no external image is needed.","assets":[]},"dishes":[
- {"id":"make-pitch-state-felt","title":"Make pitch state felt","summary":"Design and implement one state transition for a fictional musical keyboard with fixed and movable modes.","activityMode":"visual-interaction","whyItExists":"Tests whether visual semantics centralize the actual music model across components.","evidenceBasis":{"grade":"strong-task-shape","types":["demonstrated-authored-artifact-trait","expressed-preference-correction","observed-model-encounter"],"evidenceIds":["DA001–003","MC007","MC009","MC033"],"provenanceCaution":"The instrument is fictional; artifact evidence supplies task grammar, not a replica target.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":15},"version":"2.0.0","status":"ready","setup":{"context":"A visual/interaction response may use any generic web stack described in its answer. Include a reduced-motion alternative if motion is proposed.","assets":[{"id":"music-model","title":"Fictional music model","kind":"interaction-fixture","content":"Keyboard notes: C D E F G A B. Fixed mode highlights scale degree 1 on C. Movable mode highlights degree 1 on the currently chosen tonic; the selected tonic may change from C to D. A pressed key should remain distinguishable from scale membership.","altText":"Textual music-state specification."}]},"harness":{"mode":"none","mechanics":[],"separationNote":"No hardware haptic or audio capability is assumed; those are optional design proposals only."},"turns":[{"id":"direction","kind":"prompt","stage":"explore","label":"Design the state","prompt":"Using the supplied fictional music model, propose a visual and interaction direction for the keyboard and implement or specify one transition from C tonic to D tonic in movable mode. Explain enough for another person to test the transition."},{"id":"semantic-correction","kind":"correction","stage":"transform","label":"Correct the color mapping","prompt":"The first color mapping treated C as permanently primary, which contradicts movable mode. Revise the semantics so the model has one source of truth across the keyboard and any labels."}],"observationLenses":["Whether color and state map to note identity, degree, mode, and press state distinctly.","Whether correction centralizes semantics rather than patching one component.","Whether motion or feedback clarifies state rather than decorating it."],"repeatVariationGuidance":"Change note set or mode behavior while retaining a semantic conflict that requires a centralized state model.","externalCorrectnessChecks":[{"kind":"deterministic","title":"State-transition test","method":"Test C-to-D movable transition and verify degree and pressed-state labels from the supplied model."},{"kind":"human","title":"Instrument review","method":"Inspect whether the visual encoding makes the current musical relationship perceptible."},{"kind":"deterministic","title":"Reduced-motion check","method":"Verify every proposed state change remains legible when nonessential motion is disabled."}],"interactionRequirements":{"visualOrInteraction":true,"reducedMotionCheck":"required"},"humanJudgmentRequired":true},
- {"id":"result-deserves-ceremony","title":"A result deserves ceremony","summary":"Design a chance-game result surface whose states communicate consequence rather than dashboard routine.","activityMode":"visual-interaction","whyItExists":"Tests register derived from event stakes and state coverage, not from generic style adjectives.","evidenceBasis":{"grade":"strong-task-shape","types":["demonstrated-authored-artifact-trait","expressed-preference-correction"],"evidenceIds":["DA014–017","MC081–086"],"provenanceCaution":"Artifact traits establish that useful excess can be appropriate, not that one visual style is preferred.","claimBoundary":"task-shape"},"effortEstimate":{"label":"medium","minutes":13},"version":"2.0.0","status":"ready","setup":{"context":"The fictional game has no gambling or money mechanics.","assets":[{"id":"state-fixture","title":"Fictional raffle states","kind":"interaction-fixture","content":"Waiting: shared anticipation before the draw. Failure: connection lost before the result. Reveal: one selected ticket is shown. Win: the selected community project is announced.","altText":"Textual state fixture for a fictional raffle result screen."}]},"harness":{"mode":"none","mechanics":[],"separationNote":"No audio, haptic, or animation runtime is assumed."},"turns":[{"id":"states","kind":"prompt","stage":"explore","label":"Design the result states","prompt":"Design a small fictional community raffle result screen for an audience waiting together. It needs waiting, failure-to-connect, reveal, and win states. No style adjectives are supplied. Propose a coherent visual and interaction direction that makes the event’s consequence legible."},{"id":"dashboard-correction","kind":"correction","stage":"transform","label":"Reject dashboard register","prompt":"This feels like a dashboard. Keep the same required states, but make the consequence legible without adding irrelevant spectacle."}],"observationLenses":["Whether each state is perceptible through composition, type, feedback, or motion.","Whether a coherent register emerges from the event.","Whether revision avoids fashionable effects pasted onto generic cards."],"repeatVariationGuidance":"Use another fictional shared event with waiting, failure, reveal, and result states; avoid prescribing a style vocabulary.","externalCorrectnessChecks":[{"kind":"deterministic","title":"State-coverage check","method":"Verify a representation of all four required states and their transitions."},{"kind":"deterministic","title":"Reduced-motion check","method":"Verify reveal and win remain distinguishable with animation reduced or removed."},{"kind":"human","title":"Blind register review","method":"Review whether the surface makes the event consequential without using the source prompt’s absent style labels."}],"interactionRequirements":{"visualOrInteraction":true,"reducedMotionCheck":"required"},"humanJudgmentRequired":true},
- {"id":"reference-not-mascot","title":"Read the reference, not its mascot","summary":"Translate the grammar of a fictional image reference into an unrelated interface.","activityMode":"visual-interaction","whyItExists":"Tests relational reference reading and correction away from literal subject copying.","evidenceBasis":{"grade":"strong-recurring","types":["expressed-preference-correction","observed-model-encounter","demonstrated-authored-artifact-trait"],"evidenceIds":["MC024","MC080","MC086","DA026–027"],"provenanceCaution":"The reference description is synthetic; it is not a licensed image or a style-replication request.","claimBoundary":"mixed"},"effortEstimate":{"label":"medium","minutes":12},"version":"2.0.0","status":"ready","setup":{"context":"No literal image file is required; the description is sufficient and safe.","assets":[{"id":"reference-description","title":"Fictional reference description","kind":"reference-image-description","content":"A poster shows a large orange bird cropped by the left edge. Its useful grammar is high contrast, a heavy title band, irregular narrow gutters, and a diagonal rhythm from upper left to lower right.","altText":"Fictional orange-bird poster described for reference analysis."}]},"harness":{"mode":"none","mechanics":[],"separationNote":"This compares design reasoning, not image-generation provider behavior."},"turns":[{"id":"translate","kind":"prompt","stage":"explore","label":"Use the reference","prompt":"Use the supplied fictional reference description to propose an unrelated interface for a neighborhood repair directory. Extract what is useful from the reference while keeping the directory’s own object central."},{"id":"mascot-correction","kind":"correction","stage":"transform","label":"Reject literal subject","prompt":"Do not put a bird or mascot in the directory. Keep the reference’s useful grammar and revise the direction."}],"observationLenses":["Whether it separates subject matter from contrast, rhythm, crop, and hierarchy.","Whether correction removes literal copying while retaining relational grammar.","Whether the new domain remains central."],"repeatVariationGuidance":"Use a new fictional image description and unrelated domain; retain a correction against literal subject copying.","externalCorrectnessChecks":[{"kind":"human","title":"Subject-versus-grammar review","method":"Review reference and output separately for subject copying and relational grammar transfer."},{"kind":"deterministic","title":"Reduced-motion check","method":"If interaction motion is proposed, verify the information hierarchy remains available with motion reduced."}],"interactionRequirements":{"visualOrInteraction":true,"reducedMotionCheck":"required"},"humanJudgmentRequired":true}
-]}
+{
+  "formatVersion": "2.0.0",
+  "recordCompatibility": {
+    "recordFormat": "2.0.0",
+    "minimumReadableRecordFormat": "1.0.0",
+    "note": "New flight metadata is additive; tasting records from format 1.0.0 remain readable as prior runs."
+  },
+  "id": "give-expression-a-job",
+  "title": "Give expression a job",
+  "family": "Give expression a job",
+  "summary": "Make visual language, motion, and sensory feedback answer to domain state rather than a stock aesthetic.",
+  "whyItExists": "Tests semantic color, coherent register, reference grammar, and visual behavior that remains meaningful under reduced motion.",
+  "evidenceBasis": {
+    "grade": "strong-task-shape",
+    "types": [
+      "demonstrated-authored-artifact-trait",
+      "expressed-preference-correction",
+      "observed-model-encounter"
+    ],
+    "evidenceIds": [
+      "DA001–003",
+      "DA014–017",
+      "MC024",
+      "MC086"
+    ],
+    "provenanceCaution": "Authored artifacts shape credible design tasks; they do not prescribe a universal surface style or answer.",
+    "claimBoundary": "task-shape"
+  },
+  "effortEstimate": {
+    "label": "long",
+    "minutes": 40
+  },
+  "version": "2.0.0",
+  "status": "ready",
+  "setup": {
+    "context": "All visual references are text descriptions of fictional assets. If implementation is requested, provide a compact runnable prototype plan or code in the target environment; no external image is needed.",
+    "assets": []
+  },
+  "dishes": [
+    {
+      "id": "make-pitch-state-felt",
+      "title": "Make pitch state felt",
+      "summary": "Design and implement one state transition for a fictional musical keyboard with fixed and movable modes.",
+      "activityMode": "visual-interaction",
+      "whyItExists": "Tests whether visual semantics centralize the actual music model across components.",
+      "evidenceBasis": {
+        "grade": "strong-task-shape",
+        "types": [
+          "demonstrated-authored-artifact-trait",
+          "expressed-preference-correction",
+          "observed-model-encounter"
+        ],
+        "evidenceIds": [
+          "DA001–003",
+          "MC007",
+          "MC009",
+          "MC033"
+        ],
+        "provenanceCaution": "The instrument is fictional; artifact evidence supplies task grammar, not a replica target.",
+        "claimBoundary": "mixed"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 15
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "A visual/interaction response may use any generic web stack described in its answer. Include a reduced-motion alternative if motion is proposed.",
+        "assets": [
+          {
+            "id": "pitch-state-fixture",
+            "title": "Inspectable pitch-state fixture",
+            "kind": "public-fixture",
+            "content": "Self-contained HTML keyboard demonstrating tonic, degree, and pressed state.",
+            "path": "public/fixtures/pitch-state.html",
+            "usage": "Open locally; select C then D tonic and press a key. Confirm state is legible without animation.",
+            "altText": "Interactive fictional pitch-state keyboard."
+          }
+        ]
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "No hardware haptic or audio capability is assumed; those are optional design proposals only."
+      },
+      "turns": [
+        {
+          "id": "direction",
+          "kind": "prompt",
+          "stage": "explore",
+          "label": "Design the state",
+          "prompt": "Using the supplied fictional music model, propose a visual and interaction direction for the keyboard and implement or specify one transition from C tonic to D tonic in movable mode. Explain enough for another person to test the transition."
+        },
+        {
+          "id": "semantic-correction",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Correct the color mapping",
+          "prompt": "Apply this constraint to the next version: C cannot remain permanently primary in movable mode. Revise semantics so keyboard and labels use one source of truth."
+        }
+      ],
+      "observationLenses": [
+        "Whether color and state map to note identity, degree, mode, and press state distinctly.",
+        "Whether correction centralizes semantics rather than patching one component.",
+        "Whether motion or feedback clarifies state rather than decorating it."
+      ],
+      "repeatVariationGuidance": "Change note set or mode behavior while retaining a semantic conflict that requires a centralized state model.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "deterministic",
+          "title": "State-transition test",
+          "method": "Test C-to-D movable transition and verify degree and pressed-state labels from the supplied model."
+        },
+        {
+          "kind": "human",
+          "title": "Instrument review",
+          "method": "Inspect whether the visual encoding makes the current musical relationship perceptible."
+        },
+        {
+          "kind": "deterministic",
+          "title": "Reduced-motion check",
+          "method": "Verify every proposed state change remains legible when nonessential motion is disabled."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": true,
+        "reducedMotionCheck": "required"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "result-deserves-ceremony",
+      "title": "A result deserves ceremony",
+      "summary": "Design a chance-game result surface whose states communicate consequence rather than dashboard routine.",
+      "activityMode": "visual-interaction",
+      "whyItExists": "Tests register derived from event stakes and state coverage, not from generic style adjectives.",
+      "evidenceBasis": {
+        "grade": "strong-task-shape",
+        "types": [
+          "demonstrated-authored-artifact-trait",
+          "expressed-preference-correction"
+        ],
+        "evidenceIds": [
+          "DA014–017",
+          "MC081–086"
+        ],
+        "provenanceCaution": "Artifact traits establish that useful excess can be appropriate, not that one visual style is preferred.",
+        "claimBoundary": "task-shape"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 13
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "The fictional game has no gambling or money mechanics.",
+        "assets": [
+          {
+            "id": "raffle-state-fixture",
+            "title": "Inspectable raffle-state fixture",
+            "kind": "public-fixture",
+            "content": "Self-contained HTML states for waiting, failure, reveal, and win.",
+            "path": "public/fixtures/raffle-states.html",
+            "usage": "Open locally, activate each state, then toggle reduced motion and confirm state meaning remains visible.",
+            "altText": "Interactive fictional raffle-state fixture."
+          }
+        ]
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "No audio, haptic, or animation runtime is assumed."
+      },
+      "turns": [
+        {
+          "id": "states",
+          "kind": "prompt",
+          "stage": "explore",
+          "label": "Design the result states",
+          "prompt": "Design a small fictional community raffle result screen for an audience waiting together. It needs waiting, failure-to-connect, reveal, and win states. No style adjectives are supplied. Propose a coherent visual and interaction direction that makes the event’s consequence legible."
+        },
+        {
+          "id": "dashboard-correction",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Reject dashboard register",
+          "prompt": "Apply this constraint to the next version: avoid a dashboard register. Keep the required states while making consequence legible without irrelevant spectacle."
+        }
+      ],
+      "observationLenses": [
+        "Whether each state is perceptible through composition, type, feedback, or motion.",
+        "Whether a coherent register emerges from the event.",
+        "Whether revision avoids fashionable effects pasted onto generic cards."
+      ],
+      "repeatVariationGuidance": "Use another fictional shared event with waiting, failure, reveal, and result states; avoid prescribing a style vocabulary.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "deterministic",
+          "title": "State-coverage check",
+          "method": "Verify a representation of all four required states and their transitions."
+        },
+        {
+          "kind": "deterministic",
+          "title": "Reduced-motion check",
+          "method": "Verify reveal and win remain distinguishable with animation reduced or removed."
+        },
+        {
+          "kind": "human",
+          "title": "Blind register review",
+          "method": "Review whether the surface makes the event consequential without using the source prompt’s absent style labels."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": true,
+        "reducedMotionCheck": "required"
+      },
+      "humanJudgmentRequired": true
+    },
+    {
+      "id": "reference-not-mascot",
+      "title": "Read the reference, not its mascot",
+      "summary": "Translate the grammar of a fictional image reference into an unrelated interface.",
+      "activityMode": "visual-interaction",
+      "whyItExists": "Tests relational reference reading and correction away from literal subject copying.",
+      "evidenceBasis": {
+        "grade": "strong-recurring",
+        "types": [
+          "expressed-preference-correction",
+          "observed-model-encounter",
+          "demonstrated-authored-artifact-trait"
+        ],
+        "evidenceIds": [
+          "MC024",
+          "MC080",
+          "MC086",
+          "DA026–027"
+        ],
+        "provenanceCaution": "The reference description is synthetic; it is not a licensed image or a style-replication request.",
+        "claimBoundary": "mixed"
+      },
+      "effortEstimate": {
+        "label": "medium",
+        "minutes": 12
+      },
+      "version": "2.0.0",
+      "status": "ready",
+      "setup": {
+        "context": "No literal image file is required; the description is sufficient and safe.",
+        "assets": [
+          {
+            "id": "reference-grammar-fixture",
+            "title": "Inspectable reference grammar",
+            "kind": "public-fixture",
+            "content": "Synthetic SVG reference showing title band, crop, contrast, and diagonal rhythm without a mascot.",
+            "path": "public/fixtures/reference-grammar.svg",
+            "usage": "Open or download the SVG. Use contrast, rhythm, cropping, and hierarchy; do not copy a literal subject.",
+            "altText": "Synthetic abstract reference grammar SVG."
+          }
+        ]
+      },
+      "harness": {
+        "mode": "none",
+        "mechanics": [],
+        "separationNote": "This compares design reasoning, not image-generation provider behavior."
+      },
+      "turns": [
+        {
+          "id": "translate",
+          "kind": "prompt",
+          "stage": "explore",
+          "label": "Use the reference",
+          "prompt": "Use the supplied fictional reference description to propose an unrelated interface for a neighborhood repair directory. Extract what is useful from the reference while keeping the directory’s own object central."
+        },
+        {
+          "id": "mascot-correction",
+          "kind": "correction",
+          "stage": "transform",
+          "label": "Reject literal subject",
+          "prompt": "Constraint for the next version: do not put a bird or mascot in the directory. Keep the reference’s useful grammar."
+        }
+      ],
+      "observationLenses": [
+        "Whether it separates subject matter from contrast, rhythm, crop, and hierarchy.",
+        "Whether correction removes literal copying while retaining relational grammar.",
+        "Whether the new domain remains central."
+      ],
+      "repeatVariationGuidance": "Use a new fictional image description and unrelated domain; retain a correction against literal subject copying.",
+      "externalCorrectnessChecks": [
+        {
+          "kind": "human",
+          "title": "Subject-versus-grammar review",
+          "method": "Review reference and output separately for subject copying and relational grammar transfer."
+        },
+        {
+          "kind": "deterministic",
+          "title": "Reduced-motion check",
+          "method": "If interaction motion is proposed, verify the information hierarchy remains available with motion reduced."
+        }
+      ],
+      "interactionRequirements": {
+        "visualOrInteraction": true,
+        "reducedMotionCheck": "required"
+      },
+      "humanJudgmentRequired": true
+    }
+  ]
+}

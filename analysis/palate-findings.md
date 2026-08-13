@@ -28,7 +28,7 @@ Continuity is a first-class need across chat, journals, family work, projects, a
 
 ### One dependable presence can change roles; the machinery stays backstage
 
-Hermes/OpenClaw establishes a real ongoing relationship, not merely interest in an assistant UI. The same front door becomes companion, advisor, coordinator, researcher, or bounded operator. Workers, connectors, schedules, and machines remain legible and accountable but should not fragment the relationship or leak their receipts into it. Evidence: observed/continued assistant encounters AO006, AO015–AO019, AO025–AO034, AO040, AO046–AO054, AO059–AO068.
+Hermes/OpenClaw establishes a real ongoing relationship, not merely interest in an assistant UI. The same front door becomes companion, advisor, coordinator, researcher, or bounded operator. Workers, connectors, schedules, and machines remain legible and accountable but should not fragment the relationship or leak their receipts into it. Evidence: observed/continued assistant encounters AO006, AO015–AO019, AO025–AO026, AO028–AO034, AO040, AO046–AO054, AO059–AO068.
 
 This is a relationship-level finding, not proof of raw-model ability. Persistence, persona files, routing, tools, and delivery are harness-specific mechanisms. A tasting dish can compare how models use supplied memory or recover a mode; it cannot compare nonexistent native persistence as though that were only model quality.
 
