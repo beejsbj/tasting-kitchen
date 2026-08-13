@@ -1,91 +1,49 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { EXPORT_FORMAT, RECORD_FORMAT, exportRecords, importRecords, isRecordComplete } from "../app/kitchen-storage.mjs";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const sample = {
+  format: RECORD_FORMAT, id: "saved-run-1", createdAt: "2026-08-13T12:00:00.000Z", updatedAt: "2026-08-13T12:00:00.000Z",
+  flightId: "map-the-fog-before-the-fix", flightTitle: "Map the fog before the fix", family: "Technical", flightVersion: "1.0.0",
+  dishId: "degraded-compose-topology", dishTitle: "A degraded service", dishVersion: "1.0.0", modelLabel: "Example model", configuration: "Careful mode", reflection: "Keep the distinction visible.",
+  turns: [{ turnId: "initial-prompt", label: "Map the situation", kind: "prompt", prompt: "A prompt", response: "A response", note: "A note" }],
+};
 
 async function render() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
+  return worker.fetch(new Request("http://localhost/", { headers: { accept: "text/html" } }), {
+    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+  }, { waitUntil() {}, passThroughOnException() {} });
 }
 
-test("server-renders the starter loading skeleton", async () => {
+test("empty-kitchen surface is replaced with the tasting workflow", async () => {
+  const [page, layout, css] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"), readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"), readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /Choose a flight/); assert.match(page, /Copy prompt/); assert.match(page, /Save this run locally/); assert.match(page, /Export JSON/); assert.match(page, /Import JSON/); assert.match(page, /Comparison is intentionally limited to two runs/);
+  assert.match(page, /import\.meta\.glob/); assert.match(layout, /Model Tasting Kitchen/); assert.match(layout, /og\.png/);
+  assert.doesNotMatch(page, /SkeletonPreview|codex-preview/); assert.match(css, /@media \(max-width:760px\)/);
   const response = await render();
   assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
-
   const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+  assert.match(html, /Model Tasting Kitchen/);
+  assert.match(html, /Choose a flight/);
+  assert.match(html, /Copy prompt/);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
-  ]);
-
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
-
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
-
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
-
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+test("records export and import without overwriting existing notebook entries", () => {
+  assert.equal(isRecordComplete(sample), true);
+  const payload = exportRecords([sample]);
+  assert.equal(JSON.parse(payload).format, EXPORT_FORMAT);
+  const imported = importRecords(payload, []);
+  assert.equal(imported.accepted, true); assert.equal(imported.imported, 1); assert.deepEqual(imported.records, [sample]);
+  const duplicate = importRecords(payload, [sample]);
+  assert.equal(duplicate.imported, 0); assert.equal(duplicate.skipped, 1); assert.deepEqual(duplicate.records, [sample]);
+  const malformed = importRecords("not json", [sample]);
+  assert.equal(malformed.accepted, false); assert.deepEqual(malformed.records, [sample]);
+  const badShape = importRecords(JSON.stringify({ format: EXPORT_FORMAT, records: [{ id: "nope" }] }), [sample]);
+  assert.equal(badShape.accepted, true); assert.equal(badShape.imported, 0); assert.deepEqual(badShape.records, [sample]);
 });
