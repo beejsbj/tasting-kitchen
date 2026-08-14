@@ -1,0 +1,10 @@
+import { Badge } from "../components/Badge";
+import { Icon } from "../components/Icon";
+import { IconButton } from "../components/IconButton";
+import { Mark } from "../components/Mark";
+import { ModelChip } from "../components/ModelChip";
+import type { Registry } from "../types";
+
+export function StyleGuide({ registry, onExit }: { registry: Registry; onExit: () => void }) {
+  return <main className="styleguide"><header><Mark /><IconButton label="Close system specimen" onClick={onExit}><Icon name="close" /></IconButton></header><section className="styleguide__direction"><p>Frozen direction · Blackbox gallery</p><h1>Quiet apparatus.<br />Loud artifacts.</h1><span>An exhibition-black field, hard white type, one electric signal, and compact instrument controls. The gallery disappears when a dish is open.</span></section><section className="styleguide__section"><h2>Tokens</h2><div className="swatches"><i data-token="ink">Ink</i><i data-token="surface">Surface</i><i data-token="paper">Paper</i><i data-token="signal">Signal</i><i data-token="muted">Muted</i></div></section><section className="styleguide__section"><h2>Primitive families</h2><div className="styleguide__row"><Badge origin="textbook" /><Badge origin="mothers" /><Badge origin="hybrid" /></div><div className="styleguide__row">{registry.variants.slice(0, 3).map((variant) => <ModelChip key={variant.id} variant={variant} active />)}</div><div className="styleguide__row"><IconButton label="Grid"><Icon name="grid" /></IconButton><IconButton label="Previous"><Icon name="arrow-left" /></IconButton><IconButton label="Brief"><Icon name="brief" /></IconButton><IconButton label="Add"><Icon name="plus" /></IconButton></div></section><section className="styleguide__section"><h2>States</h2><div className="styleguide__states"><button>Rest</button><button className="styleguide__focus-demo">Focus</button><button disabled>Disabled</button></div></section><footer>Components shown here are imported from the gallery source of truth.</footer></main>;
+}

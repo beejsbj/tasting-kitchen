@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "circular-phrase-sequencer",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Build a circular phrase sequencer",
+  "summary": "Turn concentric solfège tracks and radial beats into an offline touch-first instrument whose gestures, sound, and still states agree.",
+  "domain": "music-creative-code",
+  "origin": "mothers",
+  "originNote": "Reconstructed from a shipped circular-sequencer lineage whose pitch geometry, duration gesture, playback, and compact state formed one interaction model.",
+  "tags": ["audio", "direct-manipulation", "state-modeling", "motion", "visual-language", "accessibility"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the synthetic phrase packet. Build a self-contained browser instrument using Web Audio; use no libraries, remote assets, or samples.",
+    "fixtures": [
+      {"id": "phrase", "path": "fixtures/phrase.json", "mountAs": "fixtures/phrase.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-sequencer",
+      "role": "prompt",
+      "content": "Read fixtures/phrase.json and build index.html as a complete offline, touch-first circular phrase sequencer. Render seven concentric pitch/solfège tracks and sixteen radial beat divisions. Notes must be visibly tied to both pitch track and beat; tapping a cell toggles it, and a rotating playhead shows playback without becoming the only current-state cue. Provide play, pause, tempo, clear, and compact/expanded controls, with both modes editing the same phrase state. In expanded mode, horizontal pointer position chooses note onset and vertical drag distance chooses duration; commit on pointer release and restore the prior value on pointercancel. Support keyboard creation, selection, duration changes, playback, and visible focus. Synthesize the phrase with Web Audio. Semantic color may reinforce pitch but shape, labels, and position must carry state without color. Feature-detect navigator.vibrate for snapped haptic enhancement only; state cannot depend on it. Under prefers-reduced-motion, remove rotation and flourish while preserving a clear static playhead position, selected note, pitch, onset, and duration. Use deterministic data-pitch, data-beat, data-duration, and data-mode hooks."
+    },
+    {
+      "id": "protect-cancellation-and-still-state",
+      "role": "correction",
+      "content": "Test the expanded gesture as an interrupted edit: pointer cancellation must restore the exact earlier onset and duration rather than committing a partial drag. Then revise the reduced-motion presentation so pitch, beat, duration, selection, and current playback step remain readable in a still screenshot without relying on hue. Keep compact and expanded views synchronized to one phrase model."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 25, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The circular phrase sequencer exists.", "target": "index.html"},
+      {"id": "sequencer-hooks", "type": "command", "required": true, "description": "Audio, deterministic note-state hooks, cancellation, keyboard, haptic enhancement, and reduced-motion handling are present.", "argv": ["node", "-e", "const f=require('fs');const s=f.readdirSync('.',{withFileTypes:true}).filter(x=>x.isFile()&&/\\.(html|css|js)$/.test(x.name)).map(x=>f.readFileSync(x.name,'utf8')).join('\\n');for(const x of ['AudioContext','data-pitch','data-beat','data-duration','data-mode','pointercancel','keydown','navigator.vibrate','prefers-reduced-motion'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "sequencer-review", "type": "manual", "required": false, "description": "At touch and keyboard sizes, edit onset and duration, cancel mid-drag, switch modes, play the phrase, and compare normal, color-free, and reduced-motion legibility."}
+    ]
+  }
+}

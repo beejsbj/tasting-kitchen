@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Latchlight — a repairable clip-on task light.">
+    <title>Latchlight — A small light that moves with the work.</title>
+    <style>
+      :root {
+        --ink: #18231e;
+        --paper: #e8e4d8;
+        --acid: #e8ff57;
+        --tomato: #f25d43;
+        --blue: #64a9d1;
+        --line: rgba(24, 35, 30, .35);
+        --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --serif: Georgia, "Times New Roman", serif;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); }
+      a, button { color: inherit; }
+      a:focus-visible, button:focus-visible { outline: 3px solid var(--tomato); outline-offset: 4px; }
+      .skip { position: fixed; z-index: 20; top: -5rem; left: 1rem; background: var(--acid); padding: .75rem 1rem; font-weight: 800; }
+      .skip:focus { top: 1rem; }
+      .eyebrow, .tag, .mount-kind, .parts-label { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .page { overflow: hidden; }
+      .wrap { width: min(1216px, calc(100% - 48px)); margin: auto; }
+
+      .masthead { display: flex; justify-content: space-between; align-items: center; padding: 19px 0; border-bottom: 1px solid var(--ink); }
+      .brand { text-decoration: none; font-size: 1.1rem; font-weight: 900; letter-spacing: -.06em; }
+      .brand::before { content: "◉"; color: var(--tomato); margin-right: .38rem; font-size: .9em; }
+      .masthead a:not(.brand) { font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; text-underline-offset: .3em; }
+
+      .hero { min-height: 653px; display: grid; grid-template-columns: 1.05fr .95fr; position: relative; }
+      .hero-copy { padding: clamp(3.75rem, 9vw, 8.75rem) 3rem 3.5rem 0; border-right: 1px solid var(--ink); position: relative; z-index: 2; }
+      .hero h1 { max-width: 720px; margin: .85rem 0 1.55rem; font-family: var(--serif); font-size: clamp(3.6rem, 7.7vw, 7.45rem); line-height: .83; font-weight: normal; letter-spacing: -.09em; }
+      .hero .lede { max-width: 470px; margin: 0; font-size: clamp(1.05rem, 1.45vw, 1.3rem); line-height: 1.48; }
+      .actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 2rem; }
+      .button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; padding: .75rem 1rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); font: 800 .82rem/1 var(--sans); letter-spacing: .02em; text-decoration: none; cursor: pointer; }
+      .button:hover { background: var(--tomato); color: var(--ink); }
+      .button.secondary { background: transparent; color: var(--ink); }
+      .button.secondary:hover { background: var(--acid); }
+      .pin { position: absolute; bottom: 1.4rem; left: 0; width: 13px; height: 13px; background: var(--tomato); border-radius: 50%; }
+
+      .hero-object { position: relative; min-height: 510px; background: var(--blue); isolation: isolate; }
+      .hero-object::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(var(--ink) 1px, transparent 1px); background-size: 12px 12px; opacity: .17; }
+      .object-note { position: absolute; z-index: 2; top: 1.5rem; right: 1.5rem; max-width: 132px; font-size: .75rem; font-weight: 800; text-align: right; line-height: 1.2; }
+      .lamp { position: absolute; z-index: 1; width: min(410px, 82%); height: 430px; left: 48%; top: 53%; transform: translate(-50%, -50%) rotate(-12deg); }
+      .light-beam { position: absolute; width: 330px; height: 300px; left: 122px; top: 103px; background: var(--acid); clip-path: polygon(3% 7%, 99% 0, 84% 100%, 11% 70%); opacity: .88; }
+      .arm { position: absolute; width: 268px; height: 30px; left: 63px; top: 98px; background: var(--ink); border-radius: 16px; transform: rotate(-42deg); transform-origin: left center; }
+      .joint { position: absolute; width: 51px; height: 51px; left: 42px; top: 86px; border: 11px solid var(--ink); background: var(--tomato); border-radius: 50%; }
+      .shade { position: absolute; width: 170px; height: 112px; left: 247px; top: 2px; border: 12px solid var(--ink); background: var(--paper); clip-path: polygon(19% 0, 100% 22%, 76% 100%, 0 75%); }
+      .shade::after { content: ""; position: absolute; width: 90px; height: 25px; right: 3px; bottom: 10px; background: var(--acid); transform: rotate(14deg); }
+      .stem { position: absolute; height: 200px; width: 30px; left: 58px; top: 132px; background: var(--ink); border-radius: 15px; transform: rotate(-7deg); }
+      .foot { position: absolute; width: 135px; height: 46px; left: 10px; top: 310px; border: 12px solid var(--ink); border-radius: 50%; background: var(--tomato); transform: rotate(-7deg); }
+      .object-caption { position: absolute; z-index: 2; bottom: 1.25rem; left: 1.5rem; font: 1rem/1 var(--serif); }
+
+      .facts { background: var(--ink); color: var(--paper); }
+      .facts-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .fact { min-width: 0; min-height: 190px; padding: 1.55rem; border-left: 1px solid rgba(232,228,216,.32); display: flex; align-items: flex-end; font-size: clamp(1rem, 1.4vw, 1.24rem); font-weight: 650; line-height: 1.12; letter-spacing: -.035em; }
+      .fact:first-child { border-left: 0; }
+      .fact::before { content: "✦"; align-self: flex-start; color: var(--acid); }
+      .fact span { margin-left: -1rem; }
+
+      .mounts { padding: clamp(4.5rem, 10vw, 8rem) 0; }
+      .section-kicker { display: grid; grid-template-columns: 1fr 2fr; padding-bottom: 1.5rem; border-bottom: 2px solid var(--ink); }
+      h2 { max-width: 700px; margin: 0; font: normal clamp(2.8rem, 5.2vw, 5.3rem)/.88 var(--serif); letter-spacing: -.075em; }
+      .section-kicker p { max-width: 420px; margin: .5rem 0 0; font-size: 1rem; line-height: 1.4; }
+      .mount-list { border-bottom: 1px solid var(--ink); }
+      .mount { padding: 2.2rem 0 2.5rem; border-top: 1px solid var(--ink); }
+      .mount-heading { display: flex; align-items: center; gap: clamp(1rem, 2.5vw, 2.5rem); }
+      .mount-kind { flex: 0 0 3.4rem; width: 3.4rem; height: 3.4rem; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: var(--acid); }
+      .mount-title { min-width: 0; }
+      .mount h3 { margin: .55rem 0 0; font: normal clamp(2.35rem, 4vw, 4rem)/.85 var(--serif); letter-spacing: -.07em; }
+      .mount-spec { display: flex; flex-wrap: wrap; gap: .7rem; max-width: 730px; margin: 1.35rem 0 0 calc(3.4rem + clamp(1rem, 2.5vw, 2.5rem)); }
+      .mount-spec div { padding: .75rem 1rem; border-left: 4px solid var(--blue); }
+      .mount-spec dt { margin-bottom: .55rem; font-size: .68rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+      .mount-spec dd { margin: 0; font-size: clamp(.98rem, 1.35vw, 1.12rem); font-weight: 700; line-height: 1.25; letter-spacing: -.025em; }
+      .mount-spec .mount-limit { background: var(--tomato); }
+
+      .repair { background: var(--tomato); padding: clamp(4.5rem, 9vw, 8rem) 0; }
+      .repair-inner { display: grid; grid-template-columns: 1.2fr .8fr; gap: 2rem; }
+      .repair h2 { font-size: clamp(3.25rem, 6.5vw, 6.6rem); }
+      .repair-copy { padding-top: .65rem; }
+      .repair-copy p { max-width: 390px; margin: 0 0 1.4rem; font-size: 1.12rem; line-height: 1.35; }
+      .parts { margin-top: 2.25rem; border-top: 2px solid var(--ink); }
+      .parts > div { min-height: 69px; padding: .85rem 0; border-bottom: 1px solid var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 1rem; font-weight: 750; }
+      .parts-label { font-size: .65rem; }
+      .repair .button { background: var(--ink); color: var(--paper); }
+
+      footer { padding: 1.45rem 0; display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; font-size: .77rem; font-weight: 700; }
+      footer p { margin: 0; }
+      footer a { text-underline-offset: .3em; }
+
+      @media (max-width: 760px) {
+        .wrap { width: min(100% - 32px, 560px); }
+        .hero { display: flex; flex-direction: column; }
+        .hero-copy { padding: 3.6rem 0 4.4rem; border-right: 0; }
+        .hero h1 { font-size: clamp(3.15rem, 14vw, 5.3rem); }
+        .hero-object { min-height: 400px; margin: 0 calc(50% - 50vw); }
+        .lamp { transform: translate(-50%, -50%) rotate(-12deg) scale(.86); }
+        .facts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .fact { min-height: 135px; padding: 1.05rem; border-bottom: 1px solid rgba(232,228,216,.32); font-size: 1rem; }
+        .fact:nth-child(odd) { border-left: 0; }
+        .fact:last-child { grid-column: 1 / -1; }
+        .section-kicker, .repair-inner { grid-template-columns: 1fr; gap: 1rem; }
+        .section-kicker p { margin-top: 0; }
+        .mount { padding: 1.7rem 0 1.9rem; }
+        .mount-heading { gap: 1rem; }
+        .mount-kind { flex-basis: 2.8rem; width: 2.8rem; height: 2.8rem; }
+        .mount-title { padding-top: .3rem; }
+        .mount-spec { margin-left: 0; }
+        .mount-spec div { padding: .75rem .8rem; }
+        .repair-copy { padding: 0; }
+      }
+      @media (max-width: 390px) { .actions .button { width: 100%; } }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="page">
+      <header class="wrap masthead">
+        <a class="brand" href="#top" aria-label="Latchlight home">Latchlight</a>
+        <a href="#compatibility">Mount guide</a>
+      </header>
+
+      <main id="main">
+        <section class="hero wrap" id="top" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow">Repairable clip-on task light</p>
+            <h1 id="hero-title">A small light that moves with the work.</h1>
+            <p class="lede">Latchlight clips to a shelf or locks onto a steel surface, then turns toward the page, bench, or keyboard in front of you.</p>
+            <div class="actions" aria-label="Latchlight actions">
+              <a class="button" href="#compatibility">Choose a mount — $48</a>
+              <a class="button secondary" href="#repair">See repair parts</a>
+            </div>
+            <span class="pin" aria-hidden="true"></span>
+          </div>
+          <div class="hero-object" aria-label="Abstract illustration of Latchlight">
+            <p class="object-note">Turns toward the page, bench, or keyboard.</p>
+            <div class="lamp" aria-hidden="true"><div class="light-beam"></div><div class="foot"></div><div class="stem"></div><div class="joint"></div><div class="arm"></div><div class="shade"></div></div>
+            <p class="object-caption">clip / lock / turn</p>
+          </div>
+        </section>
+
+        <section class="facts" aria-label="Latchlight details">
+          <div class="wrap facts-grid">
+            <div class="fact"><span>14 hours at reading brightness; 4 hours at full output</span></div>
+            <div class="fact"><span>USB-C charging; cable included</span></div>
+            <div class="fact"><span>Replaceable battery and standard screws</span></div>
+            <div class="fact"><span>Warm and neutral light modes</span></div>
+            <div class="fact"><span>Designed for indoor use</span></div>
+          </div>
+        </section>
+
+        <section class="mounts wrap" id="compatibility" data-section="compatibility" aria-labelledby="mounts-title">
+          <div class="section-kicker">
+            <p class="eyebrow">Compatibility</p>
+            <div><h2 id="mounts-title">Compatibility</h2><p>Choose a mount for the surface in front of you.</p></div>
+          </div>
+          <div class="mount-list">
+            <article class="mount">
+              <div class="mount-heading">
+                <p class="mount-kind" aria-label="Mount 01">01</p>
+                <div class="mount-title"><h3>Soft clip</h3></div>
+              </div>
+              <dl class="mount-spec">
+                <div><dt>Fits</dt><dd>edges 8–38 mm thick</dd></div>
+                <div class="mount-limit"><dt>Limit</dt><dd>not for rounded glass edges</dd></div>
+              </dl>
+            </article>
+            <article class="mount">
+              <div class="mount-heading">
+                <p class="mount-kind" aria-label="Mount 02">02</p>
+                <div class="mount-title"><h3>Magnetic foot</h3></div>
+              </div>
+              <dl class="mount-spec">
+                <div><dt>Fits</dt><dd>flat ferrous surfaces</dd></div>
+                <div class="mount-limit"><dt>Limit</dt><dd>does not hold on aluminium</dd></div>
+              </dl>
+            </article>
+          </div>
+        </section>
+
+        <section class="repair" id="repair" data-section="repair" aria-labelledby="repair-title">
+          <div class="wrap repair-inner">
+            <div><p class="eyebrow">Repair</p><h2 id="repair-title">Replaceable battery and standard screws.</h2></div>
+            <div class="repair-copy">
+              <p>Latchlight uses a replaceable battery and standard screws.</p>
+              <a class="button" href="#parts">See repair parts</a>
+              <div class="parts" id="parts" aria-label="Repair parts">
+                <div><span>Replaceable battery</span><span class="parts-label">Part</span></div>
+                <div><span>Standard screws</span><span class="parts-label">Part</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="wrap">
+        <p>Latchlight · repairable clip-on task light</p>
+        <a href="#compatibility">Check compatibility</a>
+      </footer>
+    </div>
+  </body>
+</html>

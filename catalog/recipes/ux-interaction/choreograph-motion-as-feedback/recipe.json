@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "choreograph-motion-as-feedback",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Choreograph motion as feedback",
+  "summary": "Build a small consequential product flow where motion explains state change, causality, confirmation, retained history, and recovery.",
+  "domain": "ux-interaction",
+  "origin": "hybrid",
+  "originNote": "Combines demonstrated preferences for semantic motion and distinct tempos with explicit attraction to physical, SVG, scroll, and timeline animation craft.",
+  "tags": ["motion", "microinteraction", "state-modeling", "visual-language", "accessibility"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the synthetic product-flow packet. Build a self-contained interaction with no remote assets or animation libraries.",
+    "fixtures": [
+      {"id": "flow", "path": "fixtures/flow.json", "mountAs": "fixtures/flow.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-motion-system",
+      "role": "prompt",
+      "content": "Read fixtures/flow.json and build index.html as a complete responsive product flow. Implement at least three consequential state changes rather than a motion reel: changing the service configuration must update the preview; submitting must enter a pending state and then follow the scripted fail-first outcome; recovery must preserve the chosen configuration and allow a successful retry. Every animated effect must declare one named job through data-motion-job: orient, preview-causality, confirm, preserve-trace, or recover. Use data-motion-tempo to distinguish responsive motion that answers direct input from ambient motion that establishes ongoing state; do not let ambient motion compete with action feedback. Keep a visible event trace so cause and retained state are inspectable. Under prefers-reduced-motion, replace movement with immediate spatial, textual, or persistent-state cues that preserve the same meaning. Use data-state-change hooks for each consequential transition and make the flow fully operable by keyboard with visible focus."
+    },
+    {
+      "id": "remove-decorative-motion",
+      "role": "correction",
+      "content": "Audit the finished flow and identify its most decorative effect—the one with no clear state or causal job. Remove it. If part of that effect contains useful feedback, reassign only that part to the appropriate named job and responsive or ambient tempo. Do not make the result inert: preserve orientation, preview causality, confirmation, trace, recovery, and their reduced-motion equivalents."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The consequential product flow exists.", "target": "index.html"},
+      {"id": "motion-contract", "type": "command", "required": true, "description": "Named motion jobs, both tempo classes, consequential state hooks, and reduced-motion handling are present.", "argv": ["node", "-e", "const f=require('fs');const s=f.readdirSync('.',{withFileTypes:true}).filter(x=>x.isFile()&&/\\.(html|css|js)$/.test(x.name)).map(x=>f.readFileSync(x.name,'utf8')).join('\\n');for(const x of ['orient','preview-causality','confirm','preserve-trace','recover','responsive','ambient','prefers-reduced-motion'])if(!s.includes(x))process.exit(1);if((s.match(/data-state-change/g)||[]).length<3)process.exit(1)"]},
+      {"id": "motion-review", "type": "manual", "required": false, "description": "Complete fail and retry paths with normal and reduced motion; verify that every remaining effect has one legible job and that retained state survives recovery."}
+    ]
+  }
+}

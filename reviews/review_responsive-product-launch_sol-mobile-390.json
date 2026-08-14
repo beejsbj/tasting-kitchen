@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "review_responsive-product-launch_sol-mobile-390",
+  "dishId": "dish_responsive-product-launch_codex-sol-high_20260814200923790_c1b11b6e",
+  "dishHash": "sha256:ca873a27c67749997a7948bca7fa65b5d91e612a0de3124b6515d6aabbd2d0fc",
+  "reviewer": "Codex visual review",
+  "reviewerKind": "agent",
+  "reviewedAt": "2026-08-14T21:24:50.000Z",
+  "probes": [
+    {
+      "id": "mobile-390",
+      "device": "Mobile browser emulation",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 1
+      },
+      "verdict": "issue",
+      "finding": "Agent visual inspection at 390px found that the hero headline and top call-to-action are clipped. This conflicts with the model trace's claim of no horizontal overflow, but does not alter the dish's structural acceptance.",
+      "details": {
+        "method": "Browser visual inspection",
+        "path": "artifact/index.html"
+      }
+    }
+  ]
+}

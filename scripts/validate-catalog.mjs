@@ -2,12 +2,16 @@ import { createHash } from "node:crypto";
 import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { hashCanonical, loadCatalog } from "../lib/taste/catalog.mjs";
+import { describeTree } from "../lib/taste/files.mjs";
+import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 
-const root = path.resolve(import.meta.dirname, "..");
+const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
 
 const IDS = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DISH_IDS = /^dish_[a-zA-Z0-9_-]+$/;
+const REVIEW_IDS = /^review_[a-zA-Z0-9_-]+$/;
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const BARE_SHA256 = /^[a-f0-9]{64}$/;
@@ -24,12 +28,16 @@ const allowedValidationModes = new Set(["completeness", "files", "interaction", 
 const allowedCheckTypes = new Set(["file-exists", "command", "json-schema", "trace-assertion", "manual"]);
 const executableCheckTypes = new Set(["file-exists", "command", "json-schema"]);
 const nonGatingCheckTypes = new Set(["trace-assertion", "manual"]);
+const allowedReviewVerdicts = new Set(["pass", "issue", "inconclusive"]);
+const allowedReviewerKinds = new Set(["human", "agent"]);
 
 const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
 const publicLeakPatterns = [
   { name: "private Unix home path", pattern: /\/(?:home|Users)\// },
   { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
   { name: "file URL", pattern: /file:\/\//i },
+  { name: "home path form", pattern: /(?:^|[\s("'`])(?:~\/|\$HOME(?:\/|\b)|\$\{HOME\}(?:\/|\b)|%USERPROFILE%(?:[\\/]|\b))/im },
+  { name: "private directory reference", pattern: /(?:^|[\\/])private[\\/]/im },
   { name: "private key", pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
   { name: "provider credential variable", pattern: /(?:OPENAI|ANTHROPIC|GEMINI|NOUS|AWS)_[A-Z0-9_]*(?:KEY|TOKEN|SECRET)/ },
   { name: "API-key-like value", pattern: /\b(?:sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|AIza[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})\b/ },
@@ -47,12 +55,17 @@ const LIMIT_KEYS = new Set(["maxFiles", "maxBytes"]);
 const VALIDATION_KEYS = new Set(["mode", "checks"]);
 const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "schema", "argv"]);
 
-const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
+const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
 const DISH_RECIPE_KEYS = new Set(["id", "version", "hash"]);
-const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash", "catalogHash"]);
+const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "requestedServiceTier", "observedServiceTier", "configHash", "catalogHash"]);
 const ARTIFACT_KEYS = new Set(["kind", "entry", "preview", "treeHash", "files"]);
 const ARTIFACT_FILE_KEYS = new Set(["path", "sha256", "bytes"]);
 const DISH_VALIDATION_KEYS = new Set(["passed", "report"]);
+const REVIEW_KEYS = new Set(["schemaVersion", "id", "dishId", "dishHash", "reviewer", "reviewerKind", "reviewedAt", "probes"]);
+const REVIEW_PROBE_KEYS = new Set(["id", "device", "viewport", "verdict", "finding", "details"]);
+const VIEWPORT_KEYS = new Set(["width", "height", "deviceScaleFactor"]);
+const PROBE_DETAILS_KEYS = new Set(["method", "path", "scrollWidth", "clientWidth"]);
+const EXECUTION_PROFILE_KEYS = new Set(["id", "label", "runtime", "sandbox", "approvalPolicy", "nativeWeb", "networkPolicy", "filesystemBoundary"]);
 
 function fail(label, message) {
   errors.push(`${label}: ${message}`);
@@ -93,6 +106,11 @@ function boolean(value, label) {
 
 function integer(value, label, min, max) {
   if (!Number.isInteger(value)) return fail(label, "must be an integer");
+  if (value < min || value > max) fail(label, `must be between ${min} and ${max}`);
+}
+
+function number(value, label, min, max) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return fail(label, "must be a finite number");
   if (value < min || value > max) fail(label, `must be between ${min} and ${max}`);
 }
 
@@ -267,7 +285,7 @@ function validateVariants(doc) {
   if (doc.variants.length !== 5) fail(label, `expected 5 seed variants, found ${doc.variants.length}`);
   const map = new Map();
   const tuples = [];
-  const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities"]);
+  const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
   for (const [index, variant] of doc.variants.entries()) {
     const item = `${label}.variants[${index}]`;
     if (!object(variant, item)) continue;
@@ -281,12 +299,29 @@ function validateVariants(doc) {
       unique(variant.capabilities, `${item}.capabilities`);
       for (const capability of variant.capabilities) enumValue(capability, allowedCapabilities, `${item}.capabilities`);
     }
+    if (object(variant.executionProfile, `${item}.executionProfile`)) {
+      const profile = variant.executionProfile;
+      onlyKeys(profile, EXECUTION_PROFILE_KEYS, `${item}.executionProfile`);
+      required(profile, [...EXECUTION_PROFILE_KEYS], `${item}.executionProfile`);
+      for (const key of EXECUTION_PROFILE_KEYS) string(profile[key], `${item}.executionProfile.${key}`);
+      const exact = {
+        id: "codex-linux-host-unsandboxed-v1",
+        label: "via Codex CLI · host-unsandboxed fallback",
+        runtime: "linux-host",
+        sandbox: "danger-full-access",
+        approvalPolicy: "never",
+        nativeWeb: "disabled",
+        networkPolicy: "not-enforced",
+        filesystemBoundary: "not-a-secrecy-boundary"
+      };
+      for (const [key, value] of Object.entries(exact)) if (profile[key] !== value) fail(item, `executionProfile.${key} must be ${value}`);
+    }
     if (variant.harness === "codex-cli" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
       fail(item, "the probed Codex runner may currently promise exactly files and shell");
     }
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
     if (variant.model === "gpt-5.6-luna" && variant.serviceTier !== "fast") fail(item, "Luna seed must be explicitly fast");
-    tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, ...(variant.capabilities ?? [])].join("\0"));
+    tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }
   unique(tuples, `${label}.variants configuration`);
   return map;
@@ -497,16 +532,18 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, variants) {
+async function validateDish(relative, recipeRecords, loadedRecipes, variants) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
-  required(dish, ["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "dishHash"], relative);
+  required(dish, ["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "dishHash"], relative);
   if (dish.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
   string(dish.id, `${relative}.id`, { pattern: DISH_IDS });
   if (path.basename(path.dirname(relative)) !== dish.id) fail(relative, "id must match dish directory");
   string(dish.executedAt, `${relative}.executedAt`);
   if (typeof dish.executedAt === "string" && (Number.isNaN(Date.parse(dish.executedAt)) || !dish.executedAt.includes("T"))) fail(relative, "executedAt must be an ISO date-time");
+  string(dish.finalizedAt, `${relative}.finalizedAt`);
+  if (typeof dish.finalizedAt === "string" && (Number.isNaN(Date.parse(dish.finalizedAt)) || !dish.finalizedAt.includes("T"))) fail(relative, "finalizedAt must be an ISO date-time");
   if (dish.status !== "accepted") fail(relative, "public dish status must be accepted");
   string(dish.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
   const dishDirectory = path.dirname(path.join(root, relative));
@@ -521,19 +558,31 @@ async function validateDish(relative, recipeRecords, variants) {
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
     else if (recipeRecord.recipe.version !== dish.recipe.version) fail(relative, `recipe version ${dish.recipe.version} does not match catalog ${recipeRecord.recipe.version}`);
+    const loadedRecipe = loadedRecipes.get(dish.recipe.id);
+    if (loadedRecipe && dish.recipe.hash !== loadedRecipe.recipeHash) {
+      fail(`${relative}.recipe.hash`, "does not match the current catalog recipe hash");
+    }
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
     onlyKeys(dish.identity, IDENTITY_KEYS, `${relative}.identity`);
     required(dish.identity, ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash"], `${relative}.identity`);
     for (const key of ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier"]) string(dish.identity[key], `${relative}.identity.${key}`);
+    for (const key of ["requestedServiceTier", "observedServiceTier"]) {
+      if (dish.identity[key] !== undefined) string(dish.identity[key], `${relative}.identity.${key}`);
+    }
     string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
     if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
     const variant = variants.get(dish.identity.variantId);
     if (!variant) fail(relative, `unknown variant ${dish.identity.variantId}`);
     else {
-      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort", serviceTier: "serviceTier" };
+      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
       for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
+      const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
+      const observedTier = dish.identity.observedServiceTier ?? dish.identity.serviceTier;
+      if (requestedTier !== variant.serviceTier) fail(relative, `identity requested service tier does not match variant ${variant.id}`);
+      if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
+      if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
     }
   }
 
@@ -567,6 +616,14 @@ async function validateDish(relative, recipeRecords, variants) {
       if (!paths.includes(dish.artifact.entry)) fail(relative, "artifact.entry must appear in artifact.files");
       if (dish.artifact.preview && !paths.includes(dish.artifact.preview)) fail(relative, "artifact.preview must appear in artifact.files");
     }
+    try {
+      const described = await describeTree(path.join(dishDirectory, "artifact"));
+      if (dish.artifact.treeHash !== described.treeHash) {
+        fail(`${relative}.artifact.treeHash`, "does not match the published artifact tree");
+      }
+    } catch (error) {
+      fail(`${relative}.artifact.treeHash`, `could not hash the published artifact tree: ${error.message}`);
+    }
   }
 
   if (object(dish.validation, `${relative}.validation`)) {
@@ -582,7 +639,63 @@ async function validateDish(relative, recipeRecords, variants) {
   }
 
   publicSafety(dish, relative);
+  const { dishHash, ...dishWithoutHash } = dish;
+  if (dishHash !== hashCanonical(dishWithoutHash)) {
+    fail(`${relative}.dishHash`, "does not match the canonical dish manifest");
+  }
   return dish;
+}
+
+async function validateReview(relative, dishes) {
+  const review = await json(relative);
+  if (!review || !object(review, relative)) return null;
+  onlyKeys(review, REVIEW_KEYS, relative);
+  required(review, ["schemaVersion", "id", "dishId", "dishHash", "reviewer", "reviewerKind", "reviewedAt", "probes"], relative);
+  if (review.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+  string(review.id, `${relative}.id`, { pattern: REVIEW_IDS });
+  if (`${review.id}.json` !== path.basename(relative)) fail(relative, "filename must match review id");
+  string(review.dishId, `${relative}.dishId`, { pattern: DISH_IDS });
+  string(review.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
+  string(review.reviewer, `${relative}.reviewer`, { max: 120 });
+  enumValue(review.reviewerKind, allowedReviewerKinds, `${relative}.reviewerKind`);
+  string(review.reviewedAt, `${relative}.reviewedAt`);
+  if (typeof review.reviewedAt === "string" && (Number.isNaN(Date.parse(review.reviewedAt)) || !review.reviewedAt.includes("T"))) fail(relative, "reviewedAt must be an ISO date-time");
+
+  const dish = dishes.get(review.dishId);
+  if (!dish) fail(relative, `unknown dish ${review.dishId}`);
+  else if (review.dishHash !== dish.dishHash) fail(relative, `dishHash does not match immutable dish ${review.dishId}`);
+
+  if (array(review.probes, `${relative}.probes`, { min: 1 })) {
+    const probeIds = [];
+    for (const [index, probe] of review.probes.entries()) {
+      const item = `${relative}.probes[${index}]`;
+      if (!object(probe, item)) continue;
+      onlyKeys(probe, REVIEW_PROBE_KEYS, item);
+      required(probe, ["id", "device", "viewport", "verdict", "finding"], item);
+      string(probe.id, `${item}.id`, { pattern: IDS });
+      string(probe.device, `${item}.device`, { max: 120 });
+      enumValue(probe.verdict, allowedReviewVerdicts, `${item}.verdict`);
+      string(probe.finding, `${item}.finding`, { max: 1000 });
+      probeIds.push(probe.id);
+      if (object(probe.viewport, `${item}.viewport`)) {
+        onlyKeys(probe.viewport, VIEWPORT_KEYS, `${item}.viewport`);
+        required(probe.viewport, ["width", "height"], `${item}.viewport`);
+        integer(probe.viewport.width, `${item}.viewport.width`, 1, 16384);
+        integer(probe.viewport.height, `${item}.viewport.height`, 1, 16384);
+        if (probe.viewport.deviceScaleFactor !== undefined) number(probe.viewport.deviceScaleFactor, `${item}.viewport.deviceScaleFactor`, Number.MIN_VALUE, 8);
+      }
+      if (probe.details !== undefined && object(probe.details, `${item}.details`)) {
+        onlyKeys(probe.details, PROBE_DETAILS_KEYS, `${item}.details`);
+        if (probe.details.method !== undefined) string(probe.details.method, `${item}.details.method`, { max: 120 });
+        if (probe.details.path !== undefined) safeRelative(probe.details.path, `${item}.details.path`);
+        if (probe.details.scrollWidth !== undefined) integer(probe.details.scrollWidth, `${item}.details.scrollWidth`, 0, 1000000);
+        if (probe.details.clientWidth !== undefined) integer(probe.details.clientWidth, `${item}.details.clientWidth`, 0, 1000000);
+      }
+    }
+    unique(probeIds, `${relative}.probes ids`);
+  }
+  publicSafety(review, relative);
+  return review;
 }
 
 async function scanPublicCatalog() {
@@ -597,11 +710,18 @@ async function scanPublicCatalog() {
 
 const recipeSchema = await json("catalog/recipe.schema.json");
 const dishSchema = await json("catalog/dish.schema.json");
+const reviewSchema = await json("catalog/review.schema.json");
 if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
   fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");
 }
 if (dishSchema?.properties?.artifact?.properties?.kind?.enum?.join("\0") !== [...allowedKinds].join("\0")) {
   fail("catalog/dish.schema.json", "artifact kind enum disagrees with runtime validator");
+}
+if (reviewSchema?.properties?.probes?.items?.properties?.verdict?.enum?.join("\0") !== [...allowedReviewVerdicts].join("\0")) {
+  fail("catalog/review.schema.json", "verdict enum disagrees with runtime validator");
+}
+if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedReviewerKinds].join("\0")) {
+  fail("catalog/review.schema.json", "reviewerKind enum disagrees with runtime validator");
 }
 
 const domainsDoc = await json("catalog/domains.json");
@@ -622,13 +742,34 @@ for (const relative of recipeFiles.sort()) {
 
 await validateProvenance(recipeRecords);
 
+let loadedRecipes = new Map();
+try {
+  const loadedCatalog = await loadCatalog(root);
+  loadedRecipes = new Map(loadedCatalog.recipes.map((recipe) => [recipe.id, recipe]));
+} catch (error) {
+  fail("catalog", `could not load canonical recipe hashes: ${error.message}`);
+}
+
 const dishFiles = await walk("dishes", { basename: "dish.json" });
-const dishIds = new Set();
+const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, variants);
+  const dish = await validateDish(relative, recipeRecords, loadedRecipes, variants);
   if (!dish) continue;
-  if (dishIds.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
-  dishIds.add(dish.id);
+  if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
+  dishes.set(dish.id, dish);
+}
+
+const reviewFiles = await walk("reviews", { allFiles: true });
+const reviewIds = new Set();
+for (const relative of reviewFiles.sort()) {
+  if (path.extname(relative) !== ".json") {
+    fail(relative, "review directory may contain only JSON files");
+    continue;
+  }
+  const review = await validateReview(relative, dishes);
+  if (!review) continue;
+  if (reviewIds.has(review.id)) fail(relative, `duplicate review id ${review.id}`);
+  reviewIds.add(review.id);
 }
 
 await scanPublicCatalog();
@@ -639,4 +780,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${domains.size} domains, ${tags.size} tags, ${variants.size} variants, ${recipeRecords.size} recipes, ${dishIds.size} dishes, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${domains.size} domains, ${tags.size} tags, ${variants.size} variants, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${recipeRecords.size} provenance records.`);

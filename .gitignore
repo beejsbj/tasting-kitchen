@@ -35,10 +35,17 @@ yarn-error.log*
 .vercel
 
 /dist/
+public/data/registry.json
+public/dishes/
 /.wrangler/
 /outputs/
 /work/
 tsconfig.tsbuildinfo
+
+# Generated model-tasting gallery inputs. Canonical immutable dishes live in /dishes.
+/public/data/registry.json
+/public/dishes/
+/public/.taste-dishes-*
 
 # Local audit trail for the one-time historical analysis.
 # Findings committed to the project must be paraphrased and sanitized.

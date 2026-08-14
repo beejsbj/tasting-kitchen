@@ -1,0 +1,15 @@
+{
+  "product": "Northstar equipment monitor",
+  "contexts": [
+    {"id": "overview", "need": "Show four device summaries with online, warming, and attention states."},
+    {"id": "setup", "need": "Pair one device, explain progress, and offer a primary and quiet action."},
+    {"id": "inspection", "need": "Show a dense labeled reading beside the feature-local radial signal inspector."}
+  ],
+  "repeatedNeed": "The same compact status treatment appears in overview, setup, and inspection.",
+  "systemNotes": [
+    "Brass is reserved for action or live attention, never general decoration.",
+    "Semantic state must use text or shape as well as color.",
+    "One-off composition is allowed to remain ordinary markup.",
+    "The radial inspector owns pointer behavior, geometry, and live signal semantics."
+  ]
+}

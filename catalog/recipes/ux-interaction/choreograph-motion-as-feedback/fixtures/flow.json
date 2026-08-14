@@ -1,0 +1,21 @@
+{
+  "product": "Parcel window booking",
+  "task": "Choose a pickup window, preview its consequences, and confirm the booking.",
+  "options": [
+    {"id": "morning", "label": "Morning", "window": "08:00–11:00", "fee": "$4", "note": "Doorstep handoff"},
+    {"id": "afternoon", "label": "Afternoon", "window": "13:00–16:00", "fee": "$0", "note": "Lobby handoff"},
+    {"id": "evening", "label": "Evening", "window": "18:00–20:00", "fee": "$7", "note": "Doorstep handoff"}
+  ],
+  "scriptedOutcome": "The first confirmation attempt fails with a temporary route conflict. A retry succeeds.",
+  "consequentialChanges": [
+    "option selection updates time, fee, and handoff preview",
+    "confirmation enters a pending state and locks duplicate submission",
+    "failure exposes recovery while retaining the selected option",
+    "retry confirms and leaves a persistent receipt in the event trace"
+  ],
+  "copy": {
+    "pending": "Checking the route…",
+    "failure": "That route changed while you were choosing. Your window is still selected.",
+    "success": "Pickup window confirmed."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_responsive-product-launch_codex-sol-high_20260814200923790_c1b11b6e",
+  "recipe": {
+    "id": "responsive-product-launch",
+    "version": "1.0.0",
+    "hash": "sha256:ad008c538b6de99f1e8d24de4628929fb18a98fd58ae11e04862a46e67594a3b"
+  },
+  "executedAt": "2026-08-14T20:09:23.790Z",
+  "finalizedAt": "2026-08-14T20:28:58.574Z",
+  "identity": {
+    "variantId": "codex-sol-high",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-sol",
+    "observedModel": "gpt-5.6-sol",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.145.0",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "configHash": "sha256:9907d5ced07fcc82917dd925cf7de69a26a3eeb4e36eae3aacf41f3efacf945a",
+    "catalogHash": "sha256:73e4505b9f2b3c0c4193a6c75611570dca034397c2c17a3bcf2607a27b8a0590"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/index.html",
+        "sha256": "e6dee6607fcbc63c3ec5b559a9665eaaaed2ff9868f86edca7b60c04a1e7c251",
+        "bytes": 28830
+      }
+    ],
+    "treeHash": "sha256:27ffba107d8912965b2dfd50889faeda9944e87220a149f7086d31ae74779365"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:ca873a27c67749997a7948bca7fa65b5d91e612a0de3124b6515d6aabbd2d0fc"
+}

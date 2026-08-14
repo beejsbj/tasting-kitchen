@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Latchlight — a small repairable clip-on task light that moves with the work.">
+  <title>Latchlight — a small light that moves with the work</title>
+  <style>
+    :root {
+      --paper: #f1eee6;
+      --paper-deep: #e4e0d5;
+      --ink: #181817;
+      --muted: #67665f;
+      --blue: #2456f5;
+      --blue-dark: #1537a5;
+      --yellow: #f5d34b;
+      --lime: #d7ed59;
+      --line: rgba(24, 24, 23, .22);
+      --display: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Narrow", sans-serif;
+      --sans: Arial, Helvetica, sans-serif;
+      --max: 1240px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible {
+      outline: 4px solid var(--blue);
+      outline-offset: 5px;
+    }
+    .skip-link {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      padding: 10px 14px;
+      background: var(--lime);
+      color: var(--ink);
+      font-weight: 700;
+      transform: translateY(-160%);
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--line);
+    }
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .mark {
+      width: 18px;
+      height: 18px;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      position: relative;
+    }
+    .mark::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 3px;
+      right: -7px;
+      top: 5px;
+      background: var(--ink);
+      transform: rotate(-35deg);
+    }
+    .header-meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(460px, 1.05fr);
+      max-width: var(--max);
+      min-height: 650px;
+      margin: 0 auto;
+      padding: 58px 28px 70px;
+      gap: 30px;
+      align-items: center;
+    }
+    .eyebrow, .section-kicker {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before, .section-kicker::before {
+      content: "";
+      width: 27px;
+      height: 3px;
+      background: currentColor;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 650px;
+      margin: 20px 0 27px;
+      font-family: var(--display);
+      font-size: clamp(4.25rem, 8.7vw, 8.6rem);
+      line-height: .83;
+      letter-spacing: -.045em;
+      text-transform: uppercase;
+    }
+    .hero-copy {
+      max-width: 420px;
+      margin-bottom: 31px;
+      color: #373732;
+      font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+      line-height: 1.34;
+    }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 50px;
+      padding: 0 18px;
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .025em;
+      transition: background .18s ease, color .18s ease, transform .18s ease;
+    }
+    .button:hover { background: var(--blue); border-color: var(--blue); transform: translateY(-2px); }
+    .text-link {
+      font-size: 13px;
+      font-weight: 800;
+      text-underline-offset: 4px;
+    }
+    .hero-note {
+      max-width: 390px;
+      margin: 45px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .stage {
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+      background: var(--blue);
+      isolation: isolate;
+    }
+    .stage::before {
+      content: "LATCH / 01";
+      position: absolute;
+      top: 20px;
+      left: 21px;
+      color: rgba(255,255,255,.72);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .18em;
+    }
+    .stage::after {
+      content: "INDOOR USE";
+      position: absolute;
+      right: 19px;
+      bottom: 18px;
+      color: rgba(255,255,255,.72);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(135deg, transparent 4%, black 55%);
+      z-index: -1;
+    }
+    .lamp {
+      position: absolute;
+      width: 65%;
+      height: 69%;
+      left: 22%;
+      top: 17%;
+      transform: rotate(-12deg);
+    }
+    .lamp-arm {
+      position: absolute;
+      width: 21%;
+      height: 72%;
+      left: 40%;
+      top: 12%;
+      border: 17px solid var(--ink);
+      border-top: 0;
+      border-left: 0;
+      border-radius: 0 0 95px 0;
+      transform: rotate(10deg);
+    }
+    .lamp-neck {
+      position: absolute;
+      width: 21%;
+      height: 15%;
+      left: 35%;
+      top: 11%;
+      background: var(--ink);
+      border-radius: 30px;
+      transform: rotate(-32deg);
+    }
+    .lamp-head {
+      position: absolute;
+      width: 55%;
+      height: 27%;
+      left: 3%;
+      top: 0;
+      border-radius: 70px 30px 30px 70px;
+      background: var(--ink);
+      transform: rotate(-22deg);
+      box-shadow: 17px 13px 0 var(--yellow);
+    }
+    .lamp-head::after {
+      content: "";
+      position: absolute;
+      width: 56%;
+      height: 47%;
+      right: 7%;
+      top: 26%;
+      border-radius: 50%;
+      background: var(--paper);
+    }
+    .lamp-joint {
+      position: absolute;
+      width: 43px;
+      height: 43px;
+      left: 36%;
+      top: 27%;
+      border: 8px solid var(--ink);
+      border-radius: 50%;
+      background: var(--yellow);
+    }
+    .lamp-foot {
+      position: absolute;
+      width: 40%;
+      height: 12%;
+      left: 25%;
+      bottom: 7%;
+      border: 16px solid var(--ink);
+      border-radius: 25px 25px 12px 12px;
+      transform: skew(-16deg);
+    }
+    .lamp-foot::after {
+      content: "";
+      position: absolute;
+      width: 22%;
+      height: 42%;
+      right: 9%;
+      top: 21%;
+      background: var(--yellow);
+    }
+    .stage-label {
+      position: absolute;
+      left: 25px;
+      bottom: 21px;
+      padding: 9px 11px;
+      background: var(--lime);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      transform: rotate(-3deg);
+    }
+
+    .ticker {
+      overflow: hidden;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      background: var(--yellow);
+    }
+    .ticker-inner {
+      display: flex;
+      justify-content: space-around;
+      gap: 35px;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 28px;
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .section { max-width: var(--max); margin: 0 auto; padding: 105px 28px; }
+    .section-heading {
+      display: grid;
+      grid-template-columns: minmax(240px, .8fr) 1.2fr;
+      gap: 40px;
+      margin-bottom: 47px;
+    }
+    h2 {
+      max-width: 550px;
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(3.6rem, 7vw, 7rem);
+      line-height: .86;
+      letter-spacing: -.045em;
+      text-transform: uppercase;
+    }
+    .section-intro {
+      align-self: end;
+      max-width: 500px;
+      margin: 0;
+      color: #45453f;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+    .mount-options {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .mount-option {
+      display: flex;
+      min-height: 190px;
+      border: 1px solid var(--ink);
+      background: var(--paper-deep);
+    }
+    .mount-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 105px;
+      border-right: 1px solid var(--ink);
+      background: var(--lime);
+    }
+    .clip-shape, .magnet-shape { position: relative; width: 48px; height: 80px; }
+    .clip-shape::before {
+      content: "";
+      position: absolute;
+      inset: 5px 8px 5px 5px;
+      border: 9px solid var(--ink);
+      border-right: 0;
+      border-radius: 26px 0 0 26px;
+    }
+    .clip-shape::after {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 11px;
+      left: 14px;
+      bottom: 9px;
+      background: var(--ink);
+    }
+    .magnet-shape::before {
+      content: "N";
+      position: absolute;
+      width: 48px;
+      height: 58px;
+      top: 4px;
+      border: 9px solid var(--ink);
+      border-radius: 9px;
+      color: var(--yellow);
+      font-family: var(--display);
+      font-size: 25px;
+      line-height: 42px;
+      text-align: center;
+    }
+    .mount-copy {
+      display: flex;
+      flex: 1 1 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 25px 22px;
+    }
+    .mount-title { flex: 1 1 32%; }
+    .mount-index {
+      margin: 0 0 15px;
+      color: var(--blue-dark);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .mount-title h3 { margin: 0; }
+    .mount-data { flex: 1 1 68%; }
+    .mount-connector {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .mount-connector::before, .mount-connector::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+    }
+    h3 {
+      margin-bottom: 39px;
+      font-family: var(--display);
+      font-size: 35px;
+      line-height: .95;
+      letter-spacing: -.02em;
+      text-transform: uppercase;
+    }
+    .mount-label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .mount-fits { margin: 0 0 17px; font-size: 17px; font-weight: 700; }
+    .limit {
+      display: flex;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .limit strong { color: var(--blue-dark); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+
+    .dark-band { background: var(--ink); color: var(--paper); }
+    .dark-band .section { padding-top: 92px; padding-bottom: 92px; }
+    .dark-band .section-kicker { color: var(--yellow); }
+    .dark-band .section-intro { color: #d0cec4; }
+    .runtime-layout {
+      display: grid;
+      grid-template-columns: .8fr 1.2fr;
+      gap: 70px;
+      align-items: start;
+    }
+    .runtime-number {
+      display: block;
+      margin: 28px 0 4px;
+      color: var(--yellow);
+      font-family: var(--display);
+      font-size: clamp(7rem, 15vw, 13rem);
+      line-height: .72;
+      letter-spacing: -.08em;
+    }
+    .runtime-caption { color: #d0cec4; font-size: 13px; }
+    .fact-list { margin: 0; border-top: 1px solid rgba(241,238,230,.35); }
+    .fact {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 25px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(241,238,230,.35);
+      font-size: 18px;
+    }
+    .fact span:first-child { max-width: 430px; }
+    .fact-tag {
+      flex: none;
+      color: var(--yellow);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .repair-section { background: var(--lime); }
+    .repair-layout {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 70px;
+      align-items: center;
+    }
+    .repair-section h2 { max-width: 700px; }
+    .repair-copy { max-width: 450px; font-size: 20px; line-height: 1.35; }
+    .repair-note {
+      margin: 30px 0 0;
+      padding-top: 17px;
+      border-top: 1px solid var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .parts-plate {
+      min-height: 275px;
+      padding: 25px;
+      border: 1px solid var(--ink);
+      background: var(--paper);
+      transform: rotate(2deg);
+    }
+    .plate-top { display: flex; justify-content: space-between; padding-bottom: 17px; border-bottom: 1px solid var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .parts-drawing { display: flex; align-items: center; justify-content: space-evenly; min-height: 175px; }
+    .screw, .battery { position: relative; display: block; }
+    .screw { width: 15px; height: 91px; border-radius: 10px; background: var(--ink); transform: rotate(20deg); }
+    .screw::before { content: "+"; position: absolute; top: 4px; left: 2px; color: var(--yellow); font-size: 11px; font-weight: 800; transform: rotate(-20deg); }
+    .battery { width: 111px; height: 53px; border: 7px solid var(--ink); border-radius: 6px; }
+    .battery::before { content: ""; position: absolute; right: -16px; top: 13px; width: 9px; height: 20px; background: var(--ink); }
+    .battery::after { content: ""; position: absolute; left: 12px; top: 12px; width: 57px; height: 15px; background: var(--blue); }
+    .plate-bottom { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+
+    .closing { max-width: var(--max); margin: 0 auto; padding: 105px 28px 120px; text-align: center; }
+    .closing h2 { max-width: 800px; margin: 16px auto 31px; }
+    .closing .button { background: var(--blue); border-color: var(--blue); }
+    .closing .button:hover { background: var(--ink); border-color: var(--ink); }
+    .site-footer { border-top: 1px solid var(--line); }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; max-width: var(--max); margin: 0 auto; padding: 22px 28px 30px; color: var(--muted); font-size: 11px; }
+    .footer-inner p { margin: 0; }
+
+    @media (max-width: 800px) {
+      .site-header { padding: 20px 19px; }
+      .header-meta { display: none; }
+      .hero { display: flex; flex-direction: column; min-height: auto; width: 100%; padding: 48px 19px 56px; gap: 52px; align-items: stretch; overflow: hidden; }
+      .hero > div, .hero-copy, .stage { width: calc(100vw - 38px); min-width: 0; max-width: calc(100vw - 38px); }
+      .mobile-break { display: inline; }
+      h1 { font-size: clamp(4.3rem, 20vw, 7rem); }
+      .hero-copy { font-size: 17px; }
+      .hero-note { margin-top: 35px; }
+      .stage { min-height: 420px; }
+      .ticker-inner { justify-content: flex-start; padding-right: 19px; padding-left: 19px; overflow: hidden; }
+      .section, .closing { padding-right: 19px; padding-left: 19px; }
+      .section { padding-top: 75px; padding-bottom: 75px; }
+      .section-heading, .runtime-layout, .repair-layout { grid-template-columns: 1fr; gap: 28px; }
+      .section-heading { margin-bottom: 32px; }
+      .section-intro { font-size: 16px; }
+      .mount-option { display: block; }
+      .mount-icon { min-height: 84px; border-right: 0; border-bottom: 1px solid var(--ink); }
+      .mount-copy { display: block; padding: 20px 16px; }
+      .mount-index { margin-bottom: 10px; }
+      .mount-data { margin-top: 25px; }
+      .dark-band .section { padding-top: 75px; padding-bottom: 75px; }
+      .runtime-layout { gap: 50px; }
+      .runtime-number { font-size: 9rem; }
+      .repair-layout { gap: 46px; }
+      .closing { padding-top: 78px; padding-bottom: 85px; }
+      .footer-inner { padding-right: 19px; padding-left: 19px; }
+    }
+    @media (max-width: 430px) {
+      .actions { align-items: flex-start; flex-direction: column; gap: 17px; }
+      .hero > div, .hero-copy, .stage { width: calc(100% - 19px); max-width: calc(100% - 19px); }
+      .hero-copy { overflow-wrap: anywhere; }
+      .stage { min-height: 360px; }
+      .lamp { left: 14%; width: 82%; top: 20%; }
+      h3 { margin-bottom: 31px; font-size: 31px; }
+      .fact { display: block; padding: 17px 0; font-size: 16px; }
+      .fact-tag { display: block; margin-top: 7px; }
+      .footer-inner { display: block; }
+      .footer-inner p + p { margin-top: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="index.html" aria-label="Latchlight home"><span class="mark" aria-hidden="true"></span> Latchlight</a>
+    <span class="header-meta">Repairable clip-on task light</span>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">A small light for close work</p>
+        <h1 id="hero-title">Moves with<br>the work.</h1>
+        <p class="hero-copy">Latchlight clips to a shelf<span class="mobile-break"><br></span> or locks onto a steel surface,<span class="mobile-break"><br></span> then turns toward the page, bench,<span class="mobile-break"><br></span> or keyboard in front of you.</p>
+        <div class="actions">
+          <a class="button" href="#compatibility">Choose a mount — $48</a>
+          <a class="text-link" href="#repair">See repair parts <span aria-hidden="true">↘</span></a>
+        </div>
+        <p class="hero-note">Designed for indoor use.</p>
+      </div>
+      <div class="stage" aria-label="Abstract illustration of the Latchlight task light">
+        <div class="grid-lines" aria-hidden="true"></div>
+        <div class="lamp" aria-hidden="true">
+          <div class="lamp-arm"></div>
+          <div class="lamp-neck"></div>
+          <div class="lamp-head"></div>
+          <div class="lamp-joint"></div>
+          <div class="lamp-foot"></div>
+        </div>
+        <span class="stage-label">Turn toward the page</span>
+      </div>
+    </section>
+
+    <div class="ticker" aria-label="Product highlights">
+      <div class="ticker-inner">
+        <span>USB-C charging</span><span>Warm + neutral</span><span>Standard screws</span><span>Indoor use</span>
+      </div>
+    </div>
+
+    <section class="section" id="compatibility" data-section="compatibility" aria-labelledby="mount-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">01 / Compatibility</p>
+          <h2 id="mount-heading">Pick your<br>hold.</h2>
+        </div>
+        <p class="section-intro">Latchlight comes with two ways to stay put. Match the mount to the surface in front of you.</p>
+      </div>
+      <div class="mount-options" aria-label="Mounting options">
+        <article class="mount-option">
+          <div class="mount-icon" aria-hidden="true"><span class="clip-shape"></span></div>
+          <div class="mount-copy">
+            <div class="mount-title">
+              <p class="mount-index">01 / Mount</p>
+              <h3>Soft clip</h3>
+            </div>
+            <div class="mount-data">
+              <p class="mount-label">Fits</p>
+              <p class="mount-fits">Edges 8–38 mm thick</p>
+              <p class="limit"><strong>Limit</strong><span>Not for rounded glass edges</span></p>
+            </div>
+          </div>
+        </article>
+        <div class="mount-connector" aria-hidden="true"><span>or</span></div>
+        <article class="mount-option">
+          <div class="mount-icon" aria-hidden="true"><span class="magnet-shape"></span></div>
+          <div class="mount-copy">
+            <div class="mount-title">
+              <p class="mount-index">02 / Mount</p>
+              <h3>Magnetic foot</h3>
+            </div>
+            <div class="mount-data">
+              <p class="mount-label">Fits</p>
+              <p class="mount-fits">Flat ferrous surfaces</p>
+              <p class="limit"><strong>Limit</strong><span>Does not hold on aluminium</span></p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <div class="dark-band">
+      <section class="section" aria-labelledby="runtime-heading">
+        <div class="runtime-layout">
+          <div>
+            <p class="section-kicker">02 / Runtime</p>
+            <h2 id="runtime-heading">Know the<br>run.</h2>
+            <span class="runtime-number">14h</span>
+            <p class="runtime-caption">at reading brightness</p>
+          </div>
+          <div class="fact-list" aria-label="Latchlight facts">
+            <p class="fact"><span>14 hours at reading brightness; 4 hours at full output</span><span class="fact-tag">Runtime caveat</span></p>
+            <p class="fact"><span>USB-C charging; cable included</span><span class="fact-tag">In the box</span></p>
+            <p class="fact"><span>Warm and neutral light modes</span><span class="fact-tag">Two modes</span></p>
+            <p class="fact"><span>Designed for indoor use</span><span class="fact-tag">Use case</span></p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="repair-section" id="repair" data-section="repair" aria-labelledby="repair-heading">
+      <div class="section repair-layout">
+        <div>
+          <p class="section-kicker">03 / Repair</p>
+          <h2 id="repair-heading">Keep the<br>inside in play.</h2>
+          <p class="repair-copy">Replaceable battery and standard screws.</p>
+          <p class="repair-note">Replaceable battery and standard screws.</p>
+          <a class="text-link" href="#repair">See repair parts <span aria-hidden="true">↘</span></a>
+        </div>
+        <div class="parts-plate" aria-label="Repair parts illustration">
+          <div class="plate-top"><span>Latchlight / service plate</span><span>03</span></div>
+          <div class="parts-drawing" aria-hidden="true"><span class="screw"></span><span class="battery"></span><span class="screw"></span></div>
+          <div class="plate-bottom"><span>Replaceable battery</span><span>Standard screws</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-heading">
+      <p class="section-kicker">Latchlight / Ready when you are</p>
+      <h2 id="closing-heading">Put the light<br>where work happens.</h2>
+      <a class="button" href="#compatibility">Choose a mount — $48</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Latchlight / Repairable clip-on task light</p>
+      <p>USB-C charging · Designed for indoor use</p>
+    </div>
+  </footer>
+</body>
+</html>

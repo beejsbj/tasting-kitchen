@@ -1,0 +1,21 @@
+{
+  "tempo": 92,
+  "beats": 16,
+  "pitchTracks": [
+    {"solfege": "do", "midi": 60, "role": "root"},
+    {"solfege": "re", "midi": 62, "role": "step"},
+    {"solfege": "mi", "midi": 64, "role": "bright-third"},
+    {"solfege": "fa", "midi": 65, "role": "lean"},
+    {"solfege": "sol", "midi": 67, "role": "anchor"},
+    {"solfege": "la", "midi": 69, "role": "lift"},
+    {"solfege": "ti", "midi": 71, "role": "tension"}
+  ],
+  "initialPhrase": [
+    {"beat": 0, "pitch": "do", "duration": 2},
+    {"beat": 3, "pitch": "mi", "duration": 1},
+    {"beat": 6, "pitch": "sol", "duration": 2},
+    {"beat": 10, "pitch": "la", "duration": 1},
+    {"beat": 13, "pitch": "sol", "duration": 2}
+  ],
+  "constraints": ["one phrase model backs both modes", "no randomization", "duration is one to four beat divisions", "pitch color must have a non-color equivalent"]
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "extend-design-system-without-flattening-it",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Extend a design system without flattening it",
+  "summary": "Continue a supplied component system by promoting one repeated need, pruning one premature abstraction, and protecting one behavior-heavy exception.",
+  "domain": "ui-visual",
+  "origin": "hybrid",
+  "originNote": "Combines a standard design-system continuation task with history-derived corrections about extraction boundaries and real-component specimens.",
+  "tags": ["design-system", "visual-language", "implementation", "correction-recovery", "surgical-change"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the synthetic component system and product brief as editable source. Build a self-contained styleguide that imports the source modules it demonstrates; do not copy their markup into lookalike specimens.",
+    "fixtures": [
+      {"id": "system-brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "mediaType": "application/json"},
+      {"id": "source-components", "path": "fixtures/components.js", "mountAs": "src/components.js", "public": true, "mediaType": "text/javascript"},
+      {"id": "source-feature", "path": "fixtures/signal-panel.js", "mountAs": "src/signal-panel.js", "public": true, "mediaType": "text/javascript"},
+      {"id": "source-tokens", "path": "fixtures/tokens.css", "mountAs": "src/tokens.css", "public": true, "mediaType": "text/css"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "continue-system",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json and the supplied files in src/. Extend this small component system for the three product contexts in the brief, then build index.html, styleguide.js, and styles.css as a responsive styleguide. The styleguide must import and render the real source components rather than recreating specimen-only copies. Decide what repeated need deserves one new shared primitive or variant, what existing abstraction is premature and should be removed, and what behavior-heavy or unique element should remain local to its feature. Keep the established token roles and visual hierarchy unless the evidence in the supplied contexts warrants a surgical change. Include a short visible decision ledger using data-system-decision values promote, prune, and keep-local."
+    },
+    {
+      "id": "enforce-system-boundaries",
+      "role": "correction",
+      "content": "Revise the result around these boundaries: promote the repeated status treatment into one shared StatusBadge primitive or warranted existing-component variant; prune the single-use LabeledValue abstraction and return that composition to local markup; keep SignalArc in src/signal-panel.js as a behavior-heavy feature component rather than generalizing its radial behavior into the visual system. Preserve working imports and update the real source components and styleguide together."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "src/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The importing styleguide exists.", "target": "index.html"},
+      {"id": "system-boundaries", "type": "command", "required": true, "description": "The styleguide imports real components and the promote, prune, and keep-local decisions are reflected in source.", "argv": ["node", "-e", "const f=require('fs');const i=f.readFileSync('index.html','utf8'),g=f.readFileSync('styleguide.js','utf8'),c=f.readFileSync('src/components.js','utf8'),u=f.readFileSync('src/signal-panel.js','utf8'),s=i+g+c+u;if(!/from ['\"]\\.\\/src\\/components\\.js['\"]/.test(g)||!/StatusBadge/.test(c)||/LabeledValue/.test(c)||!/SignalArc/.test(u)||!['promote','prune','keep-local'].every(x=>s.includes('data-system-decision=\"'+x+'\"')||s.includes(\"data-system-decision='\"+x+\"'\")))process.exit(1)"]},
+      {"id": "system-review", "type": "manual", "required": false, "description": "Review whether the extension feels native to the supplied system without making its shared layer absorb the unique radial behavior."}
+    ]
+  }
+}

@@ -4,7 +4,7 @@
   "title": "Model Tasting Kitchen dish",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "dishHash"],
+  "required": ["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "dishHash"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "type": "string", "pattern": "^dish_[a-zA-Z0-9_-]+$" },
@@ -19,6 +19,7 @@
       }
     },
     "executedAt": { "type": "string", "format": "date-time" },
+    "finalizedAt": { "type": "string", "format": "date-time" },
     "identity": {
       "type": "object",
       "additionalProperties": false,
@@ -32,6 +33,8 @@
         "harnessVersion": { "type": "string", "minLength": 1 },
         "reasoningEffort": { "type": "string", "minLength": 1 },
         "serviceTier": { "type": "string", "minLength": 1 },
+        "requestedServiceTier": { "type": "string", "minLength": 1 },
+        "observedServiceTier": { "type": "string", "minLength": 1 },
         "configHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
         "catalogHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }

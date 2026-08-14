@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "responsive-product-launch",
+  "turns": [
+    {
+      "id": "build-page",
+      "role": "prompt",
+      "prompt": "Mount the supplied product packet in the fresh workspace. Produce a self-contained static website with no network dependencies.\n\nRead fixtures/product.json and build the complete responsive launch page as index.html with any local CSS or JavaScript it needs. The page should make the object desirable without burying the mounting limits, repairability, or runtime caveat. Use only the supplied facts and copy. Give the page a chosen visual point of view; do not default to a generic SaaS landing page. It must work at 390px and 1440px, use semantic HTML, expose a visible keyboard focus state, and include data-section=\"compatibility\" on the compatibility region and data-section=\"repair\" on the repair region. Do not explain the design instead of building it.",
+      "response": "Built the complete self-contained launch page: [index.html](artifact/index.html)\n\nIt includes responsive layouts, keyboard focus states, local-only styling, and the required compatibility and repair regions.",
+      "usage": {
+        "input_tokens": 273859,
+        "cached_input_tokens": 239360,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 10763,
+        "reasoning_output_tokens": 4196
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "comparison-without-table",
+      "role": "correction",
+      "prompt": "Revise the artifact with one new constraint: the two mounting modes must remain easy to compare, but do not solve that comparison with a feature-table grid. Preserve the rest of the chosen direction and overwrite the same artifact.",
+      "response": "Revised [index.html](artifact/index.html) in place.\n\nThe mounting comparison is now a stacked editorial sequence with paired fit/limit callouts—clear to compare, without a feature-table grid.",
+      "usage": {
+        "input_tokens": 675208,
+        "cached_input_tokens": 621056,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15974,
+        "reasoning_output_tokens": 5678
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    }
+  ]
+}

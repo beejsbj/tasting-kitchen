@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111311" />
+    <meta
+      name="description"
+      content="Latchlight — a repairable clip-on task light that moves with the work."
+    />
+    <title>Latchlight — moves with the work</title>
+    <style>
+      :root {
+        --ink: #111311;
+        --ink-soft: #1b211d;
+        --paper: #eef0e8;
+        --paper-warm: #f5f3e9;
+        --muted: #a9b0a7;
+        --muted-dark: #5b655c;
+        --line: #d3d8cd;
+        --line-dark: #394139;
+        --lime: #d8ff63;
+        --lamp: #ffe8a8;
+        --lamp-deep: #f4bc53;
+        --red: #ff5748;
+        --red-deep: #b92f28;
+        --blue: #9fc3c8;
+        --radius-sm: 0.25rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1.25rem;
+        --space-1: 0.5rem;
+        --space-2: 0.75rem;
+        --space-3: 1rem;
+        --space-4: 1.5rem;
+        --space-5: 2rem;
+        --space-6: 3rem;
+        --space-7: 4.5rem;
+        --space-8: 7rem;
+        --content-max: 82rem;
+        --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+        --dur-fast: 160ms;
+        --dur-med: 280ms;
+        --shadow-hard: 0.375rem 0.375rem 0 var(--ink);
+        --shadow-red: 0.375rem 0.375rem 0 var(--red-deep);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-width: 19.5rem;
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        overflow-x: clip;
+        font-family: "Arial Narrow", "Avenir Next Condensed", "Helvetica Neue", Arial, sans-serif;
+        font-size: 1rem;
+        line-height: 1.45;
+        text-rendering: optimizeLegibility;
+      }
+
+      img,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      :focus-visible {
+        outline: 0.1875rem solid var(--lime);
+        outline-offset: 0.25rem;
+      }
+
+      .skip-link {
+        position: fixed;
+        z-index: 20;
+        top: var(--space-2);
+        left: var(--space-2);
+        transform: translateY(-150%);
+        padding: var(--space-2) var(--space-3);
+        background: var(--lime);
+        color: var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .site-header {
+        position: sticky;
+        z-index: 10;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 4.5rem;
+        padding: 0 var(--space-4);
+        border-bottom: 0.0625rem solid var(--line-dark);
+        background: color-mix(in srgb, var(--ink) 94%, transparent);
+        color: var(--paper);
+        backdrop-filter: blur(0.75rem);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        color: inherit;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 1.65rem;
+        height: 1.65rem;
+        place-items: center;
+        border: 0.125rem solid var(--lime);
+        border-radius: 50%;
+        color: var(--lime);
+        font-size: 0.8rem;
+        line-height: 1;
+      }
+
+      .site-nav {
+        display: flex;
+        align-items: center;
+        gap: clamp(var(--space-3), 3vw, var(--space-5));
+        flex: 0 0 auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .site-nav a {
+        color: var(--muted);
+        text-decoration: none;
+        transition: color var(--dur-fast) var(--ease-snap);
+      }
+
+      .site-nav a:hover {
+        color: var(--lime);
+      }
+
+      .header-action {
+        padding: var(--space-2) var(--space-3);
+        border: 0.0625rem solid var(--lime);
+        color: var(--lime) !important;
+        white-space: nowrap;
+      }
+
+      .header-action:hover {
+        background: var(--lime);
+        color: var(--ink) !important;
+      }
+
+      .eyebrow,
+      .section-index,
+      .micro-label {
+        margin: 0;
+        color: var(--muted-dark);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.67rem;
+        font-weight: 700;
+        letter-spacing: 0.11em;
+        line-height: 1.3;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before,
+      .section-index::before {
+        display: inline-block;
+        width: 0.45rem;
+        height: 0.45rem;
+        margin-right: var(--space-1);
+        background: currentColor;
+        content: "";
+        vertical-align: 0.05em;
+      }
+
+      .dark .eyebrow,
+      .dark .section-index,
+      .hero .eyebrow {
+        color: var(--lime);
+      }
+
+      .hero {
+        overflow: hidden;
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .hero-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(28rem, 1.1fr);
+        max-width: var(--content-max);
+        min-height: min(52rem, calc(100vh - 4.5rem));
+        margin: 0 auto;
+      }
+
+      .hero-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        padding: var(--space-8) clamp(var(--space-4), 5vw, var(--space-7)) var(--space-8) var(--space-4);
+      }
+
+      .hero h1 {
+        max-width: 11ch;
+        margin: var(--space-4) 0 var(--space-4);
+        overflow-wrap: break-word;
+        font-size: clamp(3.8rem, 7.7vw, 8rem);
+        font-weight: 800;
+        letter-spacing: -0.075em;
+        line-height: 0.86;
+        text-wrap: balance;
+      }
+
+      .hero h1 span {
+        display: block;
+      }
+
+      .hero h1 em {
+        color: var(--lamp);
+        font-style: normal;
+      }
+
+      .hero-lede {
+        max-width: 29rem;
+        min-width: 0;
+        width: 100%;
+        margin: 0;
+        color: #d8ded4;
+        font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+        line-height: 1.5;
+      }
+
+      .hero-facts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 24rem;
+        margin: var(--space-6) 0 0;
+        border-top: 0.0625rem solid var(--line-dark);
+        border-bottom: 0.0625rem solid var(--line-dark);
+      }
+
+      .hero-fact {
+        padding: var(--space-3) var(--space-3) var(--space-3) 0;
+      }
+
+      .hero-fact + .hero-fact {
+        padding-left: var(--space-3);
+        border-left: 0.0625rem solid var(--line-dark);
+      }
+
+      .hero-fact strong {
+        display: block;
+        color: var(--lamp);
+        font-size: 1.8rem;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+
+      .hero-fact span {
+        display: block;
+        margin-top: var(--space-1);
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.64rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-6);
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3.25rem;
+        padding: 0.85rem 1.15rem;
+        border: 0.0625rem solid transparent;
+        border-radius: var(--radius-sm);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: transform var(--dur-fast) var(--ease-snap), background-color var(--dur-fast) var(--ease-snap), color var(--dur-fast) var(--ease-snap), border-color var(--dur-fast) var(--ease-snap);
+      }
+
+      .button:hover {
+        transform: translate(-0.15rem, -0.15rem);
+      }
+
+      .button-primary {
+        background: var(--lime);
+        box-shadow: var(--shadow-hard);
+        color: var(--ink);
+      }
+
+      .button-primary:hover {
+        background: var(--lamp);
+      }
+
+      .button-secondary {
+        border-color: var(--line-dark);
+        color: var(--paper);
+      }
+
+      .button-secondary:hover {
+        border-color: var(--lime);
+        color: var(--lime);
+      }
+
+      .hero-stage {
+        position: relative;
+        min-height: 38rem;
+        border-left: 0.0625rem solid var(--line-dark);
+        background-color: var(--ink-soft);
+        background-image: linear-gradient(var(--line-dark) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, var(--line-dark) 0.0625rem, transparent 0.0625rem);
+        background-size: 4rem 4rem;
+        isolation: isolate;
+      }
+
+      .hero-stage::before {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 68% 43%, color-mix(in srgb, var(--lamp) 13%, transparent), transparent 35%);
+        content: "";
+        pointer-events: none;
+      }
+
+      .stage-meta {
+        position: absolute;
+        z-index: 2;
+        top: var(--space-4);
+        right: var(--space-4);
+        left: var(--space-4);
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .stage-meta span:last-child {
+        color: var(--lamp);
+      }
+
+      .object-drawing {
+        position: absolute;
+        inset: 3rem 1rem 2.5rem;
+        width: calc(100% - 2rem);
+        height: calc(100% - 5.5rem);
+      }
+
+      .stage-callout {
+        position: absolute;
+        right: var(--space-4);
+        bottom: var(--space-4);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        border: 0.0625rem solid var(--line-dark);
+        background: color-mix(in srgb, var(--ink) 78%, transparent);
+        color: var(--paper);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.64rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .stage-callout i {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--lamp);
+        box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--lamp) 15%, transparent);
+      }
+
+      .signal-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-bottom: 0.0625rem solid var(--line-dark);
+        background: var(--lime);
+      }
+
+      .signal {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        min-height: 5rem;
+        padding: var(--space-4);
+      }
+
+      .signal + .signal {
+        border-left: 0.0625rem solid var(--ink);
+      }
+
+      .signal .signal-number {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.66rem;
+        font-weight: 800;
+      }
+
+      .signal strong {
+        font-size: clamp(1rem, 1.7vw, 1.2rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .section-shell {
+        max-width: var(--content-max);
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-4);
+      }
+
+      .section-heading {
+        display: grid;
+        grid-template-columns: minmax(12rem, 0.65fr) minmax(0, 1fr);
+        gap: var(--space-6);
+        align-items: end;
+        margin-bottom: var(--space-6);
+      }
+
+      .section-heading h2 {
+        max-width: 13ch;
+        margin: var(--space-2) 0 0;
+        font-size: clamp(2.8rem, 6vw, 6rem);
+        font-weight: 800;
+        letter-spacing: -0.08em;
+        line-height: 0.86;
+      }
+
+      .section-heading p {
+        max-width: 32rem;
+        margin: 0 0 0.15rem;
+        color: var(--muted-dark);
+        font-size: 1.1rem;
+      }
+
+      .compatibility-section {
+        background: var(--paper-warm);
+      }
+
+      .mount-rail {
+        display: flex;
+        gap: var(--space-4);
+        align-items: stretch;
+      }
+
+      .mount-card {
+        display: flex;
+        flex: 1 1 0;
+        min-width: 0;
+        flex-direction: column;
+        padding: var(--space-5);
+        border: 0.0625rem solid var(--ink);
+        border-radius: var(--radius-sm);
+        background: var(--ink);
+        color: var(--paper);
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+        transition: background-color var(--dur-fast) var(--ease-snap), border-color var(--dur-fast) var(--ease-snap), transform var(--dur-fast) var(--ease-snap);
+      }
+
+      .mount-card:hover {
+        border-color: var(--red);
+        transform: translateY(-0.25rem);
+      }
+
+      .mount-card[aria-pressed="true"] {
+        border-color: var(--red);
+        background: var(--red);
+        box-shadow: var(--shadow-red);
+        color: var(--ink);
+      }
+
+      .mount-card__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .mount-card .micro-label {
+        color: var(--lime);
+      }
+
+      .mount-card[aria-pressed="true"] .micro-label {
+        color: var(--ink);
+      }
+
+      .mount-card .mount-number {
+        display: grid;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0.0625rem solid currentColor;
+        border-radius: 50%;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.65rem;
+        font-weight: 800;
+      }
+
+      .mount-card .mount-arrow {
+        color: var(--lamp);
+        font-size: 1.4rem;
+        line-height: 1;
+        transition: transform var(--dur-fast) var(--ease-snap);
+      }
+
+      .mount-card:hover .mount-arrow,
+      .mount-card[aria-pressed="true"] .mount-arrow {
+        transform: translateX(0.25rem);
+      }
+
+      .mount-card h3 {
+        margin: var(--space-5) 0 var(--space-4);
+        color: var(--lamp);
+        font-size: clamp(2rem, 4vw, 3.7rem);
+        letter-spacing: -0.07em;
+        line-height: 0.9;
+      }
+
+      .mount-card[aria-pressed="true"] h3 {
+        color: var(--ink);
+      }
+
+      .mount-card__icon {
+        width: 4.5rem;
+        height: 4.5rem;
+        margin-bottom: var(--space-5);
+        color: var(--red);
+      }
+
+      .mount-card[aria-pressed="true"] .mount-card__icon {
+        color: var(--ink);
+      }
+
+      .mount-card__fit,
+      .mount-card__limit {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        padding-top: var(--space-3);
+        border-top: 0.0625rem solid var(--line-dark);
+      }
+
+      .mount-card__limit {
+        margin-top: var(--space-5);
+        border-top-color: var(--red);
+        color: var(--lamp);
+      }
+
+      .mount-card[aria-pressed="true"] .mount-card__fit,
+      .mount-card[aria-pressed="true"] .mount-card__limit {
+        border-top-color: var(--ink);
+        color: var(--ink);
+      }
+
+      .mount-card__label {
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .mount-card[aria-pressed="true"] .mount-card__label {
+        color: var(--ink-soft);
+      }
+
+      .mount-card__value {
+        color: var(--paper);
+        font-size: 1.15rem;
+        line-height: 1.2;
+      }
+
+      .mount-card[aria-pressed="true"] .mount-card__value {
+        color: var(--ink);
+      }
+
+      .mount-selection {
+        display: flex;
+        gap: var(--space-2);
+        align-items: center;
+        margin: var(--space-4) 0 0;
+        color: var(--muted-dark);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .mount-selection::before {
+        width: 0.55rem;
+        height: 0.55rem;
+        background: var(--red);
+        content: "";
+      }
+
+      .mount-selection strong {
+        color: var(--ink);
+      }
+
+      .runtime-section {
+        background: var(--blue);
+      }
+
+      .runtime-section .section-heading p {
+        color: var(--ink-soft);
+      }
+
+      .runtime-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border-top: 0.0625rem solid var(--ink);
+        border-bottom: 0.0625rem solid var(--ink);
+      }
+
+      .runtime-card {
+        position: relative;
+        min-height: 17rem;
+        padding: var(--space-5) var(--space-5) var(--space-4) 0;
+      }
+
+      .runtime-card + .runtime-card {
+        padding-left: var(--space-5);
+        border-left: 0.0625rem solid var(--ink);
+      }
+
+      .runtime-number {
+        display: block;
+        margin: var(--space-4) 0 var(--space-3);
+        font-size: clamp(5rem, 13vw, 11rem);
+        font-weight: 800;
+        letter-spacing: -0.12em;
+        line-height: 0.72;
+      }
+
+      .runtime-card strong {
+        display: block;
+        max-width: 13ch;
+        font-size: clamp(1.05rem, 2vw, 1.45rem);
+        letter-spacing: -0.04em;
+      }
+
+      .runtime-bar {
+        position: absolute;
+        right: 0;
+        bottom: var(--space-4);
+        left: 0;
+        height: 0.45rem;
+        background: color-mix(in srgb, var(--ink) 17%, transparent);
+      }
+
+      .runtime-bar::after {
+        display: block;
+        width: var(--bar-width);
+        height: 100%;
+        background: var(--ink);
+        content: "";
+      }
+
+      .runtime-caveats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+        margin-top: var(--space-5);
+      }
+
+      .caveat {
+        display: flex;
+        gap: var(--space-3);
+        align-items: flex-start;
+        padding-top: var(--space-3);
+        border-top: 0.0625rem solid var(--ink);
+      }
+
+      .caveat-mark {
+        display: grid;
+        width: 1.75rem;
+        height: 1.75rem;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0.0625rem solid var(--ink);
+        border-radius: 50%;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.6rem;
+        font-weight: 800;
+      }
+
+      .caveat p {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.72rem;
+        line-height: 1.45;
+        text-transform: uppercase;
+      }
+
+      .repair-section {
+        overflow: hidden;
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .repair-section .section-heading h2 {
+        color: var(--lime);
+      }
+
+      .repair-section .section-heading p {
+        color: var(--muted);
+      }
+
+      .repair-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(17rem, 1.1fr);
+        gap: var(--space-6);
+        align-items: center;
+      }
+
+      .repair-copy {
+        max-width: 31rem;
+      }
+
+      .repair-copy h3 {
+        margin: 0;
+        color: var(--lamp);
+        font-size: clamp(2.25rem, 5vw, 5rem);
+        letter-spacing: -0.08em;
+        line-height: 0.9;
+      }
+
+      .repair-copy h3 span {
+        display: block;
+      }
+
+      .repair-copy p {
+        margin: var(--space-4) 0 0;
+        color: #d8ded4;
+        font-size: 1.15rem;
+      }
+
+      .repair-copy .action-row {
+        margin-top: var(--space-5);
+      }
+
+      .repair-drawing {
+        min-height: 19rem;
+        border: 0.0625rem solid var(--line-dark);
+        background: var(--ink-soft);
+        background-image: linear-gradient(var(--line-dark) 0.0625rem, transparent 0.0625rem), linear-gradient(90deg, var(--line-dark) 0.0625rem, transparent 0.0625rem);
+        background-size: 2.5rem 2.5rem;
+      }
+
+      .repair-drawing svg {
+        width: 100%;
+        height: 100%;
+        min-height: 19rem;
+        padding: var(--space-4);
+      }
+
+      .facts-section {
+        background: var(--paper-warm);
+      }
+
+      .facts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-top: 0.0625rem solid var(--ink);
+        border-left: 0.0625rem solid var(--ink);
+      }
+
+      .fact-item {
+        min-height: 9rem;
+        padding: var(--space-4);
+        border-right: 0.0625rem solid var(--ink);
+        border-bottom: 0.0625rem solid var(--ink);
+      }
+
+      .fact-item:nth-child(-n + 3) {
+        background: var(--lime);
+      }
+
+      .fact-item .fact-number {
+        display: block;
+        margin-bottom: var(--space-5);
+        color: var(--muted-dark);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.65rem;
+      }
+
+      .fact-item strong {
+        display: block;
+        max-width: 19ch;
+        font-size: 1.15rem;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+      }
+
+      .site-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: var(--space-5) var(--space-4);
+        background: var(--red);
+        color: var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .site-footer p {
+        margin: 0;
+      }
+
+      @media (max-width: 58rem) {
+        .hero-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-copy {
+          min-height: auto;
+          padding-top: var(--space-7);
+          padding-bottom: var(--space-7);
+        }
+
+        .hero-stage {
+          min-height: 31rem;
+          border-top: 0.0625rem solid var(--line-dark);
+          border-left: 0;
+        }
+
+        .section-shell {
+          padding-top: var(--space-7);
+          padding-bottom: var(--space-7);
+        }
+      }
+
+      @media (max-width: 43rem) {
+        .site-header {
+          min-height: 3.75rem;
+          padding: 0 var(--space-3);
+          gap: var(--space-2);
+        }
+
+        .site-nav {
+          gap: var(--space-2);
+          font-size: 0.58rem;
+        }
+
+        .site-nav a:not(.header-action) {
+          display: none;
+        }
+
+        .header-action {
+          display: none;
+        }
+
+        .hero-copy {
+          width: 100%;
+          max-width: 100%;
+          padding: var(--space-7) var(--space-3) var(--space-6);
+        }
+
+        .hero h1 {
+          max-width: 100%;
+          font-size: clamp(3rem, 15vw, 5.3rem);
+        }
+
+        .hero-lede {
+          max-width: 21.5rem;
+        }
+
+        .hero-stage {
+          min-height: 23rem;
+        }
+
+        .object-drawing {
+          inset: 2.75rem 0.5rem 2rem;
+          width: calc(100% - 1rem);
+          height: calc(100% - 4.75rem);
+        }
+
+        .stage-meta {
+          top: var(--space-3);
+          right: var(--space-3);
+          left: var(--space-3);
+          font-size: 0.55rem;
+        }
+
+        .stage-callout {
+          right: var(--space-3);
+          bottom: var(--space-3);
+          left: var(--space-3);
+          justify-content: center;
+          font-size: 0.58rem;
+        }
+
+        .signal-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .signal {
+          min-height: auto;
+          padding: var(--space-3);
+        }
+
+        .signal + .signal {
+          border-top: 0.0625rem solid var(--ink);
+          border-left: 0;
+        }
+
+        .section-shell {
+          padding-right: var(--space-3);
+          padding-left: var(--space-3);
+        }
+
+        .section-heading {
+          display: block;
+          margin-bottom: var(--space-5);
+        }
+
+        .section-heading h2 {
+          max-width: 100%;
+          margin-top: var(--space-3);
+          font-size: clamp(3.2rem, 17vw, 5rem);
+          overflow-wrap: anywhere;
+        }
+
+        .section-heading p {
+          width: 100%;
+          max-width: 21rem;
+          margin-top: var(--space-4);
+          font-size: 1rem;
+          overflow-wrap: anywhere;
+        }
+
+        .repair-layout {
+          grid-template-columns: 1fr;
+          gap: var(--space-4);
+        }
+
+        .mount-rail {
+          flex-direction: column;
+          gap: var(--space-3);
+        }
+
+        .mount-card {
+          flex: 0 0 auto;
+          min-height: auto;
+          padding: var(--space-4);
+        }
+
+        .runtime-grid,
+        .runtime-caveats {
+          grid-template-columns: 1fr;
+        }
+
+        .runtime-card {
+          min-height: 13.5rem;
+          padding: var(--space-4) 0;
+        }
+
+        .runtime-card + .runtime-card {
+          padding-left: 0;
+          border-top: 0.0625rem solid var(--ink);
+          border-left: 0;
+        }
+
+        .runtime-number {
+          margin-top: var(--space-3);
+          font-size: clamp(5.5rem, 27vw, 8rem);
+        }
+
+        .runtime-bar {
+          right: 0;
+          bottom: var(--space-3);
+        }
+
+        .runtime-caveats {
+          gap: var(--space-3);
+        }
+
+        .repair-drawing,
+        .repair-drawing svg {
+          min-height: 15rem;
+        }
+
+        .repair-copy {
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+        }
+
+        .repair-copy h3 {
+          max-width: 100%;
+          overflow-wrap: anywhere;
+        }
+
+        .facts-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .fact-item {
+          min-height: 8.5rem;
+          padding: var(--space-3);
+        }
+
+        .fact-item .fact-number {
+          margin-bottom: var(--space-4);
+        }
+
+        .fact-item strong {
+          font-size: 1rem;
+        }
+
+        .site-footer {
+          display: block;
+          padding: var(--space-4) var(--space-3);
+        }
+
+        .site-footer p + p {
+          margin-top: var(--space-2);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Latchlight home">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span>Latchlight</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#compatibility">Mounting</a>
+        <a href="#repair">Repair</a>
+        <a class="header-action" href="#compatibility">Choose a mount</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">Repairable clip-on task light</p>
+            <h1 id="hero-title"><span>A small</span><span>light that</span><span>moves</span><span><em>with the</em></span><span><em>work.</em></span></h1>
+            <p class="hero-lede">
+              Latchlight clips to a shelf or locks onto a steel surface, then turns toward the page, bench, or keyboard in front of you.
+            </p>
+
+            <div class="hero-facts" aria-label="Runtime facts">
+              <div class="hero-fact">
+                <strong>14 h</strong>
+                <span>at reading brightness</span>
+              </div>
+              <div class="hero-fact">
+                <strong>4 h</strong>
+                <span>at full output</span>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <a class="button button-primary" href="#compatibility">Choose a mount — $48</a>
+              <a class="button button-secondary" href="#repair">See repair parts</a>
+            </div>
+          </div>
+
+          <div class="hero-stage" aria-label="Latchlight mounted to a shelf and turned toward a page">
+            <div class="stage-meta" aria-hidden="true">
+              <span>Object / 01</span>
+              <span>Page · bench · keyboard</span>
+            </div>
+            <svg class="object-drawing" viewBox="0 0 760 620" role="img" aria-labelledby="lamp-title lamp-desc">
+              <title id="lamp-title">Latchlight on a shelf</title>
+              <desc id="lamp-desc">A compact clip-on light shines a warm beam toward a page on a shelf.</desc>
+              <defs>
+                <linearGradient id="beam" x1="0" x2="0.75" y1="0" y2="1">
+                  <stop offset="0" stop-color="var(--lamp)" stop-opacity="0.62" />
+                  <stop offset="1" stop-color="var(--lamp)" stop-opacity="0" />
+                </linearGradient>
+                <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#f1f4e8" />
+                  <stop offset="0.54" stop-color="#aab4a8" />
+                  <stop offset="1" stop-color="#69756d" />
+                </linearGradient>
+                <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="12" />
+                </filter>
+              </defs>
+
+              <ellipse cx="465" cy="430" rx="185" ry="50" fill="var(--lamp)" opacity="0.16" filter="url(#glow)" />
+              <path d="M370 195 L657 452 L316 452 Z" fill="url(#beam)" />
+              <path d="M94 456 H700" stroke="var(--muted)" stroke-width="3" stroke-dasharray="10 12" opacity="0.7" />
+              <path d="M94 456 H700 V503 H94 Z" fill="#657069" />
+              <path d="M94 456 H700" stroke="var(--paper)" stroke-width="7" />
+              <path d="M483 503 H650 V565 H483 Z" fill="#252d27" stroke="var(--muted)" stroke-width="2" />
+              <path d="M512 522 H620 M512 539 H600" stroke="var(--muted)" stroke-width="3" opacity="0.7" />
+              <path d="M339 449 L496 449 L521 487 L363 487 Z" fill="var(--paper-warm)" stroke="var(--ink)" stroke-width="3" />
+              <path d="M368 461 H473 M374 471 H452" stroke="var(--muted-dark)" stroke-width="3" />
+
+              <g>
+                <path d="M282 456 V487 Q282 502 297 502 H338 Q352 502 352 487 V456" fill="var(--red)" stroke="var(--ink)" stroke-width="5" />
+                <path d="M276 457 H359" stroke="var(--paper)" stroke-width="6" />
+                <circle cx="320" cy="483" r="8" fill="var(--ink)" />
+              </g>
+
+              <path d="M319 457 C314 379 307 310 341 240" fill="none" stroke="var(--ink)" stroke-width="24" stroke-linecap="round" />
+              <path d="M319 457 C314 379 307 310 341 240" fill="none" stroke="url(#metal)" stroke-width="15" stroke-linecap="round" />
+              <circle cx="336" cy="239" r="16" fill="var(--red)" stroke="var(--ink)" stroke-width="5" />
+              <path d="M337 239 L406 174 L444 210 L376 274 Z" fill="url(#metal)" stroke="var(--ink)" stroke-width="5" />
+              <path d="M397 184 L450 207 L432 247 L375 274 Z" fill="var(--lamp)" stroke="var(--ink)" stroke-width="5" />
+              <path d="M408 201 L440 215" stroke="var(--ink)" stroke-width="4" opacity="0.45" />
+              <circle cx="341" cy="240" r="5" fill="var(--lime)" />
+
+              <g fill="var(--paper)" font-family="ui-monospace, monospace" font-size="12" letter-spacing="2">
+                <text x="112" y="100">WARM / NEUTRAL</text>
+                <text x="566" y="122">TURNS TOWARD</text>
+              </g>
+              <path d="M180 110 H302" stroke="var(--lime)" stroke-width="2" />
+              <path d="M569 132 H476 L423 190" fill="none" stroke="var(--lime)" stroke-width="2" />
+              <circle cx="423" cy="190" r="4" fill="var(--lime)" />
+            </svg>
+            <div class="stage-callout"><i aria-hidden="true"></i><span>Warm and neutral light modes</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="signal-strip" aria-label="Product overview">
+        <div class="signal"><span class="signal-number">01</span><strong>Two mounting options</strong></div>
+        <div class="signal"><span class="signal-number">02</span><strong>Replaceable battery</strong></div>
+        <div class="signal"><span class="signal-number">03</span><strong>Standard screws</strong></div>
+      </section>
+
+      <section class="compatibility-section" id="compatibility" data-section="compatibility" aria-labelledby="mount-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">Compatibility / 02</p>
+              <h2 id="mount-title">Mounts</h2>
+            </div>
+            <p>Soft clip / Magnetic foot.</p>
+          </div>
+
+          <div class="mount-rail" role="group" aria-label="Choose a mount">
+            <button class="mount-card" type="button" data-mount="soft" aria-pressed="true">
+              <span class="mount-card__top">
+                <span class="mount-number">01</span>
+                <span class="micro-label">Soft clip</span>
+                <span class="mount-arrow" aria-hidden="true">↗</span>
+              </span>
+              <h3>Soft clip</h3>
+              <svg class="mount-card__icon" viewBox="0 0 80 80" aria-hidden="true">
+                <path d="M17 20 H57 V59 H17 Z" fill="none" stroke="currentColor" stroke-width="4" />
+                <path d="M30 20 V59 M50 20 V59" stroke="currentColor" stroke-width="4" />
+                <path d="M30 34 H50" stroke="currentColor" stroke-width="6" />
+                <path d="M30 47 H50" stroke="currentColor" stroke-width="6" />
+              </svg>
+              <span class="mount-card__fit"><span class="mount-card__label">Fits</span><strong class="mount-card__value">edges 8–38 mm thick</strong></span>
+              <span class="mount-card__limit"><span class="mount-card__label">Limit</span><strong class="mount-card__value">not for rounded glass edges</strong></span>
+            </button>
+
+            <button class="mount-card" type="button" data-mount="magnetic" aria-pressed="false">
+              <span class="mount-card__top">
+                <span class="mount-number">02</span>
+                <span class="micro-label">Magnetic foot</span>
+                <span class="mount-arrow" aria-hidden="true">↗</span>
+              </span>
+              <h3>Magnetic foot</h3>
+              <svg class="mount-card__icon" viewBox="0 0 80 80" aria-hidden="true">
+                <path d="M13 57 H67" fill="none" stroke="currentColor" stroke-width="4" />
+                <path d="M22 57 V32 H58 V57" fill="none" stroke="currentColor" stroke-width="4" />
+                <circle cx="40" cy="32" r="10" fill="none" stroke="currentColor" stroke-width="4" />
+                <path d="M32 32 H48" stroke="currentColor" stroke-width="4" />
+              </svg>
+              <span class="mount-card__fit"><span class="mount-card__label">Fits</span><strong class="mount-card__value">flat ferrous surfaces</strong></span>
+              <span class="mount-card__limit"><span class="mount-card__label">Limit</span><strong class="mount-card__value">does not hold on aluminium</strong></span>
+            </button>
+          </div>
+          <p class="mount-selection" aria-live="polite">Selected mount / <strong id="mount-selection-name">Soft clip</strong></p>
+        </div>
+      </section>
+
+      <section class="runtime-section" id="runtime" aria-labelledby="runtime-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">Runtime / 03</p>
+              <h2 id="runtime-title">Runtime</h2>
+            </div>
+            <p>14 hours at reading brightness; 4 hours at full output.</p>
+          </div>
+
+          <div class="runtime-grid">
+            <article class="runtime-card">
+              <p class="micro-label">Reading brightness</p>
+              <span class="runtime-number">14</span>
+              <strong>hours at reading brightness</strong>
+              <div class="runtime-bar" style="--bar-width: 100%" aria-hidden="true"></div>
+            </article>
+            <article class="runtime-card">
+              <p class="micro-label">Full output</p>
+              <span class="runtime-number">4</span>
+              <strong>hours at full output</strong>
+              <div class="runtime-bar" style="--bar-width: 29%" aria-hidden="true"></div>
+            </article>
+          </div>
+
+          <div class="runtime-caveats">
+            <div class="caveat">
+              <span class="caveat-mark">USB</span>
+              <p>USB-C charging; cable included</p>
+            </div>
+            <div class="caveat">
+              <span class="caveat-mark">IN</span>
+              <p>Designed for indoor use</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="repair-section" id="repair" data-section="repair" aria-labelledby="repair-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">Repair / 04</p>
+              <h2 id="repair-title">Repair parts</h2>
+            </div>
+            <p>Replaceable battery and standard screws.</p>
+          </div>
+
+          <div class="repair-layout">
+            <div class="repair-copy">
+              <h3><span>Replaceable battery</span><span>standard screws.</span></h3>
+              <p>Replaceable battery and standard screws.</p>
+              <div class="action-row">
+                <a class="button button-primary" href="#facts">See repair parts</a>
+              </div>
+            </div>
+            <div class="repair-drawing" aria-label="Repair parts diagram">
+              <svg viewBox="0 0 560 280" role="img" aria-labelledby="repair-svg-title repair-svg-desc">
+                <title id="repair-svg-title">Replaceable battery and standard screws</title>
+                <desc id="repair-svg-desc">A battery cell and four screws shown as parts beside a light body.</desc>
+                <g fill="none" stroke="var(--lime)" stroke-width="3">
+                  <rect x="116" y="78" width="220" height="106" rx="8" />
+                  <path d="M336 108 H371 V155 H336" />
+                  <rect x="164" y="101" width="118" height="59" rx="5" stroke="var(--lamp)" />
+                  <path d="M182 130 H263" stroke="var(--lamp)" />
+                  <path d="M223 112 V148" stroke="var(--lamp)" />
+                  <circle cx="409" cy="83" r="13" stroke="var(--red)" />
+                  <path d="M401 83 H417 M409 75 V91" stroke="var(--red)" />
+                  <circle cx="455" cy="83" r="13" stroke="var(--red)" />
+                  <path d="M447 83 H463 M455 75 V91" stroke="var(--red)" />
+                  <circle cx="409" cy="130" r="13" stroke="var(--red)" />
+                  <path d="M401 130 H417 M409 122 V138" stroke="var(--red)" />
+                  <circle cx="455" cy="130" r="13" stroke="var(--red)" />
+                  <path d="M447 130 H463 M455 122 V138" stroke="var(--red)" />
+                  <path d="M409 180 H474" stroke="var(--muted)" />
+                  <path d="M223 184 V224 H409 V143" stroke="var(--muted)" stroke-dasharray="7 8" />
+                </g>
+                <g fill="var(--paper)" font-family="ui-monospace, monospace" font-size="12" letter-spacing="1">
+                  <text x="116" y="52">LATCHLIGHT / REPAIR PARTS</text>
+                  <text x="167" y="203">REPLACEABLE BATTERY</text>
+                  <text x="385" y="224">STANDARD SCREWS</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="facts-section" id="facts" aria-labelledby="facts-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">Details / 05</p>
+              <h2 id="facts-title">At a glance.</h2>
+            </div>
+            <p>Warm and neutral light modes, USB-C charging, and a cable included.</p>
+          </div>
+
+          <div class="facts-grid">
+            <div class="fact-item"><span class="fact-number">01</span><strong>14 hours at reading brightness; 4 hours at full output</strong></div>
+            <div class="fact-item"><span class="fact-number">02</span><strong>USB-C charging; cable included</strong></div>
+            <div class="fact-item"><span class="fact-number">03</span><strong>Replaceable battery and standard screws</strong></div>
+            <div class="fact-item"><span class="fact-number">04</span><strong>Warm and neutral light modes</strong></div>
+            <div class="fact-item"><span class="fact-number">05</span><strong>Designed for indoor use</strong></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Latchlight / Repairable clip-on task light</p>
+      <p>Choose a mount — $48</p>
+    </footer>
+
+    <script>
+      const mountDetails = {
+        soft: {
+          name: "Soft clip"
+        },
+        magnetic: {
+          name: "Magnetic foot"
+        }
+      };
+
+      const mountCards = document.querySelectorAll(".mount-card[data-mount]");
+      const selectionName = document.querySelector("#mount-selection-name");
+
+      mountCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const detail = mountDetails[card.dataset.mount];
+          mountCards.forEach((item) => item.setAttribute("aria-pressed", String(item === card)));
+          selectionName.textContent = detail.name;
+        });
+      });
+    </script>
+  </body>
+</html>

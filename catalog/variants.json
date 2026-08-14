@@ -3,58 +3,108 @@
   "variants": [
     {
       "id": "codex-sol-high",
-      "label": "Sol · High · via Codex CLI",
+      "label": "Sol · High · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
       "model": "gpt-5.6-sol",
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "default",
       "personality": "none",
-      "capabilities": ["files", "shell"]
+      "capabilities": ["files", "shell"],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     },
     {
       "id": "codex-terra-high",
-      "label": "Terra · High · via Codex CLI",
+      "label": "Terra · High · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
       "model": "gpt-5.6-terra",
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "default",
       "personality": "none",
-      "capabilities": ["files", "shell"]
+      "capabilities": ["files", "shell"],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     },
     {
       "id": "codex-luna-low-fast",
-      "label": "Luna · Low · Fast · via Codex CLI",
+      "label": "Luna · Low · Fast · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
       "model": "gpt-5.6-luna",
       "harness": "codex-cli",
       "reasoningEffort": "low",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"]
+      "capabilities": ["files", "shell"],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     },
     {
       "id": "codex-luna-high-fast",
-      "label": "Luna · High · Fast · via Codex CLI",
+      "label": "Luna · High · Fast · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
       "model": "gpt-5.6-luna",
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"]
+      "capabilities": ["files", "shell"],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     },
     {
       "id": "codex-luna-xhigh-fast",
-      "label": "Luna · Extra High · Fast · via Codex CLI",
+      "label": "Luna · Extra High · Fast · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
       "model": "gpt-5.6-luna",
       "harness": "codex-cli",
       "reasoningEffort": "xhigh",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"]
+      "capabilities": ["files", "shell"],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     }
   ]
 }

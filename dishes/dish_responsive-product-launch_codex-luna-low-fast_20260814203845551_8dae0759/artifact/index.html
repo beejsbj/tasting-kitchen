@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Latchlight — a small light that moves with the work.</title>
+  <style>
+    :root { --ink:#171918; --paper:#e8e4da; --orange:#ff5a26; --muted:#a5aaa0; --line:#59605a; --display:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; --body:Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--ink); color:var(--paper); font-family:var(--body); line-height:1.45; }
+    a,button { color:inherit; }
+    :focus-visible { outline:3px solid var(--orange); outline-offset:5px; }
+    .wrap { max-width:1320px; margin:auto; padding:0 42px; }
+    nav { height:78px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+    .mark { display:flex; align-items:center; gap:10px; color:var(--paper); text-decoration:none; font-weight:800; }
+    .mark i { display:block; width:18px; height:18px; background:var(--orange); border-radius:50% 50% 50% 4px; transform:rotate(-45deg); }
+    .navlinks { display:flex; gap:30px; color:var(--muted); }
+    .navlinks a { text-decoration:none; }
+    .hero { min-height:690px; display:grid; grid-template-columns:1.05fr .95fr; gap:40px; align-items:center; padding:74px 0 86px; }
+    .eyebrow { color:var(--orange); text-transform:uppercase; letter-spacing:.17em; font-size:12px; font-weight:800; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font:clamp(4.6rem, 10vw, 9rem)/.82 var(--display); letter-spacing:-.045em; text-transform:uppercase; max-width:730px; margin:22px 0 30px; }
+    .lead { color:#c8cbc2; font-size:clamp(1.1rem, 1.7vw, 1.4rem); max-width:530px; }
+    .actions { display:flex; gap:14px; flex-wrap:wrap; margin-top:34px; }
+    .button { display:inline-flex; padding:15px 19px; border:1px solid var(--orange); text-decoration:none; text-transform:uppercase; letter-spacing:.1em; font-size:11px; font-weight:800; }
+    .button.primary { background:var(--orange); color:var(--ink); }
+    .button.secondary { color:var(--paper); border-color:var(--line); }
+    .object-stage { position:relative; min-height:480px; display:grid; place-items:center; background:radial-gradient(circle at 50% 50%, #454a43 0 2px, transparent 2px 100%); background-size:22px 22px; border:1px solid var(--line); overflow:hidden; }
+    .object-stage:before { content:'LATCHLIGHT / 01'; position:absolute; left:18px; top:16px; color:var(--orange); font:11px monospace; letter-spacing:.12em; }
+    .object-stage:after { content:'14H / USB-C / INDOOR'; position:absolute; right:18px; bottom:16px; color:var(--muted); font:11px monospace; letter-spacing:.1em; }
+    .lamp { position:relative; width:245px; height:300px; transform:rotate(-13deg); }
+    .lamp .shade { position:absolute; top:30px; left:18px; width:190px; height:105px; border-radius:100px 100px 25px 25px; background:var(--paper); border:14px solid #b9b8ad; box-shadow:inset 0 -25px 0 var(--orange); }
+    .lamp .stem { position:absolute; top:108px; left:101px; width:24px; height:142px; background:#b9b8ad; border-radius:20px; }
+    .lamp .base { position:absolute; bottom:8px; left:46px; width:157px; height:37px; border-radius:30px 30px 10px 10px; background:#bebdb2; border-bottom:12px solid var(--orange); }
+    .measure { position:absolute; color:var(--muted); font:11px monospace; letter-spacing:.05em; }
+    .measure.one { top:76px; right:25px; }.measure.two { bottom:70px; left:21px; }
+    .section { border-top:1px solid var(--line); padding:88px 0; }
+    .section-head { display:flex; justify-content:space-between; gap:30px; align-items:end; margin-bottom:42px; }
+    h2 { font:clamp(2.8rem, 6vw, 5.7rem)/.88 var(--display); letter-spacing:-.035em; text-transform:uppercase; margin-bottom:0; }
+    .section-head p { max-width:340px; color:var(--muted); margin-bottom:3px; }
+    .mounts { display:flex; align-items:stretch; position:relative; }
+    .mount { flex:1; background:var(--ink); padding:28px; min-height:225px; position:relative; border:1px solid var(--line); }
+    .mount + .mount { border-left:0; }
+    .mounts:after { content:'OR'; position:absolute; z-index:1; left:50%; top:50%; transform:translate(-50%,-50%); display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--orange); color:var(--ink); font:11px monospace; font-weight:800; }
+    .mount-no { color:var(--orange); font:12px monospace; }.mount h3 { font-size:1.55rem; margin:33px 0 14px; }.mount p { margin:0; color:var(--muted); }.limit { color:var(--paper)!important; margin-top:16px!important; padding-top:15px; border-top:1px solid var(--line); }
+    .limit strong { color:var(--orange); text-transform:uppercase; font-size:10px; letter-spacing:.12em; margin-right:8px; }
+    .facts { display:grid; grid-template-columns:repeat(5,1fr); gap:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .fact { padding:24px 18px 24px 0; border-right:1px solid var(--line); margin:0 18px 0 0; color:#c8cbc2; font-size:14px; }.fact:last-child { border:0; }.fact:before { content:'+'; color:var(--orange); display:block; font:22px monospace; margin-bottom:30px; }
+    .repair { background:var(--orange); color:var(--ink); padding:80px 0; }.repair .eyebrow { color:var(--ink); }.repair h2 { max-width:800px; }.repair p { max-width:470px; font-size:1.1rem; margin:26px 0 0; }.repair .button { border-color:var(--ink); color:var(--ink); margin-top:30px; }
+    footer { padding:28px 0; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.12em; display:flex; justify-content:space-between; }
+    @media (max-width:720px) { .wrap { padding:0 20px; } nav { height:66px; }.navlinks { gap:14px; font-size:10px; }.hero { display:block; padding:62px 0 54px; }.hero h1 { font-size:clamp(4rem, 19vw, 6rem); }.lead { font-size:1rem; }.object-stage { min-height:350px; margin-top:54px; }.lamp { transform:scale(.78) rotate(-13deg); }.section { padding:58px 0; }.section-head { display:block; }.section-head p { margin-top:20px; }.mounts { display:block; }.mount + .mount { border-left:1px solid var(--line); border-top:0; }.mounts:after { top:50%; }.mount { min-height:205px; }.facts { grid-template-columns:1fr 1fr; }.fact { margin:0; padding:20px 15px 20px 0; border-right:0; border-bottom:1px solid var(--line); }.fact:before { margin-bottom:16px; }.fact:nth-child(odd) { margin-right:15px; border-right:1px solid var(--line); }.fact:last-child { border-bottom:0; }.repair { padding:60px 0; } footer { display:block; } footer span { display:block; margin-top:8px; } }
+  </style>
+</head>
+<body>
+  <header class="wrap"><nav aria-label="Main navigation"><a class="mark" href="#top"><i aria-hidden="true"></i> Latchlight</a><div class="navlinks"><a href="#compatibility">Mounts</a><a href="#repair">Repair</a></div></nav></header>
+  <main id="top">
+    <section class="wrap hero"><div><div class="eyebrow">Repairable clip-on task light</div><h1>Move with<br>the work.</h1><p class="lead">Latchlight clips to a shelf or locks onto a steel surface, then turns toward the page, bench, or keyboard in front of you.</p><div class="actions"><a class="button primary" href="#compatibility">Choose a mount — $48</a><a class="button secondary" href="#repair">See repair parts</a></div></div><div class="object-stage" aria-label="Illustration of Latchlight"><span class="measure one">↗ TURNS TOWARD THE WORK</span><span class="measure two">[ STANDARD SCREWS ]</span><div class="lamp" aria-hidden="true"><div class="shade"></div><div class="stem"></div><div class="base"></div></div></div></section>
+    <section class="wrap section" id="compatibility" data-section="compatibility"><div class="section-head"><h2>Choose your<br>hold.</h2><p>Two ways to place the light. Read the limits before you choose.</p></div><div class="mounts"><article class="mount"><span class="mount-no">01 / SOFT CLIP</span><h3>Soft clip</h3><p>Fits edges 8–38 mm thick</p><p class="limit"><strong>Limit</strong> not for rounded glass edges</p></article><article class="mount"><span class="mount-no">02 / MAGNETIC FOOT</span><h3>Magnetic foot</h3><p>Fits flat ferrous surfaces</p><p class="limit"><strong>Limit</strong> does not hold on aluminium</p></article></div></section>
+    <section class="wrap section"><div class="section-head"><h2>Small<br>spec.</h2><p>Everything the object promises, in plain view.</p></div><div class="facts"><p class="fact">14 hours at reading brightness; 4 hours at full output</p><p class="fact">USB-C charging; cable included</p><p class="fact">Replaceable battery and standard screws</p><p class="fact">Warm and neutral light modes</p><p class="fact">Designed for indoor use</p></div></section>
+    <section class="repair" id="repair" data-section="repair"><div class="wrap"><div class="eyebrow">Repair / keep it in the work</div><h2>Open it up.<br>Keep going.</h2><p>Replaceable battery and standard screws. See repair parts for what keeps Latchlight working.</p><a class="button" href="#repair">See repair parts</a></div></section>
+  </main>
+  <footer class="wrap"><span>Latchlight</span><span>USB-C charging · cable included · designed for indoor use</span></footer>
+</body>
+</html>
