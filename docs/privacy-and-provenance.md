@@ -2,8 +2,10 @@
 
 Version one was derived from a one-time review of Burooj's historical AI encounters through 2026-08-13.
 
-Raw source material was read in place and was not copied into the tracked project. Exact source locations, private audit notes, and evidence locators live under gitignored `private/`. The committed `analysis/` files contain paraphrased findings and abstract evidence IDs. Flight scenarios are fictional or structurally equivalent reconstructions.
+Raw source material was read in place and was not copied into the tracked project. Exact source locations, private audit notes, and evidence locators live under gitignored `private/`. The committed `analysis/` files contain paraphrased findings and abstract evidence IDs. Mother's recipes are fictional or structurally equivalent reconstructions.
 
-The public site bundle contains only the sanitized flight library and interface. It must not include raw transcripts, journals, repository content, credentials, local paths, identifying third-party material, or the private evidence ledger.
+The tracked public catalog contains only versioned recipes, public fixtures, controlled metadata, accepted immutable dishes, sanitized traces, validation receipts, and reviews bound to exact dish hashes. It must not include raw transcripts, journals, private repository content, credentials, local paths, identifying third-party material, raw attempts, or the private evidence ledger.
 
-The website has no model integration, account system, database, or server-side record storage. Tasting records live in browser local storage until the user exports them. Exported records can contain pasted model responses and personal notes, so they should be handled as private data. The library’s v2 metadata is separate from saved runs: legacy v1 records remain readable as historical records and are not silently rewritten with new provenance claims.
+The CLI is the only model-running surface. Real execution is opt-in twice (`--execute` plus `TASTE_ALLOW_MODEL_RUNS=1`), occurs in a fresh workspace and model session, retains raw evidence under gitignored `private/`, and publishes only after deterministic checks, identity verification, and a fail-closed public scan. Failed attempts remain private.
+
+The public website is read-only. It has no model integration, account system, database, browser authoring, personal notes, or server-side record storage. Structural acceptance is not a human taste verdict: human and agent artifact observations are stored separately, identify the reviewer kind, and bind to the immutable dish hash they reviewed.

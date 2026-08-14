@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1ecdf">
+  <title>Neighborhood seed-library drawing</title>
+  <style>
+    :root {
+      --ink: #17241d;
+      --ink-soft: #4a5a4b;
+      --moss: #3a523b;
+      --leaf: #82966b;
+      --leaf-pale: #cbd3b9;
+      --paper: #f1ecdf;
+      --paper-bright: #fbf8f0;
+      --paper-deep: #e3dccb;
+      --terracotta: #c85d40;
+      --tomato: #dd6849;
+      --gold: #d9ad55;
+      --gold-pale: #f2d99c;
+      --line: rgba(23, 36, 29, .18);
+      --line-strong: rgba(23, 36, 29, .34);
+      --shadow: 0 24px 70px rgba(50, 54, 37, .16);
+      --ease-out: cubic-bezier(.215, .61, .355, 1);
+      --ease-move: cubic-bezier(.645, .045, .355, 1);
+      --ease-hover: ease;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-width: 320px; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--terracotta);
+      outline-offset: 4px;
+    }
+
+    .page {
+      width: min(100% - 40px, 1320px);
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-width: 0;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wordmark,
+    .live-note,
+    .kicker,
+    .screen-chrome,
+    .state-tab,
+    .index,
+    .object-label,
+    .tiny-note {
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: 10px;
+      font-weight: 760;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: .19em;
+    }
+
+    .seed-mark {
+      position: relative;
+      display: inline-block;
+      width: 21px;
+      height: 24px;
+      transform: rotate(-35deg);
+      border: 2px solid var(--moss);
+      border-radius: 60% 40% 60% 40%;
+    }
+
+    .seed-mark::after {
+      position: absolute;
+      top: 5px;
+      left: 8px;
+      width: 2px;
+      height: 13px;
+      content: "";
+      background: var(--terracotta);
+      transform: rotate(35deg);
+      transform-origin: bottom;
+    }
+
+    .live-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ink-soft);
+      letter-spacing: .11em;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--terracotta);
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(250px, .6fr);
+      align-items: end;
+      gap: 64px;
+      padding: 74px 7.5% 64px;
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      color: var(--terracotta);
+    }
+
+    .kicker span { color: var(--gold); }
+
+    h1,
+    h2,
+    p { margin-top: 0; }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.2rem, 7.3vw, 7.1rem);
+      font-weight: 400;
+      line-height: .91;
+      letter-spacing: -.065em;
+    }
+
+    h1 em {
+      color: var(--moss);
+      font-style: italic;
+    }
+
+    br.narrow-break { display: none; }
+
+    .intro-note {
+      max-width: 330px;
+      margin: 0 0 4px;
+      color: var(--ink-soft);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.03rem, 1.5vw, 1.27rem);
+      line-height: 1.45;
+    }
+
+    .surface {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .state-nav {
+      position: sticky;
+      top: 18px;
+      padding: 18px 0 0;
+    }
+
+    .nav-heading {
+      margin: 0 0 15px;
+      color: var(--ink-soft);
+    }
+
+    .nav-heading::before { display: none; }
+
+    .state-tabs {
+      display: grid;
+      gap: 2px;
+    }
+
+    .state-tab {
+      display: grid;
+      grid-template-columns: 25px 1fr 7px;
+      align-items: center;
+      min-height: 49px;
+      padding: 0 13px;
+      color: var(--ink-soft);
+      text-align: left;
+      letter-spacing: .08em;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 160ms var(--ease-hover), color 160ms var(--ease-hover);
+    }
+
+    .state-tab:hover { color: var(--ink); background: rgba(255,255,255,.42); }
+
+    .state-tab[aria-selected="true"] {
+      color: var(--paper-bright);
+      background: var(--moss);
+      border-color: var(--moss);
+    }
+
+    .state-tab .index {
+      color: var(--leaf);
+      font-size: 9px;
+      letter-spacing: .05em;
+    }
+
+    .state-tab[aria-selected="true"] .index { color: var(--gold-pale); }
+
+    .tab-marker {
+      width: 6px;
+      height: 6px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: .55;
+    }
+
+    .state-tab[aria-selected="true"] .tab-marker {
+      background: var(--tomato);
+      border-color: var(--tomato);
+      opacity: 1;
+    }
+
+    .nav-foot {
+      max-width: 155px;
+      margin: 26px 14px 0;
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .screen {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      background: var(--paper-bright);
+      border: 1px solid var(--line-strong);
+      border-radius: 5px;
+      box-shadow: var(--shadow);
+    }
+
+    .screen-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 46px;
+      padding: 0 20px;
+      color: var(--ink-soft);
+      background: var(--paper-deep);
+      border-bottom: 1px solid var(--line);
+      letter-spacing: .11em;
+    }
+
+    .screen-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .screen-title::before {
+      width: 8px;
+      height: 8px;
+      content: "";
+      background: var(--terracotta);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+    }
+
+    .screen-context {
+      overflow: hidden;
+      color: rgba(23, 36, 29, .56);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .scene {
+      position: relative;
+      isolation: isolate;
+      min-height: 690px;
+      overflow: hidden;
+      background: var(--paper-bright);
+    }
+
+    .scene::after {
+      position: absolute;
+      z-index: -1;
+      right: -10%;
+      bottom: 0;
+      left: -10%;
+      height: 154px;
+      content: "";
+      background: rgba(227, 220, 203, .7);
+      border-top: 1px solid rgba(23, 36, 29, .15);
+    }
+
+    .state-view {
+      display: none;
+      grid-template-columns: minmax(250px, .92fr) minmax(285px, 1.08fr);
+      align-items: center;
+      gap: clamp(26px, 5vw, 80px);
+      min-height: 540px;
+      padding: clamp(34px, 6vw, 76px) clamp(28px, 7vw, 92px) 205px;
+    }
+
+    .state-view.is-active {
+      display: grid;
+      animation: state-enter 420ms var(--ease-out) both;
+    }
+
+    @keyframes state-enter {
+      from { opacity: 1; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .state-copy { position: relative; z-index: 2; }
+
+    .object-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 20px;
+      color: var(--terracotta);
+      letter-spacing: .16em;
+    }
+
+    .object-label::before {
+      width: 24px;
+      height: 2px;
+      content: "";
+      background: currentColor;
+    }
+
+    .state-view h2 {
+      max-width: 560px;
+      margin-bottom: 18px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.55rem, 5.2vw, 5.35rem);
+      font-weight: 400;
+      line-height: .95;
+      letter-spacing: -.06em;
+    }
+
+    .state-view h2 em {
+      color: var(--moss);
+      font-style: italic;
+    }
+
+    .state-support {
+      max-width: 390px;
+      margin-bottom: 26px;
+      color: var(--ink-soft);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      line-height: 1.48;
+    }
+
+    .state-caption {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .state-caption::before {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      content: "";
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action {
+      min-height: 46px;
+      padding: 0 18px;
+      color: var(--paper-bright);
+      font-size: 12px;
+      font-weight: 760;
+      letter-spacing: .06em;
+      background: var(--terracotta);
+      border: 1px solid var(--terracotta);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background-color 160ms var(--ease-hover);
+    }
+
+    .action:hover { background: #b64e35; }
+
+    .action--quiet {
+      color: var(--ink);
+      background: transparent;
+      border-color: var(--line-strong);
+      box-shadow: none;
+    }
+
+    .action--quiet:hover { background: rgba(255,255,255,.62); }
+
+    .state-object {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 300px;
+    }
+
+    .waiting-orbit {
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      border: 1px solid rgba(200, 93, 64, .42);
+      border-radius: 50%;
+      transform: rotate(32deg);
+    }
+
+    .waiting-orbit::after {
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 7px;
+      height: 7px;
+      content: "";
+      background: var(--terracotta);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    .waiting-pulse {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 164px;
+      height: 164px;
+      color: var(--ink);
+      text-align: center;
+      background: var(--gold-pale);
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      box-shadow: 8px 8px 0 var(--moss);
+      animation: patient-pulse 2400ms var(--ease-move) infinite alternate;
+    }
+
+    @keyframes patient-pulse {
+      from { transform: scale(.97); }
+      to { transform: scale(1.02); }
+    }
+
+    .waiting-pulse strong {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      letter-spacing: -.05em;
+    }
+
+    .waiting-pulse span {
+      display: block;
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .paper-note {
+      position: absolute;
+      right: 2%;
+      bottom: 17%;
+      width: 137px;
+      padding: 15px 14px 16px;
+      color: var(--moss);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 5px 7px 0 rgba(23, 36, 29, .08);
+    }
+
+    .paper-note::before,
+    .paper-note::after {
+      display: block;
+      height: 1px;
+      margin-bottom: 9px;
+      content: "";
+      background: var(--leaf);
+      opacity: .6;
+    }
+
+    .paper-note::after { width: 64%; margin-bottom: 0; }
+
+    .paper-note span {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--terracotta);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      font-style: italic;
+    }
+
+    .interrupted-object::before {
+      position: absolute;
+      width: 275px;
+      height: 206px;
+      content: "";
+      border: 1px dashed rgba(200, 93, 64, .58);
+      border-color: rgba(200, 93, 64, .48);
+      border-radius: 2px;
+    }
+
+    .broken-seal {
+      position: relative;
+      width: 220px;
+      padding: 49px 29px 38px;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      box-shadow: 11px 12px 0 var(--gold);
+    }
+
+    .broken-seal::before {
+      position: absolute;
+      top: 26px;
+      right: 18px;
+      left: 18px;
+      height: 1px;
+      content: "";
+      background: var(--line-strong);
+    }
+
+    .broken-seal::after {
+      position: absolute;
+      top: 10px;
+      left: 97px;
+      width: 26px;
+      height: 31px;
+      content: "";
+      background: var(--terracotta);
+      clip-path: polygon(50% 0, 100% 20%, 86% 89%, 50% 100%, 14% 89%, 0 20%);
+    }
+
+    .broken-seal .slash {
+      position: absolute;
+      top: 31px;
+      left: 91px;
+      z-index: 1;
+      width: 39px;
+      height: 2px;
+      content: "";
+      background: var(--paper-bright);
+      transform: rotate(-46deg);
+    }
+
+    .broken-seal strong {
+      display: block;
+      color: var(--terracotta);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -.04em;
+    }
+
+    .broken-seal small {
+      display: block;
+      margin-top: 8px;
+      color: var(--ink-soft);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .envelope {
+      position: relative;
+      width: 276px;
+      height: 194px;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      box-shadow: 13px 14px 0 var(--moss);
+    }
+
+    .envelope::before,
+    .envelope::after {
+      position: absolute;
+      content: "";
+    }
+
+    .envelope::before {
+      inset: 0;
+      background: linear-gradient(35deg, transparent 49.7%, var(--line-strong) 50%, transparent 50.5%), linear-gradient(145deg, transparent 49.7%, var(--line-strong) 50%, transparent 50.5%);
+    }
+
+    .envelope::after {
+      top: 50%;
+      left: 50%;
+      width: 46px;
+      height: 46px;
+      content: "SEALED";
+      color: var(--paper-bright);
+      font-size: 7px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      line-height: 46px;
+      text-align: center;
+      background: var(--terracotta);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .envelope-label {
+      position: absolute;
+      top: 19px;
+      left: 19px;
+      z-index: 1;
+      color: var(--ink-soft);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .entry-card {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: min(100%, 284px);
+      min-height: 310px;
+      padding: 30px;
+      color: var(--paper-bright);
+      text-align: center;
+      background: var(--moss);
+      border: 1px solid var(--ink);
+      box-shadow: 12px 14px 0 var(--tomato);
+    }
+
+    .entry-card-label {
+      color: var(--gold-pale);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .entry-card-number {
+      margin: 12px 0 11px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(4rem, 8vw, 6rem);
+      font-weight: 400;
+      line-height: .85;
+      letter-spacing: -.08em;
+    }
+
+    .entry-card-rule {
+      display: block;
+      width: 64px;
+      height: 1px;
+      margin: 0 auto 15px;
+      background: var(--gold-pale);
+    }
+
+    .entry-card-note {
+      color: rgba(251,248,240,.78);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .tomato-card {
+      position: relative;
+      width: min(100%, 310px);
+      min-height: 300px;
+      padding: 26px 27px 31px;
+      background: var(--gold-pale);
+      border: 1px solid var(--ink);
+      box-shadow: 12px 13px 0 var(--terracotta);
+    }
+
+    .tomato-card::before {
+      position: absolute;
+      top: 21px;
+      right: 20px;
+      width: 39px;
+      height: 39px;
+      content: "";
+      background: var(--tomato);
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .tomato-card::after {
+      position: absolute;
+      top: 18px;
+      right: 32px;
+      width: 14px;
+      height: 12px;
+      content: "";
+      border-top: 2px solid var(--moss);
+      border-radius: 50%;
+    }
+
+    .tomato-card-label {
+      display: block;
+      margin-bottom: 82px;
+      color: var(--terracotta);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .tomato-card-copy {
+      max-width: 220px;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.68rem;
+      line-height: 1.03;
+      letter-spacing: -.045em;
+    }
+
+    .room-people {
+      position: absolute;
+      right: clamp(18px, 4vw, 54px);
+      bottom: 23px;
+      left: clamp(18px, 4vw, 54px);
+      z-index: 3;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      height: 122px;
+      padding: 0 8%;
+      border-bottom: 1px solid rgba(23, 36, 29, .3);
+    }
+
+    .people-label {
+      position: absolute;
+      bottom: 133px;
+      left: 0;
+      color: var(--ink-soft);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .person {
+      position: relative;
+      width: 38px;
+      height: 108px;
+      color: var(--moss);
+      opacity: .93;
+    }
+
+    .person:nth-of-type(2n) { height: 92px; color: var(--terracotta); }
+    .person:nth-of-type(3n) { height: 116px; color: var(--leaf); }
+    .person:nth-of-type(4n) { color: var(--ink); }
+
+    .person-head {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 27px;
+      height: 27px;
+      background: currentColor;
+      border: 1px solid rgba(23,36,29,.55);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    .person-body {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 82px;
+      background: currentColor;
+      border: 1px solid rgba(23,36,29,.55);
+      border-radius: 48% 48% 6px 6px;
+    }
+
+    .person-body::after {
+      position: absolute;
+      top: 39px;
+      left: 50%;
+      width: 50px;
+      height: 1px;
+      content: "";
+      background: currentColor;
+      transform: translateX(-50%) rotate(-15deg);
+      transform-origin: center;
+      opacity: .8;
+    }
+
+    .room-shelf {
+      position: absolute;
+      right: 4.8%;
+      bottom: 51px;
+      z-index: 2;
+      display: grid;
+      gap: 5px;
+      width: 72px;
+      padding: 5px 6px 9px;
+      border: 1px solid rgba(23,36,29,.38);
+      border-bottom-width: 3px;
+      background: rgba(241,236,223,.72);
+    }
+
+    .room-shelf::before,
+    .room-shelf::after {
+      position: absolute;
+      right: -8px;
+      left: -8px;
+      height: 4px;
+      content: "";
+      background: var(--moss);
+    }
+
+    .room-shelf::before { top: 31px; }
+    .room-shelf::after { bottom: 33px; }
+
+    .shelf-packet {
+      position: relative;
+      z-index: 1;
+      height: 29px;
+      background: var(--gold-pale);
+      border: 1px solid var(--ink);
+    }
+
+    .shelf-packet:nth-child(2) { background: var(--leaf-pale); }
+    .shelf-packet:nth-child(3) { background: #e8b579; }
+
+    .shelf-packet::after {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 12px;
+      height: 10px;
+      content: "";
+      border: 1px solid var(--moss);
+      border-radius: 50% 0 50% 0;
+      transform: translateX(-50%) rotate(-35deg);
+    }
+
+    .room-shelf-label {
+      position: absolute;
+      right: 0;
+      bottom: -21px;
+      left: 0;
+      color: var(--ink-soft);
+      font-size: 7px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .status-announcer {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      padding: 0;
+      margin: -1px;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .fine-print {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 21px 7.5% 0;
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .fine-print strong { color: var(--ink); font-weight: 750; }
+
+    .fine-rule {
+      display: inline-block;
+      width: 34px;
+      height: 1px;
+      margin: 0 9px 3px 0;
+      background: var(--gold);
+    }
+
+    @media (max-width: 960px) {
+      .intro { gap: 32px; padding-right: 2%; padding-left: 2%; }
+      .surface { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+      .state-nav { min-width: 0; position: static; padding: 0; }
+      .nav-heading { margin-left: 0; }
+      .state-tabs { width: 100%; min-width: 0; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+      .state-tab { width: 100%; min-width: 0; grid-template-columns: 1fr; justify-items: center; gap: 4px; min-height: 60px; padding: 8px 4px; text-align: center; }
+      .state-tab span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+      .tab-marker { display: none; }
+      .state-tab .index { font-size: 8px; }
+      .state-tab span:nth-child(2) { font-size: 9px; }
+      .nav-foot { display: none; }
+      .screen-chrome { min-height: 42px; padding: 0 15px; }
+    }
+
+    @media (max-width: 700px) {
+      .page { width: min(100% - 24px, 560px); padding-top: 17px; }
+      .masthead { gap: 12px; padding-bottom: 17px; }
+      .wordmark { flex: 1 1 auto; }
+      .live-note { width: 120px; min-width: 120px; max-width: 120px; flex: 0 0 120px; font-size: 9px; overflow-wrap: anywhere; }
+      .intro { display: block; padding: 47px 4px 38px; }
+      .kicker { display: block; max-width: 310px; margin-bottom: 17px; font-size: 9px; line-height: 1.5; overflow-wrap: anywhere; }
+      .kicker span { margin: 0 5px; }
+      br.narrow-break { display: block; }
+      h1 { font-size: clamp(2.5rem, 13vw, 4.3rem); }
+      .intro-note { margin-top: 27px; font-size: 1rem; }
+      .state-tabs { gap: 3px; }
+      .state-tab { min-height: 56px; }
+      .state-tab span:nth-child(2) { font-size: 8px; letter-spacing: .04em; }
+      .state-view { grid-template-columns: 1fr; gap: 12px; min-height: 0; padding: 44px 25px 205px; }
+      .state-view h2 { max-width: 500px; margin-bottom: 14px; font-size: clamp(2.7rem, 13vw, 4.3rem); }
+      .state-support { margin-bottom: 22px; font-size: 1rem; }
+      .state-object { order: -1; min-height: 230px; margin: 0 -6px 16px; }
+      .waiting-pulse { width: 138px; height: 138px; }
+      .waiting-pulse strong { font-size: 1.8rem; }
+      .waiting-orbit { width: 190px; height: 190px; }
+      .paper-note { right: -2%; bottom: 8%; transform: scale(.86); }
+      .envelope { transform: scale(.86); }
+      .entry-card { min-height: 240px; transform: scale(.88); }
+      .tomato-card { min-height: 238px; transform: scale(.88); }
+      .tomato-card-label { margin-bottom: 55px; }
+      .broken-seal { transform: scale(.88); }
+      .room-people { right: 16px; bottom: 23px; left: 16px; padding: 0 3%; }
+      .person:nth-child(1), .person:nth-child(7) { display: none; }
+      .room-shelf { right: 8%; transform: scale(.8); transform-origin: right bottom; }
+      .people-label { left: 0; bottom: 130px; font-size: 8px; }
+      .fine-print { display: block; padding: 17px 4px 0; }
+      .fine-print > span + span { display: block; margin-top: 10px; }
+      .screen-context { display: none; }
+      .state-nav { width: 100%; max-width: 100%; overflow: hidden; }
+      .state-tabs { display: flex; max-width: 100%; overflow: hidden; }
+      .state-tab { flex: 1 1 0; }
+      .state-tab span:nth-child(2) { word-break: break-word; }
+      .live-note { display: none; }
+    }
+
+    @media (max-width: 410px) {
+      .wordmark { font-size: 9px; letter-spacing: .12em; }
+      .live-note { max-width: 130px; text-align: right; }
+      .screen-context { display: none; }
+      .state-tab span:nth-child(2) { font-size: 7px; }
+      .state-view { padding-right: 20px; padding-left: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .state-view.is-active,
+      .waiting-pulse,
+      .state-tab,
+      .action {
+        animation: none;
+        transition: none;
+      }
+
+    }
+  </style>
+</head>
+<body data-current-state="waiting">
+  <div class="page">
+    <header class="masthead">
+      <a class="wordmark" href="#waiting" aria-label="Communal seed shelf shared screen">
+        <span class="seed-mark" aria-hidden="true"></span>
+        Communal seed shelf
+      </a>
+      <div class="live-note"><span class="live-dot" aria-hidden="true"></span> Shared screen / drawing in progress</div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="kicker">Neighborhood seed-library drawing <span aria-hidden="true">/</span> shared moment</p>
+        <h1 id="page-title">A note from the shelf.<br><em>One moment,<br class="narrow-break"> held together.</em></h1>
+      </div>
+      <p class="intro-note">Thirty neighbors are watching one shared screen after contributing growing notes to a communal seed shelf.</p>
+    </section>
+
+    <main class="surface">
+      <aside class="state-nav" aria-label="Drawing states">
+        <p class="nav-heading object-label">Review the room</p>
+        <div class="state-tabs" role="tablist" aria-label="Drawing state selector">
+          <button class="state-tab" type="button" role="tab" aria-selected="true" aria-controls="state-waiting" data-set-state="waiting">
+            <span class="index">01</span><span>Waiting</span><span class="tab-marker" aria-hidden="true"></span>
+          </button>
+          <button class="state-tab" type="button" role="tab" aria-selected="false" aria-controls="state-interrupted" data-set-state="interrupted">
+            <span class="index">02</span><span>Connection interrupted</span><span class="tab-marker" aria-hidden="true"></span>
+          </button>
+          <button class="state-tab" type="button" role="tab" aria-selected="false" aria-controls="state-sealed" data-set-state="sealed">
+            <span class="index">03</span><span>Sealed</span><span class="tab-marker" aria-hidden="true"></span>
+          </button>
+          <button class="state-tab" type="button" role="tab" aria-selected="false" aria-controls="state-reveal" data-set-state="reveal">
+            <span class="index">04</span><span>Reveal</span><span class="tab-marker" aria-hidden="true"></span>
+          </button>
+          <button class="state-tab" type="button" role="tab" aria-selected="false" aria-controls="state-selected" data-set-state="selected">
+            <span class="index">05</span><span>Selected</span><span class="tab-marker" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="nav-foot">Use the rail to move through the drawing without leaving the shared screen.</p>
+      </aside>
+
+      <section class="screen" aria-label="Neighborhood seed-library drawing result surface">
+        <div class="screen-chrome">
+          <span class="screen-title">The communal screen</span>
+          <span class="screen-context">Neighborhood seed-library drawing</span>
+        </div>
+
+        <div class="scene">
+          <article id="state-waiting" class="state-view is-active" data-state="waiting" role="tabpanel" aria-label="Waiting" aria-hidden="false">
+            <div class="state-copy">
+              <p class="object-label">The room is ready</p>
+              <h2>Keep the<br><em>moment open.</em></h2>
+              <p class="state-support">Entries close in 01:12</p>
+              <p class="state-caption">The shelf is still receiving growing notes.</p>
+            </div>
+            <div class="state-object waiting-object" aria-hidden="true">
+              <span class="waiting-orbit"></span>
+              <div class="waiting-pulse"><div><strong>01:12</strong><span>entries close</span></div></div>
+              <div class="paper-note"><span>growing notes</span></div>
+            </div>
+          </article>
+
+          <article id="state-interrupted" class="state-view" data-state="interrupted" role="tabpanel" aria-label="Connection interrupted" aria-hidden="true">
+            <div class="state-copy">
+              <p class="object-label">Connection interrupted</p>
+              <h2>The seal is<br><em>still waiting.</em></h2>
+              <p class="state-support">The sealed list could not be verified. Nothing has been drawn.</p>
+              <div class="actions"><button class="action" type="button" data-action="sealed">Retry verification</button></div>
+            </div>
+            <div class="state-object interrupted-object" aria-hidden="true">
+              <div class="broken-seal"><span class="slash"></span><strong>Not verified</strong><small>Nothing has been drawn</small></div>
+            </div>
+          </article>
+
+          <article id="state-sealed" class="state-view" data-state="sealed" role="tabpanel" aria-label="Sealed" aria-hidden="true">
+            <div class="state-copy">
+              <p class="object-label">The list is closed</p>
+              <h2>Held,<br><em>then sealed.</em></h2>
+              <p class="state-support">32 valid entries — list sealed</p>
+              <div class="actions">
+                <button class="action" type="button" data-action="reveal">Begin drawing</button>
+              </div>
+            </div>
+            <div class="state-object sealed-object" aria-hidden="true">
+              <div class="envelope"><span class="envelope-label">Entry list / closed</span></div>
+            </div>
+          </article>
+
+          <article id="state-reveal" class="state-view" data-state="reveal" role="tabpanel" aria-label="Reveal" aria-hidden="true">
+            <div class="state-copy">
+              <p class="object-label">A single entry</p>
+              <h2>Here is<br><em>the moment.</em></h2>
+              <p class="state-support">Entry 18</p>
+              <div class="actions">
+                <button class="action" type="button" data-action="selected">Reveal entry</button>
+                <button class="action action--quiet" type="button" data-action="sealed">Return to sealed list</button>
+              </div>
+            </div>
+            <div class="state-object reveal-object" aria-hidden="true">
+              <div class="entry-card"><div><span class="entry-card-label">Selected entry</span><div class="entry-card-number">18</div><span class="entry-card-rule"></span><span class="entry-card-note">ready to be revealed</span></div></div>
+            </div>
+          </article>
+
+          <article id="state-selected" class="state-view" data-state="selected" role="tabpanel" aria-label="Selected" aria-hidden="true">
+            <div class="state-copy">
+              <p class="object-label">The drawing is complete</p>
+              <h2>Make room<br><em>for the answer.</em></h2>
+              <p class="state-support">Mina's balcony plot receives the rare tomato set</p>
+              <div class="actions"><button class="action action--quiet" type="button" data-action="sealed">Return to sealed list</button></div>
+            </div>
+            <div class="state-object selected-object" aria-hidden="true">
+              <div class="tomato-card"><span class="tomato-card-label">Entry 18 / selected</span><div class="tomato-card-copy">Mina's balcony plot receives the rare tomato set</div></div>
+            </div>
+          </article>
+
+          <div class="room-people" aria-hidden="true">
+            <span class="people-label">Thirty neighbors / one shared screen</span>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="person"><span class="person-head"></span><span class="person-body"></span></div>
+            <div class="room-shelf"><span class="shelf-packet"></span><span class="shelf-packet"></span><span class="shelf-packet"></span><span class="room-shelf-label">seed shelf</span></div>
+          </div>
+
+        </div>
+        <p class="status-announcer" id="status-announcer" aria-live="polite">Waiting. Entries close in 01:12.</p>
+      </section>
+    </main>
+
+    <div class="fine-print">
+      <span><span class="fine-rule" aria-hidden="true"></span><strong>Neighborhood seed-library drawing</strong></span>
+      <span>State changes are contained on this shared screen.</span>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const states = ["waiting", "interrupted", "sealed", "reveal", "selected"];
+      const labels = {
+        waiting: "Waiting. Entries close in 01:12.",
+        interrupted: "Connection interrupted. The sealed list could not be verified. Nothing has been drawn.",
+        sealed: "Sealed. 32 valid entries — list sealed.",
+        reveal: "Reveal. Entry 18.",
+        selected: "Selected. Mina's balcony plot receives the rare tomato set."
+      };
+      const views = [...document.querySelectorAll("[data-state]")];
+      const tabs = [...document.querySelectorAll("[data-set-state]")];
+      const announcer = document.getElementById("status-announcer");
+
+      function setState(nextState, updateHash = true) {
+        const next = states.includes(nextState) ? nextState : "waiting";
+        views.forEach((view) => {
+          const active = view.dataset.state === next;
+          view.classList.toggle("is-active", active);
+          view.setAttribute("aria-hidden", String(!active));
+        });
+        tabs.forEach((tab) => {
+          const active = tab.dataset.setState === next;
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+        document.body.dataset.currentState = next;
+        announcer.textContent = labels[next];
+        if (updateHash && window.location.hash !== `#${next}`) {
+          window.history.replaceState(null, "", `#${next}`);
+        }
+      }
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => setState(tab.dataset.setState));
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          let nextIndex = index;
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (index + 1) % tabs.length;
+          if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === "Home") nextIndex = 0;
+          if (event.key === "End") nextIndex = tabs.length - 1;
+          tabs[nextIndex].focus();
+          setState(tabs[nextIndex].dataset.setState);
+        });
+      });
+
+      document.querySelectorAll("[data-action]").forEach((action) => {
+        action.addEventListener("click", () => setState(action.dataset.action));
+      });
+
+      window.addEventListener("hashchange", () => setState(window.location.hash.slice(1), false));
+      setState(window.location.hash.slice(1) || "waiting", false);
+    })();
+  </script>
+</body>
+</html>

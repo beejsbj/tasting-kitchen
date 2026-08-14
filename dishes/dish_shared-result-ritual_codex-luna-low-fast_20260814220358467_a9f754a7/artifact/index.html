@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neighborhood seed-library drawing</title>
+  <style>
+    :root { --ink:#18231d; --moss:#334f3b; --leaf:#91b58a; --paper:#f0eadb; --paper-2:#e4ddcc; --tomato:#d5644b; --gold:#e4b96b; --line:rgba(240,234,219,.19); --sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; --serif:Georgia,"Times New Roman",serif; --ease-out:cubic-bezier(.215,.61,.355,1); }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; color:var(--paper); background:var(--ink); font-family:var(--sans); }
+    button { font:inherit; }
+    .shell { min-height:100vh; padding:clamp(18px,4vw,56px); display:grid; grid-template-rows:auto 1fr auto; gap:clamp(28px,5vw,72px); overflow:hidden; position:relative; }
+    header,.stage,footer { position:relative; z-index:1; max-width:1260px; width:100%; margin:auto; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; border-bottom:1px solid var(--line); padding-bottom:18px; }
+    .eyebrow { margin:0 0 8px; color:var(--leaf); font-size:.71rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { font:clamp(1.5rem,3vw,2.5rem)/.98 var(--serif); letter-spacing:-.03em; margin:0; max-width:12ch; }
+    .room-note { max-width:29ch; margin:0; color:#bdc7b6; font-size:.82rem; line-height:1.55; text-align:right; }
+    .stage { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr); gap:clamp(32px,7vw,104px); align-items:center; }
+    .hero-copy { max-width:670px; }
+    .hero-copy h2 { font:clamp(3.6rem,10vw,9rem)/.82 var(--serif); letter-spacing:-.075em; margin:0 0 30px; color:var(--paper); }
+    .hero-copy h2 em { color:var(--tomato); font-style:normal; }
+    .hero-copy p { color:#cad2c2; font-size:clamp(1rem,1.5vw,1.2rem); line-height:1.55; max-width:43ch; margin:0 0 26px; }
+    .status-line { display:flex; align-items:center; gap:10px; color:var(--gold); font-size:.78rem; font-weight:750; letter-spacing:.03em; }
+    .pulse { width:9px; height:9px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 5px rgba(228,185,107,.12); }
+    .drawing-card { background:var(--paper); color:var(--ink); min-height:370px; padding:clamp(24px,4vw,48px); position:relative; box-shadow:14px 18px 0 rgba(0,0,0,.18); display:flex; flex-direction:column; justify-content:space-between; transition:transform 280ms var(--ease-out),opacity 220ms var(--ease-out); }
+    .drawing-card::after { content:""; position:absolute; inset:13px; border:1px solid rgba(24,35,29,.14); pointer-events:none; }
+    .card-kicker { color:var(--moss); font-size:.72rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .card-title { font:clamp(2.2rem,5vw,4.5rem)/.9 var(--serif); letter-spacing:-.06em; max-width:8ch; margin:18px 0; }
+    .card-detail { color:#58655a; font-size:.92rem; line-height:1.5; max-width:31ch; }
+    .card-footer { display:flex; justify-content:space-between; gap:16px; align-items:end; border-top:1px solid rgba(24,35,29,.2); padding-top:14px; font-size:.78rem; color:#58655a; }
+    .card-footer strong { color:var(--tomato); font-size:1.05rem; }
+    .controls { max-width:1260px; width:100%; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:18px; border-top:1px solid var(--line); padding-top:18px; }
+    .state-label { color:#aab8a7; font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; }
+    .actions { display:flex; flex-wrap:wrap; gap:9px; justify-content:flex-end; }
+    .action { border:1px solid rgba(240,234,219,.32); color:var(--paper); background:transparent; padding:10px 14px; cursor:pointer; border-radius:999px; transition:background 150ms ease,color 150ms ease,transform 150ms ease; }
+    .action:hover,.action:focus-visible { background:var(--paper); color:var(--ink); transform:translateY(-2px); outline:none; }
+    .action.primary { background:var(--tomato); border-color:var(--tomato); color:#fff8eb; }
+    [data-state] { display:none; }
+    [data-state].is-active { display:block; animation:state-in 280ms var(--ease-out) both; }
+    .state-message { margin:0 0 20px; color:var(--ink); font:1.15rem/1.25 var(--serif); max-width:26ch; }
+    .state-message strong { color:var(--tomato); }
+    .waiting-timer { color:var(--moss); font:clamp(2.8rem,7vw,5.4rem)/.9 var(--serif); letter-spacing:-.06em; }
+    .interrupt .drawing-card { background:#d9d5c9; border-left:10px solid #7b8178; }
+    .interrupt .card-title { color:#596257; }
+    .interrupt .card-footer strong { color:#596257; }
+    .sealed .drawing-card { border-top:10px solid var(--moss); }
+    .sealed .card-title,.reveal .card-title { color:var(--moss); }
+    .reveal .drawing-card { border-top:10px solid var(--gold); }
+    .selected .drawing-card { background:#f4e5c6; border-top:10px solid var(--tomato); }
+    .selected .card-title { max-width:10ch; color:var(--tomato); }
+    @keyframes state-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @media (max-width:760px) { .shell { gap:32px; } header { flex-direction:column; } .room-note { text-align:left; } .stage { grid-template-columns:1fr; gap:28px; } .hero-copy h2 { margin-bottom:20px; } .drawing-card { min-height:310px; } .controls { align-items:flex-start; flex-direction:column; } .actions { justify-content:flex-start; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:1ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:1ms !important; } .action { transform:none !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><p class="eyebrow">Shared screen · Seed shelf / 2026</p><h1>Neighborhood seed-library drawing</h1></div>
+      <p class="room-note">Thirty neighbors are watching one shared screen after contributing growing notes to a communal seed shelf.</p>
+    </header>
+    <section class="stage" aria-live="polite">
+      <div class="hero-copy">
+        <p class="eyebrow" id="phase">The room is ready</p>
+        <h2 id="headline">A little<br><em>breath</em><br>before.</h2>
+        <p id="subhead">Entries are gathered from the shelf. The list will close, then one shared moment will make the next garden season feel close enough to touch.</p>
+        <div class="status-line"><span class="pulse"></span><span id="status">Entries close in 01:12</span></div>
+      </div>
+      <div class="drawing-card-wrap">
+        <div class="drawing-card waiting" data-state="waiting">
+          <span class="card-kicker">The open shelf</span><div><p class="card-title">Leave a note.<br>Stay awhile.</p><p class="card-detail">Growing notes from around the neighborhood are gathered here, ready to become one drawing.</p></div><div class="card-footer"><span>Window closes</span><strong class="waiting-timer">01:12</strong></div>
+        </div>
+        <div class="drawing-card interrupt" data-state="interrupted"><span class="card-kicker">A pause in the room</span><div><p class="card-title">Not yet.</p><p class="card-detail">The sealed list could not be verified. Nothing has been drawn.</p></div><div class="card-footer"><span>Verification</span><strong>Needs another try</strong></div></div>
+        <div class="drawing-card sealed" data-state="sealed"><span class="card-kicker">The shelf is sealed</span><div><p class="card-title">All notes<br>accounted for.</p><p class="card-detail">32 valid entries — list sealed</p></div><div class="card-footer"><span>Next step</span><strong>Begin drawing</strong></div></div>
+        <div class="drawing-card reveal" data-state="reveal"><span class="card-kicker">The room leans in</span><div><p class="card-title">Entry<br><strong>18</strong></p><p class="card-detail">The selected entry is ready to be named.</p></div><div class="card-footer"><span>One shared moment</span><strong>Reveal</strong></div></div>
+        <div class="drawing-card selected" data-state="selected"><span class="card-kicker">The next garden season</span><div><p class="card-title">Mina's balcony plot receives the rare tomato set</p><p class="card-detail">A small handoff from the communal seed shelf, now ready to grow.</p></div><div class="card-footer"><span>Selected entry</span><strong>18</strong></div></div>
+      </div>
+    </section>
+    <footer class="controls"><span class="state-label" id="state-label">State · waiting</span><div class="actions" id="actions"></div></footer>
+  </main>
+  <script>
+    const copy = {
+      waiting:{phase:'The room is ready',headline:'A little<br><em>breath</em><br>before.',subhead:'Entries are gathered from the shelf. The list will close, then one shared moment will make the next garden season feel close enough to touch.',status:'Entries close in 01:12',actions:[['interrupted','Retry verification',''],['sealed','Begin drawing','primary']]},
+      interrupted:{phase:'Connection interrupted',headline:'Hold the<br><em>moment</em>.',subhead:'The room is still here. The list remains untouched until its seal can be verified.',status:'The sealed list could not be verified. Nothing has been drawn.',actions:[['waiting','Retry verification','primary']]},
+      sealed:{phase:'List sealed',headline:'Now we<br><em>know</em> the room.',subhead:'Every valid note has a place in the sealed list. The drawing can begin when everyone is ready.',status:'32 valid entries — list sealed',actions:[['reveal','Begin drawing','primary'],['waiting','Return to waiting','']]},
+      reveal:{phase:'Drawing in progress',headline:'One note<br><em>rises</em>.',subhead:'The room has narrowed to one entry. Give it a second before it is named.',status:'Entry 18',actions:[['selected','Reveal entry','primary'],['sealed','Return to sealed list','']]},
+      selected:{phase:'The handoff',headline:'Something<br><em>to grow</em>.',subhead:'The shared shelf has made its selection. The next garden season now has a small beginning.',status:"Mina's balcony plot receives the rare tomato set",actions:[['sealed','Return to sealed list','']]}
+    };
+    const keys=Object.keys(copy); let current='waiting';
+    const $=id=>document.getElementById(id);
+    function render(state){ current=state; const c=copy[state]; document.querySelectorAll('[data-state]').forEach(el=>el.classList.toggle('is-active',el.dataset.state===state)); $('phase').textContent=c.phase; $('headline').innerHTML=c.headline; $('subhead').textContent=c.subhead; $('status').textContent=c.status; $('state-label').textContent='State · '+state; $('actions').innerHTML=c.actions.map(([target,label,kind])=>`<button class="action ${kind}" data-target="${target}">${label}</button>`).join(''); document.querySelectorAll('[data-target]').forEach(b=>b.addEventListener('click',()=>render(b.dataset.target))); }
+    render(current);
+  </script>
+</body>
+</html>

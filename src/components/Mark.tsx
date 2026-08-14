@@ -1,8 +1,8 @@
-export function Mark({ compact = false }: { compact?: boolean }) {
+export function Mark() {
   return (
-    <span className={`mark ${compact ? "mark--compact" : ""}`} aria-label="Model Tasting">
+    <span className="mark" aria-label="Model Tasting">
       <span>MT</span>
-      {!compact && <i>Model tasting</i>}
+      <i>Model tasting</i>
     </span>
   );
 }

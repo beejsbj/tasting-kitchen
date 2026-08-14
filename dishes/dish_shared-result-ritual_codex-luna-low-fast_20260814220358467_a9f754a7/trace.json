@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "shared-result-ritual",
+  "turns": [
+    {
+      "id": "build-ritual",
+      "role": "prompt",
+      "prompt": "Mount the fictional event packet. Build a self-contained runnable artifact with no network calls or external media.\n\nRead fixtures/event.json and build a complete responsive result surface as index.html. It must let a reviewer enter waiting, connection-interrupted, sealed, reveal, and selected states without reloading. Treat the drawing as a room of people awaiting one consequential moment, not as a metrics dashboard. Derive a visual register from the event instead of using supplied style adjectives. Motion, copy, type, and sound-free feedback may be expressive when they clarify state. Each state container must expose its key as data-state, and every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, or prizes beyond the packet.",
+      "response": "Built and verified the self-contained result surface:\n\n[index.html](artifact/index.html)\n\nIncludes:\n- Waiting, interrupted, sealed, reveal, and selected states\n- No-reload state transitions\n- Responsive layout\n- Reduced-motion support\n- Inline-only visuals with no network calls or external media\n- Fixture-aligned copy and constraints\n- Syntax and external-reference checks passed",
+      "usage": {
+        "input_tokens": 89461,
+        "cached_input_tokens": 50432,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4924,
+        "reasoning_output_tokens": 260
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "remove-empty-spectacle",
+      "role": "correction",
+      "prompt": "Revise the same artifact so that any flourish which does not clarify anticipation, interruption, verification, reveal, or consequence is removed or reassigned. Preserve the eventful register; do not flatten the result into a conventional card dashboard.",
+      "response": "Revised [index.html](artifact/index.html).\n\nRemoved:\n- Ambient dot texture\n- Decorative seed glyph\n- Arbitrary card rotations\n\nReassigned visual emphasis to:\n- Waiting timer for anticipation\n- Halted edge for interruption\n- Progression rules for sealed/reveal\n- Warm handoff treatment for consequence\n\nVerified all five states and inline script syntax remain intact.",
+      "usage": {
+        "input_tokens": 210304,
+        "cached_input_tokens": 162816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 8164,
+        "reasoning_output_tokens": 497
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    }
+  ]
+}

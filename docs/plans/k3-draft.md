@@ -1,4 +1,6 @@
-# K3 independent draft
+# Historical Hermes fallback draft
+
+> Superseded planning record. This was originally labeled as K3, but a later Hermes session audit showed the model had fallen back to `deepseek-v4-flash` through `opencode-go`. It is retained for design history and must not be cited as K3 output. The current CLI-and-gallery architecture replaces this manual copy/paste proposal.
 
 ## Endpoint
 

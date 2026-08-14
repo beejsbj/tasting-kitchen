@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1eadc">
+  <title>Seed Shelf — Neighborhood drawing</title>
+  <style>
+    :root {
+      --paper: #f1eadc;
+      --paper-deep: #e3d6bf;
+      --paper-bright: #fbf8f1;
+      --ink: #202d36;
+      --ink-soft: #50616a;
+      --ink-faint: #809097;
+      --blue: #1d6070;
+      --blue-dark: #123e4a;
+      --blue-wash: #d8e5e3;
+      --tomato: #cf5b3d;
+      --tomato-dark: #9d3f2b;
+      --tomato-wash: #f1d4c8;
+      --leaf: #5e7853;
+      --line: 1px;
+      --line-strong: 2px;
+      --radius-card: 18px;
+      --radius-small: 9px;
+      --shadow-card: 0 18px 40px rgba(32, 45, 54, .10);
+      --shadow-lift: 0 8px 16px rgba(32, 45, 54, .15);
+      --font-display: "Iowan Old Style", "Baskerville", "Palatino Linotype", Georgia, serif;
+      --font-body: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-7: 32px;
+      --space-8: 40px;
+      --space-9: 56px;
+      --ease-out: cubic-bezier(.215, .61, .355, 1);
+      --ease-in-out: cubic-bezier(.645, .045, .355, 1);
+      --ease: ease;
+      --duration-fast: 150ms;
+      --duration-standard: 240ms;
+      --duration-long: 420ms;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--paper); }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    button { font: inherit; }
+    button:focus-visible, a:focus-visible {
+      outline: var(--line-strong) solid var(--tomato);
+      outline-offset: var(--space-1);
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: minmax(210px, 270px) 1fr;
+      width: 100%;
+      max-width: 100vw;
+      min-height: 100vh;
+    }
+
+    .rail, .content, .event-intro, .state-nav { min-width: 0; }
+
+    .rail {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+      padding: var(--space-7) var(--space-6);
+      border-right: var(--line) solid rgba(32, 45, 54, .16);
+      background: rgba(251, 248, 241, .58);
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--blue-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .wordmark-mark {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      border: var(--line-strong) solid var(--blue);
+      border-radius: 50% 50% 46% 46%;
+      transform: rotate(-8deg);
+    }
+    .wordmark-mark::before,
+    .wordmark-mark::after {
+      position: absolute;
+      content: "";
+      background: var(--blue);
+    }
+    .wordmark-mark::before { width: var(--line-strong); height: 22px; left: 13px; top: 2px; }
+    .wordmark-mark::after { width: 12px; height: var(--line); left: 7px; top: 10px; transform: rotate(-30deg); }
+
+    .event-intro { display: grid; gap: var(--space-4); }
+    .event-intro > * { min-width: 0; }
+    .eyebrow {
+      margin: 0;
+      color: var(--tomato-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .event-intro h1 {
+      max-width: 220px;
+      margin: 0;
+      color: var(--blue-dark);
+      font-family: var(--font-display);
+      font-size: clamp(28px, 3vw, 38px);
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: .98;
+    }
+    .event-intro p:not(.eyebrow) { margin: 0; color: var(--ink-soft); font-size: 14px; overflow-wrap: anywhere; }
+
+    .room-note {
+      display: grid;
+      gap: var(--space-3);
+      margin-top: auto;
+      padding-top: var(--space-5);
+      border-top: var(--line) solid rgba(32, 45, 54, .16);
+    }
+    .room-note p { margin: 0; color: var(--ink-soft); font-size: 12px; }
+    .room-count { display: flex; align-items: center; gap: var(--space-3); font-size: 13px; font-weight: 700; }
+    .room-count-mark { display: grid; grid-template-columns: repeat(5, 5px); gap: 3px; width: 37px; }
+    .room-count-mark i { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+    .room-count-mark i:nth-child(3n) { background: var(--tomato); }
+
+    .content {
+      width: min(1180px, 100%);
+      max-width: 100%;
+      margin: 0 auto;
+      padding: var(--space-6) clamp(var(--space-5), 5vw, var(--space-9));
+    }
+
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); margin-bottom: var(--space-7); }
+    .topbar-note { margin: 0; color: var(--ink-soft); font-size: 13px; }
+    .topbar-note strong { color: var(--blue-dark); }
+    .signal {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border: var(--line) solid rgba(32, 45, 54, .22);
+      border-radius: 99px;
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .signal-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+    body[data-state="waiting"] .signal-dot { background: var(--leaf); animation: signal-pulse 2.4s var(--ease-in-out) infinite; }
+    body[data-state="interrupted"] .signal-dot { background: var(--tomato-dark); }
+    body[data-state="sealed"] .signal-dot { background: var(--blue); }
+    body[data-state="reveal"] .signal-dot { background: var(--tomato); }
+    body[data-state="selected"] .signal-dot { background: var(--tomato-dark); }
+
+    .state-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-6); }
+    .state-tab {
+      min-width: 0;
+      min-height: 40px;
+      padding: var(--space-2) var(--space-4);
+      border: var(--line) solid rgba(32, 45, 54, .2);
+      border-radius: var(--radius-small);
+      color: var(--ink-soft);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      transition: background-color var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
+    }
+    .state-tab:hover { border-color: var(--blue); color: var(--blue-dark); transform: translateY(-1px); }
+    .state-tab[aria-selected="true"] { border-color: var(--blue-dark); color: var(--paper-bright); background: var(--blue-dark); }
+    .state-tab[data-tab="interrupted"][aria-selected="true"] { border-color: var(--tomato-dark); background: var(--tomato-dark); }
+
+    .stage {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      min-height: 620px;
+      border: var(--line) solid rgba(32, 45, 54, .25);
+      border-radius: var(--radius-card);
+      background: var(--paper-bright);
+      box-shadow: var(--shadow-card);
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-5);
+      padding: var(--space-5) var(--space-6);
+      border-bottom: var(--line) solid rgba(32, 45, 54, .14);
+    }
+    .stage-header p { margin: 0; }
+    .stage-label { color: var(--ink-faint); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .current-state { color: var(--blue-dark); font-family: var(--font-display); font-size: 18px; }
+
+    .state-panel { display: none; min-height: 545px; padding: clamp(var(--space-6), 5vw, var(--space-9)); }
+    .state-panel.is-active { display: block; animation: panel-in var(--duration-standard) var(--ease-out) both; }
+    .panel-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); align-items: center; gap: clamp(var(--space-7), 8vw, var(--space-9)); min-height: 450px; }
+    .panel-copy { max-width: 600px; }
+    .panel-copy h2 { margin: var(--space-4) 0 var(--space-5); color: var(--blue-dark); font-family: var(--font-display); font-size: clamp(44px, 7vw, 84px); font-weight: 500; letter-spacing: -.06em; line-height: .9; text-wrap: balance; }
+    .panel-copy .lede { max-width: 480px; margin: 0; color: var(--ink-soft); font-size: clamp(17px, 2vw, 20px); line-height: 1.45; }
+    .support-copy { margin: var(--space-4) 0 0; color: var(--ink-faint); font-size: 13px; }
+
+    .action-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-7); }
+    .action {
+      min-height: 48px;
+      padding: var(--space-3) var(--space-5);
+      border: var(--line-strong) solid var(--blue-dark);
+      border-radius: var(--radius-small);
+      color: var(--paper-bright);
+      background: var(--blue-dark);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      transition: background-color var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease);
+    }
+    .action:hover { background: var(--blue); box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+    .action:active { transform: translateY(0) scale(.98); }
+    .action.secondary { border-color: rgba(32, 45, 54, .24); color: var(--blue-dark); background: transparent; }
+    .action.secondary:hover { border-color: var(--blue); background: var(--blue-wash); box-shadow: none; }
+    .action.danger { border-color: var(--tomato-dark); background: var(--tomato-dark); }
+    .action.danger:hover { background: var(--tomato); }
+
+    .scene {
+      position: relative;
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: var(--line) solid rgba(29, 96, 112, .28);
+      border-radius: var(--radius-card);
+      background: var(--blue-wash);
+    }
+    .scene-caption { position: absolute; right: var(--space-4); bottom: var(--space-4); color: var(--blue-dark); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+
+    .waiting-mark { display: grid; place-items: center; width: 250px; height: 250px; border: var(--line-strong) solid var(--blue-dark); border-radius: 50%; background: var(--paper-bright); }
+    .countdown { color: var(--blue-dark); font-family: var(--font-display); font-size: 72px; letter-spacing: -.08em; line-height: .8; }
+    .countdown-label { display: block; margin-top: var(--space-3); color: var(--ink-faint); font-family: var(--font-body); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-align: center; text-transform: uppercase; }
+
+    .interrupted .scene { background: var(--tomato-wash); border-color: rgba(157, 63, 43, .3); }
+    .interrupted .panel-copy h2 { color: var(--tomato-dark); }
+    .break-mark { position: relative; width: 180px; height: 180px; border: var(--line-strong) solid var(--tomato-dark); border-radius: 50%; }
+    .break-mark::before, .break-mark::after { position: absolute; content: ""; left: 50%; top: 50%; width: 78px; height: var(--line-strong); background: var(--tomato-dark); }
+    .break-mark::before { transform: translate(-50%, -50%) rotate(45deg); } .break-mark::after { transform: translate(-50%, -50%) rotate(-45deg); }
+    .break-mark span { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 36px; height: 36px; border: var(--line-strong) solid var(--tomato-dark); border-radius: 50%; color: var(--tomato-dark); background: var(--tomato-wash); font-family: var(--font-display); font-size: 22px; transform: translate(-50%, -50%); }
+
+    .sealed .scene { background: var(--paper-deep); }
+    .seal-card { display: grid; place-items: center; width: 230px; height: 290px; border: var(--line-strong) solid var(--blue-dark); border-radius: var(--radius-small); background: var(--paper-bright); box-shadow: 12px 12px 0 rgba(29, 96, 112, .13); transform: rotate(3deg); }
+    .seal-card-inner { display: grid; place-items: center; width: 174px; height: 234px; border: var(--line) dashed var(--tomato-dark); }
+    .seal-card strong { color: var(--blue-dark); font-family: var(--font-display); font-size: 68px; font-weight: 500; letter-spacing: -.08em; line-height: .8; }
+    .seal-card span { margin-top: var(--space-4); color: var(--tomato-dark); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+
+    .reveal .scene { background: var(--blue-dark); border-color: var(--blue-dark); }
+    .reveal .panel-copy h2 { color: var(--blue-dark); }
+    .entry-card { display: grid; place-items: center; width: 230px; height: 290px; border: var(--line-strong) solid var(--paper); border-radius: var(--radius-small); color: var(--paper); background: var(--blue); box-shadow: 12px 12px 0 rgba(32, 45, 54, .18); transform: rotate(-3deg); }
+    .entry-card small { color: var(--paper); font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .entry-card strong { margin-top: var(--space-3); font-family: var(--font-display); font-size: 82px; font-weight: 500; letter-spacing: -.1em; line-height: .8; }
+    .entry-card i { width: 56px; height: var(--line-strong); margin-top: var(--space-4); background: var(--tomato); transform: rotate(-4deg); }
+
+    .selected .scene { background: var(--tomato-wash); border-color: rgba(157, 63, 43, .3); }
+    .selected .panel-copy h2 { color: var(--tomato-dark); }
+    .tomato-stamp { position: relative; display: grid; place-items: center; width: 230px; height: 230px; border: var(--line-strong) solid var(--tomato-dark); border-radius: 48% 52% 51% 49%; color: var(--tomato-dark); background: var(--paper-bright); transform: rotate(7deg); }
+    .tomato-stamp::before { position: absolute; content: ""; top: -12px; left: 96px; width: 36px; height: 24px; border: var(--line-strong) solid var(--leaf); border-bottom: 0; border-radius: 50% 50% 0 0; transform: rotate(-18deg); }
+    .tomato-stamp::after { position: absolute; content: ""; width: 90px; height: 90px; border: var(--line) solid var(--tomato); border-radius: 50%; }
+    .tomato-stamp span { position: relative; z-index: 1; width: 120px; color: var(--tomato-dark); font-family: var(--font-display); font-size: 23px; line-height: .95; text-align: center; }
+
+    .state-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-6); border-top: var(--line) solid rgba(32, 45, 54, .14); color: var(--ink-faint); font-size: 12px; }
+    .state-footer p { margin: 0; }
+    .state-footer strong { color: var(--ink-soft); }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @keyframes panel-in { from { opacity: 0; transform: translateY(var(--space-3)); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes signal-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.78); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .state-panel, .state-panel *, .state-tab, .action, .signal-dot, .stage * {
+        animation: none;
+        transition: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .rail { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: var(--space-5); padding: var(--space-5) clamp(var(--space-5), 5vw, var(--space-9)); border-right: 0; border-bottom: var(--line) solid rgba(32, 45, 54, .16); }
+      .event-intro { grid-column: 1 / -1; grid-template-columns: minmax(150px, .8fr) 1.2fr; align-items: end; gap: var(--space-5); }
+      .event-intro h1 { grid-row: span 2; }
+      .room-note { margin-top: 0; padding: 0; border: 0; }
+      .room-note p { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      .content { padding: var(--space-5) var(--space-4); }
+      .topbar { align-items: flex-start; flex-direction: column; margin-bottom: var(--space-5); }
+      .state-nav { display: grid; grid-template-columns: 1fr; }
+      .state-tab { width: 100%; }
+      .stage { min-height: 0; }
+      .stage-header, .state-footer { padding-left: var(--space-4); padding-right: var(--space-4); }
+      .state-panel { min-height: 0; padding: var(--space-5) var(--space-4) var(--space-7); }
+      .panel-layout { grid-template-columns: 1fr; gap: var(--space-7); min-height: 0; }
+      .panel-copy h2 { font-size: clamp(48px, 17vw, 76px); }
+      .scene { min-height: 280px; }
+      .state-footer { align-items: flex-start; flex-direction: column; }
+      .rail { grid-template-columns: 1fr; }
+      .event-intro { grid-template-columns: 1fr; align-items: start; }
+      .event-intro h1 { grid-row: auto; }
+      .room-note { display: flex; align-items: center; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail" aria-label="Event information">
+      <div class="wordmark"><span class="wordmark-mark" aria-hidden="true"></span> Seed shelf</div>
+      <div class="event-intro">
+        <p class="eyebrow">Live shared drawing</p>
+        <h1>Neighborhood seed-library drawing</h1>
+        <p>Thirty neighbors are watching one shared screen after contributing growing notes to a communal seed shelf.</p>
+      </div>
+      <div class="room-note">
+        <div class="room-count"><span class="room-count-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>30 neighbors · one shared screen</span></div>
+        <p>No money or wagering · no accounts</p>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <p class="topbar-note">The room is ready. <strong>Stay with the moment.</strong></p>
+        <div class="signal"><span class="signal-dot" aria-hidden="true"></span><span id="signal-text">Live room</span></div>
+      </div>
+
+      <div class="state-nav" role="tablist" aria-label="Drawing states">
+        <button class="state-tab" id="tab-waiting" type="button" role="tab" aria-selected="true" aria-controls="state-waiting" data-tab="waiting">Waiting</button>
+        <button class="state-tab" id="tab-interrupted" type="button" role="tab" aria-selected="false" aria-controls="state-interrupted" data-tab="interrupted">Connection interrupted</button>
+        <button class="state-tab" id="tab-sealed" type="button" role="tab" aria-selected="false" aria-controls="state-sealed" data-tab="sealed">Sealed</button>
+        <button class="state-tab" id="tab-reveal" type="button" role="tab" aria-selected="false" aria-controls="state-reveal" data-tab="reveal">Reveal</button>
+        <button class="state-tab" id="tab-selected" type="button" role="tab" aria-selected="false" aria-controls="state-selected" data-tab="selected">Selected</button>
+      </div>
+
+      <section class="stage" aria-live="polite">
+        <header class="stage-header">
+          <p class="stage-label">One shared screen</p>
+          <p class="current-state" id="current-state">Waiting</p>
+        </header>
+
+        <section class="state-panel waiting is-active" id="state-waiting" data-state="waiting" role="tabpanel" aria-labelledby="tab-waiting">
+          <div class="panel-layout">
+            <div class="panel-copy">
+              <p class="eyebrow">The shelf is still open</p>
+              <h2>Make room for the draw.</h2>
+              <p class="lede">Entries close in 01:12. Every growing note is here, waiting for the list to be sealed.</p>
+              <div class="action-row"><button class="action" type="button" data-go="sealed">Begin drawing</button></div>
+            </div>
+            <div class="scene" aria-label="A simple illustrated communal seed shelf">
+              <div class="waiting-mark"><div><div class="countdown">01:12</div><span class="countdown-label">until entries close</span></div></div>
+              <span class="scene-caption">communal shelf / open</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="state-panel interrupted" id="state-interrupted" data-state="interrupted" role="tabpanel" aria-labelledby="tab-interrupted" hidden>
+          <div class="panel-layout">
+            <div class="panel-copy">
+              <p class="eyebrow">Connection interrupted</p>
+              <h2>Keep the room together.</h2>
+              <p class="lede">The sealed list could not be verified. Nothing has been drawn.</p>
+              <p class="support-copy">The shared screen is paused at the last safe moment.</p>
+              <div class="action-row"><button class="action danger" type="button" data-go="sealed">Retry verification</button><button class="action secondary" type="button" data-go="waiting">Return to waiting</button></div>
+            </div>
+            <div class="scene" aria-label="Connection interrupted marker"><div class="break-mark"><span>!</span></div><span class="scene-caption">verification / paused</span></div>
+          </div>
+        </section>
+
+        <section class="state-panel sealed" id="state-sealed" data-state="sealed" role="tabpanel" aria-labelledby="tab-sealed" hidden>
+          <div class="panel-layout">
+            <div class="panel-copy">
+              <p class="eyebrow">The list is closed</p>
+              <h2>Hold the seal.</h2>
+              <p class="lede">32 valid entries — list sealed. The room is quiet enough for one shared draw.</p>
+              <div class="action-row"><button class="action" type="button" data-go="reveal">Begin drawing</button><button class="action secondary" type="button" data-go="waiting">Return to waiting</button></div>
+            </div>
+            <div class="scene" aria-label="Sealed entry list"><div class="seal-card"><div class="seal-card-inner"><strong>32</strong><span>valid entries</span></div></div><span class="scene-caption">list / sealed</span></div>
+          </div>
+        </section>
+
+        <section class="state-panel reveal" id="state-reveal" data-state="reveal" role="tabpanel" aria-labelledby="tab-reveal" hidden>
+          <div class="panel-layout">
+            <div class="panel-copy">
+              <p class="eyebrow">The draw is in the room</p>
+              <h2>One entry, held up.</h2>
+              <p class="lede">The sealed list points to <strong>Entry 18</strong>. Let the room see it together.</p>
+              <div class="action-row"><button class="action" type="button" data-go="selected">Reveal entry</button><button class="action secondary" type="button" data-go="sealed">Return to sealed list</button></div>
+            </div>
+            <div class="scene" aria-label="Entry 18 card"><div class="entry-card"><div><small>drawn entry</small><strong>18</strong><i></i></div></div><span class="scene-caption">entry / held</span></div>
+          </div>
+        </section>
+
+        <section class="state-panel selected" id="state-selected" data-state="selected" role="tabpanel" aria-labelledby="tab-selected" hidden>
+          <div class="panel-layout">
+            <div class="panel-copy">
+              <p class="eyebrow">The shared result</p>
+              <h2>Pass it to Mina.</h2>
+              <p class="lede">Mina's balcony plot receives the rare tomato set.</p>
+              <p class="support-copy">Entry 18 is now visible to the room.</p>
+              <div class="action-row"><button class="action secondary" type="button" data-go="sealed">Return to sealed list</button></div>
+            </div>
+            <div class="scene" aria-label="Tomato stamp marking the selected result"><div class="tomato-stamp"><span>rare<br>tomato<br>set</span></div><span class="scene-caption">shared result / selected</span></div>
+          </div>
+        </section>
+
+        <footer class="state-footer"><p><strong id="footer-state">Waiting</strong> · state can be entered without reloading</p><p>Sound-free feedback</p></footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const eventPacket = {
+      event: "Neighborhood seed-library drawing",
+      context: "Thirty neighbors are watching one shared screen after contributing growing notes to a communal seed shelf.",
+      states: {
+        waiting: "Entries close in 01:12",
+        interrupted: "The sealed list could not be verified. Nothing has been drawn.",
+        sealed: "32 valid entries — list sealed",
+        reveal: "Entry 18",
+        selected: "Mina's balcony plot receives the rare tomato set"
+      },
+      actions: ["Retry verification", "Begin drawing", "Reveal entry", "Return to sealed list"],
+      constraints: ["No money or wagering", "No accounts", "No confetti requirement", "Do not invent testimonials or participant details"]
+    };
+
+    const labels = {
+      waiting: "Waiting",
+      interrupted: "Connection interrupted",
+      sealed: "Sealed",
+      reveal: "Reveal",
+      selected: "Selected"
+    };
+
+    const signalLabels = {
+      waiting: "Live room",
+      interrupted: "Needs verification",
+      sealed: "List sealed",
+      reveal: "Entry ready",
+      selected: "Result visible"
+    };
+
+    const panels = [...document.querySelectorAll(".state-panel")];
+    const tabs = [...document.querySelectorAll(".state-tab")];
+    const currentState = document.querySelector("#current-state");
+    const footerState = document.querySelector("#footer-state");
+    const signalText = document.querySelector("#signal-text");
+
+    function setState(nextState) {
+      if (!eventPacket.states[nextState]) return;
+      panels.forEach((panel) => {
+        const active = panel.dataset.state === nextState;
+        panel.classList.toggle("is-active", active);
+        panel.hidden = !active;
+      });
+      tabs.forEach((tab) => {
+        const active = tab.dataset.tab === nextState;
+        tab.setAttribute("aria-selected", String(active));
+        tab.setAttribute("id", `tab-${tab.dataset.tab}`);
+      });
+      currentState.textContent = labels[nextState];
+      footerState.textContent = labels[nextState];
+      signalText.textContent = signalLabels[nextState];
+      document.body.dataset.state = nextState;
+      document.title = `${labels[nextState]} · Seed Shelf`;
+    }
+
+    tabs.forEach((tab) => tab.addEventListener("click", () => setState(tab.dataset.tab)));
+    document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => setState(button.dataset.go)));
+    setState("waiting");
+  </script>
+</body>
+</html>

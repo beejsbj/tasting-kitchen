@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_shared-result-ritual_codex-luna-xhigh-fast_20260814221457904_cb96324d",
+  "recipe": {
+    "id": "shared-result-ritual",
+    "version": "1.0.0",
+    "hash": "sha256:7ea2e47fb18b50d7d11dcac27605e6fea82e5120fe9b3bd062a03736ef661dd7"
+  },
+  "executedAt": "2026-08-14T22:14:57.904Z",
+  "finalizedAt": "2026-08-14T22:28:32.581Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh-fast",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.145.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "priority",
+    "requestedServiceTier": "fast",
+    "observedServiceTier": "priority",
+    "configHash": "sha256:90b836968f9b1227648cdd4f7c1ef519981b538c76c8fd81a82e0cb9ee9190c8",
+    "catalogHash": "sha256:f6ed1a4109af0560c6261ea50f6e92abc4c4cbfab96c2159ac6db5081300fa08"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/index.html",
+        "sha256": "90a32facbc234186119415cb3cb6fb7feee1a57070e2196e82869b48618ec859",
+        "bytes": 35710
+      }
+    ],
+    "treeHash": "sha256:fea05267c458b3ef09ad9fb8c6063dc3d52b47042e85b21b89e3990c3b10b653"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:f2f520f171419d2f1c883b4d3ba3c75749c135e8813cc9168c5237fe8ee49099"
+}

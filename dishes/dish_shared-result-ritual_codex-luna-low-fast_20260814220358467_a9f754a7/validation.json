@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "entry-exists",
+      "type": "file-exists",
+      "required": true,
+      "description": "The runnable result surface exists.",
+      "passed": true,
+      "detail": "index.html exists"
+    },
+    {
+      "id": "state-hooks",
+      "type": "command",
+      "required": true,
+      "description": "All five scripted event states have inspectable hooks.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "state-review",
+      "type": "manual",
+      "required": false,
+      "description": "Activate every state with and without reduced motion and verify that consequence remains perceptible.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}

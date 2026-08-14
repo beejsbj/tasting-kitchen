@@ -1,5 +1,7 @@
 # Flight candidates
 
+> Historical predecessor analysis. Its nine-flight/27-dish ontology informed the current menu but is not the active catalog. The shipped system uses domains, versioned recipes, immutable dishes, exact collections, and optional CLI flights.
+
 ## Menu size
 
 The smallest sufficient menu is **nine flights and 27 dishes**. Fewer flights would collapse distinctions the evidence says matter: conversation versus transformation; presence versus memory/proactivity; semantic framing versus research; accountable operation versus design judgment; visual register versus interaction physics. Three dishes per flight are enough to include a baseline encounter, a correction/recovery encounter, and a boundary or negative case without turning the kitchen into an exhaustive benchmark.

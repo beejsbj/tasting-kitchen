@@ -6,7 +6,7 @@ Model Tasting Kitchen is a reusable set of standardized model recipes, an automa
 
 The product is inspired by Sitegeist's repeated same-brief comparison, generalized across Burooj's real AI use. It does not rank models. Repeated exposure to comparable artifacts is meant to build human intuition about a model's tendencies, strengths, and recurring fingerprints.
 
-The previous manual copy/paste notebook was the wrong product. Its historical analysis, sanitized scenarios, fixtures, corrections, and checks remain source material; its browser-local notes workflow and ChatGPT Sites surface are legacy until migration is complete.
+The previous manual copy/paste notebook was the wrong product. Its historical analysis, sanitized scenarios, fixtures, corrections, and checks remain source material; the browser-local notes workflow and ChatGPT Sites surface have been retired from this repository.
 
 ## Language
 
@@ -93,7 +93,9 @@ A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are ha
 - Re-home every old recipe as migrate, rewrite/split, hidden control, or retire.
 - Validate public/private boundaries.
 
-**K3 Gate 2:** audit taxonomy, schema leanness, migration, and missing coverage before public authoring.
+**Consultant Gate 2:** audit taxonomy, schema leanness, migration, and missing coverage before public authoring.
+
+**Gate result:** passed as an independent Hermes review. A later identity audit found that this early session had fallen back to DeepSeek rather than the requested K3, so it is not cited as K3 evidence.
 
 ### 2. Full recipe menu
 
@@ -103,9 +105,9 @@ A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are ha
 - Include both Textbook controls and Mother's recipes derived from Lottery, Emotitone, Day Shaper, Experience Alcohol, Strudel work, correction patterns, and other supported evidence.
 - Treat Koala as a newly supplied curated reference, not retroactive historical evidence.
 
-**K3 Gate 3:** audit coverage, generic-sludge risk, stranger test, tag hygiene, and executable contracts.
+**Consultant Gate 3:** audit coverage, generic-sludge risk, stranger test, tag hygiene, and executable contracts.
 
-**Gate result:** passed. The v1 menu freezes at 51 recipes: 47 ready, three hidden controls, and one intentionally deferred image-generation draft. Subjective and trace-reading cues are non-gating; public acceptance depends only on deterministic checks and runner-generic artifact completeness.
+**Gate result:** passed. The v1 menu freezes at 54 recipes: 50 ready, three hidden controls, and one intentionally deferred image-generation draft. Subjective and trace-reading cues are non-gating; public acceptance depends only on deterministic checks and runner-generic artifact completeness. As with Gate 2, this was an independent Hermes fallback review, not verified K3 evidence.
 
 ### 3. CLI and runner
 
@@ -113,7 +115,9 @@ A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are ha
 - Prove exact routing and isolation with one canary per seed configuration before any batch.
 - Keep failed attempts private and visible; never silently overwrite a dish.
 
-**K3 Gate 4:** inspect canary manifests, isolation evidence, traces, and output contracts before scaling.
+**Consultant Gate 4:** inspect canary manifests, isolation evidence, traces, and output contracts before scaling.
+
+**Gate result:** passed after identity, recovery, fail-closed publication, and hash-tamper tests were added. The reviewing Hermes session was later identified as a DeepSeek fallback, not K3.
 
 ### 4. Static gallery
 
@@ -121,7 +125,9 @@ A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are ha
 - Render collections, nine domains, lineage badges, recipe details, exact run identity, real artifacts, and same-recipe comparisons.
 - Sandbox runnable outputs and block artifact network access by default.
 
-**K3 Gate 5:** audit gallery fidelity to the product and verify that the evidence—not chrome or scores—dominates.
+**Consultant Gate 5:** audit gallery fidelity to the product and verify that the evidence—not chrome or scores—dominates.
+
+**Gate result:** passed after the gallery became artifact-dominant, session dishes gained a readable turn renderer, and artifact reviews gained an explicit human/agent provenance field. The reviewing Hermes session was later identified as a DeepSeek fallback, not K3.
 
 ### 5. Seed generation and publication
 
@@ -130,7 +136,11 @@ A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are ha
 - Build the static tree, deploy atomically to bjslab, verify existing artifact routes remain healthy, and retain a rollback release.
 - Soft-retire the owner-only ChatGPT Sites project after the replacement is live; full deletion requires the Sites management UI/support because no deletion connector is available.
 
-**K3 Gate 6:** final audit of menu, collections, comparison fidelity, privacy, and visible fingerprints before handoff.
+**Verified K3 Gate 6:** final audit of menu, collections, comparison fidelity, privacy, and visible fingerprints before handoff.
+
+**Gate result:** passed by `moonshotai/kimi-k3` at high reasoning through the Nous provider in persistent Hermes session `20260814_184531_1b9608`. K3 found the Sol, Terra, and Luna visual fingerprints legible, agreed with the design-system and cross-domain motion placement, and issued a deployment verdict of **PASS**.
+
+**Stage result:** complete. All 15 proof-flight dishes are accepted, the legacy manual application is removed, and the read-only gallery is live at `https://artifacts.burooj.dev/model-tasting/` through a separate healthy Nginx sidecar. Existing artifact routes retained their pre-deployment checksums.
 
 ## Explicit non-goals
 

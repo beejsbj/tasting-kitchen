@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "shared-result-ritual",
+  "turns": [
+    {
+      "id": "build-ritual",
+      "role": "prompt",
+      "prompt": "Mount the fictional event packet. Build a self-contained runnable artifact with no network calls or external media.\n\nRead fixtures/event.json and build a complete responsive result surface as index.html. It must let a reviewer enter waiting, connection-interrupted, sealed, reveal, and selected states without reloading. Treat the drawing as a room of people awaiting one consequential moment, not as a metrics dashboard. Derive a visual register from the event instead of using supplied style adjectives. Motion, copy, type, and sound-free feedback may be expressive when they clarify state. Each state container must expose its key as data-state, and every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, or prizes beyond the packet.",
+      "response": "Built the standalone responsive artifact: [index.html](artifact/index.html).\n\n- Reviewer console switches all five keyed `data-state` containers without reload.\n- Exact packet actions drive the drawing flow.\n- No external media, imports, or network references.\n- Verified inline JavaScript syntax, state keys, desktop/mobile renders, and reduced-motion-safe distinct states.",
+      "usage": {
+        "input_tokens": 431631,
+        "cached_input_tokens": 380288,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 10929,
+        "reasoning_output_tokens": 2691
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "remove-empty-spectacle",
+      "role": "correction",
+      "prompt": "Revise the same artifact so that any flourish which does not clarify anticipation, interruption, verification, reveal, or consequence is removed or reassigned. Preserve the eventful register; do not flatten the result into a conventional card dashboard.",
+      "response": "Revised [index.html](artifact/index.html).\n\n- Removed the ambient grid, arch, and redundant inset framing.\n- Reassigned the main frame and glow to communicate the active state: anticipation, interruption, verification, reveal, or consequence.\n- Kept—and clarified—the surrounding figures as witnesses to the shared moment.\n- Preserved all state switching, reduced-motion behavior, and local-only validation.",
+      "usage": {
+        "input_tokens": 733346,
+        "cached_input_tokens": 659200,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 15888,
+        "reasoning_output_tokens": 5331
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    }
+  ]
+}

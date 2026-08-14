@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_shared-result-ritual_codex-sol-high_20260814214115725_5f0353cb",
+  "recipe": {
+    "id": "shared-result-ritual",
+    "version": "1.0.0",
+    "hash": "sha256:7ea2e47fb18b50d7d11dcac27605e6fea82e5120fe9b3bd062a03736ef661dd7"
+  },
+  "executedAt": "2026-08-14T21:41:15.725Z",
+  "finalizedAt": "2026-08-14T21:49:52.881Z",
+  "identity": {
+    "variantId": "codex-sol-high",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-sol",
+    "observedModel": "gpt-5.6-sol",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.145.0",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "observedServiceTier": "default",
+    "configHash": "sha256:9907d5ced07fcc82917dd925cf7de69a26a3eeb4e36eae3aacf41f3efacf945a",
+    "catalogHash": "sha256:f6ed1a4109af0560c6261ea50f6e92abc4c4cbfab96c2159ac6db5081300fa08"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/index.html",
+        "sha256": "4d0f63d50a79953761567c7bde2ff1afdb3598c66921e24193c9c3b5642d4b0a",
+        "bytes": 26735
+      }
+    ],
+    "treeHash": "sha256:99b64b8585905756459753cfe38429e7dabc7d3caf0162528090983b453b3936"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:6cd3f299ef42f781d0ac94275e6cfb7e687e78a272e1bb1fac06e7a893386030"
+}

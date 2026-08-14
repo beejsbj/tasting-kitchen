@@ -1,30 +1,30 @@
-# How to use a flight
+# How to taste
 
-There is no schedule and no obligation to run every flight. Choose one when a model becomes interesting or a real use case makes the comparison useful.
+There is no schedule and no need to run every model through every recipe. The kitchen is reusable infrastructure: add a collection when a model becomes interesting or a real use case makes the comparison useful.
 
-## A tasting
+## Cook a dish
 
-1. Choose a flight and one dish.
-2. Enter the model/version and any configuration worth remembering.
-3. Copy the first prompt into the model of your choice. For a simulated-harness dish, use the supplied packet manually; it tastes operational reasoning, not tool execution.
-4. Paste its response back into the kitchen and write whatever you naturally notice.
-5. Continue through later turns in order. A correction turn is part of the encounter; do not reveal it early.
-6. Add a short overall reflection and save the run locally.
+1. Browse the recipe menu or filter it with `taste list`.
+2. Dry-plan the exact recipe and model configuration with `taste plan`.
+3. Run it when convenient. The CLI creates a fresh workspace and session, supplies turns in order, verifies observed identity, runs required checks, sanitizes public evidence, and imports only an accepted immutable dish.
+4. Rebuild the registry and open the gallery.
 
-The observation lenses are invitations to notice, not a rubric. You do not need to answer all of them, assign a score, or decide which model is universally best.
+Do not reveal a correction turn early or reuse a prior model session. The correction is part of the recipe: it shows how the model revises, not merely what it produces first.
 
-## Comparing two runs
+## Taste the result
 
-Run the same dish with another model when convenient. In Saved runs, select up to two records. Read them side by side and describe the relational difference in your own language: where each model felt natural, surprising, careful, clumsy, alive, overbearing, restrained, or useful.
+Open one recipe and compare up to three collections. Interact with the actual artifact. For sessions, read the model responses and inspect tool/action evidence. Use the recipe brief's prompts and observation cues when helpful.
 
-A single result may be a fluke. Repeat a dish or use a neighboring one before treating an impression as a stable fingerprint.
+Notice relational differences in your own language: what feels natural, surprising, careful, clumsy, alive, overbearing, restrained, useful, or unlike your work. The cues are invitations, not a rubric. Do not assign an overall winner unless you genuinely need one for a specific use.
 
-## Keeping the notebook
+A single output may be a fluke. Repeat the same recipe or use a neighboring one before treating an impression as a stable fingerprint.
 
-Records stay only in that browser's local storage. Use **Export JSON** for backup or transfer, and **Import JSON** to restore them. Import preserves existing records and skips duplicate or malformed entries.
+## Acceptance is not taste
 
-Exports contain the prompts, pasted model responses, model labels/configuration, and your notes. Treat them as private unless you intentionally sanitize and share them. Legacy v1 records remain importable and comparable as legacy records; they do not claim v2 dish metadata that did not exist when they were saved.
+An accepted dish passed the recipe's required structural checks and publication boundary. That does not mean it is responsive, tasteful, correct in every detail, or preferred.
 
-## Competence and safety
+Artifact reviews sit beside the immutable dish and are bound to its exact hash. They identify whether the observer was human or agent and never rewrite the artifact or change structural acceptance. A model's trace may contain incorrect self-assessment; treat it as the model's claim.
 
-Taste is not correctness. Every dish includes an external check describing what should be verified independently. This matters especially for code, current product facts, privacy decisions, professional preparation, or anything else where a pleasing response could still be wrong.
+## Grow the kitchen slowly
+
+The menu already exists. You do not need to invite every chef today. Run new collections as curiosity or need arises, then keep tasting the same recipes. Later, recurring observations can inform a separate preference memory such as “Burooj likes model X for Y,” but that calibration is downstream of the kitchen, not an automated output of it.

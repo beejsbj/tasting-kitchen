@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { artifactUrl, recipeSupported } from "../lib/registry";
 import { variantTasteLabel } from "../lib/variant-label";
 import type { ArtifactReview, Dish, Recipe, ReviewVerdict, Variant } from "../types";
+import { SessionArtifact } from "./SessionArtifact";
 
 function TextArtifact({ dish }: { dish: Dish }) {
   const [content, setContent] = useState("Loading artifact…");
@@ -43,5 +44,6 @@ export function ArtifactPane({ recipe, variant, dish, reviews = [] }: { recipe: 
     <audio controls src={artifactUrl(dish)} aria-label={`${recipe.title} audio artifact`} />
     <TextArtifact dish={dish} />
   </section>;
+  if (dish.artifact.kind === "session") return <section className="artifact-pane artifact-pane--session"><ArtifactReviewMark reviews={reviews} /><SessionArtifact key={dish.id} dish={dish} /></section>;
   return <section className="artifact-pane artifact-pane--text"><ArtifactReviewMark reviews={reviews} /><TextArtifact dish={dish} /></section>;
 }

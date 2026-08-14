@@ -1,5 +1,7 @@
 # Sol independent draft
 
+> Superseded planning record. The current CLI-and-gallery architecture replaces this manual copy/paste proposal; the document remains only as design history.
+
 ## Endpoint
 
 Analyze Burooj's history once, turn the strongest findings into a reusable menu of model flights, and build a kitchen where those flights can be run later as curiosity and need arise. No chefs cook during this project.

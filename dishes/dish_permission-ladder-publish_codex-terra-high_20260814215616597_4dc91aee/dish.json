@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_permission-ladder-publish_codex-terra-high_20260814215616597_4dc91aee",
+  "recipe": {
+    "id": "permission-ladder-publish",
+    "version": "1.0.0",
+    "hash": "sha256:8162824c69be6e1dfa98dfca69ecc580c29738794b8d4847f66e31736c6bba3c"
+  },
+  "executedAt": "2026-08-14T21:56:16.597Z",
+  "finalizedAt": "2026-08-14T21:56:53.332Z",
+  "identity": {
+    "variantId": "codex-terra-high",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-terra",
+    "observedModel": "gpt-5.6-terra",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.145.0",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "observedServiceTier": "default",
+    "configHash": "sha256:723f9136a0fe65cea9092c2125dda2ee6388d3bb3b7ad4c338fb0fd5b8db2879",
+    "catalogHash": "sha256:f6ed1a4109af0560c6261ea50f6e92abc4c4cbfab96c2159ac6db5081300fa08"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "session",
+    "entry": "artifact/output/session.json",
+    "files": [
+      {
+        "path": "artifact/output/session.json",
+        "sha256": "d758c5b7517823bdad82de425ff6cb54fba5d2855ff2d841348cd3856ceb7c0c",
+        "bytes": 3645
+      }
+    ],
+    "treeHash": "sha256:50243bac3b66e553ffcc37adc3435de246805a4c7796319f78042e00876729c6"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:8b9df36cc1a82f53c547ce614dff9765ad830d3478817a9167f5699bc8ee9982"
+}

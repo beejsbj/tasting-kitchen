@@ -13,6 +13,17 @@ test("public scan distinguishes serialized page newlines from Windows absolute p
   assert.ok(publicTextFindings("C:/Users/name/file").includes("absolute Windows path"));
 });
 
+test("public scan distinguishes JavaScript regex literals from Unix absolute paths", () => {
+  assert.deepEqual(publicTextFindings("nextState.replace(/-/g, ' ')"), []);
+  assert.deepEqual(publicTextFindings("value.match(/state/i)"), []);
+  assert.ok(publicTextFindings("Read /etc/g before continuing").includes("absolute path"));
+  assert.ok(publicTextFindings("Inspect /.ssh/id before continuing").includes("absolute path"));
+  assert.ok(publicTextFindings("The token /state/i appears in prose").includes("absolute path"));
+  assert.ok(publicTextFindings("replace(/etc/g) is text, not an instance method call").includes("absolute path"));
+  assert.ok(publicTextFindings("Read /var/log/model-tasting.log before continuing").includes("absolute path"));
+  assert.ok(publicTextFindings("Open /workspace/output/index.html").includes("absolute path"));
+});
+
 test("web artifact scan rejects remote runtime dependencies", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-web-scan-"));
   t.after(() => rm(root, { recursive: true, force: true }));

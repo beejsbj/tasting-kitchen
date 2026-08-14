@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2f4938">
+  <title>Neighborhood seed-library drawing</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f2eddf;
+      --paper-deep: #ded5bd;
+      --ink: #203127;
+      --muted: #687068;
+      --leaf: #2f4938;
+      --leaf-dark: #1c3327;
+      --sprout: #88a96d;
+      --tomato: #d65739;
+      --tomato-dark: #a83e2b;
+      --marigold: #e9bd53;
+      --earth: #8b6545;
+      --line: rgba(32, 49, 39, .18);
+      --shadow: 0 24px 70px rgba(29, 48, 36, .17);
+      --radius: 28px;
+      --ease-out: cubic-bezier(.22, 1, .36, 1);
+      --ease-move: cubic-bezier(.65, 0, .35, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      width: min(1380px, 100%);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: 26px clamp(18px, 4vw, 64px) 34px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .seed-mark {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      position: relative;
+      border: 1px solid rgba(32, 49, 39, .22);
+      border-radius: 50%;
+      background: rgba(255,255,255,.28);
+    }
+
+    .seed-mark::before,
+    .seed-mark::after {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 16px;
+      border-radius: 100% 0 100% 0;
+      background: var(--leaf);
+      transform-origin: 100% 100%;
+    }
+
+    .seed-mark::before { left: 7px; top: 7px; transform: rotate(-18deg); }
+    .seed-mark::after { right: 7px; bottom: 6px; transform: rotate(162deg); background: var(--sprout); }
+
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .identity h1 {
+      margin: 0;
+      overflow: hidden;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(18px, 2.2vw, 25px);
+      font-weight: 500;
+      line-height: 1.08;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .attendance {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .presence-dots { display: flex; }
+    .presence-dots i {
+      display: block;
+      width: 19px;
+      height: 19px;
+      margin-left: -5px;
+      border: 2px solid var(--paper);
+      border-radius: 50%;
+      background: var(--leaf);
+    }
+    .presence-dots i:nth-child(2) { background: var(--earth); }
+    .presence-dots i:nth-child(3) { background: var(--marigold); }
+
+    .stage {
+      min-height: 610px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(350px, .95fr);
+      overflow: hidden;
+      border: 1px solid rgba(32, 49, 39, .14);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .34);
+      box-shadow: var(--shadow);
+    }
+
+    .room {
+      min-height: 560px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        linear-gradient(rgba(255,255,255,.1), rgba(255,255,255,0)),
+        #d9d1bb;
+    }
+
+    .room::before {
+      content: "";
+      position: absolute;
+      z-index: -2;
+      inset: 0 0 30%;
+      opacity: .42;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 74px, rgba(47,73,56,.12) 75px 76px),
+        repeating-linear-gradient(0deg, transparent 0 74px, rgba(47,73,56,.12) 75px 76px);
+    }
+
+    .room::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      left: -8%; right: -8%; bottom: -16%;
+      height: 47%;
+      border-radius: 50% 50% 0 0;
+      background: #c0a682;
+      box-shadow: inset 0 18px 36px rgba(69, 50, 31, .1);
+    }
+
+    .window {
+      position: absolute;
+      left: 8%; top: 9%;
+      width: 112px; height: 142px;
+      border: 9px solid #f0eadb;
+      border-radius: 56px 56px 4px 4px;
+      background: linear-gradient(160deg, #aec4ab, #e4d5ab 68%);
+      box-shadow: 0 8px 24px rgba(47,73,56,.12);
+    }
+
+    .window::before,
+    .window::after {
+      content: "";
+      position: absolute;
+      background: rgba(242,237,223,.8);
+    }
+    .window::before { width: 7px; inset-block: 0; left: calc(50% - 3px); }
+    .window::after { height: 7px; inset-inline: 0; top: 53%; }
+
+    .shelf {
+      position: absolute;
+      top: 12%; right: 8%;
+      width: min(42%, 255px);
+      height: 28%;
+      border: 10px solid #684b35;
+      border-bottom-width: 17px;
+      background: #ad8862;
+      box-shadow: 0 18px 34px rgba(58,41,27,.24), inset 0 0 0 3px rgba(255,255,255,.12);
+    }
+
+    .shelf::after {
+      content: "";
+      position: absolute;
+      top: 48%; left: 0; right: 0;
+      height: 9px;
+      background: #684b35;
+    }
+
+    .packet-row {
+      position: absolute;
+      inset: 9% 6% auto;
+      height: 36%;
+      display: flex;
+      align-items: end;
+      gap: 5px;
+    }
+    .packet-row.bottom { inset-block-start: 58%; }
+    .packet-row i {
+      flex: 1;
+      height: 80%;
+      border: 1px solid rgba(62,47,29,.25);
+      border-radius: 2px 2px 0 0;
+      background: #e9d9a7;
+      box-shadow: inset 0 -7px rgba(105,125,69,.2);
+    }
+    .packet-row i:nth-child(2n) { height: 100%; background: #c7d0a6; }
+    .packet-row i:nth-child(3n) { background: #e2b274; }
+
+    .table-ring {
+      position: absolute;
+      left: 50%; top: 60%;
+      width: clamp(285px, 53vw, 610px);
+      aspect-ratio: 2.1 / 1;
+      transform: translate(-50%, -50%);
+      border: 12px solid #705039;
+      border-radius: 50%;
+      background: #a97b54;
+      box-shadow: 0 30px 36px rgba(67,47,30,.28), inset 0 8px rgba(255,255,255,.12);
+    }
+
+    .cabinet {
+      position: absolute;
+      left: 50%; top: 48%;
+      width: clamp(170px, 30%, 220px);
+      height: 250px;
+      transform: translate(-50%, -50%);
+      perspective: 600px;
+    }
+
+    .cabinet-body {
+      position: absolute;
+      inset: 0;
+      border: 8px solid var(--leaf-dark);
+      border-radius: 12px;
+      background: var(--leaf);
+      box-shadow: 0 25px 35px rgba(28,51,39,.28), inset 0 0 0 2px rgba(255,255,255,.08);
+    }
+
+    .cabinet-label {
+      position: absolute;
+      z-index: 3;
+      top: 16px; left: 50%;
+      width: 106px;
+      padding: 7px 5px;
+      transform: translateX(-50%) rotate(-1deg);
+      color: var(--leaf-dark);
+      border-radius: 2px;
+      background: #eee2bd;
+      box-shadow: 0 1px 0 rgba(0,0,0,.1);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .drawer-stack { position: absolute; inset: 64px 16px 15px; display: grid; gap: 8px; }
+    .drawer {
+      position: relative;
+      border: 2px solid #14271d;
+      border-radius: 4px;
+      background: #42604a;
+      box-shadow: inset 0 3px rgba(255,255,255,.05);
+    }
+    .drawer::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 28px; height: 7px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #101f17;
+      border-radius: 8px;
+      background: #d2b46b;
+    }
+
+    .seal {
+      position: absolute;
+      z-index: 5;
+      top: 116px; right: -10px;
+      width: 49px; height: 49px;
+      display: grid;
+      place-items: center;
+      color: #fff4df;
+      border: 4px double rgba(255,255,255,.55);
+      border-radius: 50%;
+      background: var(--tomato-dark);
+      box-shadow: 0 5px 10px rgba(70,36,25,.2);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 22px;
+      font-weight: 700;
+      transition: opacity 180ms ease, transform 420ms var(--ease-out);
+    }
+
+    .entry-card {
+      position: absolute;
+      z-index: 8;
+      left: 50%; top: 40%;
+      width: 126px;
+      height: 168px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 5px;
+      transform: translate(-50%, 100px) rotate(7deg) scale(.25);
+      opacity: 0;
+      color: var(--leaf-dark);
+      border: 1px solid rgba(55,48,30,.22);
+      border-radius: 5px;
+      background: #f4e4b8;
+      box-shadow: 0 20px 38px rgba(50,42,27,.28), inset 0 -18px rgba(136,169,109,.2);
+      font-family: Georgia, "Times New Roman", serif;
+      transition: transform 560ms var(--ease-out), opacity 180ms ease;
+    }
+
+    .entry-card small { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .entry-card b { font-size: 62px; line-height: .9; font-weight: 500; }
+    .tomato-mark {
+      width: 22px;
+      height: 19px;
+      position: relative;
+      display: block;
+      opacity: 0;
+      border-radius: 52% 48% 55% 45%;
+      background: var(--tomato);
+    }
+    .tomato-mark::before {
+      content: "";
+      position: absolute;
+      left: 50%; top: -6px;
+      width: 13px; height: 9px;
+      transform: translateX(-50%);
+      background: var(--leaf);
+      clip-path: polygon(50% 0, 63% 38%, 100% 22%, 75% 58%, 95% 92%, 55% 72%, 29% 100%, 32% 61%, 0 46%, 39% 38%);
+    }
+
+    .people { position: absolute; inset: 0; pointer-events: none; }
+    .person {
+      position: absolute;
+      z-index: 10;
+      width: 68px;
+      height: 86px;
+      transform-origin: 50% 100%;
+    }
+    .person::before {
+      content: "";
+      position: absolute;
+      z-index: 2;
+      left: 19px; top: 0;
+      width: 31px; height: 36px;
+      border-radius: 48% 48% 45% 45%;
+      background: var(--skin, #a96f52);
+      box-shadow: inset 0 8px var(--hair, #3b2922);
+    }
+    .person::after {
+      content: "";
+      position: absolute;
+      left: 5px; right: 5px; bottom: 0;
+      height: 58px;
+      border-radius: 30px 30px 5px 5px;
+      background: var(--shirt, #526e59);
+      box-shadow: inset 0 5px rgba(255,255,255,.08);
+    }
+    .p1 { left: 4%; bottom: 8%; --skin:#8a543e; --hair:#28211e; --shirt:#b85b3f; transform: rotate(5deg) scale(1.25); }
+    .p2 { left: 19%; bottom: 3%; --skin:#d59a72; --hair:#6b3c28; --shirt:#657d4e; transform: rotate(-5deg) scale(1.1); }
+    .p3 { left: 34%; bottom: -2%; --skin:#c17d59; --hair:#29211e; --shirt:#334d58; transform: scale(1.35); }
+    .p4 { right: 34%; bottom: -3%; --skin:#74422f; --hair:#1d1c19; --shirt:#d5a543; transform: rotate(4deg) scale(1.3); }
+    .p5 { right: 17%; bottom: 2%; --skin:#e2aa82; --hair:#8b5c3e; --shirt:#875445; transform: rotate(5deg) scale(1.13); }
+    .p6 { right: 3%; bottom: 9%; --skin:#9f6649; --hair:#30251f; --shirt:#46644f; transform: rotate(-6deg) scale(1.24); }
+
+    .room-caption {
+      position: absolute;
+      z-index: 20;
+      left: 24px; top: 24px;
+      max-width: 210px;
+      padding: 10px 13px;
+      color: rgba(32,49,39,.76);
+      border: 1px solid rgba(32,49,39,.13);
+      border-radius: 99px;
+      background: rgba(242,237,223,.78);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .state-pane {
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      padding: clamp(32px, 5vw, 76px);
+      border-left: 1px solid var(--line);
+      background: rgba(250, 247, 238, .82);
+    }
+
+    .state-panel[hidden] { display: none; }
+
+    .state-kicker {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 25px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .state-kicker::before {
+      content: "";
+      width: 9px; height: 9px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+    }
+
+    .state-panel h2 {
+      max-width: 580px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 5.2vw, 75px);
+      font-weight: 400;
+      letter-spacing: -.045em;
+      line-height: .98;
+      text-wrap: balance;
+    }
+
+    .state-panel p {
+      max-width: 500px;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: clamp(15px, 1.5vw, 18px);
+      line-height: 1.65;
+    }
+
+    .countdown {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 15px 0 2px;
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: clamp(54px, 8vw, 98px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      letter-spacing: -.08em;
+      line-height: .95;
+    }
+    .countdown small {
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .button-row { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 34px; }
+    .action {
+      min-height: 50px;
+      padding: 0 22px;
+      cursor: pointer;
+      color: #fffaf0;
+      border: 1px solid var(--leaf-dark);
+      border-radius: 99px;
+      background: var(--leaf);
+      box-shadow: 0 8px 18px rgba(28,51,39,.18);
+      font-weight: 760;
+      transition: transform 120ms var(--ease-out), background-color 150ms ease;
+    }
+    .action:active { transform: scale(.97); }
+    .action:focus-visible, .review-button:focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; }
+
+    [data-state="waiting"] .state-kicker::before { border-style: dashed; }
+    [data-state="interrupted"] .state-kicker { color: var(--tomato-dark); }
+    [data-state="interrupted"] .state-kicker::before { border-style: dashed; border-right-color: transparent; }
+    [data-state="interrupted"] h2 { font-size: clamp(34px, 4.4vw, 64px); }
+    [data-state="sealed"] .state-kicker { color: var(--leaf); }
+    [data-state="sealed"] .state-kicker::before { background: currentColor; box-shadow: inset 0 0 0 2px var(--paper); }
+    [data-state="reveal"] .state-kicker { color: var(--earth); }
+    [data-state="reveal"] .state-kicker::before { border-radius: 1px; transform: rotate(4deg); background: #f4e4b8; }
+    [data-state="reveal"] h2 { font-size: clamp(58px, 9vw, 116px); color: var(--tomato-dark); }
+    [data-state="selected"] .state-kicker { color: var(--tomato-dark); }
+    [data-state="selected"] .state-kicker::before { border-color: var(--tomato-dark); background: var(--tomato); }
+    [data-state="selected"] h2 { font-size: clamp(38px, 4.6vw, 66px); }
+
+    .reviewer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 4px 2px 0;
+    }
+    .reviewer-label {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .reviewer-controls { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0; }
+    .review-button {
+      min-height: 38px;
+      position: relative;
+      padding: 0 14px;
+      cursor: pointer;
+      color: var(--muted);
+      border: 0;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: capitalize;
+      transition: color 150ms ease;
+    }
+    .review-button + .review-button::before {
+      content: "→";
+      position: absolute;
+      left: -5px;
+      color: rgba(32,49,39,.35);
+      font-weight: 500;
+    }
+    .review-button::after {
+      content: "";
+      position: absolute;
+      left: 14px; right: 14px; bottom: 2px;
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      background: var(--tomato);
+    }
+    .review-button[aria-pressed="true"] { color: var(--ink); }
+    .review-button[aria-pressed="true"]::after { transform: scaleX(1); }
+
+    body[data-current="waiting"] .seal,
+    body[data-current="interrupted"] .seal { opacity: 0; transform: scale(.4) rotate(-18deg); }
+    body[data-current="waiting"] .drawer:first-child {
+      animation: drawer-wait 2.4s var(--ease-move) infinite;
+      background: #57705b;
+    }
+    body[data-current="interrupted"] .cabinet-body { filter: grayscale(.7); }
+    body[data-current="interrupted"] .drawer:nth-child(2) { transform: translateX(9px) rotate(.8deg); background: #74554a; }
+    body[data-current="sealed"] .seal { animation: seal-set 420ms var(--ease-out) both; }
+    body[data-current="reveal"] .seal,
+    body[data-current="selected"] .seal { opacity: 0; transform: scale(.6); }
+    body[data-current="reveal"] .drawer:nth-child(2),
+    body[data-current="selected"] .drawer:nth-child(2) { transform: translateZ(30px) translateY(6px) scale(1.05); background: #5b755d; }
+    body[data-current="reveal"] .entry-card { opacity: 1; transform: translate(-50%, -154px) rotate(-3deg) scale(1); }
+    body[data-current="selected"] .entry-card { opacity: 1; transform: translate(-50%, -160px) rotate(2deg) scale(1.05); background: #f1d791; box-shadow: 0 24px 48px rgba(50,42,27,.3), inset 0 -24px rgba(214,87,57,.2); }
+    body[data-current="selected"] .tomato-mark { opacity: 1; }
+    body[data-current="selected"] .person { animation: lean-in 350ms var(--ease-out) both; }
+
+    @keyframes drawer-wait { 0%, 100% { transform: translateY(-3px) scale(.99); } 50% { transform: translateY(-7px) scale(1.015); } }
+    @keyframes seal-set { from { opacity: 0; transform: scale(1.8) rotate(12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+    @keyframes lean-in { from { translate: 0 0; } to { translate: 0 -7px; } }
+
+    @media (hover: hover) and (pointer: fine) {
+      .action:hover { background: var(--leaf-dark); }
+      .review-button:hover { color: var(--ink); }
+    }
+
+    @media (max-width: 900px) {
+      .stage { min-height: auto; grid-template-columns: 1fr; }
+      .room { min-height: 450px; }
+      .state-pane { min-height: 450px; border-top: 1px solid var(--line); border-left: 0; }
+      .reviewer { align-items: flex-start; flex-direction: column; }
+      .reviewer-controls { justify-content: flex-start; }
+    }
+
+    @media (max-width: 560px) {
+      .page { padding-inline: 12px; padding-top: 16px; gap: 14px; }
+      .attendance span:last-child { display: none; }
+      .stage { border-radius: 20px; }
+      .room { min-height: 370px; }
+      .window { width: 82px; height: 110px; left: 5%; }
+      .shelf { right: 5%; width: 43%; height: 25%; }
+      .cabinet { width: 145px; height: 208px; top: 50%; }
+      .cabinet-label { top: 11px; }
+      .drawer-stack { inset: 57px 12px 12px; }
+      .seal { top: 98px; width: 43px; height: 43px; }
+      .entry-card { width: 100px; height: 138px; }
+      .entry-card b { font-size: 50px; }
+      body[data-current="reveal"] .entry-card,
+      body[data-current="selected"] .entry-card { transform: translate(-50%, -122px) rotate(-3deg) scale(.9); }
+      .room-caption { left: 14px; top: 14px; }
+      .person { width: 52px; height: 70px; }
+      .person::before { left: 14px; width: 25px; height: 30px; }
+      .person::after { height: 45px; }
+      .state-pane { min-height: 430px; padding: 38px 25px; }
+      .reviewer-controls { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
+      .review-button { padding-inline: 7px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none; transition: none; scroll-behavior: auto; }
+      /* State identity remains in color, copy, seal, drawer position, and card position. */
+      body[data-current="waiting"] .cabinet { outline: 3px solid rgba(136,169,109,.55); outline-offset: 5px; }
+      body[data-current="interrupted"] .cabinet { outline: 3px dashed var(--tomato-dark); outline-offset: 5px; }
+      body[data-current="sealed"] .cabinet { outline: 3px double var(--leaf); outline-offset: 5px; }
+      body[data-current="reveal"] .cabinet { outline: 3px solid var(--earth); outline-offset: 5px; }
+      body[data-current="selected"] .cabinet { outline: 4px solid var(--tomato); outline-offset: 5px; }
+    }
+  </style>
+</head>
+<body data-current="waiting">
+  <main class="page">
+    <header class="topbar">
+      <div class="identity">
+        <span class="seed-mark" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">Community seed shelf</p>
+          <h1>Neighborhood seed-library drawing</h1>
+        </div>
+      </div>
+      <div class="attendance" aria-label="Thirty neighbors are watching">
+        <span class="presence-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>30 neighbors watching</span>
+      </div>
+    </header>
+
+    <section class="stage" aria-label="Drawing room">
+      <div class="room" aria-hidden="true">
+        <div class="window"></div>
+        <div class="shelf">
+          <span class="packet-row"><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="packet-row bottom"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="room-caption">One shared screen · one sealed list</div>
+        <div class="table-ring"></div>
+        <div class="cabinet">
+          <div class="cabinet-body">
+            <div class="cabinet-label">Growing notes</div>
+            <div class="drawer-stack"><span class="drawer"></span><span class="drawer"></span><span class="drawer"></span></div>
+          </div>
+          <span class="seal">32</span>
+          <span class="entry-card"><small>Entry</small><b>18</b><i class="tomato-mark"></i></span>
+        </div>
+        <div class="people">
+          <span class="person p1"></span><span class="person p2"></span><span class="person p3"></span>
+          <span class="person p4"></span><span class="person p5"></span><span class="person p6"></span>
+        </div>
+      </div>
+
+      <div class="state-pane" aria-live="polite" aria-atomic="true">
+        <section class="state-panel" data-state="waiting">
+          <div class="state-kicker">Gathering entries</div>
+          <h2>The shelf is still open.</h2>
+          <div class="countdown" aria-label="Entries close in 1 minute, 12 seconds"><span id="clock">01:12</span><small>until close</small></div>
+          <p>Growing notes are still being added. Everyone here will see the same sealed list before the drawing begins.</p>
+        </section>
+
+        <section class="state-panel" data-state="interrupted" hidden>
+          <div class="state-kicker">Connection interrupted</div>
+          <h2>The sealed list could not be verified.</h2>
+          <p>Nothing has been drawn. Retry verification to return everyone to the same confirmed list.</p>
+          <div class="button-row"><button class="action" type="button" data-go="sealed">Retry verification</button></div>
+        </section>
+
+        <section class="state-panel" data-state="sealed" hidden>
+          <div class="state-kicker">List verified</div>
+          <h2>32 valid entries.<br>List sealed.</h2>
+          <p>The drawer is closed. The shared list will not change during this drawing.</p>
+          <div class="button-row"><button class="action" type="button" data-go="reveal">Begin drawing</button></div>
+        </section>
+
+        <section class="state-panel" data-state="reveal" hidden>
+          <div class="state-kicker">Draw complete</div>
+          <h2>Entry 18</h2>
+          <p>The entry has been drawn from the sealed list. Reveal the growing note when the room is ready.</p>
+          <div class="button-row"><button class="action" type="button" data-go="selected">Reveal entry</button></div>
+        </section>
+
+        <section class="state-panel" data-state="selected" hidden>
+          <div class="state-kicker">Selected growing note</div>
+          <h2>Mina’s balcony plot receives the rare tomato set.</h2>
+          <p>Entry 18 is the selection from the verified list of 32.</p>
+          <div class="button-row"><button class="action" type="button" data-go="sealed">Return to sealed list</button></div>
+        </section>
+      </div>
+    </section>
+
+    <nav class="reviewer" aria-label="Review event states">
+      <span class="reviewer-label">Review a state</span>
+      <div class="reviewer-controls">
+        <button class="review-button" type="button" data-go="waiting" aria-pressed="true">waiting</button>
+        <button class="review-button" type="button" data-go="interrupted" aria-pressed="false">interrupted</button>
+        <button class="review-button" type="button" data-go="sealed" aria-pressed="false">sealed</button>
+        <button class="review-button" type="button" data-go="reveal" aria-pressed="false">reveal</button>
+        <button class="review-button" type="button" data-go="selected" aria-pressed="false">selected</button>
+      </div>
+    </nav>
+  </main>
+
+  <script>
+    (() => {
+      const body = document.body;
+      const panels = [...document.querySelectorAll('.state-panel[data-state]')];
+      const reviewButtons = [...document.querySelectorAll('.review-button[data-go]')];
+      const validStates = new Set(panels.map((panel) => panel.dataset.state));
+
+      function showState(state, updateHash = true) {
+        if (!validStates.has(state)) return;
+        body.dataset.current = state;
+        panels.forEach((panel) => { panel.hidden = panel.dataset.state !== state; });
+        reviewButtons.forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.go === state));
+        });
+        if (updateHash) history.replaceState(null, '', `#${state}`);
+      }
+
+      document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-go]');
+        if (trigger) showState(trigger.dataset.go);
+      });
+
+      const initialState = location.hash.slice(1);
+      if (validStates.has(initialState)) showState(initialState, false);
+
+      let remaining = 72;
+      const clock = document.querySelector('#clock');
+      const timer = window.setInterval(() => {
+        if (remaining <= 0) {
+          window.clearInterval(timer);
+          return;
+        }
+        remaining -= 1;
+        const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+        const seconds = String(remaining % 60).padStart(2, '0');
+        clock.textContent = `${minutes}:${seconds}`;
+        clock.parentElement.setAttribute('aria-label', `Entries close in ${minutes} minutes, ${seconds} seconds`);
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>

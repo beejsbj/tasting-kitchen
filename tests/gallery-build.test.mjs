@@ -26,6 +26,13 @@ test("the static gallery and public registry are complete", async () => {
   const javascript = await Promise.all(
     assets.filter((filename) => filename.endsWith(".js")).map((filename) => readFile(path.join(root, "dist", "assets", filename), "utf8")),
   );
-  assert.match(javascript.join("\n"), /Agent review/);
-  assert.match(javascript.join("\n"), /Artifact review/);
+  const productionJavaScript = javascript.join("\n");
+  const productionCss = (await Promise.all(
+    assets.filter((filename) => filename.endsWith(".css")).map((filename) => readFile(path.join(root, "dist", "assets", filename), "utf8")),
+  )).join("\n");
+  assert.match(productionJavaScript, /Agent review/);
+  assert.match(productionJavaScript, /Artifact review/);
+  for (const label of ["Session artifact", "Prompt", "Model response", "Tool & action evidence", "Raw session JSON"]) assert.match(productionJavaScript, new RegExp(label.replace("&", "&(?:amp;)?")));
+  assert.doesNotMatch(productionJavaScript, /viewer__label/);
+  assert.doesNotMatch(productionCss, /viewer__label/);
 });

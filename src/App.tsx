@@ -95,7 +95,6 @@ export default function App() {
     return (
       <main className={`viewer viewer--${selectedVariants.length}`}>
         <div className="viewer__underlay" inert={state.brief || undefined} aria-hidden={state.brief || undefined}>
-          <div className="viewer__label"><Mark compact /><span>{registry.domains.find((domain) => domain.id === selectedRecipe.domain)?.label}</span><i>{selectedRecipe.kind}</i></div>
           <div className="viewer__grid">
             {viewedDishes.map(({ variant, dish }) => <ArtifactPane key={variant.id} recipe={selectedRecipe} variant={variant} dish={dish} reviews={reviewsForDish(registry.reviews, dish)} />)}
           </div>
