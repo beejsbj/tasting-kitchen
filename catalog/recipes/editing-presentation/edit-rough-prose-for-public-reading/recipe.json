@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "edit-rough-prose-for-public-reading",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Edit rough prose for public reading",
+  "summary": "Improve reader access to an uneven essay fragment while preserving its odd metaphor, cadence, and uncertainty about a premise.",
+  "domain": "editing-presentation",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring public-writing edits where accessibility was welcome but generic polish and premise laundering were not.",
+  "tags": ["editing", "voice-preservation", "source-synthesis", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the synthetic essay fixture read-only. Run every turn in order in one fresh workspace. The model must create and revise only editorial-notes.md.",
+    "fixtures": [
+      { "id": "rough-essay", "path": "rough-essay.md", "mountAs": "rough-essay.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "reader-access-pass",
+      "role": "prompt",
+      "content": "Read `rough-essay.md` and create `editorial-notes.md`. Do not write a replacement essay. Separate: (1) premise or source risks, (2) places where a stranger may lose the thread, and (3) sentence-level revision options. Preserve room for the odd bridge metaphor, the code-switched word, the uneven cadence, and the sentence where the narrator becomes suspicious of the metaphor. Quote only the sentence being discussed before each option."
+    },
+    {
+      "id": "remove-generic-polish",
+      "role": "correction",
+      "content": "Revise `editorial-notes.md` in place. Remove any option that sounds like generic magazine prose or converts uncertainty into confidence. Keep premise risk separate from voice choices, and provide two materially different options for the sentence about the old shore."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "editorial-notes.md",
+    "include": ["editorial-notes.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "notes-exist", "type": "file-exists", "required": true, "description": "The final workspace contains editorial-notes.md.", "target": "editorial-notes.md" },
+      { "id": "section-contract", "type": "manual", "required": false, "description": "The artifact separates source risk, reader access, and sentence-level options and does not contain a replacement essay." }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "metadata": {"bpm": 108, "timeSignature": "4/4", "lengthMs": 4444, "suggestedCenter": "A minor", "source": "synthetic performed phrase"},
+  "events": [
+    {"note": "E4", "onMs": 192, "offMs": 545, "velocity": 0.56},
+    {"note": "A4", "onMs": 558, "offMs": 1089, "velocity": 0.74},
+    {"note": "C5", "onMs": 1098, "offMs": 1368, "velocity": 0.68},
+    {"note": "B4", "onMs": 1377, "offMs": 1922, "velocity": 0.62},
+    {"note": "G4", "onMs": 1908, "offMs": 2468, "velocity": 0.51},
+    {"note": "E4", "onMs": 2194, "offMs": 2722, "velocity": 0.43},
+    {"note": "A4", "onMs": 2508, "offMs": 3315, "velocity": 0.78},
+    {"note": "C5", "onMs": 2778, "offMs": 3308, "velocity": 0.59},
+    {"note": "B4", "onMs": 3340, "offMs": 3860, "velocity": 0.64},
+    {"note": "A4", "onMs": 3888, "offMs": 4390, "velocity": 0.47}
+  ]
+}

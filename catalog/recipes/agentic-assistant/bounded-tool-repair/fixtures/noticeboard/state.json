@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "id": "welcome", "title": "Welcome", "status": "current" },
+    { "id": "agenda", "title": "August agenda", "status": "current" },
+    { "id": "expired-link", "title": "July event link", "status": "expired" },
+    { "id": "archive-note", "title": "Archive guide", "status": "current" }
+  ]
+}

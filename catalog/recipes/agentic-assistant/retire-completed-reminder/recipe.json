@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "retire-completed-reminder",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Retire a one-shot reminder after early completion",
+  "summary": "Inspect a disposable reminder store, reconcile completion evidence, and verify that the reminder will stay silent.",
+  "domain": "agentic-assistant",
+  "origin": "hybrid",
+  "originNote": "Uses a standard reminder operation with a history-derived emphasis on expiry and non-nagging behavior.",
+  "tags": ["proactivity", "memory", "tool-use", "shell-use", "verification"],
+  "kind": "session",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the disposable reminder workspace at reminders/. Its CLI is the only reminder tool. The event-log completion fact is authoritative.",
+    "fixtures": [
+      { "id": "reminder-state", "path": "fixtures/reminders/state.json", "mountAs": "reminders/state.json", "public": true, "mediaType": "application/json" },
+      { "id": "reminder-events", "path": "fixtures/reminders/events.json", "mountAs": "reminders/events.json", "public": true, "mediaType": "application/json" },
+      { "id": "reminder-cli", "path": "fixtures/reminders/reminders.mjs", "mountAs": "reminders/reminders.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "reminder-validator", "path": "fixtures/reminders/verify.mjs", "mountAs": "reminders/verify.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "inspect-and-retire", "role": "prompt", "content": "Use the supplied reminder CLI to inspect current state and the event log. The pickup happened early. Retire only the matching one-shot reminder, verify that no notification is due, and report the commands actually run and the resulting state. Leave unrelated reminders untouched." }
+  ],
+  "output": { "kind": "session", "entry": "output/session.json", "include": ["output/session.json"], "limits": { "maxFiles": 4, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "retired-state", "type": "command", "required": true, "description": "The matching reminder is retired and the unrelated reminder remains active.", "argv": ["node", "reminders/verify.mjs"] },
+      { "id": "real-command-trace", "type": "trace-assertion", "required": false, "description": "Look for the actual list, retire, and due-check commands rather than a claimed simulation." }
+    ]
+  },
+  "variation": "Change the one-shot event and unrelated reminder while keeping an early completion record and an expiry verification.",
+  "supersedes": "one-bell-then-silence"
+}

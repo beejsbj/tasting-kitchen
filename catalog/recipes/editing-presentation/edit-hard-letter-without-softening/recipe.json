@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "edit-hard-letter-without-softening",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Edit a hard letter without softening the truth",
+  "summary": "Offer sentence-level alternatives for a difficult letter while preserving pain, dignity, accountability, and the writer's limited authority.",
+  "domain": "editing-presentation",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring correspondence work where smoothing the emotional fact was a substantive failure.",
+  "tags": ["editing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the fictional letter fixture read-only. Run every turn in order in one fresh workspace. The model must create and revise only letter-notes.md.",
+    "fixtures": [
+      { "id": "hard-letter", "path": "hard-letter.md", "mountAs": "hard-letter.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "sentence-level-options",
+      "role": "prompt",
+      "content": "Read `hard-letter.md` and create `letter-notes.md` with sentence-level suggestions only, not a full rewritten letter. For each sentence you would touch, preserve the original, offer at most two alternatives, and explain the tradeoff in one line. Protect the writer's dignity and emotional fact without claiming to know how the recipient will react."
+    },
+    {
+      "id": "restore-emotional-fact",
+      "role": "correction",
+      "content": "Revise `letter-notes.md` in place. Any suggestion that turns the cost into a neutral communication problem has softened too far. Restore the emotional fact without making the writer self-pitying, accusatory beyond the supplied facts, or certain about the recipient's motives."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "letter-notes.md",
+    "include": ["letter-notes.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "notes-exist", "type": "file-exists", "required": true, "description": "The final workspace contains letter-notes.md.", "target": "letter-notes.md" },
+      { "id": "sentence-scope", "type": "manual", "required": false, "description": "The artifact provides sentence-level notes and alternatives rather than a complete replacement letter." }
+    ]
+  }
+}

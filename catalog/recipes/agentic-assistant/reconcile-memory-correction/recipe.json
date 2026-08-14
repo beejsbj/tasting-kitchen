@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "reconcile-memory-correction",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Reconcile an old memory with today's correction",
+  "summary": "Use a sourced memory packet to restore continuity without preserving a superseded interpretation.",
+  "domain": "agentic-assistant",
+  "origin": "mothers",
+  "originNote": "Distilled from a recurring need for useful continuity that remains attributable and corrigible.",
+  "tags": ["memory", "clarification", "correction-recovery", "source-synthesis"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the closed memory packet at memory/. The three files are authoritative; no outside memory is available. The runner captures the conversation as output/session.json.",
+    "fixtures": [
+      { "id": "old-note", "path": "fixtures/memory/01-old-note.md", "mountAs": "memory/01-old-note.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "later-correction", "path": "fixtures/memory/02-later-correction.md", "mountAs": "memory/02-later-correction.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "today-note", "path": "fixtures/memory/03-today.md", "mountAs": "memory/03-today.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    { "id": "restore-context", "role": "prompt", "content": "Read the supplied memory packet, then answer: where were we, what is true now, and what is the next live question? Tie each continuity claim to its source file. Do not treat older wording as current merely because it is more detailed." },
+    { "id": "exact-correction", "role": "correction", "content": "One precise correction: today's note says ‘paused’, not ‘abandoned’. Carry that exact distinction forward and briefly restate the current picture." }
+  ],
+  "output": { "kind": "session", "entry": "output/session.json", "include": ["output/session.json"], "limits": { "maxFiles": 4, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete multi-turn session.", "target": "output/session.json" },
+      { "id": "sources-read", "type": "trace-assertion", "required": false, "description": "Look for inspection of the supplied memory files before answering." },
+      { "id": "current-state", "type": "trace-assertion", "required": false, "description": "Look for the final answer to preserve paused, not abandoned, without inventing continuity." }
+    ]
+  },
+  "variation": "Change the project nouns and the superseded interpretation while retaining an old note, a later correction, and a current question.",
+  "supersedes": "two-memories-and-today"
+}

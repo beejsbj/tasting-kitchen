@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "stay-with-uncertain-evening",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Stay with an uncertain evening",
+  "summary": "Respond to a sensory, unresolved reflection without converting it into diagnosis, reassurance, or a plan.",
+  "domain": "conversation-journaling",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring journaling turns where the conversation itself is the desired work.",
+  "tags": ["presence", "correction-recovery", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Do not add clinical or safety context not present in the prompt.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "describe-evening",
+      "role": "prompt",
+      "content": "It is a fictional late evening. The radiator is ticking, the sink has one cup in it, and I keep walking from one room to another without deciding what I am looking for. Nothing dramatic happened. I just do not want to make the feeling smaller by naming it too quickly."
+    },
+    {
+      "id": "reject-framework",
+      "role": "correction",
+      "content": "I do not need a framework or a plan. Help me stay near what I just said without making the feeling grander than it is."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains both scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

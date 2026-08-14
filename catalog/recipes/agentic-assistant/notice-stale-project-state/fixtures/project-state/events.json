@@ -1,0 +1,7 @@
+{
+  "events": [
+    { "at": "2026-07-03T12:00:00Z", "type": "completed", "item": "disk-relief", "detail": "Verified 18 GB free" },
+    { "at": "2026-07-04T15:30:00Z", "type": "canceled", "item": "archive-migration", "detail": "Proposal abandoned after review" },
+    { "at": "2026-08-13T16:45:00Z", "type": "failed-check", "item": "retention-guide-link", "detail": "Public guide returns 404" }
+  ]
+}

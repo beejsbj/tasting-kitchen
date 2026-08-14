@@ -1,0 +1,17 @@
+{
+  "instrument": "Eight-pad sound sketchpad",
+  "initialPads": [
+    {"id": 1, "state": "filled", "label": "tap", "toneHz": 96},
+    {"id": 2, "state": "filled", "label": "clap", "toneHz": 210},
+    {"id": 3, "state": "filled", "label": "bell", "toneHz": 520},
+    {"id": 4, "state": "empty"},
+    {"id": 5, "state": "empty"},
+    {"id": 6, "state": "empty"},
+    {"id": 7, "state": "empty"},
+    {"id": 8, "state": "empty"}
+  ],
+  "continuousControls": ["Volume", "Pitch", "Pan"],
+  "rearrangement": ["copy to empty", "swap occupied pads", "layer occupied pads", "cancel"],
+  "destructiveRule": "A single selected pad asks once before discard. Holding the discard control enters a batch-delete mode that is visibly armed and does not ask for each pad.",
+  "accessibility": ["44px minimum targets", "keyboard trigger and adjustment", "state not conveyed by color alone", "focus never disappears during rearrangement"]
+}

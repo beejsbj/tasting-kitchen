@@ -9,7 +9,8 @@
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "default",
-      "personality": "none"
+      "personality": "none",
+      "capabilities": ["files", "shell"]
     },
     {
       "id": "codex-terra-high",
@@ -19,7 +20,8 @@
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "default",
-      "personality": "none"
+      "personality": "none",
+      "capabilities": ["files", "shell"]
     },
     {
       "id": "codex-luna-low-fast",
@@ -29,7 +31,8 @@
       "harness": "codex-cli",
       "reasoningEffort": "low",
       "serviceTier": "fast",
-      "personality": "none"
+      "personality": "none",
+      "capabilities": ["files", "shell"]
     },
     {
       "id": "codex-luna-high-fast",
@@ -39,7 +42,8 @@
       "harness": "codex-cli",
       "reasoningEffort": "high",
       "serviceTier": "fast",
-      "personality": "none"
+      "personality": "none",
+      "capabilities": ["files", "shell"]
     },
     {
       "id": "codex-luna-xhigh-fast",
@@ -49,7 +53,8 @@
       "harness": "codex-cli",
       "reasoningEffort": "xhigh",
       "serviceTier": "fast",
-      "personality": "none"
+      "personality": "none",
+      "capabilities": ["files", "shell"]
     }
   ]
 }

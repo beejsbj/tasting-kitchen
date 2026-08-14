@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "diagnose-with-shell-read-only",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Diagnose a service mismatch without changing files",
+  "summary": "Use shell evidence to separate a green unit test from the real failing request path while respecting a read-only boundary.",
+  "domain": "agentic-assistant",
+  "origin": "textbook",
+  "originNote": "A conventional read-only operational diagnosis with a deliberate green-test versus live-symptom tension.",
+  "tags": ["shell-use", "tool-use", "debugging", "verification"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the disposable service fixture at service/. The workspace is read-only. Commands may inspect and execute existing probes; no mutation is authorized.",
+    "fixtures": [
+      { "id": "service-readme", "path": "fixtures/service/README.md", "mountAs": "service/README.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "service-config", "path": "fixtures/service/config.json", "mountAs": "service/config.json", "public": true, "mediaType": "application/json" },
+      { "id": "health-source", "path": "fixtures/service/src/health.mjs", "mountAs": "service/src/health.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "health-unit-test", "path": "fixtures/service/test/unit.test.mjs", "mountAs": "service/test/unit.test.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "health-probe", "path": "fixtures/service/tools/probe.mjs", "mountAs": "service/tools/probe.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "request-log", "path": "fixtures/service/logs/requests.log", "mountAs": "service/logs/requests.log", "public": true, "mediaType": "text/plain" },
+      { "id": "diagnosis-validator", "path": "fixtures/service/verify-fixture.mjs", "mountAs": "service/verify-fixture.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "diagnose", "role": "prompt", "content": "A synthetic service reports green unit tests while clients receive 404 from the documented health URL. Diagnose the cause using the supplied files and shell commands. Distinguish observations from inference, make no changes, and finish with the smallest safe next action plus the commands you actually ran." }
+  ],
+  "output": { "kind": "session", "entry": "output/session.json", "include": ["output/session.json"], "limits": { "maxFiles": 4, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "fixture-shape", "type": "command", "required": true, "description": "The fixture retains a green unit test and a failing documented-path probe.", "argv": ["node", "service/verify-fixture.mjs"] },
+      { "id": "read-only-trace", "type": "trace-assertion", "required": false, "description": "Look for evidence-gathering commands, no write command, and a diagnosis of configuration drift rather than a code change." }
+    ]
+  },
+  "variation": "Change the documented endpoint and mismatched configuration while preserving a misleading green unit test and a read-only boundary."
+}

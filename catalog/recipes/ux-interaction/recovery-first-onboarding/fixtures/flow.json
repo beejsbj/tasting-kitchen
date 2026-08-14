@@ -1,0 +1,10 @@
+{
+  "service": "Community tool-room orientation",
+  "steps": [
+    {"id": "identity", "title": "Your borrowing label", "fields": [{"id": "name", "label": "Name on the shelf label", "type": "text", "required": true}, {"id": "pronunciation", "label": "Pronunciation note", "type": "text", "required": false}]},
+    {"id": "access", "title": "Access needs", "fields": [{"id": "pickup", "label": "Preferred pickup window", "type": "select", "options": ["Weekday morning", "Weekday evening", "Saturday"], "required": true}, {"id": "updates", "label": "Send occasional tool-room updates", "type": "checkbox", "required": false}]},
+    {"id": "review", "title": "Review and join", "fields": []}
+  ],
+  "failure": "The first submission attempt must fail with: The room could not confirm your label. Your draft is still here.",
+  "success": "Your borrowing label is ready."
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "answer-one-exact-question",
+  "version": "1.0.0",
+  "status": "hidden",
+  "title": "Answer one exact question directly",
+  "summary": "A hidden routing sanity check for exact arithmetic and strict output formatting, not a showcased fingerprint recipe.",
+  "domain": "conversation-journaling",
+  "origin": "textbook",
+  "originNote": "Retained from the earlier menu only as a hidden direct-task control.",
+  "tags": ["verification"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run the single turn in a fresh conversation with no preceding relational context.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "decimal",
+      "role": "prompt",
+      "content": "Convert 7/16 to a decimal. Reply with exactly four digits after the decimal point and nothing else."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "transcript.json",
+    "include": ["transcript.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "exact-response", "type": "trace-assertion", "required": false, "description": "The assistant response body is exactly 0.4375 with no additional text." }
+    ]
+  }
+}

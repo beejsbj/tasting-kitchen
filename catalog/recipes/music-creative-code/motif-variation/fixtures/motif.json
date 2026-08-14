@@ -1,0 +1,12 @@
+{
+  "tempo": "84 BPM in 4/4",
+  "tonalCenter": "D minor",
+  "cell": [
+    {"degree": 1, "durationBeats": 2},
+    {"degree": 3, "durationBeats": 0.5},
+    {"degree": 4, "durationBeats": 0.5},
+    {"degree": 2, "durationBeats": 1}
+  ],
+  "identityCandidates": ["long–short–short–long rhythm", "up-up-down contour", "minor-third opening implication"],
+  "constraints": ["8 to 16 cycles total", "use at most three simultaneous musical layers", "include a perceivable return", "do not treat adding drums as the only development"]
+}

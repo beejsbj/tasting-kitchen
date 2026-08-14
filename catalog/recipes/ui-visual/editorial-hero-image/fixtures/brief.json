@@ -1,0 +1,6 @@
+{
+  "article": "How shade moves through a hot city block after sunset",
+  "scene": "A narrow mixed-use street at blue hour with awnings, open windows, one parked car, people carrying groceries, and pools of leftover heat rendered as visible spatial layers.",
+  "requirements": ["landscape 1600×900", "clear upper-left region for a future headline", "people shown with dignity and ordinary scale", "no text or logos inside the image", "heat must read spatially rather than as decorative flames"],
+  "avoid": ["disaster imagery", "futuristic smart-city screens", "stock-photo poses", "literal thermometer icons"]
+}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "recovery-first-onboarding",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Design an onboarding flow that survives interruption",
+  "summary": "Build a mobile-first three-step setup with validation, backtracking, draft recovery, and an honest network failure.",
+  "domain": "ux-interaction",
+  "origin": "textbook",
+  "originNote": "A conventional multi-step-flow control with loss prevention, accessibility, and recovery in tension with speed.",
+  "tags": ["state-modeling", "accessibility", "microinteraction", "verification", "implementation"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the fictional setup packet. Build a self-contained static application whose simulated persistence and failures work offline.",
+    "fixtures": [
+      {"id": "flow-packet", "path": "fixtures/flow.json", "mountAs": "fixtures/flow.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-flow",
+      "role": "prompt",
+      "content": "Read fixtures/flow.json and implement the complete mobile-first setup flow as index.html. A user must be able to complete it by keyboard, go back without losing valid entries, reload midway and recover a local draft, and encounter the packet's simulated final-step failure without losing work. Validation must explain how to recover and move focus to a useful place. Include a visible 'Clear saved draft' action. Expose the active step as data-step and the failed submission region as data-state=\"submit-failed\". Do not add accounts, marketing, or fields not in the packet."
+    },
+    {
+      "id": "remove-blocking-consent",
+      "role": "correction",
+      "content": "Revise the flow so the optional update preference cannot block completion or masquerade as required consent. Preserve all entered data, recovery behavior, and the three-step structure."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 20, "maxBytes": 3145728}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The runnable setup flow exists.", "target": "index.html"},
+      {"id": "recovery-hooks", "type": "command", "required": true, "description": "Draft clearing and simulated failure hooks are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');if(!/localStorage/.test(s)||!s.includes('submit-failed')||!s.includes('Clear saved draft'))process.exit(1)"]},
+      {"id": "flow-review", "type": "manual", "required": false, "description": "Complete, backtrack, reload after step two, retry the simulated failure, and complete using only the keyboard."}
+    ]
+  }
+}

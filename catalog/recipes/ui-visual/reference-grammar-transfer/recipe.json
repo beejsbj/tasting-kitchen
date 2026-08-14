@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "reference-grammar-transfer",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Transfer a reference's grammar, not its subject",
+  "summary": "Turn an abstract reference's hierarchy, crop, contrast, and rhythm into an unrelated service interface.",
+  "domain": "ui-visual",
+  "origin": "hybrid",
+  "originNote": "A standard reference-translation task sharpened by recurring history-derived corrections against literal motif copying.",
+  "tags": ["reference-translation", "visual-composition", "visual-language", "correction-recovery"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the synthetic SVG and directory content packet. Build a self-contained static interface without external assets.",
+    "fixtures": [
+      {"id": "reference", "path": "fixtures/reference.svg", "mountAs": "fixtures/reference.svg", "public": true, "mediaType": "image/svg+xml"},
+      {"id": "directory-content", "path": "fixtures/directory.json", "mountAs": "fixtures/directory.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-transfer",
+      "role": "prompt",
+      "content": "Study fixtures/reference.svg and build the neighborhood tool-lending directory described in fixtures/directory.json as a complete responsive index.html. Transfer useful relationships from the reference—such as hierarchy, cropping behavior, contrast allocation, and directional rhythm—while keeping the directory's own objects and decisions central. Do not describe a concept instead of implementing it. Include all supplied items, availability, categories, and contact action."
+    },
+    {
+      "id": "remove-literal-motif",
+      "role": "correction",
+      "content": "Revise the artifact so it does not repeat the reference's orange diagonal bars or title wording as literal motifs. Preserve any deeper hierarchy, crop, contrast, or rhythm you derived, and preserve the directory's functionality."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The translated directory exists.", "target": "index.html"},
+      {"id": "content-present", "type": "command", "required": true, "description": "All supplied tool records appear in the artifact.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['Tile cutter','Soil sieve','Cable tester','Folding dolly'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "transfer-review", "type": "manual", "required": false, "description": "Compare reference and result for relational transfer without literal bar copying."}
+    ]
+  }
+}

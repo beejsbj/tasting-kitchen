@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "pocket-groove",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Write a restrained Strudel groove with a real turn",
+  "summary": "Compose executable Strudel that establishes a pocket, develops it without crowding, and earns one turnaround.",
+  "domain": "music-creative-code",
+  "origin": "textbook",
+  "originNote": "A recognizable live-coding composition control focused on groove, restraint, form, and variation rather than code volume.",
+  "tags": ["strudel", "writing", "audio", "verification"],
+  "kind": "code",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the musical brief and bounded syntax crib. Produce standalone Strudel source; do not fetch packages or samples.",
+    "fixtures": [
+      {"id": "musical-brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "mediaType": "application/json"},
+      {"id": "syntax-crib", "path": "fixtures/strudel-crib.md", "mountAs": "fixtures/strudel-crib.md", "public": true, "mediaType": "text/markdown"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "compose-groove",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json and fixtures/strudel-crib.md. Write a runnable Strudel piece to main.strudel. It must establish the pocket, create a B section by changing the musical relationship rather than merely adding density, use one turnaround to make the return feel earned, and leave deliberate space. Mark the structural regions with comments // A, // B, and // TURNAROUND. Write listening-notes.md with no more than 160 words explaining the pocket, what B changes, and what to listen for in the return. Do not spend the note explaining basic syntax."
+    },
+    {
+      "id": "remove-busy-fill",
+      "role": "correction",
+      "content": "Revise the same piece so the turnaround uses fewer events than the densest bar but creates a stronger sense of arrival through placement, register, silence, or timbre. Preserve the established pocket and B section. Update both files."
+    }
+  ],
+  "output": {"kind": "code", "entry": "main.strudel", "include": ["main.strudel", "listening-notes.md"], "limits": {"maxFiles": 4, "maxBytes": 131072}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "source-exists", "type": "file-exists", "required": true, "description": "The Strudel source exists.", "target": "main.strudel"},
+      {"id": "form-markers", "type": "command", "required": true, "description": "The source names all three structural regions and uses a sounding pattern.", "argv": ["node", "-e", "const s=require('fs').readFileSync('main.strudel','utf8');for(const x of ['// A','// B','// TURNAROUND'])if(!s.includes(x))process.exit(1);if(!/(sound|bank|s)\\s*\\(/.test(s))process.exit(1)"]},
+      {"id": "listening-review", "type": "manual", "required": false, "description": "Render in Strudel and listen for pocket continuity, a relational B section, deliberate space, and an earned return."}
+    ]
+  }
+}

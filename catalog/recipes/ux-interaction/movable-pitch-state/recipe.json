@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "movable-pitch-state",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Make movable pitch state agree across an instrument",
+  "summary": "Build a small playable keyboard where note identity, scale degree, tonic, and pressed state remain distinct through a reference-frame change.",
+  "domain": "ux-interaction",
+  "origin": "mothers",
+  "originNote": "Distilled from history-derived music-interface work where perceptual color state had to follow the musical model across every representation.",
+  "tags": ["state-modeling", "direct-manipulation", "visual-language", "microinteraction", "accessibility", "multi-turn"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the fictional pitch packet. Build a self-contained browser instrument; Web Audio is optional and no external samples or libraries are allowed.",
+    "fixtures": [
+      {"id": "pitch-packet", "path": "fixtures/pitch.json", "mountAs": "fixtures/pitch.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-instrument",
+      "role": "prompt",
+      "content": "Read fixtures/pitch.json and implement a complete responsive browser instrument as index.html. A reviewer must be able to switch between fixed-note and movable-degree color modes, choose C or D as tonic, and press keys by pointer or keyboard. Note identity, scale degree, tonic, membership in the active scale, and currently pressed state must be perceptually distinguishable without relying on motion alone. Labels, keys, legend, and any live readout must derive from one shared state model. Expose each key with data-note, data-degree, data-in-scale, and data-pressed attributes that update when state changes. Do not copy an existing instrument's name, palette, layout, type, or visual effects."
+    },
+    {
+      "id": "move-primary-reference",
+      "role": "correction",
+      "content": "Apply this constraint to the same artifact: in movable-degree mode, C cannot keep the primary tonic treatment after the tonic changes to D. Revise the shared semantics so keys, labels, legend, and live readout agree. Preserve fixed-note mode, input behavior, and the chosen visual direction."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 25, "maxBytes": 4194304}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The playable pitch-state artifact exists.", "target": "index.html"},
+      {"id": "state-hooks", "type": "command", "required": true, "description": "The artifact exposes note, degree, scale, and pressed state hooks.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['data-note','data-degree','data-in-scale','data-pressed'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "reference-frame-review", "type": "manual", "required": false, "description": "Switch C to D tonic in both modes, press the same key, and inspect whether every representation agrees without motion."}
+    ]
+  }
+}

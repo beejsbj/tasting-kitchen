@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "late-night-laundromat-scene",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Write a scene carried by subtext",
+  "summary": "Write and revise a late-night conversation between siblings where the important disclosure remains under the surface until the end.",
+  "domain": "writing-creative",
+  "origin": "textbook",
+  "originNote": "A recognizable dramatic-scene control for voice, subtext, pacing, and revision under a local character constraint.",
+  "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh workspace. The model must create and then revise only scene.md.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "write-scene",
+      "role": "prompt",
+      "content": "Write `scene.md`: a 700–900 word dramatic scene between adult siblings Mara and Dev in a nearly empty laundromat after midnight. Mara has agreed to sell the family corner shop but has not told Dev. Dev has brought a broken wall clock from the shop and pretends he only wants help removing its battery. Let the machines, interruptions, and what each person refuses to answer carry the subtext. Avoid an exposition dump, screenplay camera directions, and polished speeches. End with Dev understanding the sale without Mara stating it directly."
+    },
+    {
+      "id": "roughen-evasion",
+      "role": "correction",
+      "content": "Revise `scene.md` in place. Mara's evasions are too eloquent: make them shorter, messier, and more interruptible. Preserve the setting, underlying event, Dev's clock, and the final recognition. Do not add a confession speech."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "scene.md",
+    "include": ["scene.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "scene-exists", "type": "file-exists", "required": true, "description": "The final workspace contains scene.md.", "target": "scene.md" },
+      { "id": "scene-contract", "type": "manual", "required": false, "description": "scene.md is 700–900 words and retains Mara, Dev, the laundromat, the clock, and the indirect ending." }
+    ]
+  }
+}

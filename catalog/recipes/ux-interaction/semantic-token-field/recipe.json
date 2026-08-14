@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "semantic-token-field",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Make words behave according to their meaning",
+  "summary": "Build an editable planning field whose marked words have distinct physical responses without sacrificing text editing.",
+  "domain": "ux-interaction",
+  "origin": "mothers",
+  "originNote": "Distilled from a history-derived creative-code pattern where semantic tokens become manipulable objects rather than decorative highlights.",
+  "tags": ["direct-manipulation", "microinteraction", "motion", "state-modeling", "accessibility"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the token packet. Build a self-contained editable artifact with no external libraries or network requests.",
+    "fixtures": [
+      {"id": "token-packet", "path": "fixtures/tokens.json", "mountAs": "fixtures/tokens.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-field",
+      "role": "prompt",
+      "content": "Read fixtures/tokens.json and implement a complete responsive editable planning field as index.html. The user must be able to edit, select, copy, and keyboard-navigate the text normally. The four marked words should each have a distinct interaction response derived from their meaning; dragging through the field may displace rendered tokens, but it must not corrupt the text or steal ordinary click-to-edit. Provide a clear reset and a motion-reduced mode in which semantic state remains visible without particles or displacement. Give each marked token data-token equal to its lowercase word."
+    },
+    {
+      "id": "restore-editing-primacy",
+      "role": "correction",
+      "content": "Revise the artifact so a simple click, caret move, selection drag, and keyboard edit remain primary. Require a deliberate modifier or explicit interaction mode for physical displacement. Preserve the semantic responses and the existing visual direction."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 25, "maxBytes": 4194304}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The editable semantic field exists.", "target": "index.html"},
+      {"id": "token-hooks", "type": "command", "required": true, "description": "All four semantic token identities and an editable control are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['urgent','blocked','fragile','flowing'])if(!s.toLowerCase().includes(x))process.exit(1);if(!/(textarea|contenteditable)/i.test(s))process.exit(1)"]},
+      {"id": "editing-review", "type": "manual", "required": false, "description": "Edit and select text, then enter the displacement mode and verify that the source text remains unchanged."}
+    ]
+  }
+}

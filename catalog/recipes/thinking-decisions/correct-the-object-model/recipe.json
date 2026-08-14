@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "correct-the-object-model",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Correct the object model, not just the wording",
+  "summary": "Revise a product architecture after learning that conversations themselves, not derived tasks, are the spatial cards.",
+  "domain": "thinking-decisions",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring ontology corrections where a coherent proposal was built around the wrong noun.",
+  "tags": ["clarification", "correction-recovery", "state-modeling", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. The supplied product fields are authoritative.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "initial-architecture",
+      "role": "prompt",
+      "content": "A fictional product has conversations with fields `id`, `title`, `lifecycle` (`open`, `paused`, or `complete`), and `position`. A spatial board arranges the ongoing work. Recommend a lean architecture for the board and its lifecycle display."
+    },
+    {
+      "id": "correct-primary-object",
+      "role": "correction",
+      "content": "Correction to carry forward: do not add task cards. The conversations themselves are the cards arranged spatially; lifecycle already belongs to each conversation. Revise every affected part of the architecture, not just the terminology."
+    },
+    {
+      "id": "state-single-truth",
+      "role": "follow-up",
+      "content": "State the resulting single source of truth and name what data structure from your first proposal no longer exists."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1572864 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains all three scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

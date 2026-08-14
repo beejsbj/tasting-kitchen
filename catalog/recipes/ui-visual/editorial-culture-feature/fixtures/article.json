@@ -1,0 +1,22 @@
+{
+  "kicker": "Night work / field notes",
+  "title": "The hour after the storefronts go dark",
+  "dek": "Across three blocks, repairers, bakers, and cleaners inherit a different version of the street.",
+  "byline": "Mira Sen — photographs translated as an abstract field map",
+  "paragraphs": [
+    "At eleven, the commercial street does not close so much as change hands. The day signs go black, the delivery doors open, and a second set of routines begins behind glass.",
+    "The people working this shift describe distance differently. A corner is not near because it is visible; it is near if the route is lit, if the bus still runs, and if someone else is awake behind the next door.",
+    "Light becomes shared infrastructure. A bakery keeps its prep-room window uncovered. A bicycle workshop angles one lamp toward the pavement. Neither gesture is announced as public service, but both alter the block.",
+    "The map of the night is therefore made from small permissions: a place to wait, a sink that can be used, a name remembered from yesterday, a doorway that remains bright for ten minutes longer.",
+    "By dawn the evidence is modest—flour on a sleeve, a repaired wheel, a swept threshold—but the street has been held together by people most daytime visitors never meet."
+  ],
+  "pullQuote": "A corner is near if someone else is awake behind the next door.",
+  "chronology": [
+    {"time": "22:40", "event": "Last customer leaves the tailor."},
+    {"time": "23:15", "event": "Bakery preparation begins."},
+    {"time": "01:20", "event": "First maintenance bus passes."},
+    {"time": "04:50", "event": "Produce deliveries arrive."},
+    {"time": "06:05", "event": "Day shutters begin to open."}
+  ],
+  "caption": "A synthetic map of lit thresholds; it is not geographic evidence."
+}

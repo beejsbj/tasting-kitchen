@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "midi-phrase-translation",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Translate one performed phrase two honest ways",
+  "summary": "Render a note-event packet as faithful and interpreted Strudel, exposing timing, overlap, voice, and quantization choices.",
+  "domain": "music-creative-code",
+  "origin": "mothers",
+  "originNote": "Distilled from history-derived work turning performed MIDI into readable, playable code while preserving musical assumptions and provenance.",
+  "tags": ["strudel", "source-synthesis", "verification", "audio", "writing"],
+  "kind": "code",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the sanitized event list and notation contract. Translate only the supplied packet; do not fetch source MIDI or infer unavailable metadata.",
+    "fixtures": [
+      {"id": "note-events", "path": "fixtures/events.json", "mountAs": "fixtures/events.json", "public": true, "mediaType": "application/json"},
+      {"id": "notation-contract", "path": "fixtures/notation-contract.md", "mountAs": "fixtures/notation-contract.md", "public": true, "mediaType": "text/markdown"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "translate-phrase",
+      "role": "prompt",
+      "content": "Read fixtures/events.json and fixtures/notation-contract.md. Create faithful.strudel and interpreted.strudel. The faithful version should preserve meaningful onset offsets, durations, overlap, and velocity shape as far as the supplied contract allows. The interpreted version may quantize or revoice for a clearer musical phrase, but it must preserve the phrase's identity rather than merely clean every event. Write translation-notes.md naming timing unit, cycle mapping, rests, voice split, overlap handling, velocity treatment, every interpretive change, and any uncertainty."
+    },
+    {
+      "id": "restore-pickup",
+      "role": "correction",
+      "content": "Revise only interpreted.strudel and its notes so the early pickup remains perceptibly ahead of beat one instead of being quantized onto it. Preserve the other interpretive decisions unless this change makes one impossible."
+    }
+  ],
+  "output": {"kind": "code", "entry": "interpreted.strudel", "include": ["faithful.strudel", "interpreted.strudel", "translation-notes.md"], "limits": {"maxFiles": 6, "maxBytes": 262144}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "faithful-exists", "type": "file-exists", "required": true, "description": "The faithful translation exists.", "target": "faithful.strudel"},
+      {"id": "interpreted-exists", "type": "file-exists", "required": true, "description": "The interpreted translation exists.", "target": "interpreted.strudel"},
+      {"id": "decision-record-exists", "type": "file-exists", "required": true, "description": "The translation decision record exists.", "target": "translation-notes.md"},
+      {"id": "translation-review", "type": "manual", "required": false, "description": "Render both versions and compare pickup, overlap, phrase identity, and the documented interpretive differences."}
+    ]
+  }
+}

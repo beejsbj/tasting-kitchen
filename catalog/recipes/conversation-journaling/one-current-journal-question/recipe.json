@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "one-current-journal-question",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Offer one current journal question",
+  "summary": "Use a week of mixed notes to ask one alive question without turning the fragments into a questionnaire or a grand pattern.",
+  "domain": "conversation-journaling",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring friction with exhaustive journal prompts and stale interpretations.",
+  "tags": ["presence", "memory", "clarification"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run the single turn in a fresh conversation. The supplied notes are fictional and exhaustive.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "ask-one-question",
+      "role": "prompt",
+      "content": "Here are fictional notes from one week. Monday: fixed the loose shelf. Tuesday: avoided calling my cousin. Wednesday: walked in bright cold air. Thursday: the old prompt about ambition felt dead. Friday: kept rereading a message without replying. Saturday: made soup for three people. Give me one prompt for tonight, not a list or questionnaire."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "single-response-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains the scripted user turn and exactly one corresponding assistant response." }
+    ]
+  }
+}

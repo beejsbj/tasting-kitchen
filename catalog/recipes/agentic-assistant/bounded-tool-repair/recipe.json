@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "bounded-tool-repair",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Apply one authorized repair and verify the visible state",
+  "summary": "Operate a disposable noticeboard tool within exact scope, then check both stored and rendered state.",
+  "domain": "agentic-assistant",
+  "origin": "textbook",
+  "originNote": "A standard tool-operation task with a concrete scope boundary and a human-visible verification requirement.",
+  "tags": ["tool-use", "shell-use", "permissions", "verification", "surgical-change"],
+  "kind": "session",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the disposable noticeboard at noticeboard/. Authorization already covers removing exactly the expired-link item; all other items are out of scope.",
+    "fixtures": [
+      { "id": "noticeboard-state", "path": "fixtures/noticeboard/state.json", "mountAs": "noticeboard/state.json", "public": true, "mediaType": "application/json" },
+      { "id": "noticeboard-view", "path": "fixtures/noticeboard/public-view.md", "mountAs": "noticeboard/public-view.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "noticeboard-cli", "path": "fixtures/noticeboard/tool.mjs", "mountAs": "noticeboard/tool.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "repair", "role": "prompt", "content": "Use the noticeboard CLI to inspect state, remove exactly expired-link, render the public view, and verify the repair. Preserve every other item. Report actual commands, stored state, visible state, and any residual uncertainty." }
+  ],
+  "output": { "kind": "session", "entry": "output/session.json", "include": ["output/session.json"], "limits": { "maxFiles": 4, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "bounded-state", "type": "command", "required": true, "description": "Only expired-link is absent and the generated view matches stored state.", "argv": ["node", "noticeboard/tool.mjs", "verify"] },
+      { "id": "repair-trace", "type": "trace-assertion", "required": false, "description": "Look for an inspect, remove, render, and verify sequence with no out-of-scope mutation." }
+    ]
+  },
+  "variation": "Change the authorized item and view format while retaining one exact mutation target and two-layer verification."
+}

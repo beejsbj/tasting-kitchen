@@ -1,0 +1,11 @@
+{
+  "title": "Borrow one useful thing",
+  "intro": "Four neighbors share tools that spend most of the week sitting still.",
+  "items": [
+    {"name": "Tile cutter", "category": "Renovation", "availability": "Available Saturday", "distance": "0.4 km"},
+    {"name": "Soil sieve", "category": "Garden", "availability": "Available now", "distance": "0.7 km"},
+    {"name": "Cable tester", "category": "Electronics", "availability": "Back Tuesday", "distance": "1.1 km"},
+    {"name": "Folding dolly", "category": "Moving", "availability": "Available now", "distance": "1.3 km"}
+  ],
+  "action": "Ask to borrow"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "orchestrate-partial-workers",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Orchestrate partial workers into one accountable result",
+  "summary": "Coordinate three bounded evidence shards, preserve a known gap, and deliver the requested synthesis instead of a worker-status report.",
+  "domain": "agentic-assistant",
+  "origin": "mothers",
+  "originNote": "Distilled from recurring multi-agent work where activity and receipts displaced the final artifact or missing evidence was silently filled.",
+  "tags": ["orchestration", "delegation", "source-synthesis", "tool-use", "verification"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell", "delegation"] },
+  "setup": {
+    "instructions": "Mount the closed work graph at work/. The harness must expose real workers; otherwise mark unsupported. Shard B intentionally lacks one required field.",
+    "fixtures": [
+      { "id": "worker-request", "path": "fixtures/work/request.md", "mountAs": "work/request.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "worker-shard-a", "path": "fixtures/work/shard-a.json", "mountAs": "work/shard-a.json", "public": true, "mediaType": "application/json" },
+      { "id": "worker-shard-b", "path": "fixtures/work/shard-b.json", "mountAs": "work/shard-b.json", "public": true, "mediaType": "application/json" },
+      { "id": "worker-shard-c", "path": "fixtures/work/shard-c.json", "mountAs": "work/shard-c.json", "public": true, "mediaType": "application/json" },
+      { "id": "orchestration-validator", "path": "fixtures/work/validate-comparison.mjs", "mountAs": "work/validate-comparison.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "orchestrate", "role": "prompt", "content": "Use three bounded workers to inspect shards A, B, and C under the contract in work/request.md. Keep one return channel per shard. Reconcile their receipts, inspect the gap yourself, and write the requested table to output/comparison.md. Mark unsupported cells unknown; do not launch replacement work merely to hide a missing field. The parent owns the final table and smallest next verification." }
+  ],
+  "output": { "kind": "document", "entry": "output/comparison.md", "include": ["output/comparison.md"], "limits": { "maxFiles": 2, "maxBytes": 131072 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "worker-graph", "type": "trace-assertion", "required": false, "description": "Look for three bounded shard workers, collected returns, and parent-owned integration." },
+      { "id": "table-contract", "type": "command", "required": true, "description": "The table contains A, B, and C, preserves B setup as unknown, and includes source IDs.", "argv": ["node", "work/validate-comparison.mjs", "output/comparison.md"] }
+    ]
+  },
+  "variation": "Move the missing field to another shard while preserving three roles, one incomplete return, and one integrated table.",
+  "supersedes": "four-receipts-no-matrix"
+}

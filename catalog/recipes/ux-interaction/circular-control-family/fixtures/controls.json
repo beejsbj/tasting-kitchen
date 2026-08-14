@@ -1,0 +1,16 @@
+{
+  "device": "Portable field recorder",
+  "controls": [
+    {"id": "gain", "type": "range", "label": "Input gain", "min": 0, "max": 60, "step": 1, "initial": 24, "unit": "dB"},
+    {"id": "monitor", "type": "boolean", "label": "Monitor", "initial": false},
+    {"id": "source", "type": "options", "label": "Input", "options": ["Built-in", "Line", "USB"], "initial": "Built-in"},
+    {"id": "mark", "type": "action", "label": "Drop marker"}
+  ],
+  "gestureRules": [
+    "Movement stays a potential tap until a small threshold is crossed.",
+    "Horizontal intent scrolls the surrounding strip; vertical intent belongs to the control.",
+    "A quick range drag may accelerate modestly, but slow movement must allow single-step precision.",
+    "Pointer cancellation commits nothing.",
+    "Optional vibration may be noted as a native enhancement but cannot carry essential state."
+  ]
+}

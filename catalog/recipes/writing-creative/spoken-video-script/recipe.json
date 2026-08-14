@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "spoken-video-script",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Write a short script that sounds spoken",
+  "summary": "Write and compress a public-interest video script whose cadence, turns, and ending work aloud instead of reading like an essay.",
+  "domain": "writing-creative",
+  "origin": "textbook",
+  "originNote": "A familiar spoken-script control with a hard duration change and a ban on listicle structure.",
+  "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh workspace. The model must create and then revise only script.md.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "write-ninety-seconds",
+      "role": "prompt",
+      "content": "Write `script.md` for a 90-second spoken video about why public benches matter. Use only these supplied facts: benches support rest, informal meetings, waiting, people-watching, and access for those who cannot walk long distances; their placement can welcome lingering or quietly discourage it. Begin inside one concrete moment, make one clear turn in the middle, and end on an image rather than a slogan. Write words for a human mouth, not an essay with headings. Do not invent statistics."
+    },
+    {
+      "id": "compress-sixty-seconds",
+      "role": "correction",
+      "content": "Revise `script.md` in place for 60 seconds. Keep the opening moment, middle turn, and final image. Do not solve the cut by turning the script into a numbered list or speeding through compressed prose."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "script.md",
+    "include": ["script.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "script-exists", "type": "file-exists", "required": true, "description": "The final workspace contains script.md.", "target": "script.md" },
+      { "id": "sixty-second-contract", "type": "manual", "required": false, "description": "script.md is plausibly speakable in 60 seconds and has no headings or numbered-list structure." }
+    ]
+  }
+}

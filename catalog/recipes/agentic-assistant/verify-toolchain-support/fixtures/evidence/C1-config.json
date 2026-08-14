@@ -1,0 +1,9 @@
+{
+  "sourceId": "C1",
+  "adapters": {
+    "relay": {
+      "enabled": true,
+      "tokenRef": null
+    }
+  }
+}

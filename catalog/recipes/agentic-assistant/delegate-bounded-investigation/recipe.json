@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "delegate-bounded-investigation",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Delegate one bounded investigation",
+  "summary": "Give one worker a narrow evidence question, inspect the return, and keep the parent accountable for the recommendation.",
+  "domain": "agentic-assistant",
+  "origin": "textbook",
+  "originNote": "A conventional delegation control that distinguishes clean handoff from outsourcing the final judgment.",
+  "tags": ["delegation", "research", "source-synthesis", "tool-use", "verification"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell", "delegation"] },
+  "setup": {
+    "instructions": "Mount the closed comparison packet at packet/. The harness must expose a real worker/delegation tool; otherwise mark this recipe unsupported rather than simulating a worker.",
+    "fixtures": [
+      { "id": "worker-question", "path": "fixtures/packet/worker-question.md", "mountAs": "packet/worker-question.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "worker-options", "path": "fixtures/packet/options.csv", "mountAs": "packet/options.csv", "public": true, "mediaType": "text/csv" },
+      { "id": "worker-policy", "path": "fixtures/packet/policy.md", "mountAs": "packet/policy.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "delegation-validator", "path": "fixtures/packet/validate-recommendation.mjs", "mountAs": "packet/validate-recommendation.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "delegate-and-decide", "role": "prompt", "content": "Use exactly one worker to answer the bounded question in packet/worker-question.md from the supplied sources. Give it an explicit evidence and return contract. When it returns, inspect at least one cited source yourself, then write output/recommendation.md. The parent response owns the recommendation and names any unresolved evidence." }
+  ],
+  "output": { "kind": "document", "entry": "output/recommendation.md", "include": ["output/recommendation.md"], "limits": { "maxFiles": 2, "maxBytes": 131072 } },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "one-worker", "type": "trace-assertion", "required": false, "description": "Look for exactly one real worker with a bounded return contract, followed by parent inspection." },
+      { "id": "recommendation-contract", "type": "command", "required": true, "description": "The parent-authored recommendation cites a source and names the missing compatibility fact.", "argv": ["node", "packet/validate-recommendation.mjs", "output/recommendation.md"] }
+    ]
+  },
+  "variation": "Change the narrow research question and missing evidence while retaining one worker and parent-owned synthesis."
+}

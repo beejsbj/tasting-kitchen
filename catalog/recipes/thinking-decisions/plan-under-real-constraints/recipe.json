@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-under-real-constraints",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Plan a weekend project under real constraints",
+  "summary": "Turn a small oral-history event into a phased, dependency-aware plan and revise it when a critical volunteer becomes unavailable.",
+  "domain": "thinking-decisions",
+  "origin": "textbook",
+  "originNote": "A standard planning control with limited people, equipment, time, and a mid-plan constraint change.",
+  "tags": ["planning", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh workspace. The model must create and revise only plan.md.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "draft-plan",
+      "role": "prompt",
+      "content": "Plan a two-day fictional oral-history recording event. Available: one quiet room, two recorders, three volunteers, six confirmed storytellers, and eight preparation hours before the weekend. Interviews must be consented, labeled, backed up, and handed to the local archive. Create `plan.md` with phases, ownership, dependencies, explicit cuts, and the checks that prove each phase is complete. Do not invent additional staff, equipment, or time."
+    },
+    {
+      "id": "volunteer-unavailable",
+      "role": "correction",
+      "content": "New constraint: one volunteer is unavailable on the first day, and the archive cannot accept unlabeled audio. Revise `plan.md` rather than appending an alternate plan. Preserve feasible work, change affected sequencing, and state what is now deliberately out of scope."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "plan.md",
+    "include": ["plan.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "plan-exists", "type": "file-exists", "required": true, "description": "The final workspace contains plan.md.", "target": "plan.md" },
+      { "id": "single-current-plan", "type": "manual", "required": false, "description": "plan.md is one revised current plan rather than an original plan plus an appended alternative." }
+    ]
+  }
+}

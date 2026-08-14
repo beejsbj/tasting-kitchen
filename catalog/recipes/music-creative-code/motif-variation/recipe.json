@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "motif-variation",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Develop a motif without losing its identity",
+  "summary": "Turn one compact melodic cell into an A/B/development/return form while preserving a perceptible family resemblance.",
+  "domain": "music-creative-code",
+  "origin": "textbook",
+  "originNote": "A conventional composition and variation task with a correction that separates meaningful development from arbitrary replacement.",
+  "tags": ["strudel", "writing", "multi-turn", "correction-recovery", "audio"],
+  "kind": "code",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the motif packet and syntax crib. Produce a self-contained Strudel source and short musical account.",
+    "fixtures": [
+      {"id": "motif-packet", "path": "fixtures/motif.json", "mountAs": "fixtures/motif.json", "public": true, "mediaType": "application/json"},
+      {"id": "syntax-crib", "path": "fixtures/strudel-crib.md", "mountAs": "fixtures/strudel-crib.md", "public": true, "mediaType": "text/markdown"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "compose-variations",
+      "role": "prompt",
+      "content": "Read fixtures/motif.json and fixtures/strudel-crib.md. Compose a runnable Strudel piece in main.strudel with clearly commented A, B, DEVELOPMENT, and RETURN regions. A states the supplied cell recognizably. B must contrast while retaining at least one identity-bearing feature. Development should transform rather than simply transpose the whole cell. The return should sound changed by what happened. In motif-notes.md, name exactly which rhythmic, interval, contour, register, and timbral features you preserved or changed; stay under 220 words."
+    },
+    {
+      "id": "preserve-rhythmic-silhouette",
+      "role": "correction",
+      "content": "Revise only B and any transition needed to enter or leave it: B must preserve the source cell's long–short–short–long rhythmic silhouette while changing harmonic center and contour. Keep A, the development strategy, and the return's role intact. Update the notes."
+    }
+  ],
+  "output": {"kind": "code", "entry": "main.strudel", "include": ["main.strudel", "motif-notes.md"], "limits": {"maxFiles": 4, "maxBytes": 131072}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "source-exists", "type": "file-exists", "required": true, "description": "The motif composition exists.", "target": "main.strudel"},
+      {"id": "form-markers", "type": "command", "required": true, "description": "All four structural regions are named in the source.", "argv": ["node", "-e", "const s=require('fs').readFileSync('main.strudel','utf8');for(const x of ['// A','// B','// DEVELOPMENT','// RETURN'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "motif-review", "type": "manual", "required": false, "description": "Listen blind for motif identity across contrast, development, and altered return."}
+    ]
+  }
+}

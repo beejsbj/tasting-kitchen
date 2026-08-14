@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "divergent-concept-directions",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Generate four genuinely different concepts",
+  "summary": "Explore four mechanisms for a neighborhood knowledge program without disguising minor variations as divergent ideas.",
+  "domain": "thinking-decisions",
+  "origin": "textbook",
+  "originNote": "A recognizable divergent-brainstorming control with explicit mechanism and failure assumptions.",
+  "tags": ["brainstorming", "rubber-ducking", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Use only the constraints supplied in the recipe.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "four-concepts",
+      "role": "prompt",
+      "content": "A small public library wants a recurring program that helps neighbors exchange useful local knowledge. It has one meeting room, two staff hours per week, and no new software budget. Generate four genuinely different concepts. For each, name its core mechanism, the assumption it depends on, and its most likely failure. Do not make four themed versions of the same event."
+    },
+    {
+      "id": "deepen-contrast",
+      "role": "follow-up",
+      "content": "Choose the two concepts with the most different underlying mechanics. Deepen each enough that the library could run a one-evening pilot, but do not choose a winner."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1572864 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains both scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

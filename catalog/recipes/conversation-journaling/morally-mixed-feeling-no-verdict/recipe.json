@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "morally-mixed-feeling-no-verdict",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Recognize a mixed feeling without a verdict",
+  "summary": "Discuss relief at another proposal's failure while keeping feeling, motive, action, and impact distinct.",
+  "domain": "conversation-journaling",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring conversations that distinguish recognition from endorsement or moral absolution.",
+  "tags": ["presence", "clarification", "correction-recovery", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Treat the fictional meeting account as the complete factual packet.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "mixed-reaction",
+      "role": "prompt",
+      "content": "At a fictional community meeting, I argued for a decision that helped my own small group. I still think the decision was practical, but I disliked how relieved I felt when someone else's proposal failed. I am not asking to be told I am good or bad. What do you notice?"
+    },
+    {
+      "id": "separate-relief-from-harm",
+      "role": "correction",
+      "content": "Correction to carry forward: relief does not automatically mean wanting harm. Revisit the observation without automatic validation or moral certainty."
+    },
+    {
+      "id": "locate-disagreement",
+      "role": "follow-up",
+      "content": "What would you honestly question here, after making that distinction?"
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains all three scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

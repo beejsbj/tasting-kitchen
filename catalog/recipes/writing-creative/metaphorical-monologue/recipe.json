@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "metaphorical-monologue",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Build a monologue around a metaphor that can resist",
+  "summary": "Develop a museum with changing labels into authored prose where the governing metaphor generates thought and eventually pushes back.",
+  "domain": "writing-creative",
+  "origin": "mothers",
+  "originNote": "A public-safe original brief distilled from recurring work in which metaphor carries reasoning rather than decorating a predetermined conclusion.",
+  "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh workspace. The model must create and then revise only monologue.md.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "write-monologue",
+      "role": "prompt",
+      "content": "Write `monologue.md`, 700–900 words, in the voice of a night guard at a museum where every object's label is replaced before dawn. The guard begins by treating the changing labels as vandalism, then discovers that one object refuses every description placed beside it. Let the museum metaphor produce the argument rather than announcing what it stands for. Give the prose a spoken pulse, concrete rooms and objects, and one place where the governing metaphor stops cooperating. Do not end with a universal lesson."
+    },
+    {
+      "id": "keep-metaphor-operative",
+      "role": "correction",
+      "content": "Revise `monologue.md` in place. Do not reveal that the museum is 'really' the mind, memory, or identity. Keep it materially a museum, deepen the point where the metaphor resists the guard, and remove any concluding moral that explains the piece."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "monologue.md",
+    "include": ["monologue.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "monologue-exists", "type": "file-exists", "required": true, "description": "The final workspace contains monologue.md.", "target": "monologue.md" },
+      { "id": "monologue-contract", "type": "manual", "required": false, "description": "monologue.md is 700–900 words, remains materially set in a museum, and contains no explicit universal moral." }
+    ]
+  }
+}

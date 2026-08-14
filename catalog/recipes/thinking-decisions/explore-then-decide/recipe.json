@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "explore-then-decide",
+  "version": "1.0.0",
+  "status": "hidden",
+  "title": "Explore three options, then choose one",
+  "summary": "Compare travel options against a closed constraint packet, then switch cleanly from exploration to a brief recommendation.",
+  "domain": "thinking-decisions",
+  "origin": "textbook",
+  "originNote": "A recognizable decision control that separates broad comparison from the moment a single choice is requested.",
+  "tags": ["decision", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Use only the fictional option packet in the prompt.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "compare-options",
+      "role": "prompt",
+      "content": "For a fictional three-day research trip, compare Harbor House (quiet, 40 minutes from the venue, 90 credits per night), Lantern Inn (central, 135 credits per night, noisy street), and Field Rooms (20 minutes from the venue, 110 credits per night, no late check-in). Constraints: arrival may be 23:30, the daily lodging budget is 125 credits, and sleep before a presentation matters. Explore the tradeoffs first."
+    },
+    {
+      "id": "choose-one",
+      "role": "mode-transition",
+      "content": "The mode now changes from exploration to decision. Pick one for this trip, briefly, and name one uncertainty that could reverse the choice."
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "transcript.json",
+    "include": ["transcript.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains both scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

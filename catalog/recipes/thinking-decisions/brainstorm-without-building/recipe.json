@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "brainstorm-without-building",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Brainstorm a concept without building it",
+  "summary": "Explore a spatial neighborhood archive while keeping ideation separate from implementation and resisting a game metaphor.",
+  "domain": "thinking-decisions",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring mode corrections where rich detail was mistaken for permission to execute.",
+  "tags": ["brainstorming", "clarification", "correction-recovery", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. No project files or implementation environment are available.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "explore-archive",
+      "role": "prompt",
+      "content": "I am imagining a fictional neighborhood archive where walking routes reveal stories attached to street corners. It might have a map, a listening mode, and small paper-like traces. I am tempted to use a 3D engine, but I am not asking you to build or change files. Help me explore what the object could be and ask only questions that materially change the concept."
+    },
+    {
+      "id": "remove-game",
+      "role": "correction",
+      "content": "Keep the route idea, but do not make the archive a game. Continue brainstorming from that corrected premise."
+    },
+    {
+      "id": "name-open-question",
+      "role": "follow-up",
+      "content": "What is the one unresolved question that most changes which concept this becomes?"
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1572864 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains all three scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

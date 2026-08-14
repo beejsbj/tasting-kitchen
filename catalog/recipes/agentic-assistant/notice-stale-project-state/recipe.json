@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "notice-stale-project-state",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Notice stale project state before interrupting",
+  "summary": "Reconcile a stale headline with newer events and surface only the live, actionable residual.",
+  "domain": "agentic-assistant",
+  "origin": "mothers",
+  "originNote": "Distilled from recurring assistant failures that resurrect old next moves or interrupt with already-completed work.",
+  "tags": ["proactivity", "memory", "source-synthesis", "clarification"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the closed project state at project-state/. Later event timestamps outrank the summary headline. Write only the requested notice file.",
+    "fixtures": [
+      { "id": "project-headline", "path": "fixtures/project-state/headline.json", "mountAs": "project-state/headline.json", "public": true, "mediaType": "application/json" },
+      { "id": "project-events", "path": "fixtures/project-state/events.json", "mountAs": "project-state/events.json", "public": true, "mediaType": "application/json" },
+      { "id": "attention-policy", "path": "fixtures/project-state/attention-policy.md", "mountAs": "project-state/attention-policy.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "notice-validator", "path": "fixtures/project-state/validate-notice.mjs", "mountAs": "project-state/validate-notice.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "reconcile-and-notice", "role": "prompt", "content": "Inspect all supplied project-state files. Decide whether an interruption is warranted now. Write output/notice.md containing either one concise useful notice or the single word SILENT. Do not repeat completed work as a next move; if you notify, distinguish what is done, canceled, and still unresolved." }
+  ],
+  "output": { "kind": "document", "entry": "output/notice.md", "include": ["output/notice.md"], "limits": { "maxFiles": 2, "maxBytes": 65536 } },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "notice-contract", "type": "command", "required": true, "description": "The notice names only the live broken link and does not resurrect completed or canceled work.", "argv": ["node", "project-state/validate-notice.mjs", "output/notice.md"] }
+    ]
+  },
+  "variation": "Rotate which headline is stale and which residual crosses the interruption threshold.",
+  "supersedes": "stale-next-move"
+}

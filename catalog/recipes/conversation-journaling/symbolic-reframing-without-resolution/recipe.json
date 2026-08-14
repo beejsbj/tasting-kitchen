@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "symbolic-reframing-without-resolution",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Use a symbol without forcing a resolution",
+  "summary": "Think through the image of an abandoned greenhouse while resisting diagnosis, literalization, and a compulsory healing arc.",
+  "domain": "conversation-journaling",
+  "origin": "hybrid",
+  "originNote": "A standard symbolic-reflection task shaped by recurring use of metaphor as an operational conversational language rather than decoration.",
+  "tags": ["rubber-ducking", "presence", "correction-recovery", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Treat the image as fictional and do not infer biography beyond it.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "offer-symbol",
+      "role": "prompt",
+      "content": "A long project ended, and since then I keep imagining an abandoned greenhouse: warm panes, mineral streaks, one overturned watering can, nothing obviously dead. Help me think with that image. I am not asking for a diagnosis or an action plan."
+    },
+    {
+      "id": "resist-healing-arc",
+      "role": "correction",
+      "content": "The greenhouse resonates, but do not turn it into a predictable healing journey. What else can the symbol hold without resolving it?"
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains both scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

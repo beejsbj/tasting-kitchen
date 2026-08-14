@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "notation-led-drum-instrument",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Make the drum notation the playable instrument",
+  "summary": "Compose a small performance-ready drum form and build an offline editor where notation, playback, and voice feedback stay coupled.",
+  "domain": "music-creative-code",
+  "origin": "mothers",
+  "originNote": "Distilled from history-derived creative instruments where readable musical code is the central object and each token behaves like its voice.",
+  "tags": ["strudel", "direct-manipulation", "audio", "microinteraction", "visual-language", "implementation"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the musical brief and tiny notation grammar. Build a self-contained browser instrument using Web Audio synthesis; no external samples or libraries.",
+    "fixtures": [
+      {"id": "performance-brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "mediaType": "application/json"},
+      {"id": "notation-grammar", "path": "fixtures/notation.md", "mountAs": "fixtures/notation.md", "public": true, "mediaType": "text/markdown"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "compose-and-build",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json and fixtures/notation.md. First compose the requested eight-cycle drum form and save its editable notation to pattern.txt. Then build index.html as a complete offline instrument around that exact pattern. The notation must be the central editable object, not code hidden beneath decorative controls. Play, pause, tempo, and reset must work. During playback, the current token and its voice should be perceptible; kick, snare, closed hat, open hat, and rim must have distinct synthesized behavior and distinct non-color feedback. Editing valid notation must change playback. Expose each parsed token with data-voice and use the Web Audio API without external assets."
+    },
+    {
+      "id": "make-variation-musical",
+      "role": "correction",
+      "content": "Revise the pattern and instrument so cycle 7 creates anticipation by withholding or displacing an established event, not by adding a maximal fill. Preserve the first six cycles' pocket and make cycle 8's return clearly legible in both sound and notation."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "pattern.txt"], "limits": {"maxFiles": 25, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The playable notation instrument exists.", "target": "index.html"},
+      {"id": "pattern-exists", "type": "file-exists", "required": true, "description": "The composed source pattern exists.", "target": "pattern.txt"},
+      {"id": "instrument-hooks", "type": "command", "required": true, "description": "Audio synthesis, token voice hooks, and editable source are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');if(!/AudioContext/.test(s)||!s.includes('data-voice')||!/(textarea|contenteditable)/i.test(s))process.exit(1)"]},
+      {"id": "music-review", "type": "manual", "required": false, "description": "Play all eight cycles, edit a valid token, and listen for stable pocket, anticipatory cycle 7, and clear return."}
+    ]
+  }
+}

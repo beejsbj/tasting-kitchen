@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "spatial-system-explanation",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Turn a process brief into a spatial explanation",
+  "summary": "Transform a linear service description into an accessible system map where position and connection reveal persistence, authority, and feedback.",
+  "domain": "editing-presentation",
+  "origin": "hybrid",
+  "originNote": "A standard information-design task shaped by recurring preference for spatial relationships to carry meaning instead of becoming a wall of prose.",
+  "tags": ["presentation", "source-synthesis", "visual-composition", "state-modeling", "correction-recovery", "multi-turn"],
+  "kind": "image",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the fictional system brief read-only. Run every turn in order in one fresh workspace. The model must create and revise only system-map.svg.",
+    "fixtures": [
+      { "id": "system-brief", "path": "system-brief.md", "mountAs": "system-brief.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "make-system-map",
+      "role": "prompt",
+      "content": "Read `system-brief.md` and create `system-map.svg` as a self-contained, accessible SVG system explanation. Use position, connection, grouping, line style, and restrained labels to make authority and lifecycle visible. The public record must read as a persistent shared surface, not another step in a row. Distinguish status updates, local context, and post-closure feedback without relying on color alone. Include a title and description inside the SVG. Do not make a flowchart-shaped wall of sentences."
+    },
+    {
+      "id": "clarify-feedback-loop",
+      "role": "correction",
+      "content": "Revise `system-map.svg` in place. Make it unmistakable that post-closure resident evidence returns to triage rather than directly reopening field work. Preserve the persistent public-record structure and do not solve the correction by adding a large explanatory legend."
+    }
+  ],
+  "output": {
+    "kind": "image",
+    "entry": "system-map.svg",
+    "include": ["system-map.svg"],
+    "limits": { "maxFiles": 2, "maxBytes": 2097152 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "svg-exists", "type": "file-exists", "required": true, "description": "The final workspace contains system-map.svg.", "target": "system-map.svg" },
+      { "id": "svg-contract", "type": "manual", "required": false, "description": "The SVG opens, includes an internal title and description, and visibly distinguishes the post-closure feedback path from crew delivery." }
+    ]
+  }
+}

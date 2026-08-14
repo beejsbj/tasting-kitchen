@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "collision-model-prototypes",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Prototype four different scheduling collision models",
+  "summary": "Create four comparable direct-manipulation prototypes, then preserve one model while borrowing one preview gesture.",
+  "domain": "ux-interaction",
+  "origin": "mothers",
+  "originNote": "Distilled from a history-derived practice of prototyping genuinely different interaction physics before selecting and refining one specimen.",
+  "tags": ["direct-manipulation", "state-modeling", "motion", "microinteraction", "multi-turn", "accessibility"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the common scheduling packet. Build all hypotheses in one self-contained comparison artifact; do not import libraries.",
+    "fixtures": [
+      {"id": "schedule-packet", "path": "fixtures/schedule.json", "mountAs": "fixtures/schedule.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-four",
+      "role": "prompt",
+      "content": "Read fixtures/schedule.json and build index.html containing four isolated runnable phone-width prototypes for the exact same move. Each prototype must embody a different user model for collision—not merely different styling—and must state in the artifact the one-sentence hypothesis it tests. During pointer movement, make the prospective consequence visible before release; provide undo and a reduced-motion mode. Keep the same activities, times, and 390px viewport across all four. Give each prototype a data-prototype value from 1 through 4."
+    },
+    {
+      "id": "select-and-borrow",
+      "role": "mode-transition",
+      "content": "Now add a fifth final specimen to the same artifact. Use prototype 2 as the interaction model and visual base. Borrow only prototype 4's long-press preview gesture, naming that borrowed behavior in a small provenance note. Preserve prototype 2's collision consequence, geometry, and release semantics. Mark the result data-prototype=\"final\"."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 30, "maxBytes": 6291456}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The prototype comparison exists.", "target": "index.html"},
+      {"id": "prototype-hooks", "type": "command", "required": true, "description": "Four hypotheses and the final synthesis are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['data-prototype=\\\"1\\\"','data-prototype=\\\"2\\\"','data-prototype=\\\"3\\\"','data-prototype=\\\"4\\\"','data-prototype=\\\"final\\\"'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "scenario-review", "type": "manual", "required": false, "description": "Run the same move, cancellation, undo, and reduced-motion checks in every specimen and inspect whether consequences truly differ."}
+    ]
+  }
+}

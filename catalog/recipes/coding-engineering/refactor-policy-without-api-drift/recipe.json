@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "refactor-policy-without-api-drift",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Refactor a policy module without widening its interface",
+  "summary": "Remove duplicated decision branches while preserving one public function, rule precedence, messages, and behavior.",
+  "domain": "coding-engineering",
+  "origin": "textbook",
+  "originNote": "A conventional bounded refactor whose tension is improving the internal model without inventing abstractions or API surface.",
+  "tags": ["implementation", "surgical-change", "verification", "shell-use"],
+  "kind": "code",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the dependency-free project at project/. Existing tests define the public contract; the implementation intentionally duplicates precedence logic.",
+    "fixtures": [
+      { "id": "policy-source", "path": "fixtures/project/src/policy.mjs", "mountAs": "project/src/policy.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "policy-tests", "path": "fixtures/project/test/policy.test.mjs", "mountAs": "project/test/policy.test.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "refactor", "role": "prompt", "content": "Inspect the policy module and tests. Refactor the duplicated rule-selection logic into a clearer internal model while preserving the single exported selectDelivery function, precedence, return shape, and exact messages. Add a focused regression test only if it exposes an uncovered contract. Run the tests and write output/completion.md with the resulting seam and commands run." }
+  ],
+  "output": { "kind": "code", "entry": "project/src/policy.mjs", "include": ["project/src/**", "project/test/**", "output/completion.md"], "limits": { "maxFiles": 20, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      { "id": "contract-tests", "type": "command", "required": true, "description": "The original public contract and precedence cases remain green.", "argv": ["node", "project/test/policy.test.mjs"] },
+      { "id": "bounded-diff", "type": "trace-assertion", "required": false, "description": "Look for a changed source file, no new public export, and no unrelated rewrites." },
+      { "id": "completion-receipt", "type": "file-exists", "required": true, "description": "The model leaves a completion receipt.", "target": "output/completion.md" }
+    ]
+  },
+  "variation": "Change the policy domain and duplicated rule set while retaining one public entry point and exact behavior tests."
+}

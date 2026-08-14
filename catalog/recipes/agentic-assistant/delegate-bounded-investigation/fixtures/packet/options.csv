@@ -1,0 +1,4 @@
+source_id,option,cost,offline_mode,export_format
+O1,Harbor,72,yes,zip
+O2,Lantern,58,no,json
+O3,Field,81,yes,json

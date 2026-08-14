@@ -1,40 +1,196 @@
-import { readFile, readdir, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
 const root = path.resolve(import.meta.dirname, "..");
 const errors = [];
+
+const IDS = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DISH_IDS = /^dish_[a-zA-Z0-9_-]+$/;
+const SEMVER = /^\d+\.\d+\.\d+$/;
+const SHA256 = /^sha256:[a-f0-9]{64}$/;
+const BARE_SHA256 = /^[a-f0-9]{64}$/;
+const MEDIA_TYPE = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/;
+
 const allowedKinds = new Set(["web", "image", "code", "session", "document", "audio"]);
 const allowedOrigins = new Set(["textbook", "mothers", "hybrid"]);
 const allowedStatuses = new Set(["draft", "ready", "hidden"]);
 const allowedRoles = new Set(["prompt", "follow-up", "correction", "mode-transition"]);
-const forbiddenKeys = new Set(["score", "scores", "rating", "rank", "winner"]);
-const secretPatterns = [
-  /\/(?:home|Users)\//,
-  /file:\/\//i,
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
-  /(?:OPENAI|ANTHROPIC|GEMINI|NOUS|AWS)_[A-Z0-9_]*(?:KEY|TOKEN|SECRET)/,
-  /\b(?:CJ|MC|MCL|AO|DA|E)\d{3}\b/
+const allowedWorkspaces = new Set(["read", "write"]);
+const allowedWebModes = new Set(["disabled", "enabled", "closed-sources-only"]);
+const allowedCapabilities = new Set(["files", "shell", "tools", "delegation", "image-generation"]);
+const allowedValidationModes = new Set(["completeness", "files", "interaction", "tests", "trace", "manual"]);
+const allowedCheckTypes = new Set(["file-exists", "command", "json-schema", "trace-assertion", "manual"]);
+const executableCheckTypes = new Set(["file-exists", "command", "json-schema"]);
+const nonGatingCheckTypes = new Set(["trace-assertion", "manual"]);
+
+const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
+const publicLeakPatterns = [
+  { name: "private Unix home path", pattern: /\/(?:home|Users)\// },
+  { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
+  { name: "file URL", pattern: /file:\/\//i },
+  { name: "private key", pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
+  { name: "provider credential variable", pattern: /(?:OPENAI|ANTHROPIC|GEMINI|NOUS|AWS)_[A-Z0-9_]*(?:KEY|TOKEN|SECRET)/ },
+  { name: "API-key-like value", pattern: /\b(?:sk-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|AIza[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})\b/ },
+  { name: "private evidence ID", pattern: /\b(?:CJ|MC|MCL|AO|DA|E)\d{3}\b/ },
+  { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
+
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "domain", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "variation", "supersedes"]);
+const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
+const SETUP_KEYS = new Set(["instructions", "fixtures"]);
+const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "mediaType"]);
+const TURN_KEYS = new Set(["id", "role", "content"]);
+const OUTPUT_KEYS = new Set(["kind", "entry", "include", "limits"]);
+const LIMIT_KEYS = new Set(["maxFiles", "maxBytes"]);
+const VALIDATION_KEYS = new Set(["mode", "checks"]);
+const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "schema", "argv"]);
+
+const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
+const DISH_RECIPE_KEYS = new Set(["id", "version", "hash"]);
+const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash", "catalogHash"]);
+const ARTIFACT_KEYS = new Set(["kind", "entry", "preview", "treeHash", "files"]);
+const ARTIFACT_FILE_KEYS = new Set(["path", "sha256", "bytes"]);
+const DISH_VALIDATION_KEYS = new Set(["passed", "report"]);
+
+function fail(label, message) {
+  errors.push(`${label}: ${message}`);
+}
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function object(value, label) {
+  if (!isObject(value)) {
+    fail(label, "must be an object");
+    return false;
+  }
+  return true;
+}
+
+function onlyKeys(value, allowed, label) {
+  if (!isObject(value)) return;
+  for (const key of Object.keys(value)) if (!allowed.has(key)) fail(label, `unknown key ${key}`);
+}
+
+function required(value, keys, label) {
+  if (!isObject(value)) return;
+  for (const key of keys) if (!(key in value)) fail(label, `missing ${key}`);
+}
+
+function string(value, label, { min = 1, max = Infinity, pattern } = {}) {
+  if (typeof value !== "string") return fail(label, "must be a string");
+  if (value.length < min) fail(label, `must contain at least ${min} character${min === 1 ? "" : "s"}`);
+  if (value.length > max) fail(label, `must contain at most ${max} characters`);
+  if (pattern && !pattern.test(value)) fail(label, "has an invalid format");
+}
+
+function boolean(value, label) {
+  if (typeof value !== "boolean") fail(label, "must be a boolean");
+}
+
+function integer(value, label, min, max) {
+  if (!Number.isInteger(value)) return fail(label, "must be an integer");
+  if (value < min || value > max) fail(label, `must be between ${min} and ${max}`);
+}
+
+function array(value, label, { min = 0, max = Infinity } = {}) {
+  if (!Array.isArray(value)) {
+    fail(label, "must be an array");
+    return false;
+  }
+  if (value.length < min) fail(label, `must contain at least ${min} item${min === 1 ? "" : "s"}`);
+  if (value.length > max) fail(label, `must contain at most ${max} items`);
+  return true;
+}
+
+function unique(values, label, key = (value) => value) {
+  const seen = new Set();
+  for (const value of values ?? []) {
+    const identity = key(value);
+    if (seen.has(identity)) fail(label, `duplicate value ${identity}`);
+    seen.add(identity);
+  }
+}
+
+function enumValue(value, allowed, label) {
+  if (!allowed.has(value)) fail(label, `invalid value ${JSON.stringify(value)}`);
+}
+
+function safeRelative(value, label, { glob = false } = {}) {
+  if (typeof value !== "string" || value.length === 0) {
+    fail(label, "must be a non-empty contained relative path");
+    return false;
+  }
+  const unsafe = value.includes("\0") || value.includes("\\") || path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
+  const segments = value.split("/");
+  if (unsafe || segments.some((segment) => segment === "" || segment === "." || segment === "..")) {
+    fail(label, `must be a contained POSIX-relative ${glob ? "glob" : "path"}`);
+    return false;
+  }
+  if (!glob && /[*?[\]{}]/.test(value)) {
+    fail(label, "must be a literal path, not a glob");
+    return false;
+  }
+  return true;
+}
+
+function resolveContained(base, relative, label) {
+  if (!safeRelative(relative, label)) return null;
+  const resolved = path.resolve(base, relative);
+  const prefix = `${path.resolve(base)}${path.sep}`;
+  if (!resolved.startsWith(prefix)) {
+    fail(label, "escapes its containing directory");
+    return null;
+  }
+  return resolved;
+}
+
+function globCovers(glob, target) {
+  if (glob === target) return true;
+  const escaped = glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, ".*").replace(/\?/g, "[^/]");
+  return new RegExp(`^${escaped}$`).test(target);
+}
+
+function publicSafety(value, label, key = "") {
+  if (forbiddenKeys.has(key.toLowerCase())) fail(label, `forbidden scoring key ${key}`);
+  if (typeof value === "string") {
+    scanText(value, label);
+    return;
+  }
+  if (Array.isArray(value)) return value.forEach((item, index) => publicSafety(item, `${label}[${index}]`));
+  if (isObject(value)) for (const [childKey, child] of Object.entries(value)) publicSafety(child, `${label}.${childKey}`, childKey);
+}
+
+function scanText(text, label) {
+  for (const { name, pattern } of publicLeakPatterns) if (pattern.test(text)) fail(label, `public-safety scan matched ${name}`);
+}
 
 async function json(relative) {
   try {
     return JSON.parse(await readFile(path.join(root, relative), "utf8"));
   } catch (error) {
-    errors.push(`${relative}: ${error.message}`);
+    fail(relative, error.message);
     return null;
   }
 }
 
-async function walk(directory, basename) {
+async function walk(directory, { basename, allFiles = false } = {}) {
   const absolute = path.join(root, directory);
   try {
     const entries = await readdir(absolute, { withFileTypes: true });
     const matches = [];
     for (const entry of entries) {
       const relative = path.join(directory, entry.name);
-      if (entry.isDirectory()) matches.push(...await walk(relative, basename));
-      else if (entry.name === basename) matches.push(relative);
+      if (entry.isSymbolicLink()) {
+        fail(relative, "symbolic links are forbidden in public catalog trees");
+      } else if (entry.isDirectory()) {
+        matches.push(...await walk(relative, { basename, allFiles }));
+      } else if (entry.isFile() && (allFiles || entry.name === basename)) {
+        matches.push(relative);
+      }
     }
     return matches;
   } catch (error) {
@@ -43,100 +199,439 @@ async function walk(directory, basename) {
   }
 }
 
-function required(value, keys, label) {
-  for (const key of keys) if (!(key in value)) errors.push(`${label}: missing ${key}`);
+async function regularFile(absolute, label) {
+  try {
+    const info = await lstat(absolute);
+    if (info.isSymbolicLink()) return fail(label, "symbolic links are forbidden"), false;
+    if (!info.isFile()) return fail(label, "must reference a regular file"), false;
+    return true;
+  } catch (error) {
+    fail(label, error.code === "ENOENT" ? "referenced file does not exist" : error.message);
+    return false;
+  }
 }
 
-function publicSafety(value, label, key = "") {
-  if (forbiddenKeys.has(key.toLowerCase())) errors.push(`${label}: forbidden scoring key ${key}`);
-  if (typeof value === "string") {
-    for (const pattern of secretPatterns) if (pattern.test(value)) errors.push(`${label}: public-safety pattern ${pattern} matched`);
-    return;
-  }
-  if (Array.isArray(value)) return value.forEach((item, index) => publicSafety(item, `${label}[${index}]`));
-  if (value && typeof value === "object") for (const [childKey, child] of Object.entries(value)) publicSafety(child, `${label}.${childKey}`, childKey);
+function meaningful(value) {
+  return typeof value === "string" ? value.trim().length > 0 : Array.isArray(value) ? value.length > 0 : isObject(value) ? Object.keys(value).length > 0 : false;
 }
 
-function safeRelative(value, label) {
-  if (typeof value !== "string" || !value || path.isAbsolute(value) || value.split(/[\\/]/).includes("..")) {
-    errors.push(`${label}: must be a contained relative path`);
+function validateDomains(doc) {
+  const label = "catalog/domains.json";
+  if (!object(doc, label)) return new Set();
+  onlyKeys(doc, new Set(["schemaVersion", "domains"]), label);
+  required(doc, ["schemaVersion", "domains"], label);
+  if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
+  if (!array(doc.domains, `${label}.domains`, { min: 1 })) return new Set();
+  if (doc.domains.length !== 9) fail(label, `expected 9 domains, found ${doc.domains.length}`);
+  const ids = [];
+  const orders = [];
+  for (const [index, domain] of doc.domains.entries()) {
+    const item = `${label}.domains[${index}]`;
+    if (!object(domain, item)) continue;
+    onlyKeys(domain, new Set(["id", "label", "description", "order"]), item);
+    required(domain, ["id", "label", "description", "order"], item);
+    string(domain.id, `${item}.id`, { pattern: IDS });
+    string(domain.label, `${item}.label`, { min: 3, max: 100 });
+    string(domain.description, `${item}.description`, { min: 12, max: 300 });
+    integer(domain.order, `${item}.order`, 0, 10000);
+    ids.push(domain.id);
+    orders.push(domain.order);
   }
+  unique(ids, `${label}.domains ids`);
+  unique(orders, `${label}.domains order`);
+  for (let index = 1; index < orders.length; index += 1) if (orders[index] <= orders[index - 1]) fail(label, "domains must be ordered by ascending order");
+  return new Set(ids);
+}
+
+function validateTags(doc) {
+  const label = "catalog/tags.json";
+  if (!object(doc, label)) return new Set();
+  onlyKeys(doc, new Set(["schemaVersion", "tags"]), label);
+  required(doc, ["schemaVersion", "tags"], label);
+  if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
+  if (!array(doc.tags, `${label}.tags`, { min: 1 })) return new Set();
+  for (const [index, tag] of doc.tags.entries()) string(tag, `${label}.tags[${index}]`, { pattern: IDS });
+  unique(doc.tags, `${label}.tags`);
+  const sorted = [...doc.tags].sort((a, b) => a.localeCompare(b));
+  if (JSON.stringify(sorted) !== JSON.stringify(doc.tags)) fail(label, "tags must remain alphabetically sorted");
+  return new Set(doc.tags);
+}
+
+function validateVariants(doc) {
+  const label = "catalog/variants.json";
+  if (!object(doc, label)) return new Map();
+  onlyKeys(doc, new Set(["schemaVersion", "variants"]), label);
+  required(doc, ["schemaVersion", "variants"], label);
+  if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
+  if (!array(doc.variants, `${label}.variants`, { min: 1 })) return new Map();
+  if (doc.variants.length !== 5) fail(label, `expected 5 seed variants, found ${doc.variants.length}`);
+  const map = new Map();
+  const tuples = [];
+  const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities"]);
+  for (const [index, variant] of doc.variants.entries()) {
+    const item = `${label}.variants[${index}]`;
+    if (!object(variant, item)) continue;
+    onlyKeys(variant, allowedKeys, item);
+    required(variant, [...allowedKeys], item);
+    string(variant.id, `${item}.id`, { pattern: IDS });
+    for (const key of ["label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality"]) string(variant[key], `${item}.${key}`);
+    if (map.has(variant.id)) fail(item, `duplicate variant id ${variant.id}`);
+    map.set(variant.id, variant);
+    if (array(variant.capabilities, `${item}.capabilities`)) {
+      unique(variant.capabilities, `${item}.capabilities`);
+      for (const capability of variant.capabilities) enumValue(capability, allowedCapabilities, `${item}.capabilities`);
+    }
+    if (variant.harness === "codex-cli" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
+      fail(item, "the probed Codex runner may currently promise exactly files and shell");
+    }
+    if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
+    if (variant.model === "gpt-5.6-luna" && variant.serviceTier !== "fast") fail(item, "Luna seed must be explicitly fast");
+    tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, ...(variant.capabilities ?? [])].join("\0"));
+  }
+  unique(tuples, `${label}.variants configuration`);
+  return map;
+}
+
+async function validateRecipe(relative, domains, tags) {
+  const recipe = await json(relative);
+  if (!recipe || !object(recipe, relative)) return null;
+  onlyKeys(recipe, RECIPE_KEYS, relative);
+  required(recipe, ["schemaVersion", "id", "version", "status", "title", "summary", "domain", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation"], relative);
+  if (recipe.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+  string(recipe.id, `${relative}.id`, { pattern: IDS });
+  string(recipe.version, `${relative}.version`, { pattern: SEMVER });
+  enumValue(recipe.status, allowedStatuses, `${relative}.status`);
+  string(recipe.title, `${relative}.title`, { min: 4, max: 100 });
+  string(recipe.summary, `${relative}.summary`, { min: 12, max: 300 });
+  string(recipe.domain, `${relative}.domain`, { pattern: IDS });
+  if (!domains.has(recipe.domain)) fail(relative, `unknown domain ${recipe.domain}`);
+  enumValue(recipe.origin, allowedOrigins, `${relative}.origin`);
+  string(recipe.originNote, `${relative}.originNote`, { min: 8, max: 300 });
+  enumValue(recipe.kind, allowedKinds, `${relative}.kind`);
+  if ("variation" in recipe) string(recipe.variation, `${relative}.variation`, { max: 500 });
+  if ("supersedes" in recipe) string(recipe.supersedes, `${relative}.supersedes`, { pattern: IDS });
+
+  const expectedId = path.basename(path.dirname(relative));
+  const expectedDomain = path.basename(path.dirname(path.dirname(relative)));
+  if (recipe.id !== expectedId) fail(relative, `id must match recipe directory ${expectedId}`);
+  if (recipe.domain !== expectedDomain) fail(relative, `domain must match domain directory ${expectedDomain}`);
+
+  if (array(recipe.tags, `${relative}.tags`, { min: 1, max: 6 })) {
+    unique(recipe.tags, `${relative}.tags`);
+    for (const tag of recipe.tags) {
+      string(tag, `${relative}.tags`, { pattern: IDS });
+      if (!tags.has(tag)) fail(relative, `unknown tag ${tag}`);
+    }
+  }
+
+  if (object(recipe.harness, `${relative}.harness`)) {
+    onlyKeys(recipe.harness, HARNESS_KEYS, `${relative}.harness`);
+    required(recipe.harness, ["workspace", "web", "capabilities"], `${relative}.harness`);
+    enumValue(recipe.harness.workspace, allowedWorkspaces, `${relative}.harness.workspace`);
+    enumValue(recipe.harness.web, allowedWebModes, `${relative}.harness.web`);
+    if (array(recipe.harness.capabilities, `${relative}.harness.capabilities`)) {
+      unique(recipe.harness.capabilities, `${relative}.harness.capabilities`);
+      for (const capability of recipe.harness.capabilities) enumValue(capability, allowedCapabilities, `${relative}.harness.capabilities`);
+    }
+  }
+
+  const recipeDirectory = path.dirname(path.join(root, relative));
+  const mountedFixtures = new Map();
+  if (object(recipe.setup, `${relative}.setup`)) {
+    onlyKeys(recipe.setup, SETUP_KEYS, `${relative}.setup`);
+    required(recipe.setup, ["instructions", "fixtures"], `${relative}.setup`);
+    string(recipe.setup.instructions, `${relative}.setup.instructions`);
+    if (array(recipe.setup.fixtures, `${relative}.setup.fixtures`)) {
+      const fixtureIds = [];
+      const mountPaths = [];
+      for (const [index, fixture] of recipe.setup.fixtures.entries()) {
+        const item = `${relative}.setup.fixtures[${index}]`;
+        if (!object(fixture, item)) continue;
+        onlyKeys(fixture, FIXTURE_KEYS, item);
+        required(fixture, ["id", "path", "mountAs", "public", "mediaType"], item);
+        string(fixture.id, `${item}.id`, { pattern: IDS });
+        safeRelative(fixture.path, `${item}.path`);
+        safeRelative(fixture.mountAs, `${item}.mountAs`);
+        if (fixture.public !== true) fail(item, "public catalog fixtures must set public to true");
+        string(fixture.mediaType, `${item}.mediaType`, { pattern: MEDIA_TYPE });
+        fixtureIds.push(fixture.id);
+        mountPaths.push(fixture.mountAs);
+        const source = resolveContained(recipeDirectory, fixture.path, `${item}.path`);
+        if (source && await regularFile(source, `${item}.path`)) mountedFixtures.set(fixture.mountAs, source);
+      }
+      unique(fixtureIds, `${relative}.setup fixture ids`);
+      unique(mountPaths, `${relative}.setup mount paths`);
+    }
+  }
+
+  if (array(recipe.turns, `${relative}.turns`, { min: 1 })) {
+    const turnIds = [];
+    for (const [index, turn] of recipe.turns.entries()) {
+      const item = `${relative}.turns[${index}]`;
+      if (!object(turn, item)) continue;
+      onlyKeys(turn, TURN_KEYS, item);
+      required(turn, ["id", "role", "content"], item);
+      string(turn.id, `${item}.id`, { pattern: IDS });
+      enumValue(turn.role, allowedRoles, `${item}.role`);
+      string(turn.content, `${item}.content`);
+      turnIds.push(turn.id);
+    }
+    unique(turnIds, `${relative}.turn ids`);
+    if (recipe.turns[0]?.role !== "prompt") fail(relative, "first turn must be prompt");
+  }
+
+  const includes = [];
+  if (object(recipe.output, `${relative}.output`)) {
+    onlyKeys(recipe.output, OUTPUT_KEYS, `${relative}.output`);
+    required(recipe.output, ["kind", "entry", "include", "limits"], `${relative}.output`);
+    enumValue(recipe.output.kind, allowedKinds, `${relative}.output.kind`);
+    if (recipe.output.kind !== recipe.kind) fail(relative, "top-level and output artifact kinds must match");
+    safeRelative(recipe.output.entry, `${relative}.output.entry`);
+    if (array(recipe.output.include, `${relative}.output.include`, { min: 1 })) {
+      unique(recipe.output.include, `${relative}.output.include`);
+      for (const [index, include] of recipe.output.include.entries()) {
+        safeRelative(include, `${relative}.output.include[${index}]`, { glob: true });
+        includes.push(include);
+      }
+      if (typeof recipe.output.entry === "string" && !includes.some((include) => globCovers(include, recipe.output.entry))) {
+        fail(relative, "output.entry must be covered by output.include");
+      }
+    }
+    if (object(recipe.output.limits, `${relative}.output.limits`)) {
+      onlyKeys(recipe.output.limits, LIMIT_KEYS, `${relative}.output.limits`);
+      required(recipe.output.limits, ["maxFiles", "maxBytes"], `${relative}.output.limits`);
+      integer(recipe.output.limits.maxFiles, `${relative}.output.limits.maxFiles`, 1, 2000);
+      integer(recipe.output.limits.maxBytes, `${relative}.output.limits.maxBytes`, 1024, 104857600);
+    }
+  }
+
+  if (object(recipe.validation, `${relative}.validation`)) {
+    onlyKeys(recipe.validation, VALIDATION_KEYS, `${relative}.validation`);
+    required(recipe.validation, ["mode", "checks"], `${relative}.validation`);
+    enumValue(recipe.validation.mode, allowedValidationModes, `${relative}.validation.mode`);
+    if (array(recipe.validation.checks, `${relative}.validation.checks`, { min: 1 })) {
+      const checkIds = [];
+      let executableGateCount = 0;
+      for (const [index, check] of recipe.validation.checks.entries()) {
+        const item = `${relative}.validation.checks[${index}]`;
+        if (!object(check, item)) continue;
+        onlyKeys(check, CHECK_KEYS, item);
+        required(check, ["id", "type", "required", "description"], item);
+        string(check.id, `${item}.id`, { pattern: IDS });
+        enumValue(check.type, allowedCheckTypes, `${item}.type`);
+        boolean(check.required, `${item}.required`);
+        string(check.description, `${item}.description`, { min: 4 });
+        checkIds.push(check.id);
+
+        if (check.required === true && nonGatingCheckTypes.has(check.type)) {
+          fail(item, `${check.type} is prose-only and cannot gate a recipe`);
+        }
+        if (check.required === true && executableCheckTypes.has(check.type)) executableGateCount += 1;
+
+        if (check.type === "file-exists") {
+          required(check, ["target"], item);
+          if ("argv" in check || "schema" in check) fail(item, "file-exists accepts target only");
+          if (safeRelative(check.target, `${item}.target`) && !includes.some((include) => globCovers(include, check.target))) fail(item, "file target must be covered by output.include");
+        } else if (check.type === "command") {
+          required(check, ["argv"], item);
+          if ("target" in check || "schema" in check) fail(item, "command accepts argv only");
+          if (array(check.argv, `${item}.argv`, { min: 1 })) {
+            for (const [argumentIndex, argument] of check.argv.entries()) string(argument, `${item}.argv[${argumentIndex}]`);
+            if (!new Set(["node", "npm", "pnpm"]).has(check.argv[0])) fail(item, "validator command must use the dependency-free node/npm/pnpm execution boundary");
+            if (check.argv[0] === "node" && check.argv[1] && !check.argv[1].startsWith("-")) {
+              if (safeRelative(check.argv[1], `${item}.argv[1]`) && !mountedFixtures.has(check.argv[1]) && !includes.some((include) => globCovers(include, check.argv[1]))) {
+                fail(item, `validator script ${check.argv[1]} is neither a mounted fixture nor declared output`);
+              }
+            }
+          }
+        } else if (check.type === "json-schema") {
+          required(check, ["target", "schema"], item);
+          if ("argv" in check) fail(item, "json-schema accepts target and schema only");
+          if (safeRelative(check.target, `${item}.target`) && !includes.some((include) => globCovers(include, check.target))) fail(item, "JSON target must be covered by output.include");
+          if (safeRelative(check.schema, `${item}.schema`) && !mountedFixtures.has(check.schema)) fail(item, "JSON schema must be a declared mounted fixture");
+        } else {
+          if ("target" in check || "schema" in check || "argv" in check) fail(item, `${check.type} accepts no execution fields`);
+        }
+      }
+      unique(checkIds, `${relative}.validation check ids`);
+      if (recipe.status === "ready" && executableGateCount === 0) fail(relative, "ready recipe requires at least one required executable check");
+    }
+  }
+
+  publicSafety(recipe, relative);
+  return { recipe, relative };
+}
+
+async function validateProvenance(recipeRecords) {
+  const provenanceFiles = await walk("private/provenance", { allFiles: true });
+  const jsonFiles = provenanceFiles.filter((file) => file.endsWith(".json"));
+  const byRecipe = new Map();
+  for (const relative of jsonFiles) {
+    const provenance = await json(relative);
+    if (!provenance || !object(provenance, relative)) continue;
+    required(provenance, ["schemaVersion", "recipeId", "strangerTest"], relative);
+    if (provenance.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+    string(provenance.recipeId, `${relative}.recipeId`, { pattern: IDS });
+    if (path.basename(relative, ".json") !== provenance.recipeId) fail(relative, "filename must match recipeId");
+    if (byRecipe.has(provenance.recipeId)) fail(relative, `duplicate provenance for ${provenance.recipeId}`);
+    byRecipe.set(provenance.recipeId, { provenance, relative });
+
+    const lineage = provenance.lineage ?? provenance.origin;
+    if (provenance.lineage !== undefined && provenance.origin !== undefined && provenance.lineage !== provenance.origin) fail(relative, "lineage and origin disagree");
+    enumValue(lineage, allowedOrigins, `${relative}.lineage`);
+    if (!meaningful(provenance.strangerTest)) fail(relative, "strangerTest must be meaningful");
+    if (![provenance.privacyReview, provenance.privacyTransformations, provenance.sanitization].some(meaningful)) {
+      fail(relative, "must document privacy review, privacy transformations, or sanitization");
+    }
+  }
+
+  for (const [recipeId, record] of recipeRecords) {
+    const provenanceRecord = byRecipe.get(recipeId);
+    if (!provenanceRecord) {
+      fail(record.relative, `missing private/provenance/${recipeId}.json`);
+      continue;
+    }
+    const lineage = provenanceRecord.provenance.lineage ?? provenanceRecord.provenance.origin;
+    if (lineage !== record.recipe.origin) fail(provenanceRecord.relative, `lineage ${lineage} does not match recipe origin ${record.recipe.origin}`);
+  }
+  for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
+}
+
+async function validateDish(relative, recipeRecords, variants) {
+  const dish = await json(relative);
+  if (!dish || !object(dish, relative)) return null;
+  onlyKeys(dish, DISH_KEYS, relative);
+  required(dish, ["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "dishHash"], relative);
+  if (dish.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+  string(dish.id, `${relative}.id`, { pattern: DISH_IDS });
+  if (path.basename(path.dirname(relative)) !== dish.id) fail(relative, "id must match dish directory");
+  string(dish.executedAt, `${relative}.executedAt`);
+  if (typeof dish.executedAt === "string" && (Number.isNaN(Date.parse(dish.executedAt)) || !dish.executedAt.includes("T"))) fail(relative, "executedAt must be an ISO date-time");
+  if (dish.status !== "accepted") fail(relative, "public dish status must be accepted");
+  string(dish.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
+  const dishDirectory = path.dirname(path.join(root, relative));
+
+  let recipeRecord;
+  if (object(dish.recipe, `${relative}.recipe`)) {
+    onlyKeys(dish.recipe, DISH_RECIPE_KEYS, `${relative}.recipe`);
+    required(dish.recipe, ["id", "version", "hash"], `${relative}.recipe`);
+    string(dish.recipe.id, `${relative}.recipe.id`, { pattern: IDS });
+    string(dish.recipe.version, `${relative}.recipe.version`, { pattern: SEMVER });
+    string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
+    recipeRecord = recipeRecords.get(dish.recipe.id);
+    if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
+    else if (recipeRecord.recipe.version !== dish.recipe.version) fail(relative, `recipe version ${dish.recipe.version} does not match catalog ${recipeRecord.recipe.version}`);
+  }
+
+  if (object(dish.identity, `${relative}.identity`)) {
+    onlyKeys(dish.identity, IDENTITY_KEYS, `${relative}.identity`);
+    required(dish.identity, ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash"], `${relative}.identity`);
+    for (const key of ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier"]) string(dish.identity[key], `${relative}.identity.${key}`);
+    string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
+    if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
+    const variant = variants.get(dish.identity.variantId);
+    if (!variant) fail(relative, `unknown variant ${dish.identity.variantId}`);
+    else {
+      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort", serviceTier: "serviceTier" };
+      for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
+    }
+  }
+
+  if (object(dish.artifact, `${relative}.artifact`)) {
+    onlyKeys(dish.artifact, ARTIFACT_KEYS, `${relative}.artifact`);
+    required(dish.artifact, ["kind", "entry", "files", "treeHash"], `${relative}.artifact`);
+    enumValue(dish.artifact.kind, allowedKinds, `${relative}.artifact.kind`);
+    if (recipeRecord && dish.artifact.kind !== recipeRecord.recipe.kind) fail(relative, "dish artifact kind does not match recipe kind");
+    safeRelative(dish.artifact.entry, `${relative}.artifact.entry`);
+    if ("preview" in dish.artifact) safeRelative(dish.artifact.preview, `${relative}.artifact.preview`);
+    string(dish.artifact.treeHash, `${relative}.artifact.treeHash`, { pattern: SHA256 });
+    if (array(dish.artifact.files, `${relative}.artifact.files`, { min: 1 })) {
+      const paths = [];
+      for (const [index, file] of dish.artifact.files.entries()) {
+        const item = `${relative}.artifact.files[${index}]`;
+        if (!object(file, item)) continue;
+        onlyKeys(file, ARTIFACT_FILE_KEYS, item);
+        required(file, ["path", "sha256", "bytes"], item);
+        safeRelative(file.path, `${item}.path`);
+        string(file.sha256, `${item}.sha256`, { pattern: BARE_SHA256 });
+        integer(file.bytes, `${item}.bytes`, 0, 104857600);
+        paths.push(file.path);
+        const absolute = resolveContained(dishDirectory, file.path, `${item}.path`);
+        if (absolute && await regularFile(absolute, `${item}.path`)) {
+          const contents = await readFile(absolute);
+          if (contents.byteLength !== file.bytes) fail(item, `byte count ${file.bytes} does not match file ${contents.byteLength}`);
+          if (createHash("sha256").update(contents).digest("hex") !== file.sha256) fail(item, "sha256 does not match file contents");
+        }
+      }
+      unique(paths, `${relative}.artifact.files paths`);
+      if (!paths.includes(dish.artifact.entry)) fail(relative, "artifact.entry must appear in artifact.files");
+      if (dish.artifact.preview && !paths.includes(dish.artifact.preview)) fail(relative, "artifact.preview must appear in artifact.files");
+    }
+  }
+
+  if (object(dish.validation, `${relative}.validation`)) {
+    onlyKeys(dish.validation, DISH_VALIDATION_KEYS, `${relative}.validation`);
+    required(dish.validation, ["passed", "report"], `${relative}.validation`);
+    if (dish.validation.passed !== true) fail(relative, "only passing dishes may be public");
+    const report = resolveContained(dishDirectory, dish.validation.report, `${relative}.validation.report`);
+    if (report) await regularFile(report, `${relative}.validation.report`);
+  }
+  if ("publicTrace" in dish) {
+    const trace = resolveContained(dishDirectory, dish.publicTrace, `${relative}.publicTrace`);
+    if (trace) await regularFile(trace, `${relative}.publicTrace`);
+  }
+
+  publicSafety(dish, relative);
+  return dish;
+}
+
+async function scanPublicCatalog() {
+  const files = await walk("catalog", { allFiles: true });
+  for (const relative of files) {
+    const absolute = path.join(root, relative);
+    const contents = await readFile(absolute);
+    if (contents.includes(0)) continue;
+    scanText(contents.toString("utf8"), relative);
+  }
+}
+
+const recipeSchema = await json("catalog/recipe.schema.json");
+const dishSchema = await json("catalog/dish.schema.json");
+if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
+  fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");
+}
+if (dishSchema?.properties?.artifact?.properties?.kind?.enum?.join("\0") !== [...allowedKinds].join("\0")) {
+  fail("catalog/dish.schema.json", "artifact kind enum disagrees with runtime validator");
 }
 
 const domainsDoc = await json("catalog/domains.json");
 const tagsDoc = await json("catalog/tags.json");
 const variantsDoc = await json("catalog/variants.json");
-const domains = new Set(domainsDoc?.domains?.map((item) => item.id) ?? []);
-const tags = new Set(tagsDoc?.tags ?? []);
-const variants = new Map((variantsDoc?.variants ?? []).map((item) => [item.id, item]));
+const domains = validateDomains(domainsDoc);
+const tags = validateTags(tagsDoc);
+const variants = validateVariants(variantsDoc);
 
-if (domains.size !== 9) errors.push(`catalog/domains.json: expected 9 unique domains, found ${domains.size}`);
-if (tags.size !== (tagsDoc?.tags?.length ?? -1)) errors.push("catalog/tags.json: duplicate tag");
-if (variants.size !== 5) errors.push(`catalog/variants.json: expected 5 seed variants, found ${variants.size}`);
-
-for (const [id, variant] of variants) {
-  required(variant, ["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality"], `variant ${id}`);
-  if (variant.model === "gpt-5.6-luna" && !["low", "high", "xhigh"].includes(variant.reasoningEffort)) errors.push(`variant ${id}: unsupported Luna seed effort`);
-  if (variant.model === "gpt-5.6-luna" && variant.serviceTier !== "fast") errors.push(`variant ${id}: Luna seed must be explicitly fast`);
+const recipeFiles = await walk("catalog/recipes", { basename: "recipe.json" });
+const recipeRecords = new Map();
+for (const relative of recipeFiles.sort()) {
+  const record = await validateRecipe(relative, domains, tags);
+  if (!record) continue;
+  if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
+  recipeRecords.set(record.recipe.id, record);
 }
 
-const recipeFiles = await walk("catalog/recipes", "recipe.json");
-const recipeIds = new Set();
-for (const relative of recipeFiles) {
-  const recipe = await json(relative);
-  if (!recipe) continue;
-  const label = relative;
-  required(recipe, ["schemaVersion", "id", "version", "status", "title", "summary", "domain", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation"], label);
-  if (recipeIds.has(recipe.id)) errors.push(`${label}: duplicate recipe id ${recipe.id}`);
-  recipeIds.add(recipe.id);
-  if (recipe.schemaVersion !== 1) errors.push(`${label}: schemaVersion must be 1`);
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(recipe.id ?? "")) errors.push(`${label}: invalid id`);
-  if (!/^\d+\.\d+\.\d+$/.test(recipe.version ?? "")) errors.push(`${label}: invalid semver`);
-  if (!allowedStatuses.has(recipe.status)) errors.push(`${label}: invalid status`);
-  if (!domains.has(recipe.domain)) errors.push(`${label}: unknown domain ${recipe.domain}`);
-  if (!allowedOrigins.has(recipe.origin)) errors.push(`${label}: invalid origin`);
-  if (!allowedKinds.has(recipe.kind) || recipe.output?.kind !== recipe.kind) errors.push(`${label}: artifact kind mismatch`);
-  if (!Array.isArray(recipe.tags) || recipe.tags.length < 1 || recipe.tags.length > 6) errors.push(`${label}: tags must contain 1-6 values`);
-  for (const tag of recipe.tags ?? []) if (!tags.has(tag)) errors.push(`${label}: unknown tag ${tag}`);
-  if (!Array.isArray(recipe.turns) || recipe.turns.length < 1) errors.push(`${label}: at least one turn is required`);
-  if (recipe.turns?.[0]?.role !== "prompt") errors.push(`${label}: first turn must be prompt`);
-  const turnIds = new Set();
-  for (const turn of recipe.turns ?? []) {
-    if (!allowedRoles.has(turn.role)) errors.push(`${label}: invalid turn role ${turn.role}`);
-    if (turnIds.has(turn.id)) errors.push(`${label}: duplicate turn id ${turn.id}`);
-    turnIds.add(turn.id);
-  }
-  safeRelative(recipe.output?.entry, `${label}.output.entry`);
-  for (const fixture of recipe.setup?.fixtures ?? []) {
-    safeRelative(fixture.path, `${label}.fixture.${fixture.id}.path`);
-    safeRelative(fixture.mountAs, `${label}.fixture.${fixture.id}.mountAs`);
-    const absoluteFixture = path.join(root, path.dirname(relative), fixture.path);
-    try {
-      if (!(await stat(absoluteFixture)).isFile()) errors.push(`${label}: fixture ${fixture.path} is not a file`);
-    } catch {
-      errors.push(`${label}: fixture ${fixture.path} does not exist`);
-    }
-  }
-  if (recipe.status === "ready" && (recipe.validation?.checks?.length ?? 0) < 1) errors.push(`${label}: ready recipe requires a validation check`);
-  publicSafety(recipe, label);
-}
+await validateProvenance(recipeRecords);
 
-const dishFiles = await walk("dishes", "dish.json");
+const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishIds = new Set();
-for (const relative of dishFiles) {
-  const dish = await json(relative);
+for (const relative of dishFiles.sort()) {
+  const dish = await validateDish(relative, recipeRecords, variants);
   if (!dish) continue;
-  required(dish, ["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "dishHash"], relative);
-  if (dishIds.has(dish.id)) errors.push(`${relative}: duplicate dish id ${dish.id}`);
+  if (dishIds.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishIds.add(dish.id);
-  if (!recipeIds.has(dish.recipe?.id)) errors.push(`${relative}: unknown recipe ${dish.recipe?.id}`);
-  if (!variants.has(dish.identity?.variantId)) errors.push(`${relative}: unknown variant ${dish.identity?.variantId}`);
-  if (dish.status !== "accepted" || dish.validation?.passed !== true) errors.push(`${relative}: only accepted passing dishes may be public`);
-  if (!allowedKinds.has(dish.artifact?.kind)) errors.push(`${relative}: invalid artifact kind`);
-  safeRelative(dish.artifact?.entry, `${relative}.artifact.entry`);
-  for (const file of dish.artifact?.files ?? []) safeRelative(file.path, `${relative}.artifact.files`);
-  publicSafety(dish, relative);
 }
+
+await scanPublicCatalog();
 
 if (errors.length) {
   console.error(`Catalog validation failed with ${errors.length} error${errors.length === 1 ? "" : "s"}:`);
@@ -144,4 +639,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${domains.size} domains, ${tags.size} tags, ${variants.size} variants, ${recipeFiles.length} recipes, ${dishFiles.length} dishes.`);
+console.log(`Catalog valid: ${domains.size} domains, ${tags.size} tags, ${variants.size} variants, ${recipeRecords.size} recipes, ${dishIds.size} dishes, ${recipeRecords.size} provenance records.`);

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "verify-toolchain-support",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Verify support from documentation, configuration, and code",
+  "summary": "Research a closed evidence bundle, separate advertised support from operational readiness, and make one recommendation.",
+  "domain": "agentic-assistant",
+  "origin": "hybrid",
+  "originNote": "Combines a standard source audit with a recurring distinction between documented capability, configured mechanism, authentication, and proven operation.",
+  "tags": ["research", "tool-use", "source-synthesis", "decision", "verification"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the closed source bundle at evidence/. Only those sources are authoritative. Cite their stable source IDs and write the recommendation to output/recommendation.md.",
+    "fixtures": [
+      { "id": "support-doc", "path": "fixtures/evidence/D1-documentation.md", "mountAs": "evidence/D1-documentation.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "support-config", "path": "fixtures/evidence/C1-config.json", "mountAs": "evidence/C1-config.json", "public": true, "mediaType": "application/json" },
+      { "id": "support-source", "path": "fixtures/evidence/S1-adapter.mjs", "mountAs": "evidence/S1-adapter.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "support-runtime", "path": "fixtures/evidence/R1-runtime.json", "mountAs": "evidence/R1-runtime.json", "public": true, "mediaType": "application/json" },
+      { "id": "support-validator", "path": "fixtures/evidence/validate-memo.mjs", "mountAs": "evidence/validate-memo.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "research", "role": "prompt", "content": "Investigate whether the fictional Relay export is ready to use today. Inspect every supplied source with tools, distinguish documentation, configuration, code path, authentication, and an executed proof, then write output/recommendation.md with: verdict, evidence table, unknowns, and one next action. Cite claims as [D1], [C1], [S1], or [R1]." },
+    { "id": "certainty-check", "role": "follow-up", "content": "Pressure-test your verdict: identify the strongest evidence against it. Revise output/recommendation.md only if that evidence changes the operational conclusion." }
+  ],
+  "output": { "kind": "document", "entry": "output/recommendation.md", "include": ["output/recommendation.md"], "limits": { "maxFiles": 2, "maxBytes": 131072 } },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "evidence-contract", "type": "command", "required": true, "description": "The memo cites all four source classes and does not claim an unrecorded successful export.", "argv": ["node", "evidence/validate-memo.mjs", "output/recommendation.md"] },
+      { "id": "tool-trace", "type": "trace-assertion", "required": false, "description": "Look for inspection of the supplied evidence rather than unsupported recall." }
+    ]
+  },
+  "variation": "Rotate which layer is missing—configuration, authentication, code path, or runtime proof—while keeping stable source IDs.",
+  "supersedes": "mechanism-not-intention"
+}

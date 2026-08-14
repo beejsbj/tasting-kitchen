@@ -77,7 +77,13 @@ All seed results use the Codex CLI harness and are labeled accordingly:
 
 Fast is a service tier, not a separate Luna model. Luna does not expose `none`; `low` is the requested no-/low-thinking approximation.
 
-The first proof covers one file-producing domain and one real tool/session domain, expected to be UI and Agentic. A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are hard requirements so personal rules, skills, history, and other dishes do not leak into a run.
+The first proof flight is deliberately small: three recipes across all five seed variants, producing 15 dishes.
+
+- `responsive-product-launch` — a Textbook visual baseline
+- `shared-result-ritual` — a Mother's visual fingerprint recipe
+- `permission-ladder-publish` — a Mother's multi-turn shell/tool recipe
+
+A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are hard requirements so personal rules, skills, history, and other dishes do not leak into a run. A recipe runs only when its required capabilities are a subset of the selected variant's declared capabilities; unsupported combinations remain visible and are never mislabeled as failures.
 
 ## Stages and gates
 
@@ -98,6 +104,8 @@ The first proof covers one file-producing domain and one real tool/session domai
 - Treat Koala as a newly supplied curated reference, not retroactive historical evidence.
 
 **K3 Gate 3:** audit coverage, generic-sludge risk, stranger test, tag hygiene, and executable contracts.
+
+**Gate result:** passed. The v1 menu freezes at 51 recipes: 47 ready, three hidden controls, and one intentionally deferred image-generation draft. Subjective and trace-reading cues are non-gating; public acceptance depends only on deterministic checks and runner-generic artifact completeness.
 
 ### 3. CLI and runner
 

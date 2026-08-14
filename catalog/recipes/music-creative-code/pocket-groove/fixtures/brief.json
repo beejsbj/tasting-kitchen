@@ -1,0 +1,7 @@
+{
+  "tempo": "96 BPM in 4/4",
+  "form": "eight cycles: A A A turn / B B B return",
+  "palette": ["dry kick", "short snare or clap", "closed and open hats", "one pitched voice"],
+  "musicalTension": "The groove should feel slightly late and grounded, while the pitched voice pulls forward.",
+  "constraints": ["no wall-to-wall sixteenth notes", "at least one whole-beat silence in the pitched voice", "B changes a relationship, not just the number of layers", "the turnaround must not be the densest moment"]
+}

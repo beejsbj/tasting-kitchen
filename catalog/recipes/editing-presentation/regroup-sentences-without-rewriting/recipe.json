@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "regroup-sentences-without-rewriting",
+  "version": "1.0.0",
+  "status": "hidden",
+  "title": "Regroup sentences without changing a word",
+  "summary": "Organize twelve supplied sentences under useful headings while preserving every sentence and punctuation mark exactly.",
+  "domain": "editing-presentation",
+  "origin": "hybrid",
+  "originNote": "A standard organization task carrying a history-derived lossless transformation boundary and explicit repair turn.",
+  "tags": ["editing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the source fixture read-only. Run every turn in order in one fresh workspace. The model must create and revise only grouped.md.",
+    "fixtures": [
+      { "id": "source-sentences", "path": "source-sentences.md", "mountAs": "source-sentences.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "group-losslessly",
+      "role": "prompt",
+      "content": "Read `source-sentences.md`. Create `grouped.md` by placing every sentence under exactly one of these headings: Place, Work, or Unresolved. Preserve every sentence's words and punctuation exactly. You may reorder whole sentences, but may not add, delete, merge, split, or rewrite them. Add no commentary beyond the three headings."
+    },
+    {
+      "id": "audit-and-repair",
+      "role": "correction",
+      "content": "Audit `grouped.md` against `source-sentences.md` token for token. Repair any changed, missing, duplicated, merged, or added sentence. Keep the three headings and no other prose."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "grouped.md",
+    "include": ["grouped.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "grouped-exists", "type": "file-exists", "required": true, "description": "The final workspace contains grouped.md.", "target": "grouped.md" },
+      { "id": "lossless-sentence-set", "type": "manual", "required": false, "description": "Each of the twelve source sentences appears exactly once and unchanged under one of the three required headings." }
+    ]
+  }
+}

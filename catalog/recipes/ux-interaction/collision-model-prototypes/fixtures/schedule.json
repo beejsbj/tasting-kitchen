@@ -1,0 +1,11 @@
+{
+  "date": "Tuesday 18",
+  "viewport": {"width": 390, "height": 780},
+  "activities": [
+    {"id": "walk", "label": "River walk", "start": "09:00", "durationMinutes": 60, "movable": true},
+    {"id": "call", "label": "Project call", "start": "10:00", "durationMinutes": 45, "movable": true},
+    {"id": "study", "label": "Language study", "start": "11:00", "durationMinutes": 60, "movable": true}
+  ],
+  "testMove": "Move River walk from 09:00 to 10:00 so it collides with Project call.",
+  "sharedRequirements": ["show prospective consequence before release", "support pointer cancellation", "provide one-step undo", "outcome remains legible without animation"]
+}

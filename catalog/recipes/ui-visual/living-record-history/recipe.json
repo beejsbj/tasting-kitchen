@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "living-record-history",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Make a service history accumulate materially",
+  "summary": "Design a repair-desk surface where status, evidence, and history gather into a lived record instead of a standard dashboard.",
+  "domain": "ui-visual",
+  "origin": "mothers",
+  "originNote": "Distilled from a history-derived preference for interfaces where actions leave visible residue and one central record carries the domain.",
+  "tags": ["visual-composition", "visual-language", "state-modeling", "motion", "accessibility"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the fictional repair packet. Create a self-contained static application with no external dependencies.",
+    "fixtures": [
+      {"id": "repair-history", "path": "fixtures/repairs.json", "mountAs": "fixtures/repairs.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-history-surface",
+      "role": "prompt",
+      "content": "Read fixtures/repairs.json and build a complete responsive repair-desk interface as index.html. One item's current state should be the central object, while its intake, inspection, parts, work, and pickup events accumulate as a material record a person can revisit. The interface must make the difference between fact, technician note, pending decision, and completed action perceptible without relying on color alone. Include all three repair items and a way to focus each one. Do not use a conventional dashboard of interchangeable statistic cards or reduce the history to a plain data table. Mark the event-history region with data-section=\"history\"."
+    },
+    {
+      "id": "preserve-residue",
+      "role": "correction",
+      "content": "Revise the focused-item transition: changing focus must not make the previous item's material trace feel erased. Preserve the existing visual direction and data, and make continuity visible without adding a dashboard sidebar."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 40, "maxBytes": 7340032}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The living record artifact exists.", "target": "index.html"},
+      {"id": "history-hook", "type": "command", "required": true, "description": "The event history is present as an inspectable region.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');if(!s.includes('data-section=\\\"history\\\"'))process.exit(1)"]},
+      {"id": "focus-review", "type": "manual", "required": false, "description": "Switch among all three items and inspect whether prior history retains perceptible residue."}
+    ]
+  }
+}

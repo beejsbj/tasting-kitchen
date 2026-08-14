@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "research-memo-to-deck",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Turn a research memo into a decision deck",
+  "summary": "Transform a closed evidence memo into a short slide narrative that supports a bounded decision without hiding uncertainty.",
+  "domain": "editing-presentation",
+  "origin": "textbook",
+  "originNote": "A standard research-to-presentation transformation with strict time, budget, provenance, and decision-scope tensions.",
+  "tags": ["presentation", "source-synthesis", "decision", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the fictional memo read-only. Run every turn in order in one fresh workspace. The model must create and revise only deck.md.",
+    "fixtures": [
+      { "id": "research-memo", "path": "research-memo.md", "mountAs": "research-memo.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-seven-slides",
+      "role": "prompt",
+      "content": "Read `research-memo.md` and create `deck.md` as a seven-slide decision deck. For each slide include a title, the exact on-slide content, a visual direction, speaker notes, and source references using the memo's section letters. Build a narrative toward the council's actual vote; do not merely summarize sections in order. Preserve uncertainty about weather, weekends, and shifted trips. Do not introduce outside facts."
+    },
+    {
+      "id": "compress-six-slides",
+      "role": "correction",
+      "content": "Revise `deck.md` in place for a hard five-minute limit and exactly six slides. Remove a slide rather than shrinking every slide. Keep the recommendation, budget boundary, pilot-versus-permanent distinction, and the three major uncertainties visible."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "deck.md",
+    "include": ["deck.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 2097152 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "deck-exists", "type": "file-exists", "required": true, "description": "The final workspace contains deck.md.", "target": "deck.md" },
+      { "id": "six-slide-contract", "type": "manual", "required": false, "description": "deck.md contains exactly six slides and each slide includes title, on-slide content, visual direction, notes, and memo section references." }
+    ]
+  }
+}

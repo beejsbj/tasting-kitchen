@@ -1,0 +1,9 @@
+{
+  "tempo": 102,
+  "meter": "4/4",
+  "length": "8 cycles",
+  "voices": ["bd", "sd", "hh", "oh", "rim"],
+  "direction": "A dry, head-nodding pocket with a little negative space. The open hat should mark form, not run continuously.",
+  "form": ["cycles 1–2 establish", "cycles 3–4 answer", "cycles 5–6 deepen without a new voice", "cycle 7 anticipates", "cycle 8 returns"],
+  "constraints": ["snare or rim anchors beats 2 and 4 in the established pocket", "at least one beat of total silence across the form", "cycle 7 cannot be the densest cycle", "no randomization"]
+}

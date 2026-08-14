@@ -1,0 +1,18 @@
+{
+  "reminders": [
+    {
+      "id": "pickup-harbor",
+      "message": "Pick up the Harbor parcel",
+      "due": "2026-08-15T17:00:00Z",
+      "mode": "one-shot",
+      "status": "active"
+    },
+    {
+      "id": "water-fern",
+      "message": "Water the desk fern",
+      "due": "2026-08-16T12:00:00Z",
+      "mode": "one-shot",
+      "status": "active"
+    }
+  ]
+}

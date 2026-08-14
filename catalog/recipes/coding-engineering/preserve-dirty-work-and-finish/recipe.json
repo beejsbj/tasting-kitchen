@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "preserve-dirty-work-and-finish",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Finish a bounded change while preserving unrelated work",
+  "summary": "Repair a misleading project summary, keep two user-owned files byte-identical, verify behavior, and leave an honest receipt.",
+  "domain": "coding-engineering",
+  "origin": "mothers",
+  "originNote": "Distilled from recurring coding sessions where scope discipline, preservation of existing work, and truthful completion matter as much as the patch.",
+  "tags": ["debugging", "surgical-change", "verification", "shell-use", "correction-recovery"],
+  "kind": "code",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the synthetic dirty workspace at project/. USER-OWNED.md identifies unrelated files that must remain byte-identical. The failing summary test is the only authorized code target.",
+    "fixtures": [
+      { "id": "ownership-note", "path": "fixtures/project/USER-OWNED.md", "mountAs": "project/USER-OWNED.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "user-theme", "path": "fixtures/project/assets/theme.css", "mountAs": "project/assets/theme.css", "public": true, "mediaType": "text/css" },
+      { "id": "user-idea", "path": "fixtures/project/notes/idea.md", "mountAs": "project/notes/idea.md", "public": true, "mediaType": "text/markdown" },
+      { "id": "summary-source", "path": "fixtures/project/src/summary.mjs", "mountAs": "project/src/summary.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "summary-tests", "path": "fixtures/project/test/summary.test.mjs", "mountAs": "project/test/summary.test.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "ownership-validator", "path": "fixtures/project/verify.mjs", "mountAs": "project/verify.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "inspect-and-finish", "role": "prompt", "content": "Inspect the supplied workspace and its ownership note before editing. Fix the summary behavior so completed, canceled, and unresolved work remain distinct. Preserve every user-owned file byte-for-byte, run the verification command, and write output/completion.md naming changed files, preserved files, tests run, and anything not verified." }
+  ],
+  "output": { "kind": "code", "entry": "project/src/summary.mjs", "include": ["project/src/**", "project/test/**", "project/assets/theme.css", "project/notes/idea.md", "output/completion.md"], "limits": { "maxFiles": 24, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      { "id": "behavior-and-ownership", "type": "command", "required": true, "description": "Summary behavior is correct and user-owned files remain byte-identical.", "argv": ["node", "project/verify.mjs"] },
+      { "id": "completion-receipt", "type": "file-exists", "required": true, "description": "The receipt distinguishes changed, preserved, tested, and unresolved state.", "target": "output/completion.md" }
+    ]
+  },
+  "variation": "Change the bounded defect and user-owned files while retaining explicit ownership, a failing behavior test, and byte-preservation checks.",
+  "supersedes": "useful-work-canceled-proposal"
+}

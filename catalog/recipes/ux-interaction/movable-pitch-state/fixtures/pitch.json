@@ -1,0 +1,14 @@
+{
+  "instrument": "Seven-note pitch study",
+  "notes": ["C", "D", "E", "F", "G", "A", "B"],
+  "tonics": ["C", "D"],
+  "scales": {
+    "C": [{"note": "C", "degree": 1}, {"note": "D", "degree": 2}, {"note": "E", "degree": 3}, {"note": "F", "degree": 4}, {"note": "G", "degree": 5}, {"note": "A", "degree": 6}, {"note": "B", "degree": 7}],
+    "D": [{"note": "D", "degree": 1}, {"note": "E", "degree": 2}, {"note": "F", "degree": 3}, {"note": "G", "degree": 4}, {"note": "A", "degree": 5}, {"note": "B", "degree": 6}, {"note": "C", "degree": 7}]
+  },
+  "modes": {
+    "fixed-note": "A note keeps its assigned identity treatment when tonic changes.",
+    "movable-degree": "The treatment follows scale degree, so degree 1 moves with the tonic."
+  },
+  "input": {"keyboardKeys": ["A", "S", "D", "F", "G", "H", "J"]}
+}

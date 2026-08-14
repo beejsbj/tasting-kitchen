@@ -1,0 +1,10 @@
+{
+  "events": [
+    {
+      "type": "completed",
+      "reminderId": "pickup-harbor",
+      "at": "2026-08-14T14:20:00Z",
+      "note": "Parcel collected early"
+    }
+  ]
+}

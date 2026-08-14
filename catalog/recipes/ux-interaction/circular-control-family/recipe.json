@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "circular-control-family",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Make four circular controls feel related but unambiguous",
+  "summary": "Build range, toggle, option, and action controls that share one grammar while preserving distinct behavior on touch and keyboard.",
+  "domain": "ux-interaction",
+  "origin": "mothers",
+  "originNote": "Distilled from a history-derived circular-control system where gesture arbitration, precision, and perceptible state mattered more than a knob skin.",
+  "tags": ["direct-manipulation", "microinteraction", "state-modeling", "accessibility", "correction-recovery"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the control packet. Build a self-contained touch-first test bench; no hardware haptics or audio are required.",
+    "fixtures": [
+      {"id": "control-packet", "path": "fixtures/controls.json", "mountAs": "fixtures/controls.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-controls",
+      "role": "prompt",
+      "content": "Read fixtures/controls.json and implement a complete responsive control test bench as index.html. The four controls must share a circular grammar but make range, boolean, options, and momentary action perceptibly different at rest and during use. At phone width they sit in a horizontally scrollable strip: a horizontal swipe beginning on a control must still be able to scroll the strip, while a deliberate vertical gesture adjusts or actuates that control. Support tap where appropriate, drag end, pointer cancellation, keyboard operation, visible focus, and coarse/fine adjustment for the range. Display an event log so a reviewer can see gesture classification and committed values. Use data-control with values range, boolean, options, and action."
+    },
+    {
+      "id": "remove-motion-dependence",
+      "role": "correction",
+      "content": "Revise the controls so every committed state remains clear in a still screenshot and under prefers-reduced-motion. Keep the gesture arbitration, keyboard behavior, and chosen visual direction; do not replace the circular family with ordinary sliders and switches."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 25, "maxBytes": 4194304}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The control test bench exists.", "target": "index.html"},
+      {"id": "control-hooks", "type": "command", "required": true, "description": "All four control types and cancellation handling are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['range','boolean','options','action','pointercancel'])if(!s.includes(x))process.exit(1)"]},
+      {"id": "gesture-review", "type": "manual", "required": false, "description": "At 390px test strip scrolling, deliberate vertical adjustment, cancellation, keyboard use, and reduced motion."}
+    ]
+  }
+}

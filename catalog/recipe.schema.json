@@ -50,7 +50,7 @@
         "capabilities": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "enum": ["files", "shell", "tools", "image-generation", "audio"] }
+          "items": { "enum": ["files", "shell", "tools", "delegation", "image-generation"] }
         }
       }
     },
@@ -65,13 +65,13 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "path", "mountAs", "public"],
+            "required": ["id", "path", "mountAs", "public", "mediaType"],
             "properties": {
               "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-              "path": { "type": "string", "minLength": 1 },
-              "mountAs": { "type": "string", "minLength": 1 },
-              "public": { "type": "boolean" },
-              "mediaType": { "type": "string" }
+              "path": { "$ref": "#/$defs/relativePath" },
+              "mountAs": { "$ref": "#/$defs/relativePath" },
+              "public": { "const": true },
+              "mediaType": { "type": "string", "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$" }
             }
           }
         }
@@ -97,8 +97,8 @@
       "required": ["kind", "entry", "include", "limits"],
       "properties": {
         "kind": { "enum": ["web", "image", "code", "session", "document", "audio"] },
-        "entry": { "type": "string", "minLength": 1 },
-        "include": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "entry": { "$ref": "#/$defs/relativePath" },
+        "include": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/relativeGlob" } },
         "limits": {
           "type": "object",
           "additionalProperties": false,
@@ -118,6 +118,7 @@
         "mode": { "enum": ["completeness", "files", "interaction", "tests", "trace", "manual"] },
         "checks": {
           "type": "array",
+          "minItems": 1,
           "items": {
             "type": "object",
             "additionalProperties": false,
@@ -127,14 +128,45 @@
               "type": { "enum": ["file-exists", "command", "json-schema", "trace-assertion", "manual"] },
               "required": { "type": "boolean" },
               "description": { "type": "string", "minLength": 4 },
-              "target": { "type": "string" },
-              "argv": { "type": "array", "items": { "type": "string" } }
-            }
+              "target": { "$ref": "#/$defs/relativePath" },
+              "schema": { "$ref": "#/$defs/relativePath" },
+              "argv": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "type": { "const": "file-exists" } }, "required": ["type"] },
+                "then": { "required": ["target"] }
+              },
+              {
+                "if": { "properties": { "type": { "const": "command" } }, "required": ["type"] },
+                "then": { "required": ["argv"] }
+              },
+              {
+                "if": { "properties": { "type": { "const": "json-schema" } }, "required": ["type"] },
+                "then": { "required": ["target", "schema"] }
+              },
+              {
+                "if": { "properties": { "type": { "enum": ["trace-assertion", "manual"] } }, "required": ["type"] },
+                "then": { "properties": { "required": { "const": false } } }
+              }
+            ]
           }
         }
       }
     },
     "variation": { "type": "string", "maxLength": 500 },
-    "supersedes": { "type": "string" }
+    "supersedes": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+    },
+    "relativeGlob": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+    }
   }
 }

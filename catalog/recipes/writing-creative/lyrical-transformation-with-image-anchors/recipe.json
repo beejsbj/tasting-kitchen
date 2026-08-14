@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "lyrical-transformation-with-image-anchors",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Turn image notes into a lyric without genericizing them",
+  "summary": "Transform synthetic fragments into a lyric or poem while preserving concrete image anchors, rhythmic pressure, and an unresolved emotional turn.",
+  "domain": "writing-creative",
+  "origin": "hybrid",
+  "originNote": "A standard lyrical transformation carrying a history-derived insistence that specific images and irregular rhythm survive collaboration.",
+  "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],
+  "kind": "document",
+  "harness": { "workspace": "write", "web": "closed-sources-only", "capabilities": ["files"] },
+  "setup": {
+    "instructions": "Mount the generated source fixture read-only. Run every turn in order in one fresh workspace. The model must create and revise only lyric.md.",
+    "fixtures": [
+      { "id": "source-notes", "path": "source-notes.md", "mountAs": "source-notes.md", "public": true, "mediaType": "text/markdown" }
+    ]
+  },
+  "turns": [
+    {
+      "id": "write-lyric",
+      "role": "prompt",
+      "content": "Read `source-notes.md` and write `lyric.md` as a 24–32 line lyric or poem. Keep the bus ticket, orange peel, blinking hallway bulb, and borrowed key materially present. Build a repeatable refrain, but let its meaning change on the final return. The emotional turn must hold relief and unease together. Do not explain the images or convert them into generic language about change, closure, journeys, or healing."
+    },
+    {
+      "id": "restore-concrete-pressure",
+      "role": "correction",
+      "content": "Revise `lyric.md` in place. Remove abstract language that could belong to any song. Restore pressure through concrete nouns, line breaks, sound, and the changing refrain. Keep all four source images and do not resolve whether permanence is welcome."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "lyric.md",
+    "include": ["lyric.md"],
+    "limits": { "maxFiles": 2, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      { "id": "lyric-exists", "type": "file-exists", "required": true, "description": "The final workspace contains lyric.md.", "target": "lyric.md" },
+      { "id": "image-anchors-retained", "type": "manual", "required": false, "description": "lyric.md contains recognizable uses of all four supplied image anchors and remains 24–32 lines." }
+    ]
+  }
+}

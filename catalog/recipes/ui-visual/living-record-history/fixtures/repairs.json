@@ -1,0 +1,38 @@
+{
+  "desk": "Neighborhood repair cooperative",
+  "items": [
+    {
+      "id": "lamp-204",
+      "object": "Anglepoise lamp",
+      "owner": "D. Chen",
+      "state": "Waiting for approval",
+      "events": [
+        {"at": "09:10", "kind": "fact", "text": "Intake: switch clicks but light does not start"},
+        {"at": "10:35", "kind": "note", "text": "Cable is sound; continuity fails at the lampholder"},
+        {"at": "10:42", "kind": "decision", "text": "Approve a $12 ceramic lampholder?"}
+      ]
+    },
+    {
+      "id": "radio-118",
+      "object": "Pocket radio",
+      "owner": "A. Iqbal",
+      "state": "Bench work",
+      "events": [
+        {"at": "08:40", "kind": "fact", "text": "Intake: tuning wheel slips"},
+        {"at": "11:20", "kind": "action", "text": "Drive cord restrung"},
+        {"at": "11:46", "kind": "note", "text": "Testing the full dial range"}
+      ]
+    },
+    {
+      "id": "stool-071",
+      "object": "Kitchen stool",
+      "owner": "S. Okafor",
+      "state": "Ready for pickup",
+      "events": [
+        {"at": "Yesterday", "kind": "fact", "text": "Intake: front joint rocks under load"},
+        {"at": "09:05", "kind": "action", "text": "Joint cleaned, glued, and clamped"},
+        {"at": "14:15", "kind": "action", "text": "Load check completed"}
+      ]
+    }
+  ]
+}

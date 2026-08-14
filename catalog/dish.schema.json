@@ -13,8 +13,8 @@
       "additionalProperties": false,
       "required": ["id", "version", "hash"],
       "properties": {
-        "id": { "type": "string" },
-        "version": { "type": "string" },
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
         "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }
     },
@@ -24,14 +24,14 @@
       "additionalProperties": false,
       "required": ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash"],
       "properties": {
-        "variantId": { "type": "string" },
-        "provider": { "type": "string" },
-        "requestedModel": { "type": "string" },
-        "observedModel": { "type": "string" },
-        "harness": { "type": "string" },
-        "harnessVersion": { "type": "string" },
-        "reasoningEffort": { "type": "string" },
-        "serviceTier": { "type": "string" },
+        "variantId": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "requestedModel": { "type": "string", "minLength": 1 },
+        "observedModel": { "type": "string", "minLength": 1 },
+        "harness": { "type": "string", "minLength": 1 },
+        "harnessVersion": { "type": "string", "minLength": 1 },
+        "reasoningEffort": { "type": "string", "minLength": 1 },
+        "serviceTier": { "type": "string", "minLength": 1 },
         "configHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
         "catalogHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }
@@ -43,8 +43,8 @@
       "required": ["kind", "entry", "files", "treeHash"],
       "properties": {
         "kind": { "enum": ["web", "image", "code", "session", "document", "audio"] },
-        "entry": { "type": "string" },
-        "preview": { "type": "string" },
+        "entry": { "$ref": "#/$defs/relativePath" },
+        "preview": { "$ref": "#/$defs/relativePath" },
         "treeHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
         "files": {
           "type": "array",
@@ -54,7 +54,7 @@
             "additionalProperties": false,
             "required": ["path", "sha256", "bytes"],
             "properties": {
-              "path": { "type": "string" },
+              "path": { "$ref": "#/$defs/relativePath" },
               "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "bytes": { "type": "integer", "minimum": 0 }
             }
@@ -68,10 +68,17 @@
       "required": ["passed", "report"],
       "properties": {
         "passed": { "const": true },
-        "report": { "type": "string" }
+        "report": { "$ref": "#/$defs/relativePath" }
       }
     },
-    "publicTrace": { "type": "string" },
+    "publicTrace": { "$ref": "#/$defs/relativePath" },
     "dishHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
+    }
   }
 }

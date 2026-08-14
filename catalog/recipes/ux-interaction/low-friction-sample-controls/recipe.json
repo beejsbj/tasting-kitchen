@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "low-friction-sample-controls",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Keep a sample sketchpad immediate as control depth grows",
+  "summary": "Build an eight-pad sound sketchpad with hold-slide controls, multi-edit, direct rearrangement, and explicit destructive moments.",
+  "domain": "ux-interaction",
+  "origin": "hybrid",
+  "originNote": "A standard sampler interaction task sharpened by a newly curated official control reference supplied after the historical analysis.",
+  "tags": ["direct-manipulation", "microinteraction", "state-modeling", "accessibility", "audio"],
+  "kind": "web",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Mount the interaction packet. Build a self-contained browser prototype; synthesized tones may stand in for recorded audio and no external samples are allowed.",
+    "fixtures": [
+      {"id": "sketchpad-packet", "path": "fixtures/sketchpad.json", "mountAs": "fixtures/sketchpad.json", "public": true, "mediaType": "application/json"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-sketchpad",
+      "role": "prompt",
+      "content": "Read fixtures/sketchpad.json and implement the complete eight-pad sound sketchpad as index.html. Preserve immediacy: tapping a filled pad plays it; holding an empty pad records a synthetic stand-in until release; holding Volume, Pitch, or Pan and sliding in any direction adjusts the selected pad; double-tapping one of those controls resets it. An explicit Edit hold enables multi-selection so one adjustment applies to all selected pads. Dragging one pad onto another must offer copy, swap, layer, or cancel; dragging to a revealed discard target uses the packet's confirmation rule. Provide keyboard equivalents and a visible action history. Do not reproduce any existing sampler's branding, layout, palette, pad count, labels, or chrome."
+    },
+    {
+      "id": "protect-one-gesture-loop",
+      "role": "correction",
+      "content": "Revise the artifact so a person can capture, play, adjust, and resample a sound without opening a modal. Keep confirmations only where data would be destroyed or two occupied pads create an ambiguous merge. Preserve multi-edit and direct rearrangement."
+    }
+  ],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js"], "limits": {"maxFiles": 30, "maxBytes": 6291456}},
+  "validation": {
+    "mode": "interaction",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The sampler prototype exists.", "target": "index.html"},
+      {"id": "interaction-hooks", "type": "command", "required": true, "description": "Eight pads, audio synthesis, and direct-manipulation handlers are present.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');if((s.match(/data-pad=/g)||[]).length<8||!/AudioContext/.test(s)||!/(pointermove|drag)/.test(s))process.exit(1)"]},
+      {"id": "loop-review", "type": "manual", "required": false, "description": "Capture, play, adjust, multi-edit, rearrange, discard, and resample using touch-sized controls and keyboard equivalents."}
+    ]
+  }
+}

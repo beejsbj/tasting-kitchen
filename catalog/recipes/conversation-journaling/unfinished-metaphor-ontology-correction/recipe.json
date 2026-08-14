@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "unfinished-metaphor-ontology-correction",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Think with an unfinished metaphor",
+  "summary": "Receive a fragmented bridge metaphor, absorb a correction to its underlying relation, and then test what does not fit.",
+  "domain": "conversation-journaling",
+  "origin": "mothers",
+  "originNote": "A public-safe reconstruction of recurring unfinished-thought conversations where a terse correction changes the idea's world model.",
+  "tags": ["rubber-ducking", "clarification", "correction-recovery", "multi-turn"],
+  "kind": "session",
+  "harness": { "workspace": "read", "web": "disabled", "capabilities": [] },
+  "setup": {
+    "instructions": "Run every turn in order in one fresh conversation. Preserve the user's fragmentary wording exactly as supplied.",
+    "fixtures": []
+  },
+  "turns": [
+    {
+      "id": "offer-thought",
+      "role": "prompt",
+      "content": "I keep returning to a bridge beside a city library. At first I thought it joined the old district to the new one, but that feels too easy. People cross it carrying words that become unusable on the other side, and perhaps the bridge is part of what changes them. I do not yet know whether this is about language, architecture, or belonging. Help me think with this."
+    },
+    {
+      "id": "correct-relation",
+      "role": "correction",
+      "content": "Correction to carry forward: the bridge is not between the groups; it changes what either side can be."
+    },
+    {
+      "id": "invite-friction",
+      "role": "follow-up",
+      "content": "What in this idea does not fit yet?"
+    }
+  ],
+  "output": {
+    "kind": "session",
+    "entry": "output/session.json",
+    "include": ["output/session.json"],
+    "limits": { "maxFiles": 3, "maxBytes": 1048576 }
+  },
+  "validation": {
+    "mode": "trace",
+    "checks": [
+      { "id": "session-captured", "type": "file-exists", "required": true, "description": "The runner captured the complete session artifact.", "target": "output/session.json" },
+      { "id": "all-turns-recorded", "type": "trace-assertion", "required": false, "description": "The transcript contains all three scripted user turns and one assistant response after each turn." }
+    ]
+  }
+}

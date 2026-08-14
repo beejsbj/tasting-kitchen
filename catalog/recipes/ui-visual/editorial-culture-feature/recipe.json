@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "editorial-culture-feature",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Shape a long cultural feature for reading and wandering",
+  "summary": "Design a responsive editorial feature that carries a long argument, visual pauses, captions, and a compact chronology.",
+  "domain": "ui-visual",
+  "origin": "textbook",
+  "originNote": "A recognizable editorial-design control that makes image-led atmosphere compete with sustained reading.",
+  "tags": ["visual-composition", "visual-language", "reference-translation", "accessibility"],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": ["files"]
+  },
+  "setup": {
+    "instructions": "Mount the supplied article packet. Build a self-contained static feature page; the abstract SVGs are the only supplied images.",
+    "fixtures": [
+      {"id": "article-packet", "path": "fixtures/article.json", "mountAs": "fixtures/article.json", "public": true, "mediaType": "application/json"},
+      {"id": "night-map", "path": "fixtures/night-map.svg", "mountAs": "fixtures/night-map.svg", "public": true, "mediaType": "image/svg+xml"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-feature",
+      "role": "prompt",
+      "content": "Using fixtures/article.json and fixtures/night-map.svg, build a complete responsive cultural feature as index.html. Preserve every supplied paragraph and attribution. Make the page inviting to wander without breaking the long reading path: include a strong opening composition, captions, one pull quote, and the supplied chronology. Do not invent photography, facts, or quotations. Avoid a blog-template stack of identical cards. The article body must be selectable text and the chronology must carry data-section=\"chronology\"."
+    },
+    {
+      "id": "quiet-the-opening",
+      "role": "correction",
+      "content": "Revise only the opening third so the title and first paragraph no longer compete at the same visual volume. Keep the article text, imagery, chronology, and overall register intact."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": ["index.html", "*.css", "*.js", "assets/**"],
+    "limits": {"maxFiles": 30, "maxBytes": 5242880}
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The editorial page exists.", "target": "index.html"},
+      {"id": "chronology-present", "type": "command", "required": true, "description": "The chronology is present in the artifact.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');if(!s.includes('data-section=\\\"chronology\\\"'))process.exit(1)"]},
+      {"id": "reading-human-check", "type": "manual", "required": false, "description": "Inspect whether the opening leads into a comfortable long-form reading path at mobile and desktop widths."}
+    ]
+  }
+}

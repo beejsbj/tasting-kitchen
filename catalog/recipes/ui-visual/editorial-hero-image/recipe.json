@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "editorial-hero-image",
+  "version": "1.0.0",
+  "status": "draft",
+  "title": "Direct an editorial hero image through one local revision",
+  "summary": "Generate a publication-ready hero illustration, then change one object without replacing the composition.",
+  "domain": "ui-visual",
+  "origin": "textbook",
+  "originNote": "A conventional image-art-direction control; draft until the runner records image-model settings and revisions faithfully.",
+  "tags": ["image-generation", "visual-composition", "reference-translation", "surgical-change"],
+  "kind": "image",
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files", "image-generation"]},
+  "setup": {
+    "instructions": "Mount the editorial brief and synthetic reference board. Preserve generation settings and source references with the result.",
+    "fixtures": [
+      {"id": "image-brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "mediaType": "application/json"},
+      {"id": "reference-board", "path": "fixtures/reference-board.svg", "mountAs": "fixtures/reference-board.svg", "public": true, "mediaType": "image/svg+xml"}
+    ]
+  },
+  "turns": [
+    {
+      "id": "generate-hero",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json and use fixtures/reference-board.svg only as compositional guidance. Generate a 1600×900 editorial hero image that leaves the required headline-safe region clear. Save the selected result as hero-v1.png and the exact generation prompt and available settings as prompt.json."
+    },
+    {
+      "id": "local-object-change",
+      "role": "correction",
+      "content": "Edit hero-v1.png: replace only the parked car with a cargo bicycle. Preserve framing, camera height, light direction, atmosphere, geometry, and headline-safe negative space. Save the revision as hero.png without deleting hero-v1.png, and append the edit instruction and available settings to prompt.json."
+    }
+  ],
+  "output": {"kind": "image", "entry": "hero.png", "include": ["hero-v1.png", "hero.png", "prompt.json"], "limits": {"maxFiles": 5, "maxBytes": 20971520}},
+  "validation": {
+    "mode": "manual",
+    "checks": [
+      {"id": "first-image-exists", "type": "file-exists", "required": true, "description": "The selected first generation exists.", "target": "hero-v1.png"},
+      {"id": "image-exists", "type": "file-exists", "required": true, "description": "The final edited hero image exists.", "target": "hero.png"},
+      {"id": "prompt-exists", "type": "file-exists", "required": true, "description": "The prompt and settings record exists.", "target": "prompt.json"},
+      {"id": "local-edit-review", "type": "manual", "required": false, "description": "Compare first and second generations for a local object change with composition preserved."}
+    ]
+  }
+}

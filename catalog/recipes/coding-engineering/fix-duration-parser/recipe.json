@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "fix-duration-parser",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Fix a failing duration parser with the smallest patch",
+  "summary": "Navigate a tiny unfamiliar module, reproduce its unit failure, and repair hours without widening the public interface.",
+  "domain": "coding-engineering",
+  "origin": "textbook",
+  "originNote": "A standard bounded bugfix with a tempting partial implementation and an explicit smallest-patch constraint.",
+  "tags": ["debugging", "implementation", "surgical-change", "verification", "shell-use"],
+  "kind": "code",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the disposable project at project/. Work only inside that project and output/. No dependencies or network access are needed.",
+    "fixtures": [
+      { "id": "duration-source", "path": "fixtures/project/src/parse-duration.mjs", "mountAs": "project/src/parse-duration.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "duration-tests", "path": "fixtures/project/test/parse-duration.test.mjs", "mountAs": "project/test/parse-duration.test.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "repair", "role": "prompt", "content": "Inspect the supplied project, reproduce the failing test, and fix the duration parser with the smallest defensible patch. Preserve the exported function name and existing error behavior. Run the tests, then write output/completion.md with the cause, changed files, commands actually run, and any residual uncertainty." }
+  ],
+  "output": { "kind": "code", "entry": "project/src/parse-duration.mjs", "include": ["project/src/**", "project/test/**", "output/completion.md"], "limits": { "maxFiles": 20, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      { "id": "unit-tests", "type": "command", "required": true, "description": "All parser cases pass, including hours, minutes, malformed input, and zero.", "argv": ["node", "project/test/parse-duration.test.mjs"] },
+      { "id": "completion-receipt", "type": "file-exists", "required": true, "description": "The model leaves an honest completion receipt.", "target": "output/completion.md" }
+    ]
+  },
+  "variation": "Change the unit pair and malformed edge case while retaining a one-module public interface and a failing test."
+}

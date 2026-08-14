@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "repair-persisted-cascade",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Repair a cascade that disappears after reload",
+  "summary": "Find why an in-memory scheduling cascade passes unit tests but loses later blocks when persisted and loaded.",
+  "domain": "coding-engineering",
+  "origin": "hybrid",
+  "originNote": "Uses a standard persistence defect with a history-derived requirement that human-visible reload behavior outrank persuasive local machinery.",
+  "tags": ["debugging", "state-modeling", "implementation", "verification", "surgical-change", "shell-use"],
+  "kind": "code",
+  "harness": { "workspace": "write", "web": "disabled", "capabilities": ["files", "shell"] },
+  "setup": {
+    "instructions": "Mount the synthetic scheduler project at project/. The in-memory unit test is intentionally green and the reload behavior test is red.",
+    "fixtures": [
+      { "id": "cascade-source", "path": "fixtures/project/src/schedule.mjs", "mountAs": "project/src/schedule.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "store-source", "path": "fixtures/project/src/store.mjs", "mountAs": "project/src/store.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "cascade-tests", "path": "fixtures/project/test/cascade.test.mjs", "mountAs": "project/test/cascade.test.mjs", "public": true, "mediaType": "text/javascript" },
+      { "id": "reload-tests", "path": "fixtures/project/test/reload.test.mjs", "mountAs": "project/test/reload.test.mjs", "public": true, "mediaType": "text/javascript" }
+    ]
+  },
+  "turns": [
+    { "id": "repair-and-reload", "role": "prompt", "content": "Inspect the scheduler fixture and run both test files. Identify why the collision cascade is correct in memory but incomplete after persistence. Make the smallest bounded repair, rerun both tests, and write output/completion.md describing what the checks establish. Preserve the scheduling API and do not redesign the model." }
+  ],
+  "output": { "kind": "code", "entry": "project/src/store.mjs", "include": ["project/src/**", "project/test/**", "output/completion.md"], "limits": { "maxFiles": 24, "maxBytes": 1048576 } },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      { "id": "memory-test", "type": "command", "required": true, "description": "The in-memory cascade remains correct.", "argv": ["node", "project/test/cascade.test.mjs"] },
+      { "id": "reload-test", "type": "command", "required": true, "description": "All cascaded blocks survive save and load.", "argv": ["node", "project/test/reload.test.mjs"] },
+      { "id": "completion-receipt", "type": "file-exists", "required": true, "description": "The model reports the behavioral evidence and remaining uncertainty.", "target": "output/completion.md" }
+    ]
+  },
+  "variation": "Change the cascade length or serialized field while keeping a green in-memory test and a red reload test.",
+  "supersedes": "beautiful-does-it-cascade"
+}
