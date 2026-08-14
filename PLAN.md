@@ -1,132 +1,135 @@
-# Model Tasting Kitchen — execution plan
+# Model Tasting Kitchen — artifact-gallery reset
 
-## The project
+## Product
 
-Analyze Burooj's history once, turn the strongest findings into reusable model-tasting flights, and build a small kitchen where those flights can be run later as curiosity and need arise.
+Model Tasting Kitchen is a reusable set of standardized model recipes, an automated CLI runner, and a read-only gallery of the dishes models produce.
 
-This project assembles the flights and the kitchen. It performs no tastings.
+The product is inspired by Sitegeist's repeated same-brief comparison, generalized across Burooj's real AI use. It does not rank models. Repeated exposure to comparable artifacts is meant to build human intuition about a model's tendencies, strengths, and recurring fingerprints.
 
-## Shared language
+The previous manual copy/paste notebook was the wrong product. Its historical analysis, sanitized scenarios, fixtures, corrections, and checks remain source material; its browser-local notes workflow and ChatGPT Sites surface are legacy until migration is complete.
 
-- **Flight:** a themed tasting session, such as UI/UX ideation, journaling, or agentic development.
-- **Dish:** one representative encounter inside a flight.
-- **Turn:** a staged prompt, correction, or follow-up inside a dish.
-- **Observation lens:** something worth noticing in a response, never a score or preferred answer.
+## Language
 
-## Exact endpoint
+- **Domain:** a plain-language kind of work shown in gallery navigation.
+- **Recipe:** one stable task package: prompt turns, fixtures, tool boundary, output contract, and checks.
+- **Dish:** one immutable artifact produced by one exact model/harness/configuration running one recipe.
+- **Collection:** dishes sharing the same observed model, harness, and normalized configuration. Collections are derived from dishes.
+- **Flight:** an optional CLI batch of recipes. It is run bookkeeping, not gallery taxonomy.
 
-The project is finished when it has:
+Recipes have one lineage:
 
-- one bounded historical analysis, with a fixed source cutoff and no continuing ingestion;
-- a private, gitignored evidence ledger plus sanitized committed findings;
-- exactly nine flights containing 27 dishes total;
-- a stable, validated, sanitized flight schema and static library;
-- a working root Sites app that loads the library generically;
-- manual prompt copying and response pasting, free-form notes, browser-local records, two-run comparison, and JSON export/import with legacy v1 tasting records still readable;
-- concise usage, provenance/privacy, and future-calibration documentation;
-- passing privacy checks, tests, and production build;
-- no actual model responses, tastings, rankings, or inferred preference profile.
+- **Textbook:** a recognizable domain task with a meaningful tension.
+- **Mother's recipe:** a public-safe task distilled from Burooj's recurring work, corrections, or creative practice.
+- **Hybrid:** a recognizable task carrying a history-derived constraint or interaction grammar.
 
-The investigator determines the nine flight families from evidence. Workers must not pad weak categories to satisfy symmetry.
+A Mother's recipe preserves the original question or tension, never the original project's names, copy, palette, layout, brand, or recognizable implementation.
 
-## Lane 1 — one-time historical investigation
+## Domains
 
-Owner: investigator, GPT-5.6 Sol with high reasoning.
+1. UI & Visual Design
+2. UX & Interaction
+3. Conversation, Journaling & Companionship
+4. Thinking, Brainstorming, Planning & Decisions
+5. Writing & Creative Language
+6. Editing, Transformation & Presentation
+7. Agentic Work, Research & Personal Assistant
+8. Coding & Engineering
+9. Music & Creative Code
 
-### Method
+Each recipe has one primary domain. Cross-domain behavior uses controlled tags. Research with tools lives under Agentic; judgment over a supplied packet lives under Thinking; transforming supplied research into a memo or deck lives under Editing. Delegation and orchestration are sibling Agentic tags, not domains.
 
-Inventory available sources read-only, then sample by signal rather than attempting exhaustive consumption. Prioritize:
+## Artifact kinds
 
-1. actual AI chats and agentic sessions;
-2. correction, rejection, redirection, clarification, and takeover turns;
-3. development projects and UI/UX work;
-4. outputs Burooj accepted or continued using;
-5. personal-assistant, ideation, writing, and journaling exchanges;
-6. visual references only where they explain a repeated preference.
+Artifact kind selects validation and gallery rendering. It is never a second navigation hierarchy.
 
-For each useful episode, capture the intent, the model's move, Burooj's reaction, the revised direction, eventual disposition, and the future tasting encounter it might support. Grade findings as recurring evidence, plausible hypothesis, or one-off.
+- `web` — runnable UI and interaction prototypes
+- `image` — generated images, SVG, canvas, or drawing exports
+- `code` — patches, source trees, and build/test receipts
+- `session` — conversations and sanitized tool/assistant traces
+- `document` — prose, edits, scripts, memos, and presentations
+- `audio` — musical results with safe source attachments
 
-### Privacy
+The seed gallery polishes `web`, `image`, and `session`; the other three receive honest minimal renderers until real collections need more.
 
-- Analyze source material in place and read-only.
-- Never copy raw journals, chats, repositories, credentials, full transcripts, or third-party private material into Git or the site.
-- Keep precise source locations and any sensitive excerpts only in `private/`, which is gitignored.
-- Commit only paraphrased, sanitized findings and structurally equivalent scenarios.
-- Fix an analysis cutoff date. Create no watchers, scheduled jobs, or ongoing index.
+## Endpoint
 
-### Deliverables
+The project is complete when it has:
 
-- `analysis/method.md`
-- `analysis/source-summary.md`
-- `analysis/palate-findings.md`
-- `analysis/recurring-disconnects.md`
-- `analysis/flight-candidates.md`
-- `private/source-inventory.json`
-- `private/evidence-ledger.jsonl`
+- a validated public recipe menu across all nine domains, containing Textbook and Mother's recipes in every domain;
+- a private provenance map tying Mother's recipes back to the one-time historical analysis;
+- a `taste` CLI that validates recipes, runs an exact model configuration in a fresh isolated workspace/session, captures raw private evidence, sanitizes it, validates the artifact, and imports an immutable dish;
+- exact collection identity including provider, requested and observed model, harness/version, reasoning effort, service tier, and recipe/config hashes;
+- a static Sitegeist-like gallery that browses one collection, filters by domain, opens the real artifact, and compares up to three collections on the same recipe;
+- honest `Not tasted yet` cells rather than placeholders;
+- no scores, leaderboards, LLM judges, automated taste claims, accounts, database, or browser authoring workflow;
+- a static build at `/model-tasting/` deployed through a separate read-only bjslab service at `https://artifacts.burooj.dev/model-tasting/`;
+- the old Sites/Vinext/localStorage application removed only after its recipe content and fixtures have migrated and the bjslab replacement passes verification.
 
-### Stop condition
+## Seed collections
 
-Stop after every major evidenced use area has been sampled and two additional varied sample batches yield no important new category. Coverage percentage alone is not a reason to continue.
+All seed results use the Codex CLI harness and are labeled accordingly:
 
-## Lane 2 — menu and flight construction
+- Sol — `gpt-5.6-sol`, high reasoning, standard tier
+- Terra — `gpt-5.6-terra`, high reasoning, standard tier
+- Luna — `gpt-5.6-luna`, low reasoning, Fast tier
+- Luna — `gpt-5.6-luna`, high reasoning, Fast tier
+- Luna — `gpt-5.6-luna`, extra-high (`xhigh`) reasoning, Fast tier
 
-Owner: menu worker.
+Fast is a service tier, not a separate Luna model. Luna does not expose `none`; `low` is the requested no-/low-thinking approximation.
 
-Begin after the investigator's findings, disconnects, and candidates stabilize.
+The first proof covers one file-producing domain and one real tool/session domain, expected to be UI and Agentic. A clean private `CODEX_HOME` and a fresh constrained workspace per recipe are hard requirements so personal rules, skills, history, and other dishes do not leak into a run.
 
-A good flight is genuinely related to Burooj's use, historically grounded, context-equivalent across models, open enough to reveal a model's natural tendencies, compound rather than atomized, non-leading, sanitized, and independently runnable. It says what to notice without supplying a numerical score. Taste alone must not stand in for correctness; any safety- or competence-sensitive dish needs an external check.
+## Stages and gates
 
-Scheduler, worker, permission, memory, and delivery scenarios are controlled manual role-play. They compare reasoning over the same supplied state; they do not prove that a raw model can operate tools. Visual and development fixtures may be opened or handed to an external harness, while the kitchen itself remains a notebook rather than an execution engine.
+### 1. Menu contract
 
-### Deliverables
+- Freeze the nine domains, controlled tags, lineage language, recipe schema, dish schema, and exact seed variants.
+- Re-home every old recipe as migrate, rewrite/split, hidden control, or retire.
+- Validate public/private boundaries.
 
-- `library/flight.schema.json`
-- `library/menu.json`
-- `library/flights/<flight-id>.json`
-- safe supporting assets only where a dish truly needs them
-- exactly nine flights and 27 dishes total
-- ordinary representative encounters as well as historically discriminating ones
+**K3 Gate 2:** audit taxonomy, schema leanness, migration, and missing coverage before public authoring.
 
-First freeze the schema and produce two representative fixture flights. Hand those to the website worker, then complete the remaining library in parallel with website construction.
+### 2. Full recipe menu
 
-## Lane 3 — tasting-kitchen website
+- Author visual/interaction/music recipes.
+- Author conversation/thinking/writing/editing recipes.
+- Author agentic/research/coding recipes.
+- Include both Textbook controls and Mother's recipes derived from Lottery, Emotitone, Day Shaper, Experience Alcohol, Strudel work, correction patterns, and other supported evidence.
+- Treat Koala as a newly supplied curated reference, not retroactive historical evidence.
 
-Owner: website worker using the root Sites app.
+**K3 Gate 3:** audit coverage, generic-sludge risk, stranger test, tag hygiene, and executable contracts.
 
-Begin only after the real schema and two representative fixtures exist. The website worker must not invent analysis conclusions or final flight content.
+### 3. CLI and runner
 
-The lean workflow is:
+- Implement validation, planning, isolated execution, multi-turn resume, capture, sanitization, checks, import, and registry build.
+- Prove exact routing and isolation with one canary per seed configuration before any batch.
+- Keep failed attempts private and visible; never silently overwrite a dish.
 
-> Choose flight → choose dish → label model/configuration → step through and copy prompts → paste responses → leave free-form notes/corrections → save locally → open a second run beside it → export/import records.
+**K3 Gate 4:** inspect canary manifests, isolation evidence, traces, and output contracts before scaling.
 
-Keep family filtering, staged prompts, model labels, one free-form note per turn, one overall reflection, browser-local persistence, two-run comparison, and JSON export/import. Omit model APIs, accounts, backend, database, rankings, dashboards, reaction taxonomies, and automatic preference extraction.
+### 4. Static gallery
 
-The site must be responsive, keyboard-usable, and comfortable with long prompts and responses. New schema-valid flights must appear without bespoke interface work.
+- Replace Sites/Vinext with plain React/Vite at base `/model-tasting/`.
+- Render collections, nine domains, lineage badges, recipe details, exact run identity, real artifacts, and same-recipe comparisons.
+- Sandbox runnable outputs and block artifact network access by default.
 
-## Lane 4 — integration
+**K3 Gate 5:** audit gallery fidelity to the product and verify that the evidence—not chrome or scores—dominates.
 
-Owner: primary agent after both workers finish.
+### 5. Seed generation and publication
 
-- Load the complete real library in place of fixtures.
-- Validate all flights and referenced assets.
-- Scan Git and the production bundle for secrets, private paths, raw transcripts, and sensitive excerpts.
-- Exercise the empty-kitchen workflow without calling a model.
-- Verify persistence, two-run comparison, JSON export/import round trips, long content, tests, and production build.
-- Document how to add a flight and conduct a future tasting.
-- Record future calibration as a possibility only; implement none of it.
-- Finish with a clean Git history, then stop.
+- Run Sol, Terra, and three Luna Fast reasoning variants through the seed recipes.
+- Validate every dish and publish only sanitized accepted artifacts.
+- Build the static tree, deploy atomically to bjslab, verify existing artifact routes remain healthy, and retain a rollback release.
+- Soft-retire the owner-only ChatGPT Sites project after the replacement is live; full deletion requires the Sites management UI/support because no deletion connector is available.
 
-## Explicitly outside this project
+**K3 Gate 6:** final audit of menu, collections, comparison fidelity, privacy, and visible fingerprints before handoff.
 
-- actual tastings or model outputs;
-- model rankings, scores, leaderboards, or claims about a model's true nature;
-- a mature Burooj-preferences skill or automatic palate inference;
-- continuous session ingestion, background monitoring, or scheduled analysis;
-- model-provider integrations or a prompt execution engine;
-- database, authentication, multi-user features, public gallery, or social system;
-- an elaborate capability ontology;
-- day-trading simulation unless it emerges as one evidence-supported, clearly experimental dish with external correctness checks.
+## Explicit non-goals
 
-## Source plans
-
-This is the reconciled plan produced by cross-reviewing [Sol's independent draft](docs/plans/sol-draft.md) and [K3's independent draft](docs/plans/k3-draft.md).
+- universal capability ontology;
+- equal recipe counts per domain;
+- numerical taste scores or overall winners;
+- pretending Codex-harness results are raw API-model results;
+- running models inside the public website;
+- operating on real bjslab state, credentials, email, calendar, or destructive targets during a tasting;
+- completing every model/domain combination before publishing the reusable system.

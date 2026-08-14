@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifacts.burooj.dev/model-tasting/schemas/dish.v1.json",
+  "title": "Model Tasting Kitchen dish",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "recipe", "executedAt", "identity", "status", "artifact", "validation", "dishHash"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^dish_[a-zA-Z0-9_-]+$" },
+    "recipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "hash"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "executedAt": { "type": "string", "format": "date-time" },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash"],
+      "properties": {
+        "variantId": { "type": "string" },
+        "provider": { "type": "string" },
+        "requestedModel": { "type": "string" },
+        "observedModel": { "type": "string" },
+        "harness": { "type": "string" },
+        "harnessVersion": { "type": "string" },
+        "reasoningEffort": { "type": "string" },
+        "serviceTier": { "type": "string" },
+        "configHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "catalogHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "status": { "const": "accepted" },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "entry", "files", "treeHash"],
+      "properties": {
+        "kind": { "enum": ["web", "image", "code", "session", "document", "audio"] },
+        "entry": { "type": "string" },
+        "preview": { "type": "string" },
+        "treeHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "bytes"],
+            "properties": {
+              "path": { "type": "string" },
+              "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "bytes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "report"],
+      "properties": {
+        "passed": { "const": true },
+        "report": { "type": "string" }
+      }
+    },
+    "publicTrace": { "type": "string" },
+    "dishHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

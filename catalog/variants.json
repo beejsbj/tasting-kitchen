@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "variants": [
+    {
+      "id": "codex-sol-high",
+      "label": "Sol · High · via Codex CLI",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none"
+    },
+    {
+      "id": "codex-terra-high",
+      "label": "Terra · High · via Codex CLI",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none"
+    },
+    {
+      "id": "codex-luna-low-fast",
+      "label": "Luna · Low · Fast · via Codex CLI",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "low",
+      "serviceTier": "fast",
+      "personality": "none"
+    },
+    {
+      "id": "codex-luna-high-fast",
+      "label": "Luna · High · Fast · via Codex CLI",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "fast",
+      "personality": "none"
+    },
+    {
+      "id": "codex-luna-xhigh-fast",
+      "label": "Luna · Extra High · Fast · via Codex CLI",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "xhigh",
+      "serviceTier": "fast",
+      "personality": "none"
+    }
+  ]
+}
