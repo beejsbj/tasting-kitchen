@@ -1,4 +1,18 @@
-# Model Tasting Kitchen — artifact-gallery reset
+# Tasting Kitchen — promotion plan
+
+The artifact-gallery reset below records the completed proof system. The next phase promotes it into a proper reusable project: recipe-first catalog, repeated-run comparison, an owner-only Cook control, and a canonical Coolify deployment at `tasting-kitchen.burooj.dev`.
+
+The active product contract and implementation sequence live in:
+
+- [Product model](docs/product-model.md)
+- [Roadmap](docs/roadmap.md)
+- [Cockpit-ready issue briefs](cockpit/issues/README.md)
+
+The old proof gallery remains live until the canonical deployment is verified. Retiring it is a separate destructive cutover and is not implied by this promotion.
+
+---
+
+## Completed proof-system plan
 
 ## Product
 

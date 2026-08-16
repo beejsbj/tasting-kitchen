@@ -1,0 +1,9 @@
+.git
+.env*
+node_modules
+dist
+private
+outputs
+work
+public/data/registry.json
+public/dishes
