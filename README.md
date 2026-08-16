@@ -28,7 +28,7 @@ Recipes are labeled **Textbook**, **Mother's**, or **Hybrid**:
 
 Known preferences belong in the initial recipe. Staged correction turns remain only when adaptation to feedback is itself what the recipe is tasting. Mother's recipes preserve the recurring question or interaction grammar while replacing private names, copy, assets, and recognizable implementations.
 
-See [Product model](docs/product-model.md), [Roadmap](docs/roadmap.md), and [Deployment status](docs/deployment-status.md) for the promoted project shape.
+Planning and workflow live in Linear: [Tasting Kitchen project](https://linear.app/bjs-projects/project/tasting-kitchen-09d8ad1ade80), [product model](https://linear.app/bjs-projects/document/product-model-and-recipe-language-ba14eea0d78d), [roadmap and architecture](https://linear.app/bjs-projects/document/promotion-roadmap-and-architecture-9b67d5d3982d), and [deployment gates](https://linear.app/bjs-projects/document/deployment-status-and-gates-445b6f9b7ceb).
 
 ## What is here
 

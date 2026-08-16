@@ -2,11 +2,7 @@
 
 The artifact-gallery reset below records the completed proof system. The next phase promotes it into a proper reusable project: recipe-first catalog, repeated-run comparison, an owner-only Cook control, and a canonical Coolify deployment at `tasting-kitchen.burooj.dev`.
 
-The active product contract and implementation sequence live in:
-
-- [Product model](docs/product-model.md)
-- [Roadmap](docs/roadmap.md)
-- [Cockpit-ready issue briefs](cockpit/issues/README.md)
+The active product contract, implementation sequence, issues, dependencies, and decisions live in the [Tasting Kitchen Linear project](https://linear.app/bjs-projects/project/tasting-kitchen-09d8ad1ade80). This file preserves the completed proof-system plan below; it is not the live workflow tracker.
 
 The old proof gallery remains live until the canonical deployment is verified. Retiring it is a separate destructive cutover and is not implied by this promotion.
 
