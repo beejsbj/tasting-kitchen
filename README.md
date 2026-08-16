@@ -28,7 +28,7 @@ Recipes are labeled **Textbook**, **Mother's**, or **Hybrid**:
 
 Known preferences belong in the initial recipe. Staged correction turns remain only when adaptation to feedback is itself what the recipe is tasting. Mother's recipes preserve the recurring question or interaction grammar while replacing private names, copy, assets, and recognizable implementations.
 
-See [Product model](docs/product-model.md) and [Roadmap](docs/roadmap.md) for the promoted project shape.
+See [Product model](docs/product-model.md), [Roadmap](docs/roadmap.md), and [Deployment status](docs/deployment-status.md) for the promoted project shape.
 
 ## What is here
 

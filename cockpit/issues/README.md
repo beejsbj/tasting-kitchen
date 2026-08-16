@@ -2,6 +2,8 @@
 
 These files are cold-dispatchable Linear issue bodies for the **Tasting Kitchen** project. They are staged locally because Cockpit's required Linear app actor is not authenticated in the current bjslab/headless Mac session.
 
+The project brief is in [`../project.md`](../project.md).
+
 Create them through Cockpit when the app actor is available. Do not silently replace the app actor with a personal Linear identity.
 
 Suggested order:
