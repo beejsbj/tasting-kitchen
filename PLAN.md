@@ -1,5 +1,7 @@
 # Tasting Kitchen — promotion plan
 
+> Historical implementation record. The canonical product vocabulary and schema contract now live in [`docs/product-model.md`](docs/product-model.md). The completed proof-stage material below intentionally retains legacy Domain, Flight, and Collection terminology where it describes what was actually built; those terms are migration inputs, not the active product model.
+
 The artifact-gallery reset below records the completed proof system. The next phase promotes it into a proper reusable project: recipe-first catalog, repeated-run comparison, an owner-only Cook control, and a canonical Coolify deployment at `tasting-kitchen.burooj.dev`.
 
 The active product contract, implementation sequence, issues, dependencies, and decisions live in the [Tasting Kitchen Linear project](https://linear.app/bjs-projects/project/tasting-kitchen-09d8ad1ade80). This file preserves the completed proof-system plan below; it is not the live workflow tracker.
