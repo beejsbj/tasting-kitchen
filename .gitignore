@@ -44,3 +44,6 @@ tsconfig.tsbuildinfo
 # Local audit trail for the one-time historical analysis.
 # Findings committed to the project must be paraphrased and sanitized.
 /private/
+
+# Built public registry and exact input previews are generated from canonical sources.
+/public/data/

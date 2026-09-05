@@ -1,40 +1,37 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "./Badge";
-import { Icon } from "./Icon";
-import { IconButton } from "./IconButton";
-import type { ArtifactReview, Domain, Recipe, Variant } from "../types";
+import { KitchenButton } from "./KitchenButton";
+import { shortHash } from "../lib/registry";
+import type { ArtifactReview, Recipe, Variant } from "../types";
 
 type ReviewEntry = { review: ArtifactReview; variant: Variant };
-
-export function RecipeBrief({ recipe, domain, reviews = [], onClose }: { recipe: Recipe; domain?: Domain; reviews?: ReviewEntry[]; onClose: () => void }) {
-  const cues = recipe.validation.checks.filter((check) => !check.required);
-  const panel = useRef<HTMLDivElement>(null);
+function Fixture({ fixture }: { fixture: Recipe["setup"]["fixtures"][number] }) {
+  const [text, setText] = useState("");
+  const [error, setError] = useState("");
   useEffect(() => {
-    const node = panel.current;
-    if (!node) return;
-    const dialog = node;
-    dialog.focus();
-    function containFocus(event: globalThis.KeyboardEvent) {
-      if (event.key !== "Tab") return;
-      const focusable = [...dialog.querySelectorAll<HTMLElement>("button, a[href], select, [tabindex]:not([tabindex='-1'])")].filter((element) => !element.hasAttribute("disabled"));
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    }
-    dialog.addEventListener("keydown", containFocus);
-    return () => dialog.removeEventListener("keydown", containFocus);
-  }, []);
-  return (
-    <div ref={panel} className="recipe-brief" role="dialog" aria-modal="true" aria-labelledby="recipe-brief-title" tabIndex={-1}>
-      <header><div><span>Recipe</span><i /><span>{domain?.label ?? recipe.domain}</span></div><IconButton label="Close recipe" onClick={onClose}><Icon name="close" /></IconButton></header>
-      <section className="recipe-brief__intro"><Badge origin={recipe.origin} /><h2 id="recipe-brief-title">{recipe.title}</h2><p>{recipe.summary}</p></section>
-      <section><h3>Setup</h3><p>{recipe.setup.instructions}</p></section>
-      <section><h3>Prompt turns</h3><ol className="turn-list">{recipe.turns.map((turn, index) => <li key={turn.id}><span>{String(index + 1).padStart(2, "0")} · {turn.role.replace("-", " ")}</span><p>{turn.content}</p></li>)}</ol></section>
-      {cues.length > 0 && <section><h3>Look for</h3><ul>{cues.map((cue) => <li key={cue.id}>{cue.description}</li>)}</ul></section>}
-      {reviews.length > 0 && <section className="recipe-brief__reviews"><h3>Artifact review</h3><p>These observations sit beside structural acceptance; they do not change the accepted dish.</p><ul>{reviews.flatMap(({ review, variant }) => review.probes.map((probe) => <li key={`${review.id}-${probe.id}`} data-verdict={probe.verdict}><div><b>{variant.label}</b><span>{review.reviewerKind} review · {probe.verdict} · {probe.viewport.width}×{probe.viewport.height}</span></div><p>{probe.finding}</p><small>{review.reviewer} · {new Date(review.reviewedAt).toLocaleDateString()}</small></li>))}</ul></section>}
-      <footer><span>{recipe.kind} artifact</span><span>{recipe.harness.capabilities.join(" + ")}</span><span>v{recipe.version}</span></footer>
-    </div>
-  );
+    if (!fixture.url || fixture.mediaType.startsWith("image/")) return;
+    const controller = new AbortController();
+    fetch(fixture.url, { signal: controller.signal }).then(async (response) => {
+      if (!response.ok) throw new Error("Input could not be loaded.");
+      setText(await response.text());
+    }).catch((reason: unknown) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : "Input unavailable."); });
+    return () => controller.abort();
+  }, [fixture.url, fixture.mediaType]);
+  return <details className="fixture"><summary>{fixture.id}<span>{fixture.mediaType}</span></summary><p><code>{fixture.mountAs}</code>{fixture.sha256 && <span> · {shortHash(fixture.sha256)}</span>}</p>{fixture.url ? <><a href={fixture.url} target="_blank" rel="noreferrer">Open exact input ↗</a>{fixture.mediaType.startsWith("image/") ? <img src={fixture.url} alt={`Supplied ${fixture.id} reference`} /> : <pre>{error || text || "Loading input…"}</pre>}</> : <p>This input is recorded, but its public preview is unavailable.</p>}</details>;
+}
+export function RecipeBrief({ recipe, reviews = [], onClose }: { recipe: Recipe; reviews?: ReviewEntry[]; onClose: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { const node = dialog.current; node?.showModal(); return () => node?.close(); }, []);
+  return <dialog ref={dialog} className="recipe-brief" onCancel={onClose} aria-labelledby="recipe-brief-title">
+    <header><span className="eyebrow">The exact recipe · {shortHash(recipe.recipeHash)}</span><KitchenButton aria-label="Close recipe brief" onClick={onClose}>×</KitchenButton></header>
+    <section className="recipe-brief__intro"><Badge origin={recipe.origin} /><h2 id="recipe-brief-title">{recipe.title}</h2><p>{recipe.summary}</p></section>
+    <section><h3>What the model receives</h3><p>{recipe.setup.instructions}</p>{recipe.setup.fixtures.map((fixture) => <Fixture key={`${recipe.recipeHash}-${fixture.id}`} fixture={fixture} />)}</section>
+    <section><h3>The brief, in order</h3><ol className="turn-list">{recipe.turns.map((turn, index) => <li key={turn.id}><span>{String(index + 1).padStart(2, "0")} · {turn.role.replaceAll("-", " ")}</span><p>{turn.content}</p></li>)}</ol></section>
+    <section><h3>Deliverable &amp; boundaries</h3><p><code>{recipe.output.entry}</code> · {recipe.kind}</p><p>Tools: {recipe.harness.capabilities.join(", ")}. Workspace: {recipe.harness.workspace}. Web: {recipe.harness.web}.</p><p>The prompt, input bytes, tool boundary and required checks are held constant for this Recipe Revision.</p></section>
+    <section><h3>Required checks</h3><ul>{recipe.validation.checks.filter((check) => check.required).map((check) => <li key={check.id}>{check.description}</li>)}</ul><p className="helper">Passing these checks does not declare an artifact tasteful or preferred.</p></section>
+    <section><h3>Things you might notice</h3><ul>{recipe.validation.checks.filter((check) => !check.required).map((check) => <li key={check.id}>{check.description}</li>)}</ul></section>
+    <section><h3>Where this recipe comes from</h3><p>{recipe.originNote || (recipe.origin === "textbook" ? "A recognizable task that gives models room for judgment." : "A public-safe task drawn from a particular working practice.")}</p></section>
+    {reviews.length > 0 && <section><h3>Artifact review</h3>{reviews.flatMap(({ review, variant }) => review.probes.map((probe) => <article className="review-note" key={`${review.id}-${probe.id}`}><strong>{variant.label}</strong><span>{review.reviewerKind} review · {probe.verdict} · {probe.viewport.width}×{probe.viewport.height}</span><p>{probe.finding}</p></article>))}</section>}
+    <footer><KitchenButton tone="primary" onClick={onClose}>Back to tasting</KitchenButton></footer>
+  </dialog>;
 }

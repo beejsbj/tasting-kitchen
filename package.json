@@ -9,7 +9,7 @@
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "taste": "node bin/taste.mjs",
     "test:taste": "node --test tests/taste-*.test.mjs",
-    "test:gallery": "node --test tests/gallery-build.test.mjs",
+    "test:gallery": "node --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs",
     "dev": "node bin/taste.mjs build-registry && vite",
     "build": "node bin/taste.mjs build-registry && vite build",
     "preview": "vite preview",
@@ -36,5 +36,11 @@
     "typescript-eslint": "8.59.3",
     "vite": "^8.2.1"
   },
-  "type": "module"
+  "type": "module",
+  "bin": {
+    "taste": "bin/taste.mjs"
+  },
+  "exports": {
+    ".": "./lib/taste/index.mjs"
+  }
 }
