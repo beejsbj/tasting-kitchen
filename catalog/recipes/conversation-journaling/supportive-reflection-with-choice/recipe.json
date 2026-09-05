@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Supportive reflection with one gentle question",
   "summary": "A conventional supportive-conversation control that must reflect uncertainty without diagnosing or rushing into advice.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "textbook",
   "originNote": "A recognizable supportive-listening task used as a control against less conventional conversational approaches.",
   "tags": ["presence", "clarification", "multi-turn"],

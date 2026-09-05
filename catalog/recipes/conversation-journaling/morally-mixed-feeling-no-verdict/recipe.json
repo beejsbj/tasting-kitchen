@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Recognize a mixed feeling without a verdict",
   "summary": "Discuss relief at another proposal's failure while keeping feeling, motive, action, and impact distinct.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring conversations that distinguish recognition from endorsement or moral absolution.",
   "tags": ["presence", "clarification", "correction-recovery", "multi-turn"],

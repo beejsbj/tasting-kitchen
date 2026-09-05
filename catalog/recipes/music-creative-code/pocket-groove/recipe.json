@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Write a restrained Strudel groove with a real turn",
   "summary": "Compose executable Strudel that establishes a pocket, develops it without crowding, and earns one turnaround.",
-  "domain": "music-creative-code",
+  "cuisines": ["music-creative-code"],
   "origin": "textbook",
   "originNote": "A recognizable live-coding composition control focused on groove, restraint, form, and variation rather than code volume.",
   "tags": ["strudel", "writing", "audio", "verification"],

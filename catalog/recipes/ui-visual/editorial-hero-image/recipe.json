@@ -5,7 +5,7 @@
   "status": "draft",
   "title": "Direct an editorial hero image through one local revision",
   "summary": "Generate a publication-ready hero illustration, then change one object without replacing the composition.",
-  "domain": "ui-visual",
+  "cuisines": ["ui-visual"],
   "origin": "textbook",
   "originNote": "A conventional image-art-direction control; draft until the runner records image-model settings and revisions faithfully.",
   "tags": ["image-generation", "visual-composition", "reference-translation", "surgical-change"],

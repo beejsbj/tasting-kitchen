@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "domains": [
+  "cuisines": [
     { "id": "ui-visual", "label": "UI & Visual Design", "description": "Composition, visual language, hierarchy, typography, color, and art direction for interfaces.", "order": 10 },
     { "id": "ux-interaction", "label": "UX & Interaction", "description": "Flows, state, direct manipulation, motion, microinteractions, accessibility, and interaction feel.", "order": 20 },
     { "id": "conversation-journaling", "label": "Conversation, Journaling & Companionship", "description": "Thinking aloud, presence, reflection, clarification, calibrated challenge, and conversational recovery.", "order": 30 },

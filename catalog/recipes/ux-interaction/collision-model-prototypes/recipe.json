@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Prototype four different scheduling collision models",
   "summary": "Create four comparable direct-manipulation prototypes, then preserve one model while borrowing one preview gesture.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "mothers",
   "originNote": "Distilled from a history-derived practice of prototyping genuinely different interaction physics before selecting and refining one specimen.",
   "tags": ["direct-manipulation", "state-modeling", "motion", "microinteraction", "multi-turn", "accessibility"],

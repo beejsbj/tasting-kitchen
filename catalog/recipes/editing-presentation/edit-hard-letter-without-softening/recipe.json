@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Edit a hard letter without softening the truth",
   "summary": "Offer sentence-level alternatives for a difficult letter while preserving pain, dignity, accountability, and the writer's limited authority.",
-  "domain": "editing-presentation",
+  "cuisines": ["editing-presentation"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring correspondence work where smoothing the emotional fact was a substantive failure.",
   "tags": ["editing", "voice-preservation", "correction-recovery", "multi-turn"],

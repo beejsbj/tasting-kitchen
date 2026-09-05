@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Delegate one bounded investigation",
   "summary": "Give one worker a narrow evidence question, inspect the return, and keep the parent accountable for the recommendation.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "textbook",
   "originNote": "A conventional delegation control that distinguishes clean handoff from outsourcing the final judgment.",
   "tags": ["delegation", "research", "source-synthesis", "tool-use", "verification"],

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Make a service history accumulate materially",
   "summary": "Design a repair-desk surface where status, evidence, and history gather into a lived record instead of a standard dashboard.",
-  "domain": "ui-visual",
+  "cuisines": ["ui-visual"],
   "origin": "mothers",
   "originNote": "Distilled from a history-derived preference for interfaces where actions leave visible residue and one central record carries the domain.",
   "tags": ["visual-composition", "visual-language", "state-modeling", "motion", "accessibility"],

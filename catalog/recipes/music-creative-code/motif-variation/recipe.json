@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Develop a motif without losing its identity",
   "summary": "Turn one compact melodic cell into an A/B/development/return form while preserving a perceptible family resemblance.",
-  "domain": "music-creative-code",
+  "cuisines": ["music-creative-code"],
   "origin": "textbook",
   "originNote": "A conventional composition and variation task with a correction that separates meaningful development from arbitrary replacement.",
   "tags": ["strudel", "writing", "multi-turn", "correction-recovery", "audio"],

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Orchestrate partial workers into one accountable result",
   "summary": "Coordinate three bounded evidence shards, preserve a known gap, and deliver the requested synthesis instead of a worker-status report.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "mothers",
   "originNote": "Distilled from recurring multi-agent work where activity and receipts displaced the final artifact or missing evidence was silently filled.",
   "tags": ["orchestration", "delegation", "source-synthesis", "tool-use", "verification"],

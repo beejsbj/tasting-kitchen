@@ -5,7 +5,7 @@
   "status": "hidden",
   "title": "Answer one exact question directly",
   "summary": "A hidden routing sanity check for exact arithmetic and strict output formatting, not a showcased fingerprint recipe.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "textbook",
   "originNote": "Retained from the earlier menu only as a hidden direct-task control.",
   "tags": ["verification"],

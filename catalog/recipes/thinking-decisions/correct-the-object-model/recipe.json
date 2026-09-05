@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Correct the object model, not just the wording",
   "summary": "Revise a product architecture after learning that conversations themselves, not derived tasks, are the spatial cards.",
-  "domain": "thinking-decisions",
+  "cuisines": ["thinking-decisions"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring ontology corrections where a coherent proposal was built around the wrong noun.",
   "tags": ["clarification", "correction-recovery", "state-modeling", "multi-turn"],

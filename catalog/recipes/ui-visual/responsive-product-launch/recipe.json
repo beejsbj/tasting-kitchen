@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Launch a compact product without hiding the tradeoffs",
   "summary": "Create a responsive product page that feels desirable while making compatibility and repair information easy to find.",
-  "domain": "ui-visual",
+  "cuisines": ["ui-visual"],
   "origin": "textbook",
   "originNote": "A conventional product-launch control with a real tension between persuasion and decision clarity.",
   "tags": ["visual-composition", "visual-language", "accessibility", "implementation"],

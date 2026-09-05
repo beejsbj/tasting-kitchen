@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Think with an unfinished metaphor",
   "summary": "Receive a fragmented bridge metaphor, absorb a correction to its underlying relation, and then test what does not fit.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring unfinished-thought conversations where a terse correction changes the idea's world model.",
   "tags": ["rubber-ducking", "clarification", "correction-recovery", "multi-turn"],

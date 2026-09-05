@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Turn image notes into a lyric without genericizing them",
   "summary": "Transform synthetic fragments into a lyric or poem while preserving concrete image anchors, rhythmic pressure, and an unresolved emotional turn.",
-  "domain": "writing-creative",
+  "cuisines": ["writing-creative"],
   "origin": "hybrid",
   "originNote": "A standard lyrical transformation carrying a history-derived insistence that specific images and irregular rhythm survive collaboration.",
   "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],

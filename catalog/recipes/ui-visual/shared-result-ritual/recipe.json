@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Stage a shared result as an event",
   "summary": "Build waiting, interruption, reveal, and selected states for a public drawing without turning it into a dashboard.",
-  "domain": "ui-visual",
+  "cuisines": ["ui-visual"],
   "origin": "mothers",
   "originNote": "Distilled from a recurring history-derived interest in staging chance, waiting, and consequence as a coherent ritual.",
   "tags": ["visual-composition", "visual-language", "motion", "state-modeling", "accessibility"],

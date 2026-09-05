@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "variants": [
+  "configurations": [
     {
       "id": "codex-sol-high",
       "label": "Sol · High · via Codex CLI · host-unsandboxed fallback",
@@ -10,7 +10,10 @@
       "reasoningEffort": "high",
       "serviceTier": "default",
       "personality": "none",
-      "capabilities": ["files", "shell"],
+      "capabilities": [
+        "files",
+        "shell"
+      ],
       "executionProfile": {
         "id": "codex-linux-host-unsandboxed-v1",
         "label": "via Codex CLI · host-unsandboxed fallback",
@@ -31,7 +34,10 @@
       "reasoningEffort": "high",
       "serviceTier": "default",
       "personality": "none",
-      "capabilities": ["files", "shell"],
+      "capabilities": [
+        "files",
+        "shell"
+      ],
       "executionProfile": {
         "id": "codex-linux-host-unsandboxed-v1",
         "label": "via Codex CLI · host-unsandboxed fallback",
@@ -52,7 +58,10 @@
       "reasoningEffort": "low",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"],
+      "capabilities": [
+        "files",
+        "shell"
+      ],
       "executionProfile": {
         "id": "codex-linux-host-unsandboxed-v1",
         "label": "via Codex CLI · host-unsandboxed fallback",
@@ -73,7 +82,10 @@
       "reasoningEffort": "high",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"],
+      "capabilities": [
+        "files",
+        "shell"
+      ],
       "executionProfile": {
         "id": "codex-linux-host-unsandboxed-v1",
         "label": "via Codex CLI · host-unsandboxed fallback",
@@ -94,7 +106,10 @@
       "reasoningEffort": "xhigh",
       "serviceTier": "fast",
       "personality": "none",
-      "capabilities": ["files", "shell"],
+      "capabilities": [
+        "files",
+        "shell"
+      ],
       "executionProfile": {
         "id": "codex-linux-host-unsandboxed-v1",
         "label": "via Codex CLI · host-unsandboxed fallback",

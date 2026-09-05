@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Write a scene carried by subtext",
   "summary": "Write and revise a late-night conversation between siblings where the important disclosure remains under the surface until the end.",
-  "domain": "writing-creative",
+  "cuisines": ["writing-creative"],
   "origin": "textbook",
   "originNote": "A recognizable dramatic-scene control for voice, subtext, pacing, and revision under a local character constraint.",
   "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],

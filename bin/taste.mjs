@@ -4,13 +4,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { listRecipes, loadCatalog, planSelection } from "../lib/taste/catalog.mjs";
-import { buildCodexTurnArgs } from "../lib/taste/codex.mjs";
-import { buildRegistry } from "../lib/taste/registry.mjs";
+import { buildRegistry, cook, discover, inspect, listRecipes, loadCatalog, plan } from "../lib/taste/index.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
-import { executePlan } from "../lib/taste/runner.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const valueFlags = new Set(["recipe", "menu", "config", "variant", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex"]);
+const booleanFlags = new Set(["json", "execute", "help"]);
 
 function parseArgs(argv) {
   const positional = [];
@@ -18,128 +17,89 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (!token.startsWith("--")) { positional.push(token); continue; }
-    const [rawKey, inline] = token.slice(2).split(/=(.*)/s, 2);
-    if (["json", "execute", "canary", "help"].includes(rawKey)) { options[rawKey] = true; continue; }
+    const [key, inline] = token.slice(2).split(/=(.*)/s, 2);
+    if (booleanFlags.has(key)) { options[key] = true; continue; }
+    if (!valueFlags.has(key)) throw new Error(`Unknown flag: --${key}`);
     const value = inline ?? argv[++index];
-    if (value === undefined || value.startsWith("--")) throw new Error(`--${rawKey} requires a value`);
-    if (["recipe", "tag"].includes(rawKey)) options[rawKey] = [...(options[rawKey] ?? []), ...value.split(",").filter(Boolean)];
-    else options[rawKey] = value;
+    if (!value || value.startsWith("--")) throw new Error(`--${key} requires a value`);
+    if (["recipe", "tag"].includes(key)) options[key] = [...(options[key] ?? []), ...value.split(",").filter(Boolean)];
+    else if (options[key] !== undefined) throw new Error(`--${key} may be supplied only once`);
+    else options[key] = value;
   }
   return { positional, options };
 }
 
 function filterFrom(options) {
-  const filter = {};
-  if (options.domain) filter.domain = options.domain;
-  if (options.status) filter.status = options.status;
-  if (options.origin) filter.origin = options.origin;
-  if (options.kind) filter.kind = options.kind;
-  if (options.tag) filter.tags = options.tag;
-  return filter;
+  return {
+    ...(options.cuisine ? { cuisine: options.cuisine } : {}),
+    ...(options.status ? { status: options.status } : {}),
+    ...(options.origin ? { origin: options.origin } : {}),
+    ...(options.kind ? { kind: options.kind } : {}),
+    ...(options.tag ? { tags: options.tag } : {}),
+  };
 }
 
-function selectionOptions(options) {
-  if (!options.variant) throw new Error("--variant is required");
-  return options.recipe?.length
-    ? { variantId: options.variant, flight: options.recipe }
-    : { variantId: options.variant, filter: { status: "ready", ...filterFrom(options) } };
+function selection(options) {
+  if (options.config && options.variant && options.config !== options.variant) throw new Error("--config and legacy --variant disagree");
+  const configurationId = options.config ?? options.variant;
+  if (!configurationId) throw new Error("--config is required (legacy --variant is accepted)");
+  if (options.recipe?.length && options.menu) throw new Error("Use either --recipe or --menu, not both");
+  return { configurationId, ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function print(value, json = false) {
-  if (json || typeof value !== "string") process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-  else process.stdout.write(`${value}\n`);
-}
-
-function runProcess(executable, args) {
-  return new Promise((resolve) => {
-    const child = spawn(executable, args, { cwd: repoRoot, stdio: "inherit", shell: false });
-    child.on("error", (error) => { throw error; });
-    child.on("close", (code) => resolve(code ?? 1));
-  });
+  process.stdout.write(`${json || typeof value !== "string" ? JSON.stringify(value, null, 2) : value}\n`);
 }
 
 function help() {
-  return `taste — cook repeatable model-fingerprint recipes
+  return `taste — inspect and cook immutable Recipe revisions
 
 Usage:
+  taste discover [--json]
+  taste inspect --recipe ID|--menu ID [--json]
+  taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
+  taste plan --config ID [--recipe ID[,ID...]] [filters] [--json]
+  taste cook --config ID [--recipe ID[,ID...]] --intent fill-missing|repeat [--execute] [--json]
   taste validate
-  taste list [--domain ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --variant ID [--recipe ID[,ID...]] [filters] [--json]
-  taste run --variant ID [--recipe ID[,ID...]] [filters] [--canary] [--execute]
-  taste recover --attempt ID
   taste build-registry [--output PATH]
-  taste publish [--output PATH]
+  taste recover --attempt ID
 
-Run is a dry run unless --execute is supplied. Execution additionally requires
-TASTE_ALLOW_MODEL_RUNS=1. --canary requires exactly one supported recipe.`;
+Cook is dry-run by default. --execute additionally requires TASTE_ALLOW_MODEL_RUNS=1.
+--variant is accepted as a compatibility alias for --config.`;
+}
+
+async function validate() {
+  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")], { cwd: repoRoot, stdio: "inherit", shell: false });
+  return new Promise((resolve) => child.on("close", (code) => resolve(code ?? 1)));
 }
 
 async function main() {
   const { positional, options } = parseArgs(process.argv.slice(2));
   const command = positional[0] ?? "help";
   if (options.help || command === "help") return print(help());
-
-  if (command === "validate") {
-    process.exitCode = await runProcess(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")]);
-    return;
+  if (command === "validate") { process.exitCode = await validate(); return; }
+  if (command === "discover") return print(await discover(repoRoot), true);
+  if (command === "inspect") return print(await inspect(repoRoot, { recipeId: options.recipe?.[0], menuId: options.menu }), true);
+  if (command === "list") {
+    const recipes = listRecipes(await loadCatalog(repoRoot), filterFrom(options));
+    return options.json ? print(recipes, true) : recipes.forEach((recipe) => process.stdout.write(`${recipe.id}\t${recipe.cuisines.join(",")}\t${recipe.origin}\t${recipe.status}\t${recipe.kind}\t${recipe.title}\n`));
   }
-
-  if (command === "build-registry" || command === "publish") {
+  if (command === "plan") return print(await plan(repoRoot, selection(options)), true);
+  if (command === "cook") {
+    if (!options.intent || !["fill-missing", "repeat"].includes(options.intent)) throw new Error("cook requires --intent fill-missing or --intent repeat");
+    if (options.execute && process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new Error("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
+    return print(await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.codex }), true);
+  }
+  if (command === "build-registry") {
     const output = options.output ? path.resolve(process.cwd(), options.output) : undefined;
-    const built = await buildRegistry({ repoRoot, ...(output ? { output } : {}) });
-    return print({ status: "built", output: path.relative(repoRoot, built.output).split(path.sep).join("/"), dishes: built.registry.dishes.length }, options.json);
+    const result = await buildRegistry({ repoRoot, ...(output ? { output } : {}) });
+    return print({ status: "built", output: path.relative(repoRoot, result.output), dishes: result.registry.dishes.length }, true);
   }
-
-  const catalog = await loadCatalog(repoRoot);
   if (command === "recover") {
     if (!options.attempt) throw new Error("recover requires --attempt ID");
-    const result = await recoverAttempt({ repoRoot, catalog, attemptId: options.attempt });
-    await buildRegistry({ repoRoot });
-    return print(result, true);
+    return print(await recoverAttempt({ repoRoot, catalog: await loadCatalog(repoRoot), attemptId: options.attempt }), true);
   }
-  if (command === "list") {
-    const recipes = listRecipes(catalog, filterFrom(options));
-    if (options.json) return print(recipes.map((record) => {
-      const recipe = { ...record };
-      delete recipe.fixtureHashes;
-      delete recipe.sourcePath;
-      return { ...recipe, recipeDir: path.posix.dirname(record.sourcePath) };
-    }), true);
-    for (const recipe of recipes) process.stdout.write(`${recipe.id}\t${recipe.domain}\t${recipe.origin}\t${recipe.status}\t${recipe.kind}\t${recipe.title}\n`);
-    return;
-  }
-
-  if (command === "plan" || command === "run") {
-    const plan = planSelection(catalog, selectionOptions(options));
-    if (command === "plan") return print(plan, true);
-    if (options.canary && plan.supported.length !== 1) throw new Error(`--canary requires exactly one supported recipe; selected ${plan.supported.length}`);
-    if (!options.execute) {
-      const first = plan.supported[0];
-      let firstTurnArgv = null;
-      if (first) {
-        const recipe = catalog.recipes.find((candidate) => candidate.id === first.recipeId);
-        firstTurnArgv = ["codex", ...buildCodexTurnArgs({
-          variant: plan.variant,
-          recipe,
-          workspace: path.join(repoRoot, "private", "runtime", "attempts", "<attempt>", "workspace"),
-          finalPath: path.join(repoRoot, "private", "runtime", "attempts", "<attempt>", "raw", "turn-1", "final.txt"),
-        })];
-      }
-      return print({ mode: "dry-run", plan, firstTurnArgv, note: "No model was invoked. Pass --execute with TASTE_ALLOW_MODEL_RUNS=1 to cook." }, true);
-    }
-    if (process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new Error("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
-    if (plan.supported.length === 0) throw new Error("No supported recipes selected");
-    const result = await executePlan({ repoRoot, catalog, plan, executable: options.codex ?? "codex" });
-    await buildRegistry({ repoRoot });
-    print(result, true);
-    if (result.failed.length) process.exitCode = 1;
-    return;
-  }
-
   throw new Error(`Unknown command: ${command}`);
 }
 
-main().catch((error) => {
-  process.stderr.write(`taste: ${error.message}\n`);
-  process.exitCode = 1;
-});
+main().catch((error) => { process.stderr.write(`taste: ${error.message}\n`); process.exitCode = 1; });

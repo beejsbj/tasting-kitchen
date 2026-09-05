@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Stay with an uncertain evening",
   "summary": "Respond to a sensory, unresolved reflection without converting it into diagnosis, reassurance, or a plan.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring journaling turns where the conversation itself is the desired work.",
   "tags": ["presence", "correction-recovery", "multi-turn"],

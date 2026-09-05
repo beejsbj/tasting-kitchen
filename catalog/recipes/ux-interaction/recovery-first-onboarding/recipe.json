@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Design an onboarding flow that survives interruption",
   "summary": "Build a mobile-first three-step setup with validation, backtracking, draft recovery, and an honest network failure.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "textbook",
   "originNote": "A conventional multi-step-flow control with loss prevention, accessibility, and recovery in tension with speed.",
   "tags": ["state-modeling", "accessibility", "microinteraction", "verification", "implementation"],

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Turn a research memo into a decision deck",
   "summary": "Transform a closed evidence memo into a short slide narrative that supports a bounded decision without hiding uncertainty.",
-  "domain": "editing-presentation",
+  "cuisines": ["editing-presentation"],
   "origin": "textbook",
   "originNote": "A standard research-to-presentation transformation with strict time, budget, provenance, and decision-scope tensions.",
   "tags": ["presentation", "source-synthesis", "decision", "correction-recovery", "multi-turn"],

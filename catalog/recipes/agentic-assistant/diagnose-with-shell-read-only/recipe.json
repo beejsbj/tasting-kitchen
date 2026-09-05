@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Diagnose a service mismatch without changing files",
   "summary": "Use shell evidence to separate a green unit test from the real failing request path while respecting a read-only boundary.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "textbook",
   "originNote": "A conventional read-only operational diagnosis with a deliberate green-test versus live-symptom tension.",
   "tags": ["shell-use", "tool-use", "debugging", "verification"],

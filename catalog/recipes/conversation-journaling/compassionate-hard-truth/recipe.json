@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Name an avoidance loop without becoming cruel",
   "summary": "Use compassionate, game-literate language to name avoidance plainly while preserving agency and keeping the next move playable.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "hybrid",
   "originNote": "A conventional challenge conversation carrying history-derived preferences for embodied warmth, honest friction, and game-literate language.",
   "tags": ["presence", "clarification", "correction-recovery", "multi-turn"],

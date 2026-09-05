@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Edit rough prose for public reading",
   "summary": "Improve reader access to an uneven essay fragment while preserving its odd metaphor, cadence, and uncertainty about a premise.",
-  "domain": "editing-presentation",
+  "cuisines": ["editing-presentation"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring public-writing edits where accessibility was welcome but generic polish and premise laundering were not.",
   "tags": ["editing", "voice-preservation", "source-synthesis", "correction-recovery", "multi-turn"],

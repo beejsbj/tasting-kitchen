@@ -2,9 +2,10 @@ import { createHash } from "node:crypto";
 import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { hashCanonical, loadCatalog } from "../lib/taste/catalog.mjs";
+import { hashCanonical } from "../lib/taste/catalog.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
+import { loadRecipeRevisions } from "../lib/taste/revisions.mjs";
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
@@ -45,7 +46,7 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "domain", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "variation", "supersedes"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
 const SETUP_KEYS = new Set(["instructions", "fixtures"]);
 const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "mediaType"]);
@@ -233,31 +234,31 @@ function meaningful(value) {
   return typeof value === "string" ? value.trim().length > 0 : Array.isArray(value) ? value.length > 0 : isObject(value) ? Object.keys(value).length > 0 : false;
 }
 
-function validateDomains(doc) {
-  const label = "catalog/domains.json";
+function validateCuisines(doc) {
+  const label = "catalog/cuisines.json";
   if (!object(doc, label)) return new Set();
-  onlyKeys(doc, new Set(["schemaVersion", "domains"]), label);
-  required(doc, ["schemaVersion", "domains"], label);
+  onlyKeys(doc, new Set(["schemaVersion", "cuisines"]), label);
+  required(doc, ["schemaVersion", "cuisines"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
-  if (!array(doc.domains, `${label}.domains`, { min: 1 })) return new Set();
-  if (doc.domains.length !== 9) fail(label, `expected 9 domains, found ${doc.domains.length}`);
+  if (!array(doc.cuisines, `${label}.cuisines`, { min: 1 })) return new Set();
+  if (doc.cuisines.length !== 9) fail(label, `expected 9 cuisines, found ${doc.cuisines.length}`);
   const ids = [];
   const orders = [];
-  for (const [index, domain] of doc.domains.entries()) {
-    const item = `${label}.domains[${index}]`;
-    if (!object(domain, item)) continue;
-    onlyKeys(domain, new Set(["id", "label", "description", "order"]), item);
-    required(domain, ["id", "label", "description", "order"], item);
-    string(domain.id, `${item}.id`, { pattern: IDS });
-    string(domain.label, `${item}.label`, { min: 3, max: 100 });
-    string(domain.description, `${item}.description`, { min: 12, max: 300 });
-    integer(domain.order, `${item}.order`, 0, 10000);
-    ids.push(domain.id);
-    orders.push(domain.order);
+  for (const [index, cuisine] of doc.cuisines.entries()) {
+    const item = `${label}.cuisines[${index}]`;
+    if (!object(cuisine, item)) continue;
+    onlyKeys(cuisine, new Set(["id", "label", "description", "order"]), item);
+    required(cuisine, ["id", "label", "description", "order"], item);
+    string(cuisine.id, `${item}.id`, { pattern: IDS });
+    string(cuisine.label, `${item}.label`, { min: 3, max: 100 });
+    string(cuisine.description, `${item}.description`, { min: 12, max: 300 });
+    integer(cuisine.order, `${item}.order`, 0, 10000);
+    ids.push(cuisine.id);
+    orders.push(cuisine.order);
   }
-  unique(ids, `${label}.domains ids`);
-  unique(orders, `${label}.domains order`);
-  for (let index = 1; index < orders.length; index += 1) if (orders[index] <= orders[index - 1]) fail(label, "domains must be ordered by ascending order");
+  unique(ids, `${label}.cuisines ids`);
+  unique(orders, `${label}.cuisines order`);
+  for (let index = 1; index < orders.length; index += 1) if (orders[index] <= orders[index - 1]) fail(label, "cuisines must be ordered by ascending order");
   return new Set(ids);
 }
 
@@ -275,19 +276,19 @@ function validateTags(doc) {
   return new Set(doc.tags);
 }
 
-function validateVariants(doc) {
-  const label = "catalog/variants.json";
+function validateConfigurations(doc) {
+  const label = "catalog/configurations.json";
   if (!object(doc, label)) return new Map();
-  onlyKeys(doc, new Set(["schemaVersion", "variants"]), label);
-  required(doc, ["schemaVersion", "variants"], label);
+  onlyKeys(doc, new Set(["schemaVersion", "configurations"]), label);
+  required(doc, ["schemaVersion", "configurations"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
-  if (!array(doc.variants, `${label}.variants`, { min: 1 })) return new Map();
-  if (doc.variants.length !== 5) fail(label, `expected 5 seed variants, found ${doc.variants.length}`);
+  if (!array(doc.configurations, `${label}.configurations`, { min: 1 })) return new Map();
+  if (doc.configurations.length !== 5) fail(label, `expected 5 seed configurations, found ${doc.configurations.length}`);
   const map = new Map();
   const tuples = [];
   const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
-  for (const [index, variant] of doc.variants.entries()) {
-    const item = `${label}.variants[${index}]`;
+  for (const [index, variant] of doc.configurations.entries()) {
+    const item = `${label}.configurations[${index}]`;
     if (!object(variant, item)) continue;
     onlyKeys(variant, allowedKeys, item);
     required(variant, [...allowedKeys], item);
@@ -323,23 +324,28 @@ function validateVariants(doc) {
     if (variant.model === "gpt-5.6-luna" && variant.serviceTier !== "fast") fail(item, "Luna seed must be explicitly fast");
     tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }
-  unique(tuples, `${label}.variants configuration`);
+  unique(tuples, `${label}.configurations configuration`);
   return map;
 }
 
-async function validateRecipe(relative, domains, tags) {
+async function validateRecipe(relative, cuisines, tags) {
   const recipe = await json(relative);
   if (!recipe || !object(recipe, relative)) return null;
   onlyKeys(recipe, RECIPE_KEYS, relative);
-  required(recipe, ["schemaVersion", "id", "version", "status", "title", "summary", "domain", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation"], relative);
+  required(recipe, ["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation"], relative);
   if (recipe.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
   string(recipe.id, `${relative}.id`, { pattern: IDS });
   string(recipe.version, `${relative}.version`, { pattern: SEMVER });
   enumValue(recipe.status, allowedStatuses, `${relative}.status`);
   string(recipe.title, `${relative}.title`, { min: 4, max: 100 });
   string(recipe.summary, `${relative}.summary`, { min: 12, max: 300 });
-  string(recipe.domain, `${relative}.domain`, { pattern: IDS });
-  if (!domains.has(recipe.domain)) fail(relative, `unknown domain ${recipe.domain}`);
+  if (array(recipe.cuisines, `${relative}.cuisines`, { min: 1 })) {
+    unique(recipe.cuisines, `${relative}.cuisines`);
+    for (const cuisine of recipe.cuisines) {
+      string(cuisine, `${relative}.cuisines`, { pattern: IDS });
+      if (!cuisines.has(cuisine)) fail(relative, `unknown cuisine ${cuisine}`);
+    }
+  }
   enumValue(recipe.origin, allowedOrigins, `${relative}.origin`);
   string(recipe.originNote, `${relative}.originNote`, { min: 8, max: 300 });
   enumValue(recipe.kind, allowedKinds, `${relative}.kind`);
@@ -347,9 +353,7 @@ async function validateRecipe(relative, domains, tags) {
   if ("supersedes" in recipe) string(recipe.supersedes, `${relative}.supersedes`, { pattern: IDS });
 
   const expectedId = path.basename(path.dirname(relative));
-  const expectedDomain = path.basename(path.dirname(path.dirname(relative)));
   if (recipe.id !== expectedId) fail(relative, `id must match recipe directory ${expectedId}`);
-  if (recipe.domain !== expectedDomain) fail(relative, `domain must match domain directory ${expectedDomain}`);
 
   if (array(recipe.tags, `${relative}.tags`, { min: 1, max: 6 })) {
     unique(recipe.tags, `${relative}.tags`);
@@ -532,7 +536,7 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, loadedRecipes, variants) {
+async function validateDish(relative, recipeRecords, revisions, variants) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -557,11 +561,10 @@ async function validateDish(relative, recipeRecords, loadedRecipes, variants) {
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
-    else if (recipeRecord.recipe.version !== dish.recipe.version) fail(relative, `recipe version ${dish.recipe.version} does not match catalog ${recipeRecord.recipe.version}`);
-    const loadedRecipe = loadedRecipes.get(dish.recipe.id);
-    if (loadedRecipe && dish.recipe.hash !== loadedRecipe.recipeHash) {
-      fail(`${relative}.recipe.hash`, "does not match the current catalog recipe hash");
-    }
+    const revision = revisions.get(`${dish.recipe.id}:${dish.recipe.hash}`);
+    if (!revision) fail(`${relative}.recipe.hash`, "does not resolve to an immutable recipe revision");
+    else if (revision.version !== dish.recipe.version) fail(`${relative}.recipe.version`, "does not match the immutable recipe revision");
+    recipeRecord = revision ? { recipe: { kind: revision.execution.kind } } : recipeRecord;
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
@@ -724,17 +727,17 @@ if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedRevi
   fail("catalog/review.schema.json", "reviewerKind enum disagrees with runtime validator");
 }
 
-const domainsDoc = await json("catalog/domains.json");
+const cuisinesDoc = await json("catalog/cuisines.json");
 const tagsDoc = await json("catalog/tags.json");
-const variantsDoc = await json("catalog/variants.json");
-const domains = validateDomains(domainsDoc);
+const variantsDoc = await json("catalog/configurations.json");
+const cuisines = validateCuisines(cuisinesDoc);
 const tags = validateTags(tagsDoc);
-const variants = validateVariants(variantsDoc);
+const variants = validateConfigurations(variantsDoc);
 
 const recipeFiles = await walk("catalog/recipes", { basename: "recipe.json" });
 const recipeRecords = new Map();
 for (const relative of recipeFiles.sort()) {
-  const record = await validateRecipe(relative, domains, tags);
+  const record = await validateRecipe(relative, cuisines, tags);
   if (!record) continue;
   if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
   recipeRecords.set(record.recipe.id, record);
@@ -742,18 +745,18 @@ for (const relative of recipeFiles.sort()) {
 
 await validateProvenance(recipeRecords);
 
-let loadedRecipes = new Map();
+let revisions = new Map();
 try {
-  const loadedCatalog = await loadCatalog(root);
-  loadedRecipes = new Map(loadedCatalog.recipes.map((recipe) => [recipe.id, recipe]));
+  const loaded = await loadRecipeRevisions(root);
+  revisions = new Map(loaded.map((revision) => [`${revision.recipeId}:${revision.hash}`, revision]));
 } catch (error) {
-  fail("catalog", `could not load canonical recipe hashes: ${error.message}`);
+  fail("catalog/revisions", `could not load immutable recipe revisions: ${error.message}`);
 }
 
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, loadedRecipes, variants);
+  const dish = await validateDish(relative, recipeRecords, revisions, variants);
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);
@@ -780,4 +783,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${domains.size} domains, ${tags.size} tags, ${variants.size} variants, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${recipeRecords.size} provenance records.`);

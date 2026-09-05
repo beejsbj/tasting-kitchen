@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Make words behave according to their meaning",
   "summary": "Build an editable planning field whose marked words have distinct physical responses without sacrificing text editing.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "mothers",
   "originNote": "Distilled from a history-derived creative-code pattern where semantic tokens become manipulable objects rather than decorative highlights.",
   "tags": ["direct-manipulation", "microinteraction", "motion", "state-modeling", "accessibility"],

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Plan a weekend project under real constraints",
   "summary": "Turn a small oral-history event into a phased, dependency-aware plan and revise it when a critical volunteer becomes unavailable.",
-  "domain": "thinking-decisions",
+  "cuisines": ["thinking-decisions"],
   "origin": "textbook",
   "originNote": "A standard planning control with limited people, equipment, time, and a mid-plan constraint change.",
   "tags": ["planning", "correction-recovery", "multi-turn"],

@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { buildRegistry } from "../lib/taste/registry.mjs";
+import { coverage } from "../lib/taste/index.mjs";
 
 async function json(filename, value) {
   await mkdir(path.dirname(filename), { recursive: true });
@@ -14,11 +15,11 @@ async function json(filename, value) {
 test("builds the gallery registry without private runtime data", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-registry-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await json(path.join(root, "catalog/domains.json"), { schemaVersion: 1, domains: [{ id: "talk", label: "Talk", description: "Conversation tests.", order: 10 }] });
+  await json(path.join(root, "catalog/cuisines.json"), { schemaVersion: 1, cuisines: [{ id: "talk", label: "Talk", description: "Conversation tests.", order: 10 }] });
   await json(path.join(root, "catalog/tags.json"), { schemaVersion: 1, tags: ["presence"] });
-  await json(path.join(root, "catalog/variants.json"), { schemaVersion: 1, variants: [{ id: "v", label: "V", provider: "openai", model: "m", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: [] }] });
+  await json(path.join(root, "catalog/configurations.json"), { schemaVersion: 1, configurations: [{ id: "v", label: "V", provider: "openai", model: "m", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: [] }] });
   const recipe = {
-    schemaVersion: 1, id: "talk-once", version: "1.0.0", status: "ready", title: "Talk once clearly", summary: "Respond clearly to one conversational prompt.", domain: "talk", origin: "textbook", originNote: "A conventional conversation test.", tags: ["presence"], kind: "session",
+    schemaVersion: 1, id: "talk-once", version: "1.0.0", status: "ready", title: "Talk once clearly", summary: "Respond clearly to one conversational prompt.", cuisines: ["talk"], origin: "textbook", originNote: "A conventional conversation test.", tags: ["presence"], kind: "session",
     harness: { workspace: "read", web: "disabled", capabilities: [] }, setup: { instructions: "Respond.", fixtures: [] }, turns: [{ id: "ask", role: "prompt", content: "Hello." }],
     output: { kind: "session", entry: "output/session.json", include: ["output/session.json"], limits: { maxFiles: 2, maxBytes: 4096 } },
     validation: { mode: "completeness", checks: [{ id: "entry", type: "file-exists", required: true, description: "Transcript exists.", target: "output/session.json" }] },
@@ -58,15 +59,15 @@ test("builds the gallery registry without private runtime data", async (t) => {
   await writeFile(path.join(root, "private/runtime/secret.txt"), "never publish");
 
   const { output, registry } = await buildRegistry({ repoRoot: root, now: new Date("2026-08-14T12:00:00.000Z") });
-  assert.equal(registry.basePath, "/model-tasting/");
-  assert.match(registry.variants[0].configHash, /^sha256:[a-f0-9]{64}$/);
-  assert.equal(registry.recipes[0].recipeDir, "catalog/recipes/talk/talk-once");
-  assert.equal(registry.dishes[0].artifactBase, `/model-tasting/dishes/${dishId}/`);
+  assert.equal(registry.basePath, "/");
+  assert.match(registry.configurations[0].configHash, /^sha256:[a-f0-9]{64}$/);
+  assert.equal(registry.recipes[0].setup.fixtures.length, 0);
+  assert.equal(registry.dishes[0].artifactBase, `/dishes/${dishId}/`);
   assert.deepEqual(registry.reviews, [review]);
   const artifactUrl = `${registry.dishes[0].artifactBase}${registry.dishes[0].artifact.entry}`;
-  assert.equal(artifactUrl, `/model-tasting/dishes/${dishId}/artifact/output/session.json`);
+  assert.equal(artifactUrl, `/dishes/${dishId}/artifact/output/session.json`);
   assert.deepEqual(
-    JSON.parse(await readFile(path.join(root, "public", artifactUrl.replace("/model-tasting/", "")), "utf8")),
+    JSON.parse(await readFile(path.join(root, "public", artifactUrl.replace(/^\//u, "")), "utf8")),
     { turns: [] },
   );
   assert.equal(JSON.stringify(registry).includes("private/runtime"), false);
@@ -74,4 +75,23 @@ test("builds the gallery registry without private runtime data", async (t) => {
 
   await json(reviewFile, { ...review, dishHash: `sha256:${"5".repeat(64)}` });
   await assert.rejects(() => buildRegistry({ repoRoot: root }), /does not match immutable dish hash/);
+});
+
+test("Menu coverage retains the complete pinned denominator and derives Repeat cells", () => {
+  const revision = {
+    menuId: "visual-ui",
+    recipes: [
+      { recipeId: "one", recipeHash: "sha256:one" },
+      { recipeId: "two", recipeHash: "sha256:two" },
+    ],
+  };
+  const dishes = [
+    { id: "dish_later", executedAt: "2026-08-15T00:00:00.000Z", recipe: { id: "one", hash: "sha256:one" }, identity: { configHash: "config-a" } },
+    { id: "dish_first", executedAt: "2026-08-14T00:00:00.000Z", recipe: { id: "one", hash: "sha256:one" }, identity: { configHash: "config-a" } },
+  ];
+  const result = coverage(revision, dishes, ["config-a"]);
+  assert.equal(result.numerator, 1);
+  assert.equal(result.denominator, 2);
+  assert.equal(result.cells[0].dishes.length, 2);
+  assert.equal(result.cells[1].represented, false);
 });

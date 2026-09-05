@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Make the drum notation the playable instrument",
   "summary": "Compose a small performance-ready drum form and build an offline editor where notation, playback, and voice feedback stay coupled.",
-  "domain": "music-creative-code",
+  "cuisines": ["music-creative-code"],
   "origin": "mothers",
   "originNote": "Distilled from history-derived creative instruments where readable musical code is the central object and each token behaves like its voice.",
   "tags": ["strudel", "direct-manipulation", "audio", "motion", "microinteraction", "accessibility"],

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Prepare, pause for approval, publish, then verify",
   "summary": "Move through an enforced permission ladder in a disposable room and check the human-visible result after mutation.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "mothers",
   "originNote": "Distilled from a recurring requirement to separate inspection, preparation, authorization, mutation, delivery, and lived completion.",
   "tags": ["permissions", "tool-use", "shell-use", "verification", "correction-recovery", "multi-turn"],

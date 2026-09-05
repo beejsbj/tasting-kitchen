@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Build a monologue around a metaphor that can resist",
   "summary": "Develop a museum with changing labels into authored prose where the governing metaphor generates thought and eventually pushes back.",
-  "domain": "writing-creative",
+  "cuisines": ["writing-creative"],
   "origin": "mothers",
   "originNote": "A public-safe original brief distilled from recurring work in which metaphor carries reasoning rather than decorating a predetermined conclusion.",
   "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],

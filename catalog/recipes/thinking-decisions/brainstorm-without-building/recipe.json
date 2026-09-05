@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Brainstorm a concept without building it",
   "summary": "Explore a spatial neighborhood archive while keeping ideation separate from implementation and resisting a game metaphor.",
-  "domain": "thinking-decisions",
+  "cuisines": ["thinking-decisions"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring mode corrections where rich detail was mistaken for permission to execute.",
   "tags": ["brainstorming", "clarification", "correction-recovery", "multi-turn"],

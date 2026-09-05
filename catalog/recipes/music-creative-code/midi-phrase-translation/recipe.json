@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Translate one performed phrase two honest ways",
   "summary": "Render a note-event packet as faithful and interpreted Strudel, exposing timing, overlap, voice, and quantization choices.",
-  "domain": "music-creative-code",
+  "cuisines": ["music-creative-code"],
   "origin": "mothers",
   "originNote": "Distilled from history-derived work turning performed MIDI into readable, playable code while preserving musical assumptions and provenance.",
   "tags": ["strudel", "source-synthesis", "verification", "audio", "writing"],

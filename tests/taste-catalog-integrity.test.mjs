@@ -40,7 +40,7 @@ test("official catalog validation rejects tampered publication hashes", async (t
     {
       name: "recipe hash",
       mutate: (dish) => { dish.recipe.hash = `sha256:${"0".repeat(64)}`; },
-      expected: /recipe\.hash: does not match the current catalog recipe hash/,
+      expected: /recipe\.hash: does not resolve to an immutable recipe revision/,
     },
     {
       name: "artifact tree hash",

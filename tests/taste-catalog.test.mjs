@@ -165,6 +165,14 @@ test("loadCatalog hashes fixture bytes, separates execution and display identity
   );
   assert.notEqual(displayChanged.catalogHash, first.catalogHash);
 
+  renamed.cuisines = ["second-domain"];
+  await writeJson(alphaFile, renamed);
+  const cuisineChanged = await loadCatalog(root);
+  assert.equal(
+    cuisineChanged.recipes.find((item) => item.id === "alpha").recipeHash,
+    first.recipes.find((item) => item.id === "alpha").recipeHash
+  );
+
   const fixtureFile = path.join(root, "catalog/recipes/second-domain/beta/fixtures/notes.txt");
   await writeFile(fixtureFile, "fixture version two\n");
   const fixtureChanged = await loadCatalog(root);
@@ -219,8 +227,8 @@ test("planSelection returns exact variant identity and explicit capability/statu
   assert.deepEqual(plan.items[0].missingCapabilities, ["image-generation"]);
   assert.match(plan.items[0].reasons[0], /image-generation/);
   assert.match(plan.items[2].reasons[0], /draft/);
-  assert.deepEqual(plan.selection, { type: "flight", recipeIds: ["beta", "alpha", "draft-item"] });
-  assert.throws(() => planSelection(catalog, { variantId: "missing" }), /Unknown variant/);
+  assert.deepEqual(plan.selection, { type: "recipes", recipeIds: ["beta", "alpha", "draft-item"] });
+  assert.throws(() => planSelection(catalog, { variantId: "missing" }), /Unknown configuration/);
   assert.throws(() => planSelection(catalog, { variantId: "exact-variant", flight: ["missing"] }), /Unknown recipe/);
 });
 
@@ -233,11 +241,11 @@ test("the lean motion and design-system patch is represented as three ready reci
     ["circular-phrase-sequencer", "music-creative-code", "mothers", "web"],
     ["choreograph-motion-as-feedback", "ux-interaction", "hybrid", "web"],
   ];
-  for (const [id, domain, origin, kind] of expected) {
+  for (const [id, cuisine, origin, kind] of expected) {
     const item = byId.get(id);
     assert.ok(item, `missing ${id}`);
     assert.equal(item.status, "ready");
-    assert.equal(item.domain, domain);
+    assert.deepEqual(item.cuisines, [cuisine]);
     assert.equal(item.origin, origin);
     assert.equal(item.kind, kind);
     assert.ok(item.tags.length <= 6);
