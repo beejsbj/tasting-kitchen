@@ -1,9 +1,11 @@
 .git
-.env*
 node_modules
 dist
 private
+public/dishes
+public/data
+public/registry.json
+analysis
+.env*
 outputs
 work
-public/data/registry.json
-public/dishes

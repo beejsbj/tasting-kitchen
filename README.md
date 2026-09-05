@@ -56,7 +56,7 @@ npm test
 npm run dev
 ```
 
-The local gallery builds at `/` by default. Set `TASTE_BASE_PATH=/model-tasting/` when building for the historical subpath. Draft, hidden and uncooked Recipes remain private; only Recipes with accepted Dishes appear on the public counter. The `?styleguide=1` surface uses the application’s own tokens and components.
+The local gallery builds at `/` by default. Set `TASTE_BASE_PATH=/model-tasting/` when building for the historical subpath. Draft, hidden and uncooked Recipes remain private; only Recipes with accepted Dishes appear on the public counter. The `?styleguide=1` surface uses the application’s own tokens and components. See [serving and maintenance](docs/deployment.md) for the production image, artifact sandbox and deployment handoff.
 
 ## Use the CLI
 
