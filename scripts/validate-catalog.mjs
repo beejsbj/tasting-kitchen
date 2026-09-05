@@ -5,7 +5,7 @@ import process from "node:process";
 import { hashCanonical } from "../lib/taste/catalog.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
-import { loadRecipeRevisions } from "../lib/taste/revisions.mjs";
+import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
@@ -550,7 +550,7 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, revisions, variants) {
+async function validateDish(relative, recipeRecords, revisions, configurationRevisions) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -590,9 +590,11 @@ async function validateDish(relative, recipeRecords, revisions, variants) {
     }
     string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
     if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
-    const variant = variants.get(dish.identity.variantId);
-    if (!variant) fail(relative, `unknown variant ${dish.identity.variantId}`);
+    const revision = configurationRevisions.get(dish.identity.configHash);
+    const variant = revision?.configuration;
+    if (!variant) fail(`${relative}.identity.configHash`, "does not resolve to an immutable configuration revision");
     else {
+      if (dish.identity.variantId !== variant.id) fail(relative, `identity.variantId does not match configuration revision ${variant.id}`);
       const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
       for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
       const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
@@ -767,10 +769,18 @@ try {
   fail("catalog/revisions", `could not load immutable recipe revisions: ${error.message}`);
 }
 
+let configurationRevisions = new Map();
+try {
+  const loaded = await loadConfigurationRevisions(root);
+  configurationRevisions = new Map(loaded.map((revision) => [revision.hash, revision]));
+} catch (error) {
+  fail("catalog/revisions", `could not load immutable configuration revisions: ${error.message}`);
+}
+
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, revisions, variants);
+  const dish = await validateDish(relative, recipeRecords, revisions, configurationRevisions);
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);

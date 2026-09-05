@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { cook, inspect } from "../lib/taste/index.mjs";
+import { cook, inspect, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const menuRevisionDirectory = path.join(repoRoot, "catalog", "revisions", "menus");
@@ -23,6 +23,8 @@ test("inspect returns exact public Recipe and immutable revision contracts", asy
   const snapshot = await inspect(repoRoot, { revisionHash: current.revisions[0].hash });
   assert.deepEqual(snapshot.recipeRevision.execution.turns, current.revisions[0].execution.turns);
   await assert.rejects(inspect(repoRoot, { revisionHash: `sha256:${"0".repeat(64)}` }), /Unknown revision hash/);
+  await assert.rejects(inspect(repoRoot, { recipeId: "responsive-product-launch", revisionHash: current.revisions[0].hash }), /exactly one/);
+  await assert.rejects(plan(repoRoot, { configurationId: "codex-sol-high", menuId: "visual-ui", recipeIds: ["responsive-product-launch"] }), /either menuId or recipeIds/);
 });
 
 test("dry cooking has no revision side effect and API execution requires paid-run opt-in", async () => {
@@ -52,6 +54,7 @@ test("executing a Menu pins every member before a fake runner sees only supporte
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(repoRoot, "catalog"), path.join(root, "catalog"), { recursive: true });
   await cp(path.join(repoRoot, "dishes"), path.join(root, "dishes"), { recursive: true });
+  const [menu] = (await loadMenus(root)).filter((candidate) => candidate.id === "visual-ui");
   let received;
   const result = await cook(root, {
     configurationId: "codex-sol-high",
@@ -64,13 +67,19 @@ test("executing a Menu pins every member before a fake runner sees only supporte
       return { results: [], accepted: [], failed: [], unsupported: plan.unsupported };
     },
   });
-  assert.equal(result.menuRevision.recipes.length, 4);
-  assert.deepEqual(result.menuRevision.recipes.map((item) => item.recipeId), [
-    "responsive-product-launch", "editorial-culture-feature", "shared-result-ritual", "extend-design-system-without-flattening-it",
-  ]);
-  assert.equal(result.skipped.length, 2, "covered menu cells are skipped for fill-missing");
-  assert.equal(received.supported.length, 2, "only missing menu cells reach the fake runner");
-  assert.equal(received.supported.length + result.skipped.length + received.unsupported.length, 4);
+  assert.equal(result.menuRevision.recipes.length, menu.recipes.length);
+  assert.deepEqual(result.menuRevision.recipes.map((item) => item.recipeId), menu.recipes);
+  const existing = await loadDishes(root);
+  const expectedSkipped = result.menuRevision.recipes.filter((item) => existing.some((dish) => (
+    dish.recipe.id === item.recipeId
+    && dish.recipe.hash === item.recipeHash
+    && dish.identity.configHash === received.variant.configHash
+  )));
+  assert.deepEqual(result.skipped.map(({ recipeId, recipeHash }) => ({ recipeId, recipeHash })), expectedSkipped);
+  assert.equal(received.supported.length + result.skipped.length + received.unsupported.length, menu.recipes.length);
+  const registry = JSON.parse(await readFile(path.join(root, "public/data/registry.json"), "utf8"));
+  const configurationHashes = new Set(registry.configurationRevisions.map((revision) => revision.hash));
+  for (const dish of registry.dishes) assert.ok(configurationHashes.has(dish.identity.configHash));
   const pinned = JSON.parse(await readFile(path.join(root, "catalog/revisions/menus", `visual-ui--${result.menuRevision.hash.slice("sha256:".length)}.json`), "utf8"));
   assert.deepEqual(pinned.recipes, result.menuRevision.recipes);
 });

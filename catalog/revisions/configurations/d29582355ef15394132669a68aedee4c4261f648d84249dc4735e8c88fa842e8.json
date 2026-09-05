@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "hash": "sha256:d29582355ef15394132669a68aedee4c4261f648d84249dc4735e8c88fa842e8",
+  "configuration": {
+    "id": "codex-luna-high-fast",
+    "label": "Luna · High · Fast · via Codex CLI · host-unsandboxed fallback",
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "reasoningEffort": "high",
+    "serviceTier": "fast",
+    "personality": "none",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "codex-linux-host-unsandboxed-v1",
+      "label": "via Codex CLI · host-unsandboxed fallback",
+      "runtime": "linux-host",
+      "sandbox": "danger-full-access",
+      "approvalPolicy": "never",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary"
+    }
+  }
+}

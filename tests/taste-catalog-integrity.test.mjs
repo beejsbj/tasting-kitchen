@@ -89,3 +89,17 @@ test("official catalog validation requires an honest artifact reviewer kind", as
     });
   }
 });
+
+test("official catalog validation resolves historical Dish identity through its configuration revision", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const [dishId] = (await readdir(path.join(root, "dishes"))).sort();
+  const dish = JSON.parse(await readFile(path.join(root, "dishes", dishId, "dish.json"), "utf8"));
+  const configurationsPath = path.join(root, "catalog", "configurations.json");
+  const configurations = JSON.parse(await readFile(configurationsPath, "utf8"));
+  const current = configurations.configurations.find((configuration) => configuration.id === dish.identity.variantId);
+  current.personality = "historical-test";
+  await writeFile(configurationsPath, `${JSON.stringify(configurations, null, 2)}\n`);
+  const result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+});

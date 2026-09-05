@@ -4,7 +4,7 @@ Import `lib/taste/index.mjs` for machine use. The interface is read-first and
 never runs a model unless `cook(..., { execute: true })` is requested.
 
 - `discover(repoRoot)` lists private catalog Recipes, configurations, Cuisines,
-  Menus, immutable revisions, and accepted Dishes.
+  Menus, immutable Recipe and configuration revisions, and accepted Dishes.
 - `inspect(repoRoot, { recipeId | menuId | revisionHash })` returns the complete
   current definition or exact immutable snapshot. Unknown IDs and hashes fail.
 - `plan(repoRoot, { configurationId, recipeIds | menuId, filter })` reports
@@ -27,6 +27,9 @@ are written to stderr as `{ "error": { "code": "INVALID_ARGUMENT", "message": ".
 fixture URLs preserve a safe file extension from the pinned fixture path, so
 their media type can be served correctly. Registry staging replaces the
 fixture and Dish trees atomically from accepted, ready Recipe snapshots only.
+`configurationRevisions` in the registry contains the exact configurations
+referenced by public Dishes, so a historical Dish remains interpretable after a
+current configuration changes.
 
 Recipes may optionally declare execution-affecting presentation metadata:
 `presentation: { profile: string, semanticRuntime: null | { id: string,
