@@ -26,7 +26,7 @@ function useUrlState() {
 }
 
 function configLabel(config: Configuration) {
-  return `${modelFamily(config.model)} · ${config.reasoningEffort} · ${config.serviceTier}`;
+  return `${modelFamily(config.model)} · ${config.reasoningEffort} · ${config.serviceTier}${config.historical ? " · preserved" : ""}`;
 }
 
 function EmptyState({ title, children }: { title: string; children: React.ReactNode }) {
@@ -87,7 +87,7 @@ export default function App() {
     });
     const dimensions = new Set(selected.map((config) => JSON.stringify({ harness: config.harness, effort: config.reasoningEffort, tier: config.serviceTier, profile: config.executionProfile, personality: config.personality, capabilities: [...config.capabilities].sort() })));
     const harnessVersions = new Set(slots.map(({ dish }) => dish?.identity.harnessVersion).filter(Boolean));
-    const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || (dish.identity.observedServiceTier && dish.identity.observedServiceTier !== dish.identity.requestedServiceTier)));
+    const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || (dish.identity.observedServiceTier && dish.identity.observedServiceTier !== dish.identity.serviceTier)));
     const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : drift ? "Observed configuration drift — inspect receipts" : (dimensions.size > 1 || harnessVersions.size > 1) ? "Same recipe revision · settings differ" : "Same recipe revision · inspect configuration receipts";
     function chooseConfig(index: number, id: string) {
       const models = selected.map((config) => config.id); models[index] = id;

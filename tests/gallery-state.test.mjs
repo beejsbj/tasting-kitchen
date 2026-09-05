@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { dishesFor, recipeAtRevision } from '../src/lib/registry.ts';
+import { comparisonConfigurations, dishesFor, recipeAtRevision } from '../src/lib/registry.ts';
 
 test('links preserve repeated configuration slots, exact revision and selected Dishes', () => {
   const calls = [];
@@ -32,4 +32,17 @@ test('inspecting an old Dish uses its executed brief and input URLs', () => {
   assert.equal(viewed.turns[0].content, 'original brief');
   assert.equal(viewed.setup.fixtures[0].url, '/old/exact-input');
   assert.equal(viewed.recipeHash, 'old');
+});
+
+test('historical configurations stay selectable after a current configuration changes', () => {
+  const configs = comparisonConfigurations({
+    configurations: [{ id: 'luna', model: 'new-model', configHash: 'sha256:new' }],
+    configurationRevisions: [{ hash: 'sha256:old', configuration: { id: 'luna', model: 'old-model' } }, { hash: 'sha256:new', configuration: { id: 'luna', model: 'new-model' } }],
+    dishes: [{ identity: { configHash: 'sha256:old' } }],
+  });
+  assert.equal(configs.length, 2);
+  assert.equal(configs[1].model, 'old-model');
+  assert.equal(configs[1].configHash, 'sha256:old');
+  assert.equal(configs[1].historical, true);
+  assert.notEqual(configs[0].id, configs[1].id);
 });

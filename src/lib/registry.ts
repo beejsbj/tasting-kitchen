@@ -1,4 +1,4 @@
-import type { Dish, Recipe, RecipeRevision, Registry, Variant } from "../types";
+import type { Configuration, Dish, Recipe, RecipeRevision, Registry, Variant } from "../types";
 
 export async function loadRegistry(): Promise<Registry> {
   const response = await fetch(`${import.meta.env.BASE_URL}data/registry.json`, { cache: "no-cache" });
@@ -7,7 +7,15 @@ export async function loadRegistry(): Promise<Registry> {
   if (registry.schemaVersion !== 2 || !Array.isArray(registry.recipes) || !Array.isArray(registry.configurations)) {
     throw new Error("This Kitchen needs an updated catalog. Rebuild the public registry before serving it.");
   }
-  return registry;
+  return { ...registry, configurations: comparisonConfigurations(registry) };
+}
+export function comparisonConfigurations(registry: Pick<Registry, "configurations" | "configurationRevisions" | "dishes">): Configuration[] {
+  const currentHashes = new Set(registry.configurations.map((config) => config.configHash));
+  const acceptedHashes = new Set(registry.dishes.map((dish) => dish.identity.configHash));
+  const historical = (registry.configurationRevisions ?? []).filter((revision) => acceptedHashes.has(revision.hash) && !currentHashes.has(revision.hash)).map((revision) => ({
+    ...revision.configuration, id: `${revision.configuration.id}--${revision.hash.slice(7)}`, configHash: revision.hash, historical: true,
+  }));
+  return [...registry.configurations, ...historical];
 }
 export function recipeSupported(recipe: Recipe, variant: Variant) {
   return recipe.harness.capabilities.every((capability) => variant.capabilities.includes(capability));

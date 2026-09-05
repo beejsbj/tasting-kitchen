@@ -1,11 +1,11 @@
 :root {
   /* Frozen direction: stainless counter, ink typography, vermilion order tickets. */
-  --ink: #edf0ed;
+  --canvas: #edf0ed;
   --surface: #f8faf7;
   --surface-raised: #ffffff;
   --surface-soft: #e0e6df;
-  --paper: #202c29;
-  --paper-muted: #596660;
+  --ink: #202c29;
+  --ink-muted: #596660;
   --line: #cbd3ca;
   --line-bright: #89998e;
   --signal: #be3524;

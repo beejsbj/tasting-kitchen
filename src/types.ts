@@ -15,6 +15,7 @@ export type Configuration = {
   personality: string;
   capabilities: string[];
   configHash?: string;
+  historical?: boolean;
   executionProfile: {
     id: string;
     label: string;
@@ -49,6 +50,7 @@ export type Recipe = {
   summary: string;
   cuisines: string[];
   recipeHash: string;
+  presentation?: { profile: string; semanticRuntime: null | { id: string; version: string } };
   origin: "textbook" | "mothers" | "hybrid";
   originNote: string;
   tags: string[];
@@ -140,6 +142,7 @@ export type Registry = {
   cuisines: Cuisine[];
   tags: string[];
   configurations: Configuration[];
+  configurationRevisions?: Array<{ schemaVersion: 1; hash: string; configuration: Configuration }>;
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
@@ -151,7 +154,7 @@ export type Registry = {
 export type Variant = Configuration;
 export type RecipeRevision = {
   recipeId: string; hash: string; version: string;
-  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation">;
+  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation">;
   display: { title: string; summary: string; lineage: Recipe["origin"]; cuisines: string[] };
 };
 export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };

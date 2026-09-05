@@ -9,13 +9,14 @@
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "taste": "node bin/taste.mjs",
     "test:taste": "node --test tests/taste-*.test.mjs",
-    "test:gallery": "node --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs",
+    "test:gallery": "node --experimental-strip-types --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs",
     "dev": "node bin/taste.mjs build-registry && vite",
     "build": "node bin/taste.mjs build-registry && vite build",
     "preview": "vite preview",
     "test": "npm run validate:catalog && npm run test:taste && npm run typecheck && npm run build && npm run test:gallery",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:browser": "node scripts/verify-gallery-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.6",
@@ -32,6 +33,7 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "16.4.0",
+    "playwright": "^1.63.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.3",
     "vite": "^8.2.1"
