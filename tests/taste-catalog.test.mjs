@@ -194,6 +194,7 @@ test("recipe hashes include required execution inputs but not optional review ch
     }
   };
   assert.equal(computeRecipeHash(withOptionalReview), first);
+  assert.equal(computeRecipeHash({ ...base }), first, "legacy Recipes omit presentation without changing their hash");
   assert.notEqual(computeRecipeHash({ ...base, turns: [{ ...base.turns[0], content: "A changed prompt." }] }), first);
   assert.notEqual(computeRecipeHash({ ...base, presentation: { profile: "static-web-v1", semanticRuntime: null } }), first);
 });
@@ -228,6 +229,14 @@ test("planSelection returns exact variant identity and explicit capability/statu
   assert.deepEqual(plan.items[0].missingCapabilities, ["image-generation"]);
   assert.match(plan.items[0].reasons[0], /image-generation/);
   assert.match(plan.items[2].reasons[0], /draft/);
+  const alpha = catalog.recipes.find((item) => item.id === "alpha");
+  alpha.presentation = { profile: "interactive-runtime-v2", semanticRuntime: null };
+  const unsupportedPresentation = planSelection(catalog, { variantId: "exact-variant", recipeIds: ["alpha"] });
+  assert.equal(unsupportedPresentation.supported.length, 0);
+  assert.match(unsupportedPresentation.unsupported[0].reasons.join("\n"), /presentation profile .* not supported/);
+  alpha.presentation = { profile: "static-web-v1", semanticRuntime: { id: "runtime", version: "1" } };
+  const unsupportedRuntime = planSelection(catalog, { variantId: "exact-variant", recipeIds: ["alpha"] });
+  assert.match(unsupportedRuntime.unsupported[0].reasons.join("\n"), /semantic runtime is not supported/);
   assert.deepEqual(plan.selection, { type: "recipes", recipeIds: ["beta", "alpha", "draft-item"] });
   assert.throws(() => planSelection(catalog, { variantId: "missing" }), /Unknown configuration/);
   assert.throws(() => planSelection(catalog, { variantId: "exact-variant", flight: ["missing"] }), /Unknown recipe/);
@@ -251,7 +260,7 @@ test("the lean motion and design-system patch is represented as three ready reci
     assert.equal(item.kind, kind);
     assert.ok(item.tags.length <= 6);
   }
-  assert.deepEqual(byId.get("extend-design-system-without-flattening-it").tags, ["design-system", "visual-language", "implementation", "correction-recovery", "surgical-change"]);
+  assert.deepEqual(byId.get("extend-design-system-without-flattening-it").tags, ["design-system", "visual-language", "implementation", "surgical-change"]);
   assert.deepEqual(byId.get("circular-phrase-sequencer").tags, ["audio", "direct-manipulation", "state-modeling", "motion", "visual-language", "accessibility"]);
   const drum = byId.get("notation-led-drum-instrument");
   assert.equal(drum.version, "1.1.0");

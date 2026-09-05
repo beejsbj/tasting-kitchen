@@ -160,6 +160,28 @@
         }
       }
     },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "semanticRuntime"],
+      "properties": {
+        "profile": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "semanticRuntime": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "version"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+                "version": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      }
+    },
     "variation": { "type": "string", "maxLength": 500 },
     "supersedes": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
   },
