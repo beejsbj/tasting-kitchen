@@ -49,7 +49,7 @@ const publicLeakPatterns = [
 const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "variation", "supersedes"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
 const SETUP_KEYS = new Set(["instructions", "fixtures"]);
-const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "mediaType"]);
+const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "editable", "mediaType"]);
 const TURN_KEYS = new Set(["id", "role", "content"]);
 const OUTPUT_KEYS = new Set(["kind", "entry", "include", "limits"]);
 const LIMIT_KEYS = new Set(["maxFiles", "maxBytes"]);
@@ -392,6 +392,7 @@ async function validateRecipe(relative, cuisines, tags) {
         safeRelative(fixture.path, `${item}.path`);
         safeRelative(fixture.mountAs, `${item}.mountAs`);
         if (fixture.public !== true) fail(item, "public catalog fixtures must set public to true");
+        if (fixture.editable !== undefined) boolean(fixture.editable, `${item}.editable`);
         string(fixture.mediaType, `${item}.mediaType`, { pattern: MEDIA_TYPE });
         fixtureIds.push(fixture.id);
         mountPaths.push(fixture.mountAs);

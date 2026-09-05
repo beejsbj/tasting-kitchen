@@ -76,6 +76,7 @@
               "path": { "$ref": "#/$defs/relativePath" },
               "mountAs": { "$ref": "#/$defs/relativePath" },
               "public": { "const": true },
+              "editable": { "type": "boolean" },
               "mediaType": { "type": "string", "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$" }
             }
           }
