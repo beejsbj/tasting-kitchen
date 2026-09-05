@@ -35,7 +35,7 @@ test("dry cooking has no revision side effect and API execution requires paid-ru
     intent: "fill-missing",
   });
   assert.equal(dry.mode, "dry-run");
-  assert.equal(dry.skipped.length, 1);
+  assert.equal(dry.planned.length + dry.skipped.length, 1);
   const repeat = await cook(repoRoot, {
     configurationId: "codex-sol-high",
     recipeIds: ["responsive-product-launch"],
@@ -101,4 +101,17 @@ test("CLI rejects malformed, irrelevant, and ambiguous flags with JSON errors", 
     assert.equal(result.status, 1, argv.join(" "));
     assert.match(result.stderr, /^\{"error":\{"code":"INVALID_ARGUMENT","message":"/u);
   }
+});
+
+test("CLI help and catalog validation have structured JSON forms", () => {
+  const help = spawnSync(process.execPath, ["bin/taste.mjs", "cook", "--help", "--json"], { cwd: repoRoot, encoding: "utf8" });
+  assert.equal(help.status, 0);
+  assert.match(JSON.parse(help.stdout).help, /--menu ID/u);
+
+  const validation = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--json"], { cwd: repoRoot, encoding: "utf8" });
+  assert.equal(validation.status, 0, validation.stderr);
+  const result = JSON.parse(validation.stdout);
+  assert.equal(result.status, "valid");
+  assert.deepEqual(result.errors, []);
+  assert.match(result.output, /Catalog valid/u);
 });

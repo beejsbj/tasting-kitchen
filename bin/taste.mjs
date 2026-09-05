@@ -23,6 +23,13 @@ const commandFlags = {
   recover: new Set(["attempt"]),
 };
 
+class UsageError extends Error {
+  constructor(message) {
+    super(message);
+    this.code = "INVALID_ARGUMENT";
+  }
+}
+
 function parseArgs(argv) {
   const positional = [];
   const options = {};
@@ -31,32 +38,32 @@ function parseArgs(argv) {
     if (!token.startsWith("--")) { positional.push(token); continue; }
     const [key, inline] = token.slice(2).split(/=(.*)/s, 2);
     if (booleanFlags.has(key)) {
-      if (inline !== undefined) throw new Error(`--${key} does not take a value`);
-      if (options[key] !== undefined) throw new Error(`--${key} may be supplied only once`);
+      if (inline !== undefined) throw new UsageError(`--${key} does not take a value`);
+      if (options[key] !== undefined) throw new UsageError(`--${key} may be supplied only once`);
       options[key] = true;
       continue;
     }
-    if (!valueFlags.has(key)) throw new Error(`Unknown flag: --${key}`);
+    if (!valueFlags.has(key)) throw new UsageError(`Unknown flag: --${key}`);
     const value = inline ?? argv[++index];
-    if (!value || value.startsWith("--")) throw new Error(`--${key} requires a value`);
+    if (!value || value.startsWith("--")) throw new UsageError(`--${key} requires a value`);
     if (["recipe", "tag"].includes(key)) options[key] = [...(options[key] ?? []), ...value.split(",").filter(Boolean)];
-    else if (options[key] !== undefined) throw new Error(`--${key} may be supplied only once`);
+    else if (options[key] !== undefined) throw new UsageError(`--${key} may be supplied only once`);
     else options[key] = value;
   }
   return { positional, options };
 }
 
 function commandAndOptions(positional, options) {
-  if (positional.length > 1) throw new Error(`Unexpected positional argument: ${positional[1]}`);
+  if (positional.length > 1) throw new UsageError(`Unexpected positional argument: ${positional[1]}`);
   const command = positional[0] ?? "help";
-  if (!(command in commandFlags)) throw new Error(`Unknown command: ${command}`);
+  if (!(command in commandFlags)) throw new UsageError(`Unknown command: ${command}`);
   if (options.help) {
-    if (command !== "help" || Object.keys(options).some((key) => key !== "help")) throw new Error("--help must be used by itself");
-    return { command: "help", options: {} };
+    if (Object.keys(options).some((key) => key !== "help" && key !== "json")) throw new UsageError("--help must be used without command options");
+    return { command: "help", options };
   }
   for (const key of Object.keys(options)) {
     if (key === "json") continue;
-    if (!commandFlags[command].has(key)) throw new Error(`--${key} is not valid for taste ${command}`);
+    if (!commandFlags[command].has(key)) throw new UsageError(`--${key} is not valid for taste ${command}`);
   }
   return { command, options };
 }
@@ -72,21 +79,21 @@ function filterFrom(options) {
 }
 
 function selection(options) {
-  if (options.config && options.variant && options.config !== options.variant) throw new Error("--config and legacy --variant disagree");
+  if (options.config && options.variant && options.config !== options.variant) throw new UsageError("--config and legacy --variant disagree");
   const configurationId = options.config ?? options.variant;
-  if (!configurationId) throw new Error("--config is required (legacy --variant is accepted)");
-  if (options.recipe?.length && options.menu) throw new Error("Use either --recipe or --menu, not both");
+  if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
+  if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
   return { configurationId, ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
-  if (options.recipe?.length > 1) throw new Error("inspect accepts one --recipe id");
+  if (options.recipe?.length > 1) throw new UsageError("inspect accepts one --recipe id");
   const selectors = [
     options.recipe?.length ? { recipeId: options.recipe[0] } : null,
     options.menu ? { menuId: options.menu } : null,
     options.revision ? { revisionHash: options.revision } : null,
   ].filter(Boolean);
-  if (selectors.length !== 1) throw new Error("inspect requires exactly one of --recipe, --menu, or --revision");
+  if (selectors.length !== 1) throw new UsageError("inspect requires exactly one of --recipe, --menu, or --revision");
   return selectors[0];
 }
 
@@ -101,8 +108,8 @@ Usage:
   taste discover [--json]
   taste inspect --recipe ID|--menu ID|--revision HASH [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID [--recipe ID[,ID...]] [filters] [--json]
-  taste cook --config ID [--recipe ID[,ID...]] --intent fill-missing|repeat [--execute] [--json]
+  taste plan --config ID [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook --config ID [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
   taste validate
   taste build-registry [--output PATH]
   taste recover --attempt ID
@@ -112,19 +119,28 @@ Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with 
 --variant is accepted as a compatibility alias for --config.`;
 }
 
-async function validate() {
-  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")], { cwd: repoRoot, stdio: "inherit", shell: false });
+async function validate({ json = false } = {}) {
+  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")], { cwd: repoRoot, stdio: json ? "pipe" : "inherit", shell: false });
   return new Promise((resolve) => {
-    child.once("error", () => resolve(1));
-    child.once("close", (code) => resolve(code ?? 1));
+    let stdout = "";
+    let stderr = "";
+    child.stdout?.on("data", (chunk) => { stdout += chunk; });
+    child.stderr?.on("data", (chunk) => { stderr += chunk; });
+    child.once("error", (error) => resolve({ exitCode: 1, stdout, stderr: `${stderr}${error.message}` }));
+    child.once("close", (code) => resolve({ exitCode: code ?? 1, stdout, stderr }));
   });
 }
 
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const { command, options } = commandAndOptions(parsed.positional, parsed.options);
-  if (command === "help") return print(help());
-  if (command === "validate") { process.exitCode = await validate(); return; }
+  if (command === "help") return print(options.json ? { help: help() } : help(), options.json);
+  if (command === "validate") {
+    const result = await validate({ json: options.json });
+    process.exitCode = result.exitCode;
+    if (options.json) print({ status: result.exitCode === 0 ? "valid" : "invalid", errors: result.stderr.trim() ? result.stderr.trim().split("\n") : [], output: result.stdout.trim() || undefined }, true);
+    return;
+  }
   if (command === "discover") return print(await discover(repoRoot), true);
   if (command === "inspect") return print(await inspect(repoRoot, inspectSelection(options)), true);
   if (command === "list") {
@@ -133,8 +149,8 @@ async function main() {
   }
   if (command === "plan") return print(await plan(repoRoot, selection(options)), true);
   if (command === "cook") {
-    if (!options.intent || !["fill-missing", "repeat"].includes(options.intent)) throw new Error("cook requires --intent fill-missing or --intent repeat");
-    if (options.execute && process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new Error("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
+    if (!options.intent || !["fill-missing", "repeat"].includes(options.intent)) throw new UsageError("cook requires --intent fill-missing or --intent repeat");
+    if (options.execute && process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new UsageError("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
     const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.codex });
     if (result.failed?.length) process.exitCode = 1;
     return print(result, true);
@@ -145,14 +161,14 @@ async function main() {
     return print({ status: "built", output: path.relative(repoRoot, result.output), dishes: result.registry.dishes.length }, true);
   }
   if (command === "recover") {
-    if (!options.attempt) throw new Error("recover requires --attempt ID");
+    if (!options.attempt) throw new UsageError("recover requires --attempt ID");
     return print(await recoverAttempt({ repoRoot, catalog: await loadCatalog(repoRoot), attemptId: options.attempt }), true);
   }
 }
 
 const jsonErrors = process.argv.includes("--json");
 main().catch((error) => {
-  if (jsonErrors) process.stderr.write(`${JSON.stringify({ error: { code: "INVALID_ARGUMENT", message: error.message } })}\n`);
+  if (jsonErrors) process.stderr.write(`${JSON.stringify({ error: { code: error.code === "INVALID_ARGUMENT" ? "INVALID_ARGUMENT" : "TASTE_ERROR", message: error.message } })}\n`);
   else process.stderr.write(`taste: ${error.message}\n`);
   process.exitCode = 1;
 });
