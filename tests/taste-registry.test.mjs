@@ -73,6 +73,21 @@ test("builds the gallery registry without private runtime data", async (t) => {
   assert.equal(JSON.stringify(registry).includes("private/runtime"), false);
   assert.deepEqual(JSON.parse(await readFile(output, "utf8")), registry);
 
+  const subpath = await buildRegistry({ repoRoot: root, basePath: "/kitchen/" });
+  assert.equal(subpath.registry.dishes[0].artifactBase, `/kitchen/dishes/${dishId}/`);
+
+  const staleFixture = path.join(root, "public", "data", "fixtures", "stale", "failed-attempt.txt");
+  await mkdir(path.dirname(staleFixture), { recursive: true });
+  await writeFile(staleFixture, "must not survive public staging");
+  await buildRegistry({ repoRoot: root });
+  await assert.rejects(readFile(staleFixture), /ENOENT/);
+
+  await json(path.join(root, "catalog/recipes/talk/talk-once/recipe.json"), { ...recipe, status: "hidden" });
+  const hidden = await buildRegistry({ repoRoot: root });
+  assert.deepEqual(hidden.registry.dishes, []);
+  assert.deepEqual(hidden.registry.reviews, []);
+  await assert.rejects(readFile(path.join(root, "public", "dishes", dishId, "dish.json")), /ENOENT/);
+
   await json(reviewFile, { ...review, dishHash: `sha256:${"5".repeat(64)}` });
   await assert.rejects(() => buildRegistry({ repoRoot: root }), /does not match immutable dish hash/);
 });

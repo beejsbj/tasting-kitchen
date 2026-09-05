@@ -195,6 +195,7 @@ test("recipe hashes include required execution inputs but not optional review ch
   };
   assert.equal(computeRecipeHash(withOptionalReview), first);
   assert.notEqual(computeRecipeHash({ ...base, turns: [{ ...base.turns[0], content: "A changed prompt." }] }), first);
+  assert.notEqual(computeRecipeHash({ ...base, presentation: { profile: "static-web-v1", semanticRuntime: null } }), first);
 });
 
 test("planSelection returns exact variant identity and explicit capability/status reasons", async (t) => {

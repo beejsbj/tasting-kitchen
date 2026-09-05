@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readdir } from "node:fs/promises";
+import { cp, mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
@@ -33,17 +34,62 @@ test("dry cooking has no revision side effect and API execution requires paid-ru
   });
   assert.equal(dry.mode, "dry-run");
   assert.equal(dry.skipped.length, 1);
+  const repeat = await cook(repoRoot, {
+    configurationId: "codex-sol-high",
+    recipeIds: ["responsive-product-launch"],
+    intent: "repeat",
+  });
+  assert.equal(repeat.planned.length, 1);
+  assert.equal(repeat.skipped.length, 0);
   assert.deepEqual(await menuRevisionFiles(), before);
   await assert.rejects(cook(repoRoot, {
     configurationId: "codex-sol-high", recipeIds: ["responsive-product-launch"], intent: "repeat", execute: true, env: {},
   }), /TASTE_ALLOW_MODEL_RUNS=1/);
 });
 
-test("CLI rejects unknown flags and missing Cook intent", () => {
+test("executing a Menu pins every member before a fake runner sees only supported cells", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-api-menu-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await cp(path.join(repoRoot, "catalog"), path.join(root, "catalog"), { recursive: true });
+  await cp(path.join(repoRoot, "dishes"), path.join(root, "dishes"), { recursive: true });
+  let received;
+  const result = await cook(root, {
+    configurationId: "codex-sol-high",
+    menuId: "visual-ui",
+    intent: "fill-missing",
+    execute: true,
+    env: { TASTE_ALLOW_MODEL_RUNS: "1" },
+    executePlan: async ({ plan }) => {
+      received = plan;
+      return { results: [], accepted: [], failed: [], unsupported: plan.unsupported };
+    },
+  });
+  assert.equal(result.menuRevision.recipes.length, 4);
+  assert.deepEqual(result.menuRevision.recipes.map((item) => item.recipeId), [
+    "responsive-product-launch", "editorial-culture-feature", "shared-result-ritual", "extend-design-system-without-flattening-it",
+  ]);
+  assert.equal(result.skipped.length, 2, "covered menu cells are skipped for fill-missing");
+  assert.equal(received.supported.length, 2, "only missing menu cells reach the fake runner");
+  assert.equal(received.supported.length + result.skipped.length + received.unsupported.length, 4);
+  const pinned = JSON.parse(await readFile(path.join(root, "catalog/revisions/menus", `visual-ui--${result.menuRevision.hash.slice("sha256:".length)}.json`), "utf8"));
+  assert.deepEqual(pinned.recipes, result.menuRevision.recipes);
+});
+
+test("CLI rejects malformed, irrelevant, and ambiguous flags with JSON errors", () => {
   const unknown = spawnSync(process.execPath, ["bin/taste.mjs", "discover", "--nope"], { cwd: repoRoot, encoding: "utf8" });
   assert.equal(unknown.status, 1);
   assert.match(unknown.stderr, /Unknown flag/);
   const intent = spawnSync(process.execPath, ["bin/taste.mjs", "cook", "--config", "codex-sol-high", "--recipe", "responsive-product-launch"], { cwd: repoRoot, encoding: "utf8" });
   assert.equal(intent.status, 1);
   assert.match(intent.stderr, /requires --intent/);
+  for (const argv of [
+    ["discover", "--execute"],
+    ["discover", "extra"],
+    ["cook", "--config", "codex-sol-high", "--recipe", "responsive-product-launch", "--intent", "repeat", "--execute=false"],
+    ["inspect", "--recipe", "responsive-product-launch", "--revision", `sha256:${"0".repeat(64)}`],
+  ]) {
+    const result = spawnSync(process.execPath, ["bin/taste.mjs", ...argv, "--json"], { cwd: repoRoot, encoding: "utf8" });
+    assert.equal(result.status, 1, argv.join(" "));
+    assert.match(result.stderr, /^\{"error":\{"code":"INVALID_ARGUMENT","message":"/u);
+  }
 });

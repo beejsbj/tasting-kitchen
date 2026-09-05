@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 async function fixture({ failing = false } = {}) {
@@ -169,4 +170,35 @@ test("a required check failure remains private and creates no dish", async (t) =
   assert.match(result.error, /Required validation failed/);
   assert.equal(JSON.parse(await readFile(path.join(result.attemptDir, "state.json"), "utf8")).status, "failed");
   await assert.rejects(readFile(path.join(f.root, "dishes", "dish_demo-session_codex-sol-high_20260814120000000_failed", "dish.json")), /ENOENT/);
+});
+
+test("frozen fixtures reject mutation unless that exact fixture is declared editable", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const source = path.join(f.root, "catalog/recipes/conversation/demo/fixtures/context.txt");
+  f.catalog.root = f.root;
+  f.recipe.fixtureHashes = { context: sha256(await readFile(source)) };
+  f.recipe.recipeHash = computeRecipeHash(f.recipe, f.recipe.fixtureHashes);
+  const mutatingSession = async ({ workspace }) => {
+    await writeFile(path.join(workspace, "inputs/context.txt"), "model changed supplied context\n");
+    return fakeSession();
+  };
+  const immutable = await executeRecipe({
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant,
+    now: new Date("2026-08-14T12:00:00.000Z"), nonce: "immutable", authPath: f.authPath,
+    runSession: mutatingSession, verifyIdentity: observed,
+  });
+  assert.equal(immutable.status, "failed");
+  assert.match(immutable.error, /Fixture context changed during execution/);
+
+  await writeFile(source, "public context\n");
+  f.recipe.setup.fixtures[0].editable = true;
+  f.recipe.fixtureHashes = { context: sha256(await readFile(source)) };
+  f.recipe.recipeHash = computeRecipeHash(f.recipe, f.recipe.fixtureHashes);
+  const editable = await executeRecipe({
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant,
+    now: new Date("2026-08-14T12:00:00.000Z"), nonce: "editable", authPath: f.authPath,
+    runSession: mutatingSession, verifyIdentity: observed,
+  });
+  assert.equal(editable.status, "accepted");
 });

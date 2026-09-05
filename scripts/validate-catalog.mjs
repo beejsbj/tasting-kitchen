@@ -46,7 +46,7 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "variation", "supersedes"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
 const SETUP_KEYS = new Set(["instructions", "fixtures"]);
 const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "editable", "mediaType"]);
@@ -54,6 +54,8 @@ const TURN_KEYS = new Set(["id", "role", "content"]);
 const OUTPUT_KEYS = new Set(["kind", "entry", "include", "limits"]);
 const LIMIT_KEYS = new Set(["maxFiles", "maxBytes"]);
 const VALIDATION_KEYS = new Set(["mode", "checks"]);
+const PRESENTATION_KEYS = new Set(["profile", "semanticRuntime"]);
+const SEMANTIC_RUNTIME_KEYS = new Set(["id", "version"]);
 const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "schema", "argv"]);
 
 const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
@@ -351,6 +353,17 @@ async function validateRecipe(relative, cuisines, tags) {
   enumValue(recipe.kind, allowedKinds, `${relative}.kind`);
   if ("variation" in recipe) string(recipe.variation, `${relative}.variation`, { max: 500 });
   if ("supersedes" in recipe) string(recipe.supersedes, `${relative}.supersedes`, { pattern: IDS });
+  if (recipe.presentation !== undefined && object(recipe.presentation, `${relative}.presentation`)) {
+    onlyKeys(recipe.presentation, PRESENTATION_KEYS, `${relative}.presentation`);
+    required(recipe.presentation, ["profile", "semanticRuntime"], `${relative}.presentation`);
+    string(recipe.presentation.profile, `${relative}.presentation.profile`, { pattern: IDS });
+    if (recipe.presentation.semanticRuntime !== null && object(recipe.presentation.semanticRuntime, `${relative}.presentation.semanticRuntime`)) {
+      onlyKeys(recipe.presentation.semanticRuntime, SEMANTIC_RUNTIME_KEYS, `${relative}.presentation.semanticRuntime`);
+      required(recipe.presentation.semanticRuntime, ["id", "version"], `${relative}.presentation.semanticRuntime`);
+      string(recipe.presentation.semanticRuntime.id, `${relative}.presentation.semanticRuntime.id`, { pattern: IDS });
+      string(recipe.presentation.semanticRuntime.version, `${relative}.presentation.semanticRuntime.version`);
+    } else if (recipe.presentation.semanticRuntime !== null) fail(`${relative}.presentation.semanticRuntime`, "must be null or an object");
+  }
 
   const expectedId = path.basename(path.dirname(relative));
   if (recipe.id !== expectedId) fail(relative, `id must match recipe directory ${expectedId}`);
