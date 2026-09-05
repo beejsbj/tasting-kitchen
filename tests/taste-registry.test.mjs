@@ -61,7 +61,7 @@ test("builds the gallery registry without private runtime data", async (t) => {
   const { output, registry } = await buildRegistry({ repoRoot: root, now: new Date("2026-08-14T12:00:00.000Z") });
   assert.equal(registry.basePath, "/");
   assert.match(registry.configurations[0].configHash, /^sha256:[a-f0-9]{64}$/);
-  assert.equal(registry.recipes[0].setup.fixtures.length, 0);
+  assert.deepEqual(registry.recipes, []);
   assert.equal(registry.dishes[0].artifactBase, `/dishes/${dishId}/`);
   assert.deepEqual(registry.reviews, [review]);
   const artifactUrl = `${registry.dishes[0].artifactBase}${registry.dishes[0].artifact.entry}`;
