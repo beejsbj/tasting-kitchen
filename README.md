@@ -24,7 +24,7 @@ Planned canonical deployment: <https://tasting-kitchen.burooj.dev/>
 - **Repeat** — the derived relationship between Dishes sharing the same Recipe Revision and exact requested configuration.
 - **Tasting** — the human activity and public surface for inspecting and comparing Dishes.
 
-**Domain**, **Flight**, and **Collection** are retired product terms. The current implementation still contains those legacy shapes and must migrate to this contract. See the canonical [product model](docs/product-model.md) for the complete language, invariants, scenario checks, and v1 boundary.
+**Domain**, **Flight**, and **Collection** are retired product terms. The catalog and gallery use Cuisines, exact Recipe/Menu Revisions, and derived Repeats. See the canonical [product model](docs/product-model.md) for the complete language, invariants, scenario checks, and v1 boundary.
 
 Recipes are labeled **Textbook**, **Mother's**, or **Hybrid**:
 
@@ -38,11 +38,11 @@ Planning and workflow live in Linear: [Tasting Kitchen project](https://linear.a
 
 ## What is here
 
-- `catalog/` — the current legacy domain catalog, controlled tags, Recipes, fixtures, and schemas; Cuisine/Menu schema migration is still pending.
+- `catalog/` — Cuisines, exact configurations, editable Recipes and Menus, immutable executed revisions, fixtures, and schemas.
 - `bin/taste.mjs` + `lib/taste/` — validation, dry planning, isolated execution, identity verification, sanitization, recovery, immutable publication, and registry building.
 - `dishes/` — canonical accepted artifacts and public-safe receipts.
 - `reviews/` — artifact reviews bound to an exact immutable dish hash, explicitly identified as human or agent observations.
-- `src/` — the React/Vite gallery. It is currently read-only; the planned owner-only Cook control will use a separate authenticated job service.
+- `src/` — the read-only React/Vite gallery and its shared visual system. An authenticated owner Cook UI is later work.
 - `analysis/` — the bounded historical synthesis that informed the personal recipes.
 - `private/` — ignored provenance and raw execution evidence; never published.
 
@@ -56,29 +56,30 @@ npm test
 npm run dev
 ```
 
-The proof gallery is currently built for `/model-tasting/` and still shows legacy **Not tasted yet**, **Unsupported**, and **Draft** states. Under the canonical product contract, Draft and Ready-but-uncooked Recipes remain private; only Recipes with accepted Dishes appear on the Tasting surface. The canonical deployment will move the base path to `/` on `tasting-kitchen.burooj.dev`.
+The local gallery builds at `/` by default. Set `TASTE_BASE_PATH=/model-tasting/` when building for the historical subpath. Draft, hidden and uncooked Recipes remain private; only Recipes with accepted Dishes appear on the public counter. The `?styleguide=1` surface uses the application’s own tokens and components.
 
 ## Use the CLI
 
 ```bash
 # Inspect the authored Recipe catalog and exact configurations
-node bin/taste.mjs list
-node bin/taste.mjs plan --variant codex-sol-high --recipe responsive-product-launch
+node bin/taste.mjs discover --json
+node bin/taste.mjs inspect --recipe responsive-product-launch --json
+node bin/taste.mjs plan --config codex-sol-high --menu visual-ui --json
 
 # Dry-run by default
-node bin/taste.mjs run --variant codex-sol-high --recipe responsive-product-launch
+node bin/taste.mjs cook --config codex-sol-high --menu visual-ui --intent fill-missing --json
 
 # A real model run requires both an explicit flag and environment opt-in
-TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs run \
-  --variant codex-sol-high \
-  --recipe responsive-product-launch \
-  --execute
+TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
+  --config codex-sol-high \
+  --menu visual-ui \
+  --intent fill-missing --execute --json
 
 # Rebuild gallery inputs
 node bin/taste.mjs build-registry
 ```
 
-Each recipe starts in a fresh workspace and fresh model session. A multi-turn recipe resumes only its own returned session ID. Accepted dishes are never overwritten; failed attempts remain private. See [How to taste](docs/how-to-taste.md) for the human workflow.
+Each recipe starts in a fresh workspace and fresh model session. A multi-turn recipe resumes only its own returned session ID. Accepted dishes are never overwritten; failed attempts remain private. See [How to taste](docs/how-to-taste.md) for the human workflow, [the agent interface](docs/agent-interface.md) for the importable API and CLI contract, and [the visual release](docs/visual-release.md) for scope and completion criteria.
 
 ## Design systems and motion
 

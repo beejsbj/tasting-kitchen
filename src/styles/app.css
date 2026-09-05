@@ -46,7 +46,7 @@ h1, h2, h3 { font-family: var(--font-display); }
 .counter-ticket strong { font: 500 var(--text-ticket)/1 var(--font-display); letter-spacing: -.08em; }
 .counter-ticket > div > span { font-size: var(--text-sm); line-height: 1.5; }
 .counter-ticket__foot { margin-top: var(--space-5); padding: var(--space-3) 0; border-top: var(--line-width) dashed var(--line-bright); border-bottom: var(--line-width) dashed var(--line-bright); display: flex; justify-content: space-between; gap: var(--space-2); }
-.counter-ticket__foot > span { font: var(--text-xs) var(--font-mono) !important; }
+.counter-ticket > .counter-ticket__foot > span { font: var(--text-xs) var(--font-mono); }
 .counter-ticket > p { color: var(--paper-muted); font-size: var(--text-sm); line-height: 1.5; margin: var(--space-4) 0 0; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); padding-bottom: var(--space-5); border-bottom: var(--line-width) solid var(--line); }
 .section-heading h2 { margin: 0; font-size: var(--text-section); font-weight: 500; letter-spacing: -.045em; }

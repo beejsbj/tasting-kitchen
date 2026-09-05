@@ -6,8 +6,8 @@ export function RecipeCard({ recipe, dishes, index, onOpen }: { recipe: Recipe; 
   const families = [...new Set(dishes.map((item) => modelFamily(item.identity.requestedModel)))];
   return <article className="recipe-card">
     <div className="recipe-card__preview" aria-hidden="true" inert>
-      {dish?.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading="lazy" /> : dish?.artifact.kind === "web"
-        ? <iframe src={artifactUrl(dish)} title={`${recipe.title} preview`} tabIndex={-1} loading="lazy" sandbox="allow-scripts" />
+      {dish?.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading={index < 4 ? "eager" : "lazy"} /> : dish?.artifact.kind === "web"
+        ? <iframe src={artifactUrl(dish)} title={`${recipe.title} preview`} tabIndex={-1} loading={index < 4 ? "eager" : "lazy"} sandbox="allow-scripts" />
         : <div className="recipe-card__transcript"><span>Inside the conversation</span><p>{recipe.turns[0]?.content.slice(0, 240)}</p><span>{recipe.turns.length} turns · {dishes.length} preserved results</span></div>}
       <span className="recipe-card__stamp">{dish?.artifact.kind === "web" ? "Interactive artifact" : "Recorded session"}</span>
     </div>
