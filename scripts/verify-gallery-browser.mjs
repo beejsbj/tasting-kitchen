@@ -12,7 +12,8 @@ const errors = [];
 const settle = page => page.waitForTimeout(500);
 const save = async (page, name) => { if (screenshotDir) await page.screenshot({ path: `${screenshotDir}/${name}.png`, fullPage: true }); };
 const recordErrors = (page, label) => { page.on("pageerror", error => errors.push({ label, kind: "page", text: error.message })); page.on("console", message => { if (message.type() === "error") errors.push({ label, kind: "console", text: message.text() }); }); };
-const escaped = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const latest = dishes => [...dishes].sort((a, b) => b.executedAt.localeCompare(a.executedAt) || b.id.localeCompare(a.id))[0];
+const configFor = (registry, dish) => registry.configurations.find(config => config.configHash === dish.identity.configHash);
 
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); recordErrors(page, "gallery");
@@ -20,19 +21,70 @@ try {
   const registry = await page.evaluate(async () => fetch("/data/registry.json").then(response => response.json()));
   const acceptedRecipes = registry.recipes.filter(recipe => registry.dishes.some(dish => dish.recipe.id === recipe.id));
   assert.equal(await page.locator(".recipe-card").count(), acceptedRecipes.length, "counter should show every accepted recipe");
-  for (let i = 0; i < await page.locator(".recipe-card").count(); i++) { await page.locator(".recipe-card").nth(i).scrollIntoViewIfNeeded(); await page.waitForTimeout(250); }
-  await page.evaluate(() => window.scrollTo(0, 0)); await save(page, "home-desktop");
+  assert.equal(await page.getByRole("group", { name: "Filter by model" }).count(), 1, "model filtering belongs on the counter");
+  assert.equal(await page.locator('select[aria-label="Harness"], select[aria-label="Service tier"]').count(), 0, "counter should not expose disconnected configuration dropdowns");
+  for (let i = 0; i < await page.locator(".recipe-card").count(); i++) { await page.locator(".recipe-card").nth(i).scrollIntoViewIfNeeded(); await page.waitForTimeout(100); }
+  await page.evaluate(() => window.scrollTo(0, 0)); await save(page, "counter-desktop");
 
-  const target = acceptedRecipes.find(recipe => recipe.kind === "web") ?? acceptedRecipes[0]; assert.ok(target, "registry should contain an accepted recipe"); const targetButton = page.getByRole("button", { name: new RegExp(escaped(target.title)) });
-  const historyBefore = await page.evaluate(() => history.length); await targetButton.click(); await settle(page); assert.equal(await page.evaluate(() => history.length), historyBefore + 1, "recipe open should add one history entry");
-  const urlBeforeConfig = page.url(); await page.getByRole("button", { name: /Read the recipe/i }).click(); await settle(page); assert.equal(await page.locator("dialog").count(), 1); await page.keyboard.press("Escape"); await settle(page); assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("data-brief-control")), "true", "Escape should return focus to the brief trigger");
-  const config = page.locator('select[aria-label="Configuration 1"]'); const beforeConfig = await config.inputValue(); const historyBeforeConfig = await page.evaluate(() => history.length); await config.selectOption({ index: Math.min(2, await config.locator("option").count() - 1) }); await settle(page); assert.equal(await page.evaluate(() => history.length), historyBeforeConfig + 1, "configuration change should add one history entry"); await page.goBack(); await settle(page); assert.equal(page.url(), urlBeforeConfig, "Back should restore the exact prior URL"); assert.equal(await config.inputValue(), beforeConfig, "Back should restore the prior configuration"); await save(page, "recipe-desktop");
+  const target = acceptedRecipes.find(recipe => recipe.kind === "web") ?? acceptedRecipes[0];
+  assert.ok(target, "registry should contain an accepted recipe");
+  const targetDishes = registry.dishes.filter(dish => dish.recipe.id === target.id);
+  const targetLatest = latest(targetDishes);
+  const filterConfig = configFor(registry, targetLatest);
+  assert.ok(filterConfig, "latest Dish should have a public configuration");
+  const familyMatch = filterConfig.model.match(/(?:^|-)(astra|sol|terra|luna|fable)(?:-|$)/i);
+  if (familyMatch) {
+    const family = familyMatch[1][0].toUpperCase() + familyMatch[1].slice(1).toLowerCase();
+    await page.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: family, exact: true }).click(); await settle(page);
+    assert.equal(new URL(page.url()).searchParams.get("family"), family, "counter family filter should be URL-addressable");
+    assert.ok(await page.locator(".recipe-card").count() > 0, "family filter should leave matching Recipes on the counter");
+  }
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
 
-  await page.setViewportSize({ width: 390, height: 844 }); await page.goto(`${base}/`, { waitUntil: "networkidle" }); const phoneTarget = page.getByRole("button", { name: new RegExp(escaped(target.title)) }); await phoneTarget.scrollIntoViewIfNeeded(); await phoneTarget.click(); await settle(page); assert.equal(await page.evaluate(() => window.scrollY), 0, "opening a recipe should reset phone scroll"); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "phone view should not overflow horizontally"); await save(page, "recipe-phone");
+  const historyBefore = await page.evaluate(() => history.length);
+  await page.getByRole("button", { name: `Open ${target.title}`, exact: true }).click(); await settle(page);
+  assert.equal(await page.evaluate(() => history.length), historyBefore + 1, "opening a Recipe should add one history entry");
+  let url = new URL(page.url());
+  assert.equal(url.searchParams.get("recipe"), target.id);
+  assert.equal(url.searchParams.get("revision"), targetLatest.recipe.hash, "card opens latest immutable Recipe Revision");
+  assert.deepEqual(url.searchParams.get("models")?.split(","), [filterConfig.id], "card opens the exact latest configuration");
+  assert.deepEqual(url.searchParams.get("dishes")?.split(","), [targetLatest.id], "card opens the latest Dish by time then ID");
+  assert.equal(await page.locator(".comparison-slot").count(), 1, "a Recipe opens as a one-pane Dish viewer");
+  assert.equal(await page.getByRole("group", { name: "Configuration 1" }).count(), 1, "viewer configuration is a pill group");
+  assert.equal(await page.locator(".tasting-room select").count(), 0, "current Recipe viewer has no configuration, Repeat, or revision select");
+  await page.getByRole("button", { name: /Read the recipe/i }).click(); await settle(page); assert.equal(await page.locator("dialog").count(), 1); await page.keyboard.press("Escape"); await settle(page); assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("data-brief-control")), "true", "Escape should return focus to the brief trigger");
+  const onePaneUrl = page.url();
+  await page.getByRole("button", { name: /^\+ Compare$/ }).click(); await settle(page);
+  assert.equal(await page.locator(".comparison-slot").count(), 2, "Compare should add a second pane");
+  await page.getByRole("button", { name: "Remove configuration 2" }).click(); await settle(page);
+  assert.equal(await page.locator(".comparison-slot").count(), 1, "remove should return to one pane");
+  await page.goBack(); await settle(page);
+  assert.equal(await page.locator(".comparison-slot").count(), 2, "Back restores the removed comparison pane");
+  await page.goBack(); await settle(page);
+  assert.equal(page.url(), onePaneUrl, "Back restores the original exact-Dish URL");
+  await save(page, "recipe-desktop");
 
-  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=models`, { waitUntil: "networkidle" }); assert.equal(await page.locator('select[aria-label="Harness"]').count(), 1); assert.equal(await page.locator('select[aria-label="Service tier"]').count(), 1); await page.getByRole("button", { name: "Luna", exact: true }).click(); await settle(page); assert.equal(new URL(page.url()).searchParams.get("family"), "Luna"); await page.getByRole("button", { name: new RegExp(escaped(target.title)) }).click(); await settle(page); assert.ok((await page.locator('select[aria-label^="Configuration"]').evaluateAll(selects => selects.filter(select => select.getAttribute("aria-label")?.startsWith("Configuration ")).map(select => select.value))).every(value => value.toLowerCase().includes("luna")), "Luna shelf should open Luna configurations"); await page.goto(`${base}/?view=models&family=Luna&effort=low&harness=codex-cli&tier=fast`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: "Recipes", exact: true }).click(); await settle(page); assert.equal(new URL(page.url()).search, "", "switching tabs should clear model facets"); assert.equal(await page.locator('select[aria-label="Harness"]').count(), 0); await page.goto(`${base}/?view=models`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: "Luna", exact: true }).click(); await settle(page); await save(page, "models-desktop");
+  await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  const cardModels = page.getByRole("group", { name: `Models for ${target.title}` });
+  const effort = filterConfig.reasoningEffort;
+  const exactButton = cardModels.getByRole("button", { name: new RegExp(` effort`, "i") }).filter({ hasText: effort }).first();
+  if (await exactButton.count()) {
+    await exactButton.click(); await settle(page); url = new URL(page.url());
+    const opened = registry.dishes.find(dish => dish.id === url.searchParams.get("dishes"));
+    assert.ok(opened, "model-card pill should open a recorded Dish");
+    const openedConfig = configFor(registry, opened);
+    assert.equal(url.searchParams.get("models"), openedConfig.id, "model-card pill selects an exact configuration snapshot");
+    assert.equal(opened.id, latest(registry.dishes.filter(dish => dish.recipe.id === target.id && dish.identity.configHash === opened.identity.configHash)).id, "model-card pill selects that configuration's latest Dish");
+  }
 
-  await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 0, "baseline should expose the empty Menu state"); assert.match(await page.locator("body").innerText(), /0 public menus/); await save(page, "menus-desktop");
+  await page.setViewportSize({ width: 390, height: 844 }); await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "mobile counter should not overflow horizontally");
+  await page.getByRole("button", { name: `Open ${target.title}`, exact: true }).scrollIntoViewIfNeeded(); await page.getByRole("button", { name: `Open ${target.title}`, exact: true }).click(); await settle(page);
+  assert.equal(await page.evaluate(() => window.scrollY), 0, "opening a Recipe should reset phone scroll");
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "mobile Recipe card and viewer should not overflow horizontally");
+  await save(page, "recipe-phone");
+
+  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 0, "baseline should expose the empty Menu state"); assert.match(await page.locator("body").innerText(), /0 public menus/); await save(page, "menus-desktop");
 
   const menuRecipes = acceptedRecipes.filter(recipe => recipe.kind === "web").slice(0, 2);
   if (menuRecipes.length === 2) {
@@ -40,11 +92,11 @@ try {
     const menuRevision = { menuId: "browser-pair", hash: "sha256:browser-pair", title: "Browser pair", cuisines: [], recipes: menuRecipes.map(recipe => ({ recipeId: recipe.id, recipeHash: recipe.recipeHash })) };
     const menuRegistry = { ...registry, menus: [{ id: "browser-pair", title: "Browser pair", summary: "Intercepted browser coverage", cuisines: [], recipes: menuRecipes.map(recipe => recipe.id) }], menuRevisions: [menuRevision], dishes: registry.dishes.filter(dish => !(dish.recipe.id === menuRecipes[1].id && dish.identity.configHash === missingConfig)) };
     const menuPage = await browser.newPage({ viewport: { width: 1280, height: 900 } }); recordErrors(menuPage, "menu"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(menuRegistry) })); await menuPage.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); assert.match(await menuPage.locator("body").innerText(), /1\/2 represented/); assert.match(await menuPage.locator("body").innerText(), /Not cooked/); await menuPage.getByRole("button", { name: /1 dish/ }).first().click(); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("revision"), menuRecipes[0].recipeHash, "menu cell should open exact revision");
-    const repeat = { ...menuRegistry.dishes.find(dish => dish.recipe.id === menuRecipes[0].id && dish.identity.configHash === missingConfig), id: "dish_browser_repeat", executedAt: "2099-01-01T00:00:00.000Z", dishHash: "sha256:browser-repeat" }; const repeatRegistry = { ...menuRegistry, dishes: [...menuRegistry.dishes, repeat] }; await menuPage.unroute("**/data/registry.json"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(repeatRegistry) })); await menuPage.goto(`${base}/?view=menus&menu=browser-pair`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); await menuPage.getByRole("button", { name: /2 dishes/ }).first().click(); await settle(menuPage); const dishSelect = menuPage.locator('select[aria-label="Dish for configuration 1"]'); assert.equal(await dishSelect.locator("option").count(), 2, "Repeat should appear as second dish"); await dishSelect.selectOption("dish_browser_repeat"); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("dishes"), "dish_browser_repeat"); await menuPage.close();
+    const repeat = { ...menuRegistry.dishes.find(dish => dish.recipe.id === menuRecipes[0].id && dish.identity.configHash === missingConfig), id: "dish_browser_repeat", executedAt: "2099-01-01T00:00:00.000Z", dishHash: "sha256:browser-repeat" }; const repeatRegistry = { ...menuRegistry, dishes: [...menuRegistry.dishes, repeat] }; await menuPage.unroute("**/data/registry.json"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(repeatRegistry) })); await menuPage.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); await menuPage.getByRole("button", { name: /2 dishes/ }).first().click(); await settle(menuPage); assert.equal(await menuPage.getByRole("group", { name: "Dishes for configuration 1" }).count(), 1, "Repeats should be direct Dish pills"); await menuPage.getByRole("button", { name: "Repeat 2 for configuration 1" }).click(); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("dishes"), "dish_browser_repeat"); await menuPage.close();
   }
 
   await page.goto(`${base}/?recipe=${target.id}`, { waitUntil: "networkidle" }); await page.route("**/data/fixtures/**", route => route.abort()); await page.getByRole("button", { name: /Read the recipe/i }).click(); await settle(page); if (await page.locator("dialog .fixture summary").count()) await page.locator("dialog .fixture summary").first().click(); await page.waitForTimeout(900); assert.match(await page.locator("dialog").innerText(), /Failed to fetch|Input could not be loaded/); await page.unroute("**/data/fixtures/**");
-  await page.goto(`${base}/`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: /Inside the visual system/i }).click(); await settle(page); assert.match(await page.locator("body").innerText(), /Back to the Kitchen/); await save(page, "styleguide-desktop");
+  await page.goto(`${base}/`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: /Visual system/i }).click(); await settle(page); assert.match(await page.locator("body").innerText(), /Back to the Kitchen/); await save(page, "styleguide-desktop");
 
   const sandbox = await browser.newPage(); await sandbox.route("http://scratch.test/sandbox/index.html", route => route.fulfill({ status: 200, headers: { "content-type": "text/html", "content-security-policy": "default-src 'none'; script-src 'self'; connect-src 'self'", "access-control-allow-origin": "*" }, body: '<p id="status">loading</p><script type="module" src="/sandbox/module.js"></script>' })); await sandbox.route("http://scratch.test/sandbox/module.js", route => route.fulfill({ status: 200, headers: { "content-type": "text/javascript", "access-control-allow-origin": "*" }, body: "const data = await fetch('/sandbox/data.json').then(response => response.json()); document.querySelector('#status').textContent = data.ok ? 'module-fetch-passed' : 'failed';" })); await sandbox.route("http://scratch.test/sandbox/data.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json", "access-control-allow-origin": "*" }, body: '{"ok":true}' })); await sandbox.setContent('<iframe id="frame" sandbox="allow-scripts" src="http://scratch.test/sandbox/index.html"></iframe>'); await sandbox.waitForTimeout(1000); assert.equal(await sandbox.frames()[1].locator("#status").innerText(), "module-fetch-passed"); assert.equal(await sandbox.locator("#frame").evaluate(frame => frame.contentDocument === null), true, "sandbox frame should be unreadable by parent"); await sandbox.close();
   assert.deepEqual(errors.filter(error => !error.text.includes("ERR_FAILED")), [], "gallery should have no uninduced browser errors"); console.log("gallery browser verification passed");
