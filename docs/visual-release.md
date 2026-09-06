@@ -15,6 +15,8 @@ Four task shapes provide a deliberately varied starting point:
 
 Keep the existing accepted Dishes immutable. Preserve their exact executed Recipe definitions before changing current briefs. Existing outputs remain historical comparisons when a brief changes. Every other Recipe is deferred from this release's taste audit; retain its source and provenance. Metadata migration may cover the whole catalog without forcing editorial decisions about its membership.
 
+The September 6 discussion corrections and browsing contract are recorded in [kitchen-experience.md](kitchen-experience.md).
+
 ## Kitchen for people
 
 The public gallery leads with Recipes and real Dishes. A visitor can inspect the task and its supplied inputs, open a runnable artifact, compare configurations on the same exact Recipe Revision, select another Repeat, and browse a Menu with honest coverage. Model-family browsing does not imply constant configuration. Missing cells stay visible inside eligible Menus; uncooked Recipes stay private.
