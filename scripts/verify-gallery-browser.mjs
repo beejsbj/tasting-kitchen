@@ -30,6 +30,15 @@ try {
   for (let i = 0; i < await page.locator(".recipe-card").count(); i++) { await page.locator(".recipe-card").nth(i).scrollIntoViewIfNeeded(); await page.waitForTimeout(100); }
   await page.evaluate(() => window.scrollTo(0, 0)); await save(page, "counter-desktop");
 
+  const cardsBeforeFilter = await page.locator('.recipe-grid').boundingBox();
+  await page.getByRole('button', { name: 'Cuisine and lineage filters' }).click();
+  const cardsAfterFilter = await page.locator('.recipe-grid').boundingBox();
+  assert.equal(cardsAfterFilter.y, cardsBeforeFilter.y, 'opening filters must not shift the recipe grid');
+  const cuisine = registry.cuisines.find(item => acceptedRecipes.some(recipe => recipe.cuisines.includes(item.id)));
+  await page.getByRole('group', { name: 'Cuisine', exact: true }).getByRole('button', { name: cuisine.label, exact: true }).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: `Remove ${cuisine.label} filter`, exact: true }).click();
+  assert.equal(new URL(page.url()).searchParams.has('cuisine'), false, 'removing a chip clears its URL filter');
   const target = acceptedRecipes.find(recipe => recipe.kind === "web") ?? acceptedRecipes[0];
   assert.ok(target, "registry should contain an accepted recipe");
   const targetDishes = registry.dishes.filter(dish => dish.recipe.id === target.id);
