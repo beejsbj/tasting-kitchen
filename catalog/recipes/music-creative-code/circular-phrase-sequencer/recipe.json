@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "circular-phrase-sequencer",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Build a circular phrase sequencer",
   "summary": "Turn concentric solfège tracks and radial beats into an offline touch-first instrument whose gestures, sound, and still states agree.",
   "cuisines": ["music-creative-code"],

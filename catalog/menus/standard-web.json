@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "standard-web",
+  "title": "Standard Web",
+  "summary": "Three familiar website baselines: a local service business, a developer portfolio and a Tailwind-style developer-tool homepage.",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    "standard-service-business",
+    "standard-developer-portfolio",
+    "standard-developer-homepage"
+  ]
+}

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "midi-phrase-translation",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Translate one performed phrase two honest ways",
   "summary": "Render a note-event packet as faithful and interpreted Strudel, exposing timing, overlap, voice, and quantization choices.",
   "cuisines": ["music-creative-code"],

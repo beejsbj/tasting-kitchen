@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "editorial-hero-image",
   "version": "1.0.0",
-  "status": "draft",
+  "status": "hidden",
   "title": "Direct an editorial hero image through one local revision",
   "summary": "Generate a publication-ready hero illustration, then change one object without replacing the composition.",
   "cuisines": ["ui-visual"],

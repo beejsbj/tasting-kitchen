@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "reference-grammar-transfer",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Transfer a reference's grammar, not its subject",
   "summary": "Turn an abstract reference's hierarchy, crop, contrast, and rhythm into an unrelated service interface.",
   "cuisines": ["ui-visual"],

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "brainstorm-without-building",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Brainstorm a concept without building it",
   "summary": "Explore a spatial neighborhood archive while keeping ideation separate from implementation and resisting a game metaphor.",
   "cuisines": ["thinking-decisions"],

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "fresh-visual-ui",
+  "title": "Fresh Visual UI",
+  "summary": "Four new uncooked candidates spanning product clarity, editorial authorship, expressive interaction and design-system continuity.",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    "fresh-product-span",
+    "fresh-editorial-second-life",
+    "fresh-interaction-paper-echo",
+    "fresh-system-hem"
+  ]
+}

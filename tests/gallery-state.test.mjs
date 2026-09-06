@@ -16,7 +16,7 @@ test('links preserve repeated configuration slots, exact revision and selected D
 
 test('legacy domain deep links translate without emitting retired vocabulary', () => {
   assert.equal(readGalleryState('?domain=ui-visual').cuisine, 'ui-visual');
-  assert.equal(readGalleryState('?view=untrusted').view, 'recipes');
+  assert.equal(readGalleryState('?view=untrusted').view, 'dishes');
   assert.equal(readGalleryState('?models=a,b,c,d').models.length, 3);
 });
 

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "spoken-video-script",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Write a short script that sounds spoken",
   "summary": "Write and compress a public-interest video script whose cadence, turns, and ending work aloud instead of reading like an essay.",
   "cuisines": ["writing-creative"],

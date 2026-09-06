@@ -4,16 +4,8 @@
   "headlineFact": "A small light that moves with the work.",
   "body": "Latchlight clips to a shelf or locks onto a steel surface, then turns toward the page, bench, or keyboard in front of you.",
   "mounts": [
-    {
-      "name": "Soft clip",
-      "fits": "edges 8–38 mm thick",
-      "limit": "not for rounded glass edges"
-    },
-    {
-      "name": "Magnetic foot",
-      "fits": "flat ferrous surfaces",
-      "limit": "does not hold on aluminium"
-    }
+    {"name": "Soft clip", "fits": "edges 8–38 mm thick", "limit": "not for rounded glass edges"},
+    {"name": "Magnetic foot", "fits": "flat ferrous surfaces", "limit": "does not hold on aluminium"}
   ],
   "facts": [
     "14 hours at reading brightness; 4 hours at full output",
@@ -24,9 +16,5 @@
   ],
   "primaryAction": "Choose a mount — $48",
   "secondaryAction": "See repair parts",
-  "note": "No testimonials, reviews, discounts, awards, or environmental claims are supplied. Do not invent them.",
-  "actionBehavior": {
-    "chooseMount": "Let the visitor select Soft clip or Magnetic foot and show the chosen mount with the supplied $48 price. Stop at a local selection summary; no purchase is submitted.",
-    "repairParts": "Open or navigate to local repair information using the supplied facts. Do not invent part prices, stock, ordering links, or repair procedures."
-  }
+  "note": "No testimonials, reviews, discounts, awards, or environmental claims are supplied. Do not invent them."
 }

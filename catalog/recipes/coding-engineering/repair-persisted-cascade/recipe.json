@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "repair-persisted-cascade",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Repair a cascade that disappears after reload",
   "summary": "Find why an in-memory scheduling cascade passes unit tests but loses later blocks when persisted and loaded.",
   "cuisines": ["coding-engineering"],

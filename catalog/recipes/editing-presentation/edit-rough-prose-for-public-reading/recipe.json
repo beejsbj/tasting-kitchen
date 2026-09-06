@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "edit-rough-prose-for-public-reading",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Edit rough prose for public reading",
   "summary": "Improve reader access to an uneven essay fragment while preserving its odd metaphor, cadence, and uncertainty about a premise.",
   "cuisines": ["editing-presentation"],

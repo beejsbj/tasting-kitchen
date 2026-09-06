@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "fresh-product-span",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Span",
+  "summary": "A folding laundry rack product page with fit facts, variant estimates, a local bag and a useful inquiry preview.",
+  "cuisines": [
+    "ui-visual",
+    "ux-interaction"
+  ],
+  "origin": "textbook",
+  "originNote": "New original fictional task and local source packet authored for this recipe; no existing recipe subject or implementation adapted.",
+  "tags": [
+    "visual-composition",
+    "implementation",
+    "accessibility"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "product",
+        "path": "fixtures/product.json",
+        "mountAs": "data/product.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-contract-json",
+        "path": "validation/contract.json",
+        "mountAs": "validation/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-cases-json",
+        "path": "validation/cases.json",
+        "mountAs": "validation/cases.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-mechanics-mjs",
+        "path": "validation/mechanics.mjs",
+        "mountAs": "validation/mechanics.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "validator-validate-output-mjs",
+        "path": "validation/validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "content": "Design and build Span’s product page from the supplied original commercial packet. Make selection useful and the product understandable. Read fixtures/brief.md and data/product.json for the facts and exact contract; author the visual answer."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "styles.css",
+      "app.mjs",
+      "logic.mjs",
+      "data/product.json",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 120,
+      "maxBytes": 5000000
+    }
+  },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      {
+        "id": "mechanical-contract",
+        "type": "command",
+        "required": true,
+        "description": "Validate required nonempty files, local literal resource/import links, JavaScript syntax, immutable data hashes and shared pure-logic vectors. Does not prove rendering, event wiring, accessibility or taste.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "browser-and-taste",
+        "type": "manual",
+        "required": false,
+        "description": "At 360px and 1440px, inspect hierarchy and honest product representation. Change size, finish, quantity and mesh; try sold-out selection, replace and clear bag, and recover from invalid inquiry. Check arithmetic shown equals shared logic, no request is sent, keyboard/focus/errors and narrow-screen fit."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

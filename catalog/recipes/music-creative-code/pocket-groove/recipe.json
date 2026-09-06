@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "pocket-groove",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Write a restrained Strudel groove with a real turn",
   "summary": "Compose executable Strudel that establishes a pocket, develops it without crowding, and earns one turnaround.",
   "cuisines": ["music-creative-code"],

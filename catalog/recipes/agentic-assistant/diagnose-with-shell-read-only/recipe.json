@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "diagnose-with-shell-read-only",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Diagnose a service mismatch without changing files",
   "summary": "Use shell evidence to separate a green unit test from the real failing request path while respecting a read-only boundary.",
   "cuisines": ["agentic-assistant"],

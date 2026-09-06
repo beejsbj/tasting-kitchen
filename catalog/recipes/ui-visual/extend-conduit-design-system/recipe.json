@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "status": "ready",
   "title": "Conduit extension",
-  "summary": "Extend an authentic, bounded Conduit design-system snapshot with a live listing-provenance feature while preserving the feature's ownership boundary.",
+  "summary": "Add a listing-provenance inspector to Conduit’s marketplace design system.",
   "origin": "hybrid",
   "originNote": "A related variant of the design-system extension recipe, grounded in a vendored Conduit Market StyleGuide snapshot and constrained by the static browser runtime.",
   "variation": "Variant of extend-design-system-without-flattening-it. Its provenance is an exact local snapshot of beejsbj/conduit-market-client at portfolio/showcase-2025 commit 6c3de0c9b493b5b00e231e08c4d95a753183d268; fixture provenance records per-file Git and SHA-256 digests.",

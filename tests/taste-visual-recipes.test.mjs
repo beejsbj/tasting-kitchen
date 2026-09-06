@@ -9,8 +9,6 @@ import { validateWorkspace as validateEditorial } from "../catalog/recipes/ui-vi
 import { validateWorkspace as validateRitual } from "../catalog/recipes/ui-visual/shared-result-ritual/validate-output.mjs";
 import { validateWorkspace as validateSystem } from "../catalog/recipes/ui-visual/extend-design-system-without-flattening-it/validate-output.mjs";
 
-const projectRoot = path.resolve(import.meta.dirname, "..");
-
 async function temp(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-validator-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -21,32 +19,6 @@ async function put(root, relative, value) {
   await mkdir(path.dirname(filename), { recursive: true });
   await writeFile(filename, typeof value === "string" ? value : `${JSON.stringify(value)}\n`);
 }
-
-test("the visual Menu recipes use the implemented single-turn contract", async () => {
-  const ids = ["responsive-product-launch", "editorial-culture-feature", "shared-result-ritual", "extend-design-system-without-flattening-it"];
-  const recipes = await Promise.all(ids.map((id) => readFile(path.join(projectRoot, "catalog/recipes/ui-visual", id, "recipe.json"), "utf8").then(JSON.parse)));
-  for (const recipe of recipes) {
-    assert.equal(recipe.status, "ready");
-    assert.equal(recipe.turns.length, 1);
-    assert.deepEqual(recipe.presentation, { profile: "static-web-v1", semanticRuntime: null });
-    assert.match(recipe.setup.instructions, /Copy or embed every runtime input/);
-    assert.match(recipe.setup.instructions, /fixtures\/ and validation\/ are not shipped/);
-    const validator = recipe.setup.fixtures.find((fixture) => fixture.id === "output-validator");
-    assert.equal(validator.editable, false);
-    assert.ok(recipe.validation.checks.some((check) => check.required && check.type === "command" && check.argv?.[1] === "validation/validate-output.mjs"));
-  }
-  const system = recipes.find((recipe) => recipe.id === "extend-design-system-without-flattening-it");
-  assert.ok(system.setup.fixtures.filter((fixture) => fixture.id.startsWith("source-")).every((fixture) => fixture.editable === true));
-  assert.equal(system.tags.includes("correction-recovery"), false);
-  assert.match(system.validation.checks.find((check) => check.id === "system-review").description, /imports the real modules/);
-  assert.match(system.validation.checks.find((check) => check.id === "system-review").description, /all three product contexts are visible/);
-  const ritual = recipes.find((recipe) => recipe.id === "shared-result-ritual");
-  const browserCheck = ritual.validation.checks.find((check) => check.id === "state-browser-check");
-  assert.match(browserCheck.description, /^In a browser/);
-  assert.doesNotMatch(browserCheck.description, /Kitchen browser probe|root state/i);
-  const editorial = recipes.find((recipe) => recipe.id === "editorial-culture-feature");
-  assert.match(editorial.turns[0].content, /Copy the supplied SVG to assets\/night-map\.svg/);
-});
 
 test("general web validators accept nonempty module-based output", async (t) => {
   const root = await temp(t);

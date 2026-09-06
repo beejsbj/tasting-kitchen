@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "unfinished-metaphor-ontology-correction",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Think with an unfinished metaphor",
   "summary": "Receive a fragmented bridge metaphor, absorb a correction to its underlying relation, and then test what does not fit.",
   "cuisines": ["conversation-journaling"],

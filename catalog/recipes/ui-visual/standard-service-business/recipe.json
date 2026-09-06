@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "standard-service-business",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Plumbing company website",
+  "summary": "A conventional local plumbing brochure with services, hours, trust facts and an enquiry preview.",
+  "cuisines": [
+    "ui-visual",
+    "ux-interaction"
+  ],
+  "origin": "textbook",
+  "originNote": "Original fictional content authored for a conventional website archetype. Existing schema and runtime patterns informed mechanics only; no old recipe subject or fixture was adapted.",
+  "tags": [
+    "visual-composition",
+    "implementation",
+    "accessibility"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md and data/content.json, then author the missing static page locally in one turn. Mounted inputs and validator remain immutable during a Cook. Ready means supported execution mechanics, not a cooked or accepted website.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "content",
+        "path": "fixtures/content.json",
+        "mountAs": "data/content.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "output-validator",
+        "path": "validation/validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "content": "Build the plumbing company website described in fixtures/brief.md using the complete original fictional packet in data/content.json. Keep the result recognizably conventional and implement the modest ordinary browser interactions specified there. Use local files only, with no dependencies or network."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "styles.css",
+      "app.mjs",
+      "data/content.json",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 40,
+      "maxBytes": 2000000
+    }
+  },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      {
+        "id": "output-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check nonempty output, minimal HTML shell and explicit stylesheet/module references, JSON and JavaScript syntax, and common literal local resource paths. Does not prove rendered content, event wiring, accessibility or visual quality.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "browser-and-taste",
+        "type": "manual",
+        "required": false,
+        "description": "Inspect 360px/1440px hierarchy and mainstream business credibility. Try menu/anchors, invalid and corrected enquiry, Other area, edit/re-preview and safe summary text. Confirm no submission, keyboard focus and complete supplied facts."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "notation-led-drum-instrument",
   "version": "1.1.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Make the drum notation the playable instrument",
   "summary": "Compose a small performance-ready drum form and build an offline editor where notation, playback, and voice feedback stay coupled.",
   "cuisines": ["music-creative-code"],

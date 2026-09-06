@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "morally-mixed-feeling-no-verdict",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Recognize a mixed feeling without a verdict",
   "summary": "Discuss relief at another proposal's failure while keeping feeling, motive, action, and impact distinct.",
   "cuisines": ["conversation-journaling"],

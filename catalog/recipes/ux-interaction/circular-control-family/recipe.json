@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "circular-control-family",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Make four circular controls feel related but unambiguous",
   "summary": "Build range, toggle, option, and action controls that share one grammar while preserving distinct behavior on touch and keyboard.",
   "cuisines": ["ux-interaction"],

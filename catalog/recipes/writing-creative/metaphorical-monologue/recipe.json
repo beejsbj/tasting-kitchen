@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "metaphorical-monologue",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Build a monologue around a metaphor that can resist",
   "summary": "Develop a museum with changing labels into authored prose where the governing metaphor generates thought and eventually pushes back.",
   "cuisines": ["writing-creative"],

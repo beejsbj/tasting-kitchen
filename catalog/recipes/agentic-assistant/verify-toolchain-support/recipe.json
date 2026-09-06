@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "verify-toolchain-support",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Verify support from documentation, configuration, and code",
   "summary": "Research a closed evidence bundle, separate advertised support from operational readiness, and make one recommendation.",
   "cuisines": ["agentic-assistant"],

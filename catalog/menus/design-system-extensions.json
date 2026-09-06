@@ -2,10 +2,11 @@
   "schemaVersion": 1,
   "id": "design-system-extensions",
   "title": "Design-system extensions",
-  "summary": "Extend Northstar and three source systems from Burooj's projects.",
-  "cuisines": ["ui-visual"],
+  "summary": "Extend Conduit, P5 Lottery, and Emotitone from supplied source snapshots.",
+  "cuisines": [
+    "ui-visual"
+  ],
   "recipes": [
-    "extend-design-system-without-flattening-it",
     "extend-conduit-design-system",
     "extend-qrng-design-system",
     "extend-emotitone-design-system"

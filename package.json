@@ -9,14 +9,15 @@
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "taste": "node bin/taste.mjs",
     "test:taste": "node --test tests/taste-*.test.mjs",
-    "test:gallery": "node --experimental-strip-types --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs",
+    "test:gallery": "node --experimental-strip-types --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs tests/github-recipe-save.test.mjs",
     "dev": "node bin/taste.mjs build-registry && vite",
     "build": "node bin/taste.mjs build-registry && vite build",
     "preview": "vite preview",
-    "test": "npm run validate:catalog && npm run test:taste && npm run typecheck && npm run build && npm run test:gallery",
+    "test": "npm run validate:catalog && npm run test:taste && npm run test:recipes && npm run typecheck && npm run build && npm run test:gallery",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes",
     "typecheck": "tsc --noEmit",
-    "test:browser": "node scripts/verify-gallery-browser.mjs"
+    "test:browser": "node scripts/verify-gallery-browser.mjs",
+    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

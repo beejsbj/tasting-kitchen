@@ -46,6 +46,15 @@ h1, h2, h3 { font-family: var(--font-display); }
 .pill-row, .family-tabs { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .control-label { min-width: 5rem; }.effort-filters { margin-top: var(--space-2); }
 .recipe-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.dish-groups { display: grid; gap: var(--space-8); }
+.dish-group { min-width: 0; }
+.dish-group__heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.dish-group__heading h3 { margin: 0; font-size: var(--text-lg); }
+.dish-group__heading p { margin: var(--space-2) 0 0; color: var(--ink-muted); line-height: 1.5; max-width: 70ch; }
+.dish-group__heading > span { flex-shrink: 0; color: var(--ink-muted); font: var(--text-xs) var(--font-mono); }
+.dish-card__effort { margin-left: var(--space-2); font: var(--text-sm) var(--font-mono); color: var(--ink-muted); }
+.dish-card__metadata { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); color: var(--ink-muted); font-size: var(--text-sm); }
+.dish-card__revision { margin-top: var(--space-3); color: var(--ink-muted); font: var(--text-xs) var(--font-mono); }
 .recipe-card { min-width: 0; padding: var(--space-2); background: linear-gradient(125deg, var(--steel-light), var(--steel-dark)); border: var(--line-width) solid var(--line-bright); border-radius: var(--radius-md); box-shadow: var(--tray-shadow); transition: border-color var(--duration-fast) ease; }
 .recipe-card__open { display: block; padding: 0; width: 100%; border: var(--line-width) solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); text-align: left; }
 .recipe-card__preview { background: var(--preview-ground); height: var(--preview-height); overflow: hidden; position: relative; border-bottom: var(--line-width) solid var(--line); }

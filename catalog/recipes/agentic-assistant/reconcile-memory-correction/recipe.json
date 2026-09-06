@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "reconcile-memory-correction",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Reconcile an old memory with today's correction",
   "summary": "Use a sourced memory packet to restore continuity without preserving a superseded interpretation.",
   "cuisines": ["agentic-assistant"],
