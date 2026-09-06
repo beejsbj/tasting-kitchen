@@ -2,21 +2,46 @@
   "kicker": "Night work / field notes",
   "title": "The hour after the storefronts go dark",
   "dek": "Across three blocks, repairers, bakers, and cleaners inherit a different version of the street.",
-  "byline": "Mira Sen — photographs translated as an abstract field map",
+  "byline": "Mira Sen — fictional field notes",
   "paragraphs": [
     "At eleven, the commercial street does not close so much as change hands. The day signs go black, the delivery doors open, and a second set of routines begins behind glass.",
     "The people working this shift describe distance differently. A corner is not near because it is visible; it is near if the route is lit, if the bus still runs, and if someone else is awake behind the next door.",
+    "At the tailor’s, the last task is folding the measuring tape into a drawer. The window light stays on while the floor is cleared. Outside, a cleaner pauses with a cart angled away from the doorway, leaving just enough space for someone carrying a bicycle to pass. For a moment the pavement holds three different endings to a working day. Then the drawer closes, the cart moves, and the bicycle disappears toward the workshop.",
+    "There is no single night shift. The bakery is beginning work that will become visible in the morning; the workshop is finishing work collected the previous afternoon. The cleaner moves between those schedules. Their overlap is brief, and the street offers few places designed for it. A low sill becomes a seat. An unopened shop becomes shelter from a passing shower. The usefulness of each place changes without anything being rebuilt.",
     "Light becomes shared infrastructure. A bakery keeps its prep-room window uncovered. A bicycle workshop angles one lamp toward the pavement. Neither gesture is announced as public service, but both alter the block.",
+    "Inside the bakery, the bright room ends sharply at the window. Reflections make the opposite side of the street difficult to see. From outside, however, the same window is a landmark: a rectangle that allows a walker to judge the bend ahead. What reads as exposure to one person reads as reassurance to another. The glass does not resolve that difference. It simply holds the two views together.",
+    "The workshop lamp reaches less far. It catches the edge of a wheel, a strip of pavement, and the lower half of the door. Moving it toward the street leaves part of the bench in shadow. Even a small courtesy has a practical cost. When the repairer returns to the bench, the lamp follows; the patch of pavement goes dark again. This is borrowed light, available in intervals rather than promised for the whole night.",
+    "A map can mark these openings but cannot guarantee them. The window may be covered tomorrow. A delivery may block the doorway. Someone who waited comfortably here yesterday may decide to keep walking tonight. The accompanying field map therefore leaves out street names and exact distances. Its bright marks describe a relationship between thresholds, not a route that another person should be told to trust.",
     "The map of the night is therefore made from small permissions: a place to wait, a sink that can be used, a name remembered from yesterday, a doorway that remains bright for ten minutes longer.",
+    "At the maintenance bus stop, waiting becomes visible. People look up together when an engine turns the corner, then return to their separate thoughts when it continues past. The pause has a rhythm without becoming a conversation. A person arriving late can read the group before reading the timetable: shoulders lifted toward the road, bags gathered closer, the small readiness of bodies expecting to move.",
+    "Near dawn, the produce deliveries change the scale of the street. Handcarts and stacked crates occupy spaces that felt wide an hour earlier. The bakery window is still bright, but it no longer acts as the main point of orientation. The eye follows movement instead. The night’s borrowed seats and waiting places return to being sills, doorways, and ordinary pieces of pavement.",
+    "Nothing formally announces the handover. A shutter rises beside a doorway that has been open all night. Someone sweeps around a wheel mark left by a cart. The first daytime customers step past evidence they have no reason to interpret. To notice the second street is not to turn its workers into scenery; it is to recognize that the familiar morning depends on a set of arrangements that were already underway.",
     "By dawn the evidence is modest—flour on a sleeve, a repaired wheel, a swept threshold—but the street has been held together by people most daytime visitors never meet."
   ],
   "pullQuote": "A corner is near if someone else is awake behind the next door.",
   "chronology": [
-    {"time": "22:40", "event": "Last customer leaves the tailor."},
-    {"time": "23:15", "event": "Bakery preparation begins."},
-    {"time": "01:20", "event": "First maintenance bus passes."},
-    {"time": "04:50", "event": "Produce deliveries arrive."},
-    {"time": "06:05", "event": "Day shutters begin to open."}
+    {
+      "time": "22:40",
+      "event": "Last customer leaves the tailor."
+    },
+    {
+      "time": "23:15",
+      "event": "Bakery preparation begins."
+    },
+    {
+      "time": "01:20",
+      "event": "First maintenance bus passes."
+    },
+    {
+      "time": "04:50",
+      "event": "Produce deliveries arrive."
+    },
+    {
+      "time": "06:05",
+      "event": "Day shutters begin to open."
+    }
   ],
-  "caption": "A synthetic map of lit thresholds; it is not geographic evidence."
+  "caption": "A synthetic map of lit thresholds; it is not geographic evidence.",
+  "sourceNote": "An original fictional editorial packet, including its quotation and chronology. No real reporting or photography is represented.",
+  "pullQuoteAttribution": "From the field notes"
 }

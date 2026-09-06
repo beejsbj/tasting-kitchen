@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "shared-result-ritual",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "status": "ready",
   "title": "Shared-result ritual",
   "summary": "Build a shared-result surface with waiting, interruption, reveal, and selected states.",
@@ -21,7 +21,7 @@
   "turns": [{
     "id": "build-ritual",
     "role": "prompt",
-    "content": "Read fixtures/event.json and build a complete responsive result surface as index.html. Let a reviewer enter waiting, interrupted, sealed, reveal, and selected states without navigation or reload. Prefer ordinary product interactions; if the natural flow does not expose every state, put the remaining controls in a clearly labelled Review states panel kept separate from the main ritual. Show the packet's exact message for the active state and expose state changes through an appropriate live region. Treat the drawing as a room of people awaiting one consequential moment rather than a metrics dashboard. Derive the visual register from the event. Motion, copy, type, and sound-free feedback may be expressive only when they clarify anticipation, interruption, verification, reveal, or consequence. Preserve the eventful register without adding ornamental spectacle. Every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, prizes, testimonials, or participant details beyond the packet."
+    "content": "Read fixtures/event.json and build a complete responsive result surface as index.html. Implement the packet’s deterministic rehearsal and transition rules, with waiting, interrupted, sealed, reveal, and selected reachable without navigation or reload. Clearly identify the experience as a local rehearsal; it performs no real verification or drawing. Prefer ordinary product interactions; if the natural flow does not expose every state, put the remaining controls in a clearly labelled Review states panel kept separate from the main ritual. Show the packet's exact message for the active state and expose state changes through an appropriate live region. Treat the drawing as a room of people awaiting one consequential moment rather than a metrics dashboard. Derive the visual register from the event. Choose the visual language and sound-free feedback freely while making anticipation, interruption, reveal, and consequence legible. Every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, additional prizes, testimonials, or participant details beyond the packet."
   }],
   "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 40, "maxBytes": 7340032}},
   "validation": {
@@ -29,7 +29,7 @@
     "checks": [
       {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The runnable result surface exists.", "target": "index.html"},
       {"id": "event-state-contract", "type": "command", "required": true, "description": "The entry and any shipped JavaScript or stylesheet assets are nonempty, and JavaScript parses as modules.", "argv": ["node", "validation/validate-output.mjs"]},
-      {"id": "state-browser-check", "type": "manual", "required": false, "description": "In a browser, activate waiting, interrupted, sealed, reveal, and selected without reload; verify the exact messages, live announcements, reduced-motion behavior, and keyboard-only operation."}
+      {"id": "state-browser-check", "type": "manual", "required": false, "description": "In a browser at 390px and 1440px, follow Close entries → interruption → Retry verification → sealed → Begin drawing → reveal → Reveal entry → selected. Verify exact messages, no premature recipient, unavailable-action guards, Return to sealed list, restart/reset, live announcements, keyboard-only operation, focus, and distinct states with reduced motion. Repeat the sequence; no reload or network should be needed."}
     ]
   },
   "cuisines": ["ui-visual"]

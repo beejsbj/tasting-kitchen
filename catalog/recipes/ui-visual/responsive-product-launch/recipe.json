@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "responsive-product-launch",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "status": "ready",
   "title": "Product launch page",
   "summary": "Build a responsive product page that makes compatibility and repair information easy to find.",
@@ -21,7 +21,7 @@
   "turns": [{
     "id": "build-page",
     "role": "prompt",
-    "content": "Read fixtures/product.json and build the complete responsive launch page as index.html with any local CSS or JavaScript it needs. Use every supplied product, mount, compatibility, runtime, repair, and action fact accurately; do not invent testimonials, reviews, discounts, awards, environmental claims, or other product facts. Make the object desirable while keeping mounting limits, runtime, and repairability in the main decision path. Give the page a chosen visual point of view rather than a generic SaaS landing-page treatment. Make the two mounting modes easy to compare without using a table or feature-grid facsimile. It must work at 390px and 1440px, use semantic HTML, support keyboard navigation, and expose a visible keyboard focus state. Do not explain the design instead of building it."
+    "content": "Read fixtures/product.json and build the complete responsive launch page as index.html with any local CSS or JavaScript it needs. Use every supplied product, mount, compatibility, runtime, repair, and action fact accurately; do not invent testimonials, reviews, discounts, awards, environmental claims, or other product facts. Make the object desirable while keeping mounting limits, runtime, and repairability in the main decision path. Choose the visual interpretation freely: palette, typography, imagery made locally, and layout are yours. Make the two mounting modes easy to compare. Implement the supplied local action behavior; no checkout or external destination is needed. It must work at 390px and 1440px, use semantic HTML, support keyboard navigation, and expose a visible keyboard focus state. Avoid horizontal page overflow and honor prefers-reduced-motion if adding motion. Do not explain the design instead of building it."
   }],
   "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
   "validation": {
@@ -29,7 +29,7 @@
     "checks": [
       {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The runnable launch page exists.", "target": "index.html"},
       {"id": "launch-contract", "type": "command", "required": true, "description": "The entry and any shipped JavaScript or stylesheet assets are nonempty, and JavaScript parses as modules.", "argv": ["node", "validation/validate-output.mjs"]},
-      {"id": "responsive-human-check", "type": "manual", "required": false, "description": "At 390px and 1440px, inspect whether desire and decision clarity coexist and whether the mounting modes compare naturally without becoming a table."}
+      {"id": "responsive-human-check", "type": "manual", "required": false, "description": "At 390px and 1440px, verify every product fact, compare mounting limits, choose either mount and inspect repair information using only the keyboard. Inspect hierarchy, desirability, readable text, focus, and overflow. These are human observations, not automatic guarantees."}
     ]
   },
   "cuisines": ["ui-visual"]

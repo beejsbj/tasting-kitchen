@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "editorial-culture-feature",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "status": "ready",
   "title": "Culture feature",
   "summary": "Build a responsive editorial feature with long-form copy, visual pauses, captions, and a chronology.",
@@ -22,7 +22,7 @@
   "turns": [{
     "id": "build-feature",
     "role": "prompt",
-    "content": "Using fixtures/article.json and fixtures/night-map.svg, build a complete responsive cultural feature as index.html. Copy the supplied SVG to assets/night-map.svg and use it in the page. Preserve every supplied paragraph, chronology entry, caption, quotation, and attribution exactly in visible, selectable text. Do not invent photography, facts, quotations, or additional reporting. Make the page inviting to wander without breaking the long reading path. Establish a clear opening hierarchy in which the title, dek, and first paragraph have distinct roles rather than equal visual volume. Include a strong opening composition, the supplied map and caption, one use of the supplied pull quote, and the complete chronology. Avoid a blog-template stack of identical cards. Use semantic article, heading, figure, caption, quotation, and time markup."
+    "content": "Using fixtures/article.json and fixtures/night-map.svg, build a complete responsive cultural feature as index.html. Copy the supplied SVG to assets/night-map.svg and use it in the page. Preserve every supplied paragraph, chronology entry, caption, quotation, and attribution exactly in visible, selectable text. Do not invent photography, facts, quotations, or additional reporting. Make the page inviting to wander without breaking the long reading path. Establish a clear opening hierarchy in which the title, dek, and first paragraph have distinct roles rather than equal visual volume. Include a strong opening composition, the supplied map and caption, one use of the supplied pull quote, and the complete chronology. Avoid a blog-template stack of identical cards. Use semantic article, heading, figure, caption, quotation, and time markup. Keep the body paragraphs in their supplied order; use the source note and pull-quote attribution visibly so the fictional material is not presented as real reporting. The map is supplied content, not a palette or layout reference. Typography, spacing, section rhythm, and locally made non-reportorial ornament are open. At 390px and 1440px maintain readable text, keyboard focus for any controls, and no horizontal page overflow; honor reduced motion if motion is used."
   }],
   "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
   "validation": {

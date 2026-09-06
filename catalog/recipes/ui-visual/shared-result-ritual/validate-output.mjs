@@ -9,8 +9,8 @@ async function outputFiles(root) {
     for (const entry of await readdir(path.join(root, relative), { withFileTypes: true })) {
       if (!relative && ["fixtures", "validation"].includes(entry.name)) continue;
       const next = path.join(relative, entry.name);
-      if (entry.isDirectory()) await visit(next);
-      else if (entry.isFile()) files.push(next);
+      if (entry.isDirectory() && (relative || entry.name === "assets")) await visit(next);
+      else if (entry.isFile() && (relative || entry.name === "index.html" || /\.(?:css|js)$/u.test(entry.name))) files.push(next);
     }
   }
   await visit();

@@ -112,3 +112,26 @@ test("design validator rejects duplicate symbols, traversal, missing reasons, an
   await put(root, "src/components.js", "export const = ;");
   await assert.rejects(validateSystem(root), /JavaScript syntax failed/);
 });
+
+test("web validation follows published paths, excluding working notes", async (t) => {
+  const root = await temp(t);
+  await put(root, "index.html", "<main>Sample</main>");
+  await put(root, "notes/scratch.js", "not valid JavaScript !!!");
+  await put(root, "notes.md", "");
+  await assert.doesNotReject(validateLaunch(root));
+  await assert.doesNotReject(validateRitual(root));
+  await put(root, "assets/nested/app.js", "export const = ;");
+  await assert.rejects(validateLaunch(root), /JavaScript syntax failed/);
+});
+
+test("system validator checks nested published modules and additional root scripts", async (t) => {
+  const root = await designWorkspace(t);
+  await put(root, "src/feature/nested.js", "export const = ;");
+  await assert.rejects(validateSystem(root), /JavaScript syntax failed/);
+  await put(root, "src/feature/nested.js", "export const sample = 1;");
+  await put(root, "extra.js", "export const = ;");
+  await assert.rejects(validateSystem(root), /JavaScript syntax failed/);
+  await put(root, "extra.js", "export const sample = 1;");
+  await put(root, "src/empty.css", "");
+  await assert.rejects(validateSystem(root), /Empty published file/);
+});

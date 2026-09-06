@@ -1,32 +1,32 @@
-# Visual Recipe contract
+# Visual Recipe contracts
 
-The first visual Menu consists of four ready Recipes:
+The existing `visual-ui` Menu retains four distinct candidates for drafting and inspection. Ready means supported by the execution boundary; it does not mean a model result has been cooked or human-approved.
 
-- `responsive-product-launch`
-- `editorial-culture-feature`
-- `shared-result-ritual`
-- `extend-design-system-without-flattening-it`
+| Recipe | What it reveals | Supplied input | Expected result and human probes |
+| --- | --- | --- | --- |
+| `responsive-product-launch` — Product launch page | Familiar product work: persuasion, decision clarity, and visual interpretation of facts. | Latchlight facts, two mounting modes and their limits, battery/runtime/repair information, price and local action behavior. | A complete responsive page. Select each mount and see its price/selection summary; open repair information. Check every fact, hierarchy, readability and compatibility clarity. Palette, type, imagery and comparison layout remain open. |
+| `editorial-culture-feature` — Culture feature | Visual authorship across sustained reading, an opening composition and contrasting reading rhythms. | An original fictional feature with thirteen paragraphs, title/dek/byline, attributed pull quote, five chronology entries, source disclosure, and a captioned abstract SVG map. | A full article preserving supplied copy and paragraph order, with map, quote and chronology. Check selectable text, disclosure, caption associations, opening hierarchy and rhythm over the full reading path. The map is content, not a required visual style. |
+| `shared-result-ritual` — Shared-result ritual | An expressive interactive object whose anticipation and consequence remain understandable through interruption. | Fictional seed-library event, exact state messages, fixed result and deterministic rehearsal transitions. | Start waiting; Close entries interrupts; Retry verification seals; Begin drawing reveals Entry 18; Reveal entry selects the recipient. Verify guards against early draw/selection, no premature recipient text, reset and repeatability. Inspect live announcements and distinct states with reduced motion. Visual treatment is open. |
+| `extend-design-system-without-flattening-it` — Design-system extension | Continuity with an existing language and judgment about shared versus feature-owned work. | Editable token/styles, real primitives, baseline overview/setup/inspection compositions, working local signal selector; immutable brief with four devices, usage evidence and concrete extension behavior. | An importing styleguide with all three contexts, pair/cancel simulation, retained signal interaction, and a promote/prune/keepLocal ledger. Compare source imports/exports with the ledger, inspect continuity, and try controls. The brief fixes existing token roles but does not dictate the new implementation structure. |
 
-Each Recipe presents all known constraints in one turn. The generated result is a static web Dish with `index.html` as its entry point. The `presentation` profile is `static-web-v1` with no semantic runtime. The gallery presents the Dish in an opaque sandbox that permits scripts. Published resources must therefore use relative paths and may not depend on network access or same-origin privileges.
+Review all four at 390px and 1440px, with keyboard-only operation, visible focus, and no horizontal page overflow. Review reduced motion wherever motion is introduced. These are human probes, not taste scores or claims that automation verified visual quality.
 
-## Fixtures and published output
+## Execution and source boundaries
 
-The runner mounts source material below `fixtures/` and the Recipe validator below `validation/`. Those directories are working inputs; they are not automatically copied into the accepted Dish. Each prompt explicitly requires the Cook to copy or embed every runtime dependency within the allowed published output paths.
+All known instructions arrive in one turn, under `static-web-v1` with a null semantic runtime. Each result publishes `index.html` and its allowed local resources. The opaque script-enabled sandbox supplies no same-origin privileges or network dependencies. Copy or embed runtime inputs into published paths: `fixtures/` and `validation/` are working inputs and are not shipped with the Dish.
 
-Factual inputs, media, and validators are immutable fixtures. The design-system Recipe also supplies editable component and token sources because changing those source files is the task. Their original bytes remain part of the Recipe revision even though the Cook may edit the mounted copies.
+Factual JSON packets, the original editorial SVG, and validator sources are immutable inputs. Only the design-system sources mounted in `src/` are editable. Their initial bytes still contribute to the exact Recipe Revision. The supplied system is a baseline to extend, not an accepted Dish or a hidden reference answer. Its setup controls deliberately await the extension behavior; its signal selector already works locally. No live equipment, checkout, verification service or drawing service is implied.
 
-## Automated acceptance
+## Automatic evidence and its limits
 
-The validators cover structural facts that can be established without a browser:
+The three general web validators require a nonempty entry and nonempty files within the allowed output paths, and syntax-check external JavaScript modules without executing them. The editorial validator also requires `assets/night-map.svg`; it does not prove the map is displayed or byte-identical. Fidelity is a human probe. Scratch notes outside published paths do not affect these checks.
 
-- The general web validators require `index.html` and every published file to be nonempty. The design-system validator requires its declared entry, assets, source modules, and decision ledger to be nonempty.
-- Published JavaScript modules must pass Node's syntax check. The validator does not execute them because browser modules may validly reference the DOM at module scope.
-- The editorial Dish must publish the supplied map at `assets/night-map.svg`.
-- The design-system Dish must publish its entry, stylesheet, styleguide module, declared source modules, token sheet, and `system-decisions.json`.
-- The design decision ledger must contain one `promote`, one `prune`, and one `keepLocal` choice. Each choice names a distinct JavaScript symbol, a nonempty reason, and an existing JavaScript source under `src/`.
+The system validator requires its entry, stylesheet, styleguide module, original component/feature modules, token sheet and decision ledger. It checks nonempty published files and JavaScript syntax, including nested source modules. The ledger has exactly `promote`, `prune` and `keepLocal`, each with a distinct JavaScript symbol, nonempty reason and contained existing source path. A pruned symbol names the removed shared API; its source names the surviving file from which it was removed. The ledger does not automatically prove imports, exports, implementation or sound architectural judgment.
 
-These checks establish packaging, parseability, and inspectable decision metadata. They do not prove browser behavior or visual quality. Acceptance also records manual browser observations for factual fidelity, responsive layouts, keyboard use, reduced-motion behavior, and reachable interactive states. For the design-system Dish, review also compares actual imports and exports with the decision ledger and confirms that all three product contexts are visible.
+No validator executes a browser, checks inline-script syntax, resolves every dependency, verifies accessibility, or proves the ritual's state machine. Manual checks are advisory cues in the current runner; an automatic pass is not a recorded human observation and does not gate publication on human approval. A later tasting must actually perform and record those probes beside its Dish. This authoring pass creates no Dishes and supplies no fabricated browser evidence.
 
-## Revision history
+## Retained choices and revisions
 
-`responsive-product-launch` and `shared-result-ritual` use Recipe revision `2.0.0`; their accepted `1.0.0` Dish revisions remain immutable and resolvable. `editorial-culture-feature` and `extend-design-system-without-flattening-it` remain at `1.0.0` because they had no accepted Dish revision before this authoring pass. The presentation profile, fixture editability, prompts, and validators are execution material for these new revisions.
+Retained the four IDs, concise names, existing `visual-ui` membership, lineage, output packaging, immutable/editable fixture distinction, single-turn boundary, editorial map, Latchlight facts and three-way system decision ledger. Those already supported distinct comparisons. Expanded the thin editorial packet and system usage evidence; made the ritual reproducible; specified useful local product actions; removed the product's table prohibition. No palette, typography or animation prescription was added to the open briefs.
+
+Current versions are `2.1.0` for product launch and shared-result ritual, and `1.1.0` for culture feature and design-system extension. These minor bumps identify the changed prompts, source packets and validation contracts; new execution hashes are expected. Existing immutable Recipe snapshots and accepted Dishes remain byte-for-byte unchanged, including the historical `1.0.0` launch and ritual results. Only a separately authorized Cook can freeze and execute these new drafts.
