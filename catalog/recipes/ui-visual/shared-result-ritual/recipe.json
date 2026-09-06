@@ -1,41 +1,36 @@
 {
   "schemaVersion": 1,
   "id": "shared-result-ritual",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "status": "ready",
-  "title": "Stage a shared result as an event",
-  "summary": "Build waiting, interruption, reveal, and selected states for a public drawing without turning it into a dashboard.",
-  "domain": "ui-visual",
+  "title": "Shared-result ritual",
+  "summary": "Build a shared-result surface with waiting, interruption, reveal, and selected states.",
   "origin": "mothers",
   "originNote": "Distilled from a recurring history-derived interest in staging chance, waiting, and consequence as a coherent ritual.",
   "tags": ["visual-composition", "visual-language", "motion", "state-modeling", "accessibility"],
   "kind": "web",
+  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
   "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
   "setup": {
-    "instructions": "Mount the fictional event packet. Build a self-contained runnable artifact with no network calls or external media.",
+    "instructions": "Mount the fictional event packet and validator. Build a self-contained runnable artifact with no network calls or external media. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish.",
     "fixtures": [
-      {"id": "event-packet", "path": "fixtures/event.json", "mountAs": "fixtures/event.json", "public": true, "mediaType": "application/json"}
+      {"id": "event-packet", "path": "fixtures/event.json", "mountAs": "fixtures/event.json", "public": true, "editable": false, "mediaType": "application/json"},
+      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
     ]
   },
-  "turns": [
-    {
-      "id": "build-ritual",
-      "role": "prompt",
-      "content": "Read fixtures/event.json and build a complete responsive result surface as index.html. It must let a reviewer enter waiting, connection-interrupted, sealed, reveal, and selected states without reloading. Treat the drawing as a room of people awaiting one consequential moment, not as a metrics dashboard. Derive a visual register from the event instead of using supplied style adjectives. Motion, copy, type, and sound-free feedback may be expressive when they clarify state. Each state container must expose its key as data-state, and every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, or prizes beyond the packet."
-    },
-    {
-      "id": "remove-empty-spectacle",
-      "role": "correction",
-      "content": "Revise the same artifact so that any flourish which does not clarify anticipation, interruption, verification, reveal, or consequence is removed or reassigned. Preserve the eventful register; do not flatten the result into a conventional card dashboard."
-    }
-  ],
+  "turns": [{
+    "id": "build-ritual",
+    "role": "prompt",
+    "content": "Read fixtures/event.json and build a complete responsive result surface as index.html. Implement the packet’s deterministic rehearsal and transition rules, with waiting, interrupted, sealed, reveal, and selected reachable without navigation or reload. Clearly identify the experience as a local rehearsal; it performs no real verification or drawing. Prefer ordinary product interactions; if the natural flow does not expose every state, put the remaining controls in a clearly labelled Review states panel kept separate from the main ritual. Show the packet's exact message for the active state and expose state changes through an appropriate live region. Treat the drawing as a room of people awaiting one consequential moment rather than a metrics dashboard. Derive the visual register from the event. Choose the visual language and sound-free feedback freely while making anticipation, interruption, reveal, and consequence legible. Every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, additional prizes, testimonials, or participant details beyond the packet."
+  }],
   "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 40, "maxBytes": 7340032}},
   "validation": {
     "mode": "interaction",
     "checks": [
       {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The runnable result surface exists.", "target": "index.html"},
-      {"id": "state-hooks", "type": "command", "required": true, "description": "All five scripted event states have inspectable hooks.", "argv": ["node", "-e", "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['waiting','interrupted','sealed','reveal','selected'])if(!s.includes(x))process.exit(1)"]},
-      {"id": "state-review", "type": "manual", "required": false, "description": "Activate every state with and without reduced motion and verify that consequence remains perceptible."}
+      {"id": "event-state-contract", "type": "command", "required": true, "description": "The entry and any shipped JavaScript or stylesheet assets are nonempty, and JavaScript parses as modules.", "argv": ["node", "validation/validate-output.mjs"]},
+      {"id": "state-browser-check", "type": "manual", "required": false, "description": "In a browser at 390px and 1440px, follow Close entries → interruption → Retry verification → sealed → Begin drawing → reveal → Reveal entry → selected. Verify exact messages, no premature recipient, unavailable-action guards, Return to sealed list, restart/reset, live announcements, keyboard-only operation, focus, and distinct states with reduced motion. Repeat the sequence; no reload or network should be needed."}
     ]
-  }
+  },
+  "cuisines": ["ui-visual"]
 }

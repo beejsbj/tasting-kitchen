@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Build a circular phrase sequencer",
   "summary": "Turn concentric solfège tracks and radial beats into an offline touch-first instrument whose gestures, sound, and still states agree.",
-  "domain": "music-creative-code",
+  "cuisines": ["music-creative-code"],
   "origin": "mothers",
   "originNote": "Reconstructed from a shipped circular-sequencer lineage whose pitch geometry, duration gesture, playback, and compact state formed one interaction model.",
   "tags": ["audio", "direct-manipulation", "state-modeling", "motion", "visual-language", "accessibility"],

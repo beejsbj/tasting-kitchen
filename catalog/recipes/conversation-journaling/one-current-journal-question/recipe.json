@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Offer one current journal question",
   "summary": "Use a week of mixed notes to ask one alive question without turning the fragments into a questionnaire or a grand pattern.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "mothers",
   "originNote": "A public-safe reconstruction of recurring friction with exhaustive journal prompts and stale interpretations.",
   "tags": ["presence", "memory", "clarification"],

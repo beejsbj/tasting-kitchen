@@ -5,7 +5,7 @@
   "status": "hidden",
   "title": "Regroup sentences without changing a word",
   "summary": "Organize twelve supplied sentences under useful headings while preserving every sentence and punctuation mark exactly.",
-  "domain": "editing-presentation",
+  "cuisines": ["editing-presentation"],
   "origin": "hybrid",
   "originNote": "A standard organization task carrying a history-derived lossless transformation boundary and explicit repair turn.",
   "tags": ["editing", "voice-preservation", "correction-recovery", "multi-turn"],

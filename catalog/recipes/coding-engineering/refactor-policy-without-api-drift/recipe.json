@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Refactor a policy module without widening its interface",
   "summary": "Remove duplicated decision branches while preserving one public function, rule precedence, messages, and behavior.",
-  "domain": "coding-engineering",
+  "cuisines": ["coding-engineering"],
   "origin": "textbook",
   "originNote": "A conventional bounded refactor whose tension is improving the internal model without inventing abstractions or API surface.",
   "tags": ["implementation", "surgical-change", "verification", "shell-use"],

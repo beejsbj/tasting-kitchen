@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Write a short script that sounds spoken",
   "summary": "Write and compress a public-interest video script whose cadence, turns, and ending work aloud instead of reading like an essay.",
-  "domain": "writing-creative",
+  "cuisines": ["writing-creative"],
   "origin": "textbook",
   "originNote": "A familiar spoken-script control with a hard duration change and a ban on listicle structure.",
   "tags": ["writing", "voice-preservation", "correction-recovery", "multi-turn"],

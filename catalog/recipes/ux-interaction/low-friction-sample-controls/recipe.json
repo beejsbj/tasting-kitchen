@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Keep a sample sketchpad immediate as control depth grows",
   "summary": "Build an eight-pad sound sketchpad with hold-slide controls, multi-edit, direct rearrangement, and explicit destructive moments.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "hybrid",
   "originNote": "A standard sampler interaction task sharpened by a newly curated official control reference supplied after the historical analysis.",
   "tags": ["direct-manipulation", "microinteraction", "state-modeling", "accessibility", "audio"],

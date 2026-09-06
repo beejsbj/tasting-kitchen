@@ -1,15 +1,50 @@
 {
   "product": "Northstar equipment monitor",
   "contexts": [
-    {"id": "overview", "need": "Show four device summaries with online, warming, and attention states."},
-    {"id": "setup", "need": "Pair one device, explain progress, and offer a primary and quiet action."},
-    {"id": "inspection", "need": "Show a dense labeled reading beside the feature-local radial signal inspector."}
+    {
+      "id": "overview",
+      "need": "Show four device summaries with online, warming, and attention states."
+    },
+    {
+      "id": "setup",
+      "need": "Pair one device, explain progress, and offer a primary and quiet action."
+    },
+    {
+      "id": "inspection",
+      "need": "Show a dense labeled reading beside the feature-local radial signal inspector."
+    }
   ],
   "repeatedNeed": "The same compact status treatment appears in overview, setup, and inspection.",
   "systemNotes": [
     "Brass is reserved for action or live attention, never general decoration.",
     "Semantic state must use text or shape as well as color.",
     "One-off composition is allowed to remain ordinary markup.",
-    "The radial inspector owns pointer behavior, geometry, and live signal semantics."
-  ]
+    "The radial inspector owns local sample selection, pointer/keyboard interaction, geometry, and reading semantics; no live equipment is connected."
+  ],
+  "usageEvidence": {
+    "Surface": "Used by overview, setup and inspection; stable title/description boundary.",
+    "ActionButton": "The setup context uses primary and quiet action variants; the baseline has no button call sites in overview or inspection.",
+    "LabeledValue": "Only inspection uses it; overview values are device names and setup uses prose.",
+    "status": "Overview, setup and inspection currently duplicate compact text status markup.",
+    "SignalArc": "Only inspection needs a local sample selector, range geometry, and reading semantics."
+  },
+  "devices": [
+    {
+      "name": "Roof sensor",
+      "state": "online"
+    },
+    {
+      "name": "Bench sensor",
+      "state": "warming"
+    },
+    {
+      "name": "Store sensor",
+      "state": "attention"
+    },
+    {
+      "name": "Door sensor",
+      "state": "online"
+    }
+  ],
+  "extensionBrief": "Build overview from the four supplied devices. In setup, Pair device changes an unpaired state to warming and shows Pairing in progress; Cancel returns to unpaired. This is a local simulation. In inspection, retain the working signal sample selector and its labeled reading. The styleguide must show baseline primitives and all three working product contexts using the same source modules. Choose the extension structure freely; retain the recognizable existing hierarchy and token roles."
 }

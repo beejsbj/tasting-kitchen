@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Transfer a reference's grammar, not its subject",
   "summary": "Turn an abstract reference's hierarchy, crop, contrast, and rhythm into an unrelated service interface.",
-  "domain": "ui-visual",
+  "cuisines": ["ui-visual"],
   "origin": "hybrid",
   "originNote": "A standard reference-translation task sharpened by recurring history-derived corrections against literal motif copying.",
   "tags": ["reference-translation", "visual-composition", "visual-language", "correction-recovery"],

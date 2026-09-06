@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Make movable pitch state agree across an instrument",
   "summary": "Build a small playable keyboard where note identity, scale degree, tonic, and pressed state remain distinct through a reference-frame change.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "mothers",
   "originNote": "Distilled from history-derived music-interface work where perceptual color state had to follow the musical model across every representation.",
   "tags": ["state-modeling", "direct-manipulation", "visual-language", "microinteraction", "accessibility", "multi-turn"],

@@ -1,10 +1,10 @@
-export type Domain = {
+export type Cuisine = {
   id: string;
   label: string;
   description: string;
 };
 
-export type Variant = {
+export type Configuration = {
   id: string;
   label: string;
   provider: string;
@@ -15,6 +15,7 @@ export type Variant = {
   personality: string;
   capabilities: string[];
   configHash?: string;
+  historical?: boolean;
   executionProfile: {
     id: string;
     label: string;
@@ -47,7 +48,9 @@ export type Recipe = {
   status: "draft" | "ready" | "hidden";
   title: string;
   summary: string;
-  domain: string;
+  cuisines: string[];
+  recipeHash: string;
+  presentation?: { profile: string; semanticRuntime: null | { id: string; version: string } };
   origin: "textbook" | "mothers" | "hybrid";
   originNote: string;
   tags: string[];
@@ -59,7 +62,7 @@ export type Recipe = {
   };
   setup: {
     instructions: string;
-    fixtures: Array<{ id: string; path: string; mountAs: string; public: true; mediaType: string }>;
+    fixtures: Array<{ id: string; path: string; mountAs: string; public: true; mediaType: string; url?: string; sha256?: string }>;
   };
   turns: RecipeTurn[];
   output: { kind: Recipe["kind"]; entry: string; include: string[]; limits: { maxFiles: number; maxBytes: number } };
@@ -133,13 +136,26 @@ export type ArtifactReview = {
 };
 
 export type Registry = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   generatedAt: string;
   basePath: string;
-  domains: Domain[];
+  cuisines: Cuisine[];
   tags: string[];
-  variants: Variant[];
+  configurations: Configuration[];
+  configurationRevisions?: Array<{ schemaVersion: 1; hash: string; configuration: Configuration }>;
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
+  recipeRevisions: RecipeRevision[];
+  menus: Menu[];
+  menuRevisions: MenuRevision[];
 };
+
+export type Variant = Configuration;
+export type RecipeRevision = {
+  recipeId: string; hash: string; version: string;
+  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation">;
+  display: { title: string; summary: string; lineage: Recipe["origin"]; cuisines: string[] };
+};
+export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };
+export type MenuRevision = { menuId: string; hash: string; title: string; cuisines: string[]; recipes: Array<{ recipeId: string; recipeHash: string }> };

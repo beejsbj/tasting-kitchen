@@ -6,7 +6,14 @@ import { SessionArtifact } from "./SessionArtifact";
 
 function TextArtifact({ dish }: { dish: Dish }) {
   const [content, setContent] = useState("Loading artifact…");
-  useEffect(() => { fetch(artifactUrl(dish)).then((response) => response.text()).then(setContent).catch(() => setContent("Artifact could not be loaded.")); }, [dish]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(artifactUrl(dish), { signal: controller.signal }).then((response) => {
+      if (!response.ok) throw new Error("Artifact unavailable");
+      return response.text();
+    }).then(setContent).catch(() => { if (!controller.signal.aborted) setContent("Artifact could not be loaded."); });
+    return () => controller.abort();
+  }, [dish]);
   return <pre className="text-artifact">{content}</pre>;
 }
 

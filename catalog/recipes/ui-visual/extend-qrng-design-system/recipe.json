@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "extend-qrng-design-system",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "P5 Lottery extension",
+  "summary": "Extend the P5 Lottery’s paper-slip interface into a working local ticket and receipt styleguide without pretending its React wallet stack is available.",
+  "origin": "hybrid",
+  "originNote": "Combines the established extension exercise with a pinned public P5 Lottery frontend and a documented static-web adaptation boundary.",
+  "tags": ["design-system", "visual-language", "implementation", "surgical-change", "state-modeling"],
+  "kind": "web",
+  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Read fixtures/README.md, fixtures/source-provenance.json, fixtures/brief.json, the byte-identical upstream references in reference/upstream/, and the editable browser-module adaptation in src/. The pinned upstream is React and has unavailable wallet, store, sound, image, and build dependencies. Do not make it a runtime dependency or reproduce JSX as an inert lookalike; extend the supplied browser modules instead. Build index.html, styleguide.js, styles.css, system-decisions.json, and a self-contained src/ directory. The styleguide must import and render the real editable source modules, not copy their markup into specimen-only HTML. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/, reference/, and validation/ are not shipped with the Dish.",
+    "fixtures": [
+      {"id": "brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "editable": false, "mediaType": "application/json"},
+      {"id": "source-notes", "path": "fixtures/README.md", "mountAs": "fixtures/README.md", "public": true, "editable": false, "mediaType": "text/markdown"},
+      {"id": "source-provenance", "path": "fixtures/source-provenance.json", "mountAs": "fixtures/source-provenance.json", "public": true, "editable": false, "mediaType": "application/json"},
+      {"id": "source-components", "path": "fixtures/components.js", "mountAs": "src/components.js", "public": true, "editable": true, "mediaType": "text/javascript"},
+      {"id": "source-board", "path": "fixtures/lottery-board.js", "mountAs": "src/lottery-board.js", "public": true, "editable": true, "mediaType": "text/javascript"},
+      {"id": "source-contexts", "path": "fixtures/contexts.js", "mountAs": "src/contexts.js", "public": true, "editable": true, "mediaType": "text/javascript"},
+      {"id": "source-tokens", "path": "fixtures/tokens.css", "mountAs": "src/tokens.css", "public": true, "editable": true, "mediaType": "text/css"},
+      {"id": "upstream-settings", "path": "fixtures/upstream/frontend/src/styles/settings.css", "mountAs": "reference/upstream/frontend/src/styles/settings.css", "public": true, "editable": false, "mediaType": "text/css"},
+      {"id": "upstream-components", "path": "fixtures/upstream/frontend/src/styles/components.css", "mountAs": "reference/upstream/frontend/src/styles/components.css", "public": true, "editable": false, "mediaType": "text/css"},
+      {"id": "upstream-lottery-css", "path": "fixtures/upstream/frontend/src/styles/lottery.css", "mountAs": "reference/upstream/frontend/src/styles/lottery.css", "public": true, "editable": false, "mediaType": "text/css"},
+      {"id": "upstream-lottery", "path": "fixtures/upstream/frontend/src/components/LotteryApp/Lottery.jsx", "mountAs": "reference/upstream/frontend/src/components/LotteryApp/Lottery.jsx", "public": true, "editable": false, "mediaType": "text/javascript"},
+      {"id": "upstream-wallet", "path": "fixtures/upstream/frontend/src/components/LotteryApp/DemoWalletPanel.jsx", "mountAs": "reference/upstream/frontend/src/components/LotteryApp/DemoWalletPanel.jsx", "public": true, "editable": false, "mediaType": "text/javascript"},
+      {"id": "upstream-ticket", "path": "fixtures/upstream/frontend/src/components/LotteryApp/TicketCard.jsx", "mountAs": "reference/upstream/frontend/src/components/LotteryApp/TicketCard.jsx", "public": true, "editable": false, "mediaType": "text/javascript"},
+      {"id": "upstream-winners", "path": "fixtures/upstream/frontend/src/components/LotteryApp/PastWinners.jsx", "mountAs": "reference/upstream/frontend/src/components/LotteryApp/PastWinners.jsx", "public": true, "editable": false, "mediaType": "text/javascript"},
+      {"id": "upstream-stars", "path": "fixtures/upstream/frontend/src/assets/stars.svg", "mountAs": "reference/upstream/frontend/src/assets/stars.svg", "public": true, "editable": false, "mediaType": "image/svg+xml"},
+      {"id": "upstream-flow-spec", "path": "fixtures/upstream/docs/FAKE_WEB3_FLOW_SPEC.md", "mountAs": "reference/upstream/docs/FAKE_WEB3_FLOW_SPEC.md", "public": true, "editable": false, "mediaType": "text/markdown"},
+      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
+    ]
+  },
+  "turns": [{
+    "id": "continue-qrng-system",
+    "role": "prompt",
+    "content": "Extend the actual browser-module adaptation into a responsive P5 Lottery styleguide. Import and render its real source modules for overview, ticket setup, and receipt inspection. Retain the upstream paper-slip grammar: ink-black borders, off-white paper, the saturated red field, yellow attention marks, stamped headings, and intentionally imperfect alignment; do not flatten it into a neutral dashboard. Fulfill fixtures/brief.json: the board must work by pointer and keyboard, ROLL must choose 3, 12, 19, 27, and 44, ticket count must stay within 1–10, SUBMIT must require exactly five selections, and approve/reject must produce visible deterministic local receipt state. No wallet, network, QRNG call, contract, deployment, or external fetch is available or implied. Inspect the evidence before deciding architecture. In system-decisions.json, use the exact keys promote, prune, and keepLocal. Each has symbol, source, and reason. If promote or prune has no real candidate, set both its symbol and source to null and explain why; do not invent an abstraction. keepLocal must name the behavior-owning source symbol. Render all three rationales visibly. Preserve or improve focus visibility, text/shape state cues, responsive reading at 390px and 1440px, and reduced-motion behavior if motion is added."
+  }],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "system-decisions.json", "*.css", "*.js", "src/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The importing P5 Lottery styleguide entry exists.", "target": "index.html"},
+      {"id": "decisions-exist", "type": "file-exists", "required": true, "description": "The machine-readable P5 Lottery system-decision ledger exists.", "target": "system-decisions.json"},
+      {"id": "source-boundary-contract", "type": "command", "required": true, "description": "The source modules, styleguide files, and decision ledger are present, nonempty, and parse as JavaScript where applicable. The ledger supports truthful no-candidate promote/prune decisions and requires a named local behavior owner.", "argv": ["node", "validation/validate-output.mjs"]},
+      {"id": "qrng-system-review", "type": "manual", "required": false, "description": "In a browser and the published source, verify that the styleguide imports the real modules, all three contexts are visible, five-number selection, deterministic roll, ticket bounds, submit guard, approval and rejection work locally, status has text plus a non-color cue, and the paper-slip language feels continuous with the pinned upstream source. This review judges source architecture and visual taste; the automatic validator does not."}
+    ]
+  },
+  "cuisines": ["ui-visual"],
+  "variation": "Variation of extend-design-system-without-flattening-it using the P5 Lottery visual language pinned at e45ab2f08cc1b52ab1a1c8641bb9f0e8ced27040; retain its evidence-led shared-versus-feature boundary and record a missing promote or prune candidate rather than fabricating one."
+}

@@ -8,6 +8,28 @@
     "reveal": "Entry 18",
     "selected": "Mina's balcony plot receives the rare tomato set"
   },
-  "actions": ["Retry verification", "Begin drawing", "Reveal entry", "Return to sealed list"],
-  "constraints": ["No money or wagering", "No accounts", "No confetti requirement", "Do not invent testimonials or participant details"]
+  "actions": [
+    "Retry verification",
+    "Begin drawing",
+    "Reveal entry",
+    "Return to sealed list"
+  ],
+  "constraints": [
+    "No money or wagering",
+    "No accounts",
+    "Do not invent testimonials or participant details"
+  ],
+  "simulation": {
+    "kind": "Deterministic local demonstration, not a real drawing or verification service.",
+    "waiting": "Start here. The 01:12 message is a fixed rehearsal snapshot, not a real clock. Provide a Close entries control.",
+    "transitions": [
+      "Close entries: waiting → interrupted on the first attempt.",
+      "Retry verification: interrupted → sealed.",
+      "Begin drawing: sealed → reveal; show Entry 18 without the recipient text.",
+      "Reveal entry: reveal → selected; show the supplied recipient text.",
+      "Return to sealed list: reveal or selected → sealed; clear the previous reveal.",
+      "Restart rehearsal: any state → waiting; reset the first-attempt interruption."
+    ],
+    "guard": "Do not allow drawing before sealing or selection before reveal. Ignore repeated activation of unavailable actions. No timer or network is necessary."
+  }
 }

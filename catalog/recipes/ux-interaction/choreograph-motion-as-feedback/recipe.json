@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Choreograph motion as feedback",
   "summary": "Build a small consequential product flow where motion explains state change, causality, confirmation, retained history, and recovery.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "hybrid",
   "originNote": "Combines demonstrated preferences for semantic motion and distinct tempos with explicit attraction to physical, SVG, scroll, and timeline animation craft.",
   "tags": ["motion", "microinteraction", "state-modeling", "visual-language", "accessibility"],

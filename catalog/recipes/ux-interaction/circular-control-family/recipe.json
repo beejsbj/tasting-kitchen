@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Make four circular controls feel related but unambiguous",
   "summary": "Build range, toggle, option, and action controls that share one grammar while preserving distinct behavior on touch and keyboard.",
-  "domain": "ux-interaction",
+  "cuisines": ["ux-interaction"],
   "origin": "mothers",
   "originNote": "Distilled from a history-derived circular-control system where gesture arbitration, precision, and perceptible state mattered more than a knob skin.",
   "tags": ["direct-manipulation", "microinteraction", "state-modeling", "accessibility", "correction-recovery"],

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "shared-result-ritual",
+  "hash": "sha256:7ea2e47fb18b50d7d11dcac27605e6fea82e5120fe9b3bd062a03736ef661dd7",
+  "version": "1.0.0",
+  "execution": {
+    "kind": "web",
+    "harness": {
+      "workspace": "write",
+      "web": "disabled",
+      "capabilities": [
+        "files"
+      ]
+    },
+    "setup": {
+      "instructions": "Mount the fictional event packet. Build a self-contained runnable artifact with no network calls or external media.",
+      "fixtures": [
+        {
+          "id": "event-packet",
+          "path": "fixtures/event.json",
+          "mountAs": "fixtures/event.json",
+          "public": true,
+          "mediaType": "application/json"
+        }
+      ]
+    },
+    "turns": [
+      {
+        "id": "build-ritual",
+        "role": "prompt",
+        "content": "Read fixtures/event.json and build a complete responsive result surface as index.html. It must let a reviewer enter waiting, connection-interrupted, sealed, reveal, and selected states without reloading. Treat the drawing as a room of people awaiting one consequential moment, not as a metrics dashboard. Derive a visual register from the event instead of using supplied style adjectives. Motion, copy, type, and sound-free feedback may be expressive when they clarify state. Each state container must expose its key as data-state, and every state must remain distinct under prefers-reduced-motion. Do not invent money, gambling, accounts, or prizes beyond the packet."
+      },
+      {
+        "id": "remove-empty-spectacle",
+        "role": "correction",
+        "content": "Revise the same artifact so that any flourish which does not clarify anticipation, interruption, verification, reveal, or consequence is removed or reassigned. Preserve the eventful register; do not flatten the result into a conventional card dashboard."
+      }
+    ],
+    "output": {
+      "kind": "web",
+      "entry": "index.html",
+      "include": [
+        "index.html",
+        "*.css",
+        "*.js",
+        "assets/**"
+      ],
+      "limits": {
+        "maxFiles": 40,
+        "maxBytes": 7340032
+      }
+    },
+    "validation": {
+      "mode": "interaction",
+      "checks": [
+        {
+          "id": "entry-exists",
+          "type": "file-exists",
+          "required": true,
+          "description": "The runnable result surface exists.",
+          "target": "index.html"
+        },
+        {
+          "id": "state-hooks",
+          "type": "command",
+          "required": true,
+          "description": "All five scripted event states have inspectable hooks.",
+          "argv": [
+            "node",
+            "-e",
+            "const s=require('fs').readFileSync('index.html','utf8');for(const x of ['waiting','interrupted','sealed','reveal','selected'])if(!s.includes(x))process.exit(1)"
+          ]
+        },
+        {
+          "id": "state-review",
+          "type": "manual",
+          "required": false,
+          "description": "Activate every state with and without reduced motion and verify that consequence remains perceptible."
+        }
+      ]
+    }
+  },
+  "fixtures": [
+    {
+      "id": "event-packet",
+      "path": "fixtures/event.json",
+      "mountAs": "fixtures/event.json",
+      "public": true,
+      "mediaType": "application/json",
+      "sha256": "sha256:406fa7afe4a76218022dc25ee3552c5916b9a8e8f6218b79f105553bebc6e3e0",
+      "contentBase64": "ewogICJldmVudCI6ICJOZWlnaGJvcmhvb2Qgc2VlZC1saWJyYXJ5IGRyYXdpbmciLAogICJjb250ZXh0IjogIlRoaXJ0eSBuZWlnaGJvcnMgYXJlIHdhdGNoaW5nIG9uZSBzaGFyZWQgc2NyZWVuIGFmdGVyIGNvbnRyaWJ1dGluZyBncm93aW5nIG5vdGVzIHRvIGEgY29tbXVuYWwgc2VlZCBzaGVsZi4iLAogICJzdGF0ZXMiOiB7CiAgICAid2FpdGluZyI6ICJFbnRyaWVzIGNsb3NlIGluIDAxOjEyIiwKICAgICJpbnRlcnJ1cHRlZCI6ICJUaGUgc2VhbGVkIGxpc3QgY291bGQgbm90IGJlIHZlcmlmaWVkLiBOb3RoaW5nIGhhcyBiZWVuIGRyYXduLiIsCiAgICAic2VhbGVkIjogIjMyIHZhbGlkIGVudHJpZXMg4oCUIGxpc3Qgc2VhbGVkIiwKICAgICJyZXZlYWwiOiAiRW50cnkgMTgiLAogICAgInNlbGVjdGVkIjogIk1pbmEncyBiYWxjb255IHBsb3QgcmVjZWl2ZXMgdGhlIHJhcmUgdG9tYXRvIHNldCIKICB9LAogICJhY3Rpb25zIjogWyJSZXRyeSB2ZXJpZmljYXRpb24iLCAiQmVnaW4gZHJhd2luZyIsICJSZXZlYWwgZW50cnkiLCAiUmV0dXJuIHRvIHNlYWxlZCBsaXN0Il0sCiAgImNvbnN0cmFpbnRzIjogWyJObyBtb25leSBvciB3YWdlcmluZyIsICJObyBhY2NvdW50cyIsICJObyBjb25mZXR0aSByZXF1aXJlbWVudCIsICJEbyBub3QgaW52ZW50IHRlc3RpbW9uaWFscyBvciBwYXJ0aWNpcGFudCBkZXRhaWxzIl0KfQo="
+    }
+  ],
+  "display": {
+    "title": "Stage a shared result as an event",
+    "summary": "Build waiting, interruption, reveal, and selected states for a public drawing without turning it into a dashboard.",
+    "lineage": "mothers",
+    "cuisines": [
+      "ui-visual"
+    ]
+  }
+}

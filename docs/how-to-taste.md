@@ -1,30 +1,47 @@
 # How to taste
 
-There is no schedule and no need to run every model through every recipe. The kitchen is reusable infrastructure: add a collection when a model becomes interesting or a real use case makes the comparison useful.
+Start with a task you care about. There is no schedule and no need to run every model through every Recipe.
 
-## Cook a dish
+## Explore the counter
 
-1. Browse the recipe menu or filter it with `taste list`.
-2. Dry-plan the exact recipe and model configuration with `taste plan`.
-3. Run it when convenient. The CLI creates a fresh workspace and session, supplies turns in order, verifies observed identity, runs required checks, sanitizes public evidence, and imports only an accepted immutable dish.
-4. Rebuild the registry and open the gallery.
+Open a Recipe to compare up to three exact configurations. Read the recipe to inspect the instructions and supplied input bytes. Interact with the artifacts, or open one in its own tab for more room. Configuration receipts distinguish what was requested from what the harness actually reported.
 
-Do not reveal a correction turn early or reuse a prior model session. The correction is part of the recipe: it shows how the model revises, not merely what it produces first.
+The revision selector holds the task constant. Choose the same configuration in two slots, then select different Dishes to compare Repeats. A single output can be a fluke; revisit a result or try a neighboring Recipe before treating an impression as a stable fingerprint.
 
-## Taste the result
+The Models shelf filters by family, reasoning effort, harness and service tier. A family can contain several configurations. Menus pin a specific revision of every member Recipe and show coverage against that full set; missing cells remain visible. A Menu appears publicly only after every member has an accepted Dish somewhere.
 
-Open one recipe and compare up to three collections. Interact with the actual artifact. For sessions, read the model responses and inspect tool/action evidence. Use the recipe brief's prompts and observation cues when helpful.
+## Cook locally
 
-Notice relational differences in your own language: what feels natural, surprising, careful, clumsy, alive, overbearing, restrained, useful, or unlike your work. The cues are invitations, not a rubric. Do not assign an overall winner unless you genuinely need one for a specific use.
+From the repository root:
 
-A single output may be a fluke. Repeat the same recipe or use a neighboring one before treating an impression as a stable fingerprint.
+```bash
+# Discover configurations, Recipes and Menus, then inspect a brief.
+node bin/taste.mjs discover --json
+node bin/taste.mjs inspect --recipe responsive-product-launch --json
 
-## Acceptance is not taste
+# Inspect work and missing coverage without executing a model.
+node bin/taste.mjs cook --menu visual-ui --config codex-sol-high \
+  --intent fill-missing --json
 
-An accepted dish passed the recipe's required structural checks and publication boundary. That does not mean it is responsive, tasteful, correct in every detail, or preferred.
+# Explicitly execute after reviewing that plan.
+TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
+  --menu visual-ui --config codex-sol-high --intent fill-missing --execute --json
+```
 
-Artifact reviews sit beside the immutable dish and are bound to its exact hash. They identify whether the observer was human or agent and never rewrite the artifact or change structural acceptance. A model's trace may contain incorrect self-assessment; treat it as the model's claim.
+`fill-missing` reuses accepted results for the exact Recipe Revision and requested configuration. `repeat` creates a new attempt even when that pair already has a Dish. Cooking is dry by default; the execution flag and environment opt-in are both required for paid model runs.
 
-## Grow the kitchen slowly
+Each Recipe gets a fresh workspace and model session. A multi-turn Recipe resumes only its own session. Known constraints belong in the initial brief; staged feedback belongs only where adaptation itself is the subject. Accepted Dishes are immutable. Failed attempts and raw traces stay private.
 
-The menu already exists. You do not need to invite every chef today. Run new collections as curiosity or need arises, then keep tasting the same recipes. Later, recurring observations can inform a separate preference memory such as “Burooj likes model X for Y,” but that calibration is downstream of the kitchen, not an automated output of it.
+See [the agent interface](agent-interface.md) for API imports, complete command semantics and error handling.
+
+## Acceptance and taste
+
+An accepted Dish passed its required checks and the publication boundary. Check descriptions say what was measured; acceptance does not establish overall quality or preference. Manual observations remain separate from structural checks.
+
+Artifact reviews identify their human or agent observer and bind to the exact immutable Dish hash. A model's final message is its own claim, not independent verification.
+
+Notice differences in your own language: what feels careful, clumsy, alive, restrained, useful, or unlike your work. The observation cues are invitations. There is no score or automatic winner.
+
+## Grow at the pace of use
+
+The first release concentrates on four visual and UI task shapes. Other Recipes remain available for later authoring work. Add a neighboring Recipe when it would help answer a real question; the rest of the catalog does not have to be finished first.

@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Fix a failing duration parser with the smallest patch",
   "summary": "Navigate a tiny unfamiliar module, reproduce its unit failure, and repair hours without widening the public interface.",
-  "domain": "coding-engineering",
+  "cuisines": ["coding-engineering"],
   "origin": "textbook",
   "originNote": "A standard bounded bugfix with a tempting partial implementation and an explicit smallest-patch constraint.",
   "tags": ["debugging", "implementation", "surgical-change", "verification", "shell-use"],

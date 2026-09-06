@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Use a symbol without forcing a resolution",
   "summary": "Think through the image of an abandoned greenhouse while resisting diagnosis, literalization, and a compulsory healing arc.",
-  "domain": "conversation-journaling",
+  "cuisines": ["conversation-journaling"],
   "origin": "hybrid",
   "originNote": "A standard symbolic-reflection task shaped by recurring use of metaphor as an operational conversational language rather than decoration.",
   "tags": ["rubber-ducking", "presence", "correction-recovery", "multi-turn"],

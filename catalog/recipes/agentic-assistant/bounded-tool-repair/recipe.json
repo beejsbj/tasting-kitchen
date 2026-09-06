@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Apply one authorized repair and verify the visible state",
   "summary": "Operate a disposable noticeboard tool within exact scope, then check both stored and rendered state.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "textbook",
   "originNote": "A standard tool-operation task with a concrete scope boundary and a human-visible verification requirement.",
   "tags": ["tool-use", "shell-use", "permissions", "verification", "surgical-change"],

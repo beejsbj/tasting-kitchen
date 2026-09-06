@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Generate four genuinely different concepts",
   "summary": "Explore four mechanisms for a neighborhood knowledge program without disguising minor variations as divergent ideas.",
-  "domain": "thinking-decisions",
+  "cuisines": ["thinking-decisions"],
   "origin": "textbook",
   "originNote": "A recognizable divergent-brainstorming control with explicit mechanism and failure assumptions.",
   "tags": ["brainstorming", "rubber-ducking", "multi-turn"],

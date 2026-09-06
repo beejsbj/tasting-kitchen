@@ -5,7 +5,7 @@
   "status": "hidden",
   "title": "Explore three options, then choose one",
   "summary": "Compare travel options against a closed constraint packet, then switch cleanly from exploration to a brief recommendation.",
-  "domain": "thinking-decisions",
+  "cuisines": ["thinking-decisions"],
   "origin": "textbook",
   "originNote": "A recognizable decision control that separates broad comparison from the moment a single choice is requested.",
   "tags": ["decision", "multi-turn"],

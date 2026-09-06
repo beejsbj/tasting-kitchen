@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Reconcile an old memory with today's correction",
   "summary": "Use a sourced memory packet to restore continuity without preserving a superseded interpretation.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "mothers",
   "originNote": "Distilled from a recurring need for useful continuity that remains attributable and corrigible.",
   "tags": ["memory", "clarification", "correction-recovery", "source-synthesis"],

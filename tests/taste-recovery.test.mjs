@@ -92,7 +92,17 @@ async function recoveryFixture({ fastAlias = false, observedTier = "priority", o
     attemptId: ATTEMPT_ID,
     startedAt: "2026-08-14T20:09:23.790Z",
     recipe: { id: recipe.id, version: recipe.version, hash: recipe.recipeHash, fixtureHashes: {} },
-    identity: { variantId: selectedVariant.id, serviceTier: selectedVariant.serviceTier, configHash: selectedVariant.configHash },
+    identity: {
+      variantId: selectedVariant.id,
+      provider: selectedVariant.provider,
+      model: selectedVariant.model,
+      harness: selectedVariant.harness,
+      reasoningEffort: selectedVariant.reasoningEffort,
+      serviceTier: selectedVariant.serviceTier,
+      personality: selectedVariant.personality,
+      configHash: selectedVariant.configHash,
+    },
+    execution: { profileId: selectedVariant.executionProfile.id, label: selectedVariant.executionProfile.label },
   });
   await json(path.join(attemptDir, "execution.json"), {
     cliVersion: "codex-cli 0.145.0",
@@ -209,6 +219,16 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
   assert.equal(await pathExists(path.join(f.attemptDir, "validation.recovery.json")), true);
   assert.equal(await pathExists(`${poison}.invoked`), false);
+});
+
+test("recovery uses the frozen configuration when the current configuration changes", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  f.catalog.variants[0] = { ...f.catalog.variants[0], model: "gpt-5.6-luna" };
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+  assert.equal(result.status, "accepted");
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.equal(dish.identity.requestedModel, "gpt-5.6-sol");
 });
 
 test("recovery refuses unsafe IDs, non-publication failures, drift, incomplete turns, and existing dishes", async (t) => {

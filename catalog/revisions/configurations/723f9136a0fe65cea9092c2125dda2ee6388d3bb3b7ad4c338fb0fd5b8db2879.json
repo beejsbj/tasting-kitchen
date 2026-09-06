@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "hash": "sha256:723f9136a0fe65cea9092c2125dda2ee6388d3bb3b7ad4c338fb0fd5b8db2879",
+  "configuration": {
+    "id": "codex-terra-high",
+    "label": "Terra · High · via Codex CLI · host-unsandboxed fallback",
+    "provider": "openai",
+    "model": "gpt-5.6-terra",
+    "harness": "codex-cli",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "personality": "none",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "codex-linux-host-unsandboxed-v1",
+      "label": "via Codex CLI · host-unsandboxed fallback",
+      "runtime": "linux-host",
+      "sandbox": "danger-full-access",
+      "approvalPolicy": "never",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary"
+    }
+  }
+}

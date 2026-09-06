@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Notice stale project state before interrupting",
   "summary": "Reconcile a stale headline with newer events and surface only the live, actionable residual.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "mothers",
   "originNote": "Distilled from recurring assistant failures that resurrect old next moves or interrupt with already-completed work.",
   "tags": ["proactivity", "memory", "source-synthesis", "clarification"],

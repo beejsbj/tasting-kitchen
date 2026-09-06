@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/beejsbj/qrng-lottery",
+  "commit": "e45ab2f08cc1b52ab1a1c8641bb9f0e8ced27040",
+  "sourceNature": "The pinned source is a React frontend. The editable src/ fixtures intentionally adapt its JSX and app-store behavior to ES browser modules for static-web-v1; no React, wallet, network, contract, or build dependency is supplied.",
+  "files": [
+    {"path": "frontend/src/styles/settings.css", "blob": "791246e75b6283a7a32f312b76e6393dacaa7911", "sha256": "cf55f49400de9302ce689dbfd67c319dacf0e2ae595650eb31b86848106b5088"},
+    {"path": "frontend/src/styles/components.css", "blob": "6125fb27f75cfdb7913a501f0b705f77a57a7036", "sha256": "538f65051a6f4c70f4fb99ec3fe82fda0f998eb6bf4010a1610bc3a48bdc1cf8"},
+    {"path": "frontend/src/styles/lottery.css", "blob": "0bfb9ea617050d185c254ebbfe47b820c11fba5e", "sha256": "9ae30294825e91814ab2869308e2e0ff1326f3a9e54a292072c4afdb830ca6c9"},
+    {"path": "frontend/src/components/LotteryApp/Lottery.jsx", "blob": "b917f6b7aef11f0b5cb08fe1c565101994964a5a", "sha256": "b140e77e1b3db780879d53a18a75c979c82c68a6ad6c109fbd538ab8f57d0079"},
+    {"path": "frontend/src/components/LotteryApp/DemoWalletPanel.jsx", "blob": "30d284945b8b87bd321bf04f0e81c5d5aa5aad91", "sha256": "4bb745500f305ff3e51cbed2b59542297c07bce67bc051795cf72bb90b4de21e"},
+    {"path": "frontend/src/components/LotteryApp/TicketCard.jsx", "blob": "7c6dd26b2bd4aebb9b88b580f9e3cbf04a9f1324", "sha256": "45c2b3d7ec2cb6ce444b4f302fa867aaa971ba70fab8a89ca1bc0e6ff2641019"},
+    {"path": "frontend/src/components/LotteryApp/PastWinners.jsx", "blob": "925b4b14cc7e7abe5c271346075d8c050c075fb5", "sha256": "92de7b02acfa80b02fbb7c0201fc3ad1ee206ca43c6e1754f0b7346a2bfe5dff"},
+    {"path": "frontend/src/assets/stars.svg", "blob": "18664c8eb346222de1c38f70cdfee2495f49c7e2", "sha256": "5833285b9fa2da63cb6f6c1c11eb44ab584d3438aec32d8b8b928aa412d86769"},
+    {"path": "docs/FAKE_WEB3_FLOW_SPEC.md", "blob": "103456b69c4a77c7ef42cffeb30c44f20c7ff4b4", "sha256": "fcf53e04d59d95c9935ecc26023e6421f2ea36bf5d6e569fc4f58e962bf65005"}
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "extend-emotitone-design-system",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Emotitone extension",
+  "summary": "Continue Emotitone Solfrege's dark, touch-sized interface with a static shared tabs adapter and a local degree lens grounded in its movable-do data.",
+  "cuisines": ["ui-visual"],
+  "origin": "hybrid",
+  "originNote": "A bounded adaptation of the public Emotitone Solfrege Vue sources for a no-network static-web cooking boundary.",
+  "tags": ["design-system", "visual-language", "source-synthesis", "implementation", "accessibility"],
+  "kind": "web",
+  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
+  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "setup": {
+    "instructions": "Read src/source-provenance.json and src/reference/README.md before changing anything. The files in src/reference/ are exact, public Emotitone Solfrege references; retain their bytes and cite their role in the visible styleguide. They are Vue, TypeScript, and Tailwind-source material, so they cannot run directly in static-web-v1. Build index.html, styles.css, styleguide.js, src/static-tabs.js, src/mode-samples.js, and extension-notes.json with no network request, package install, framework runtime, font fetch, MIDI request, or other external dependency. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish. styleguide.js must import the local browser-JS shared tabs adapter and the local bounded mode samples; do not load .vue, .ts, or the uncompiled Tailwind source as browser modules. Use the imported references as evidence for the recognizable Emotitone language: dark layered surfaces, clipped-corner overlay shells, compact centered title/status treatment, slanted touch-sized controls, and tabs with selected-state semantics. Ground the Degree Lens in the layered OverlayPanelShell and IconButton geometry, while keeping the local browser implementation as an adaptation rather than an upstream runtime. Create a responsive styleguide that visibly names the source references, demonstrates the shared tabs adapter in at least two specimens, and presents a useful local Degree Lens. The Degree Lens lets a person switch Major and Minor, choose a degree by keyboard or pointer, and updates its solfege label, interval, emotion, description, texture, and shape from the supplied local samples. It is a local reading tool, not audio, a MIDI connection, or a live app port. Keep tabs behavior shared in src/static-tabs.js and keep Degree Lens state/rendering local to styleguide.js; record that boundary and the static adaptation boundary in extension-notes.json. Preserve visible focus, semantic labels beyond color, responsive reading at 390px and 1440px, and reduced motion if motion is added. Do not manufacture a prune or a promotion decision: the supplied sources already establish the shared tabs family, while they do not provide evidence for a new shared extraction.",
+    "fixtures": [
+      {"id": "source-provenance", "path": "fixtures/source-provenance.json", "mountAs": "src/source-provenance.json", "public": true, "editable": false, "mediaType": "application/json"},
+      {"id": "source-readme", "path": "fixtures/README.md", "mountAs": "src/reference/README.md", "public": true, "editable": false, "mediaType": "text/markdown"},
+      {"id": "reference-style", "path": "fixtures/upstream/style.css", "mountAs": "src/reference/style.css", "public": true, "editable": false, "mediaType": "text/css"},
+     {"id": "reference-app-header", "path": "fixtures/upstream/AppHeader.vue", "mountAs": "src/reference/AppHeader.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-overlay-panel-shell", "path": "fixtures/upstream/OverlayPanelShell.vue", "mountAs": "src/reference/OverlayPanelShell.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-icon-button", "path": "fixtures/upstream/IconButton.vue", "mountAs": "src/reference/IconButton.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+     {"id": "reference-tabs", "path": "fixtures/upstream/Tabs.vue", "mountAs": "src/reference/Tabs.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-tabs-list", "path": "fixtures/upstream/TabsList.vue", "mountAs": "src/reference/TabsList.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-tabs-trigger", "path": "fixtures/upstream/TabsTrigger.vue", "mountAs": "src/reference/TabsTrigger.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-tabs-content", "path": "fixtures/upstream/TabsContent.vue", "mountAs": "src/reference/TabsContent.vue", "public": true, "editable": false, "mediaType": "text/x-vue"},
+      {"id": "reference-solfege", "path": "fixtures/upstream/solfege.ts", "mountAs": "src/reference/solfege.ts", "public": true, "editable": false, "mediaType": "text/typescript"},
+      {"id": "static-tabs-adapter", "path": "fixtures/static-tabs.js", "mountAs": "src/static-tabs.js", "public": true, "editable": true, "mediaType": "text/javascript"},
+      {"id": "mode-samples", "path": "fixtures/mode-samples.js", "mountAs": "src/mode-samples.js", "public": true, "editable": false, "mediaType": "text/javascript"},
+      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
+    ]
+  },
+  "turns": [{
+    "id": "continue-emotitone",
+    "role": "prompt",
+    "content": "Implement the static Emotitone extension described in the setup instructions. Work from the local source references and local browser adapters only. Keep source provenance intact, use imports in the styleguide, make the Degree Lens work, and describe actual boundaries in extension-notes.json without claiming an unavailable Vue, Tailwind, font, audio, or MIDI runtime."
+  }],
+  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "styles.css", "styleguide.js", "extension-notes.json", "src/**"], "limits": {"maxFiles": 40, "maxBytes": 5242880}},
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The local importing styleguide exists.", "target": "index.html"},
+      {"id": "extension-notes-exist", "type": "file-exists", "required": true, "description": "The machine-readable extension boundary notes exist.", "target": "extension-notes.json"},
+      {"id": "emotitone-boundary-contract", "type": "command", "required": true, "description": "Required local source, provenance, adapter, notes, and output files are present; references retain their recorded digests; JSON has practical extension-boundary fields; and published JavaScript parses.", "argv": ["node", "validation/validate-output.mjs"]},
+      {"id": "emotitone-browser-review", "type": "manual", "required": false, "description": "In a browser, inspect the named provenance references, two shared-tabs specimens, and the local Degree Lens at 390px and 1440px. Use keyboard and pointer to change mode and degree; verify the displayed local sample changes, focus remains visible, selected state has text or ARIA support beyond color, no horizontal page overflow occurs, and no runtime dependency or live MIDI claim appears."}
+    ]
+  },
+  "variation": "Variant of extend-design-system-without-flattening-it using public beejsbj/emotitone-solfrege main at 4cb0fdc513c60f0affd7e3cf3a1302a78af082ab."
+}

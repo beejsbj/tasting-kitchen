@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Verify support from documentation, configuration, and code",
   "summary": "Research a closed evidence bundle, separate advertised support from operational readiness, and make one recommendation.",
-  "domain": "agentic-assistant",
+  "cuisines": ["agentic-assistant"],
   "origin": "hybrid",
   "originNote": "Combines a standard source audit with a recurring distinction between documented capability, configured mechanism, authentication, and proven operation.",
   "tags": ["research", "tool-use", "source-synthesis", "decision", "verification"],

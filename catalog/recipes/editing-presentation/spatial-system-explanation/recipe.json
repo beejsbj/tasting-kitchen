@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Turn a process brief into a spatial explanation",
   "summary": "Transform a linear service description into an accessible system map where position and connection reveal persistence, authority, and feedback.",
-  "domain": "editing-presentation",
+  "cuisines": ["editing-presentation"],
   "origin": "hybrid",
   "originNote": "A standard information-design task shaped by recurring preference for spatial relationships to carry meaning instead of becoming a wall of prose.",
   "tags": ["presentation", "source-synthesis", "visual-composition", "state-modeling", "correction-recovery", "multi-turn"],

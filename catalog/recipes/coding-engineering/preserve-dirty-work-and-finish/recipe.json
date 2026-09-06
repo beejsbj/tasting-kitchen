@@ -5,7 +5,7 @@
   "status": "ready",
   "title": "Finish a bounded change while preserving unrelated work",
   "summary": "Repair a misleading project summary, keep two user-owned files byte-identical, verify behavior, and leave an honest receipt.",
-  "domain": "coding-engineering",
+  "cuisines": ["coding-engineering"],
   "origin": "mothers",
   "originNote": "Distilled from recurring coding sessions where scope discipline, preservation of existing work, and truthful completion matter as much as the patch.",
   "tags": ["debugging", "surgical-change", "verification", "shell-use", "correction-recovery"],

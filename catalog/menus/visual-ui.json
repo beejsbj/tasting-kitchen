@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "visual-ui",
+  "title": "Visual UI",
+  "summary": "Four visual interface Recipes for the approved release.",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    "responsive-product-launch",
+    "editorial-culture-feature",
+    "shared-result-ritual",
+    "extend-design-system-without-flattening-it"
+  ]
+}

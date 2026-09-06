@@ -9,20 +9,25 @@
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "taste": "node bin/taste.mjs",
     "test:taste": "node --test tests/taste-*.test.mjs",
-    "test:gallery": "node --test tests/gallery-build.test.mjs",
+    "test:gallery": "node --experimental-strip-types --test tests/gallery-build.test.mjs tests/gallery-state.test.mjs",
     "dev": "node bin/taste.mjs build-registry && vite",
     "build": "node bin/taste.mjs build-registry && vite build",
     "preview": "vite preview",
     "test": "npm run validate:catalog && npm run test:taste && npm run typecheck && npm run build && npm run test:gallery",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:browser": "node scripts/verify-gallery-browser.mjs"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-popover": "^1.1.23",
+    "lucide-react": "^1.41.0",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
+    "@tailwindcss/vite": "4.3.3",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
@@ -32,9 +37,17 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "16.4.0",
+    "playwright": "^1.63.0",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.3",
     "vite": "^8.2.1"
   },
-  "type": "module"
+  "type": "module",
+  "bin": {
+    "taste": "bin/taste.mjs"
+  },
+  "exports": {
+    ".": "./lib/taste/index.mjs"
+  }
 }

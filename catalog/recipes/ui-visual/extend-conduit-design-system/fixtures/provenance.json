@@ -1,0 +1,75 @@
+{
+  "source": {
+    "repository": "https://github.com/beejsbj/conduit-market-client",
+    "branch": "portfolio/showcase-2025",
+    "commit": "6c3de0c9b493b5b00e231e08c4d95a753183d268",
+    "retrievedAt": "2026-09-06",
+    "access": "GitHub API via gh"
+  },
+  "scope": "Bounded source snapshot for the Conduit StyleGuide page: tokens and type scale, the page composition, tab and button primitives, the color/button guide specimens, Badge, and PageSection. It is reference material, not a complete checkout.",
+  "files": [
+    {
+      "upstreamPath": "src/styles/theme.css",
+      "fixturePath": "fixtures/upstream/src/styles/theme.css",
+      "gitBlobSha": "cf2201bb217f3e77929286425beef6179c4acf92",
+      "bytes": 13801,
+      "sha256": "43e0858ba5af6752f8579b7b1a8de19ad8cc4af3edce7b91613cbeee5b2757aa"
+    },
+    {
+      "upstreamPath": "src/styles/typography.css",
+      "fixturePath": "fixtures/upstream/src/styles/typography.css",
+      "gitBlobSha": "0cd542876432be0d9038ad556759338d2a635139",
+      "bytes": 3673,
+      "sha256": "640bbf72043e52a81d73f8cdad9b49eb7640819b5e712a0a456ac0ea3bc8246a"
+    },
+    {
+      "upstreamPath": "src/pages/StyleGuide.tsx",
+      "fixturePath": "fixtures/upstream/src/pages/StyleGuide.tsx",
+      "gitBlobSha": "cc404dd3b3ec194937c5e1f227e2cf11c8e0c12d",
+      "bytes": 3668,
+      "sha256": "c053d37aa9d254e2252ab3eb09a08d281575976701337cd07e84ed76fed1bb23"
+    },
+    {
+      "upstreamPath": "src/components/StyleGuide/ColorGuide.tsx",
+      "fixturePath": "fixtures/upstream/src/components/StyleGuide/ColorGuide.tsx",
+      "gitBlobSha": "90a2682e282fe19211fa5452e8ba4748d0c6f0f1",
+      "bytes": 5414,
+      "sha256": "07fc35d8a370e2434799ecca82303d829446307503cc04dd4e69c7e93c68ea89"
+    },
+    {
+      "upstreamPath": "src/components/StyleGuide/ButtonGuide.tsx",
+      "fixturePath": "fixtures/upstream/src/components/StyleGuide/ButtonGuide.tsx",
+      "gitBlobSha": "fb63ce36d98ff356b116d305d3575bc2d9ee7691",
+      "bytes": 2317,
+      "sha256": "95a5d0872cff227368c1623cafdc2a8c08f0a61c442d92b63ef0ce0926ee3bdb"
+    },
+    {
+      "upstreamPath": "src/components/Buttons/Button.tsx",
+      "fixturePath": "fixtures/upstream/src/components/Buttons/Button.tsx",
+      "gitBlobSha": "6c853ee153ba5f9e63a97954139b6e60a6fc4f3f",
+      "bytes": 3624,
+      "sha256": "5ad3a487ad38467b759f82f958849f3727b7274582ad7759bf2009793b73b340"
+    },
+    {
+      "upstreamPath": "src/components/Tabs.tsx",
+      "fixturePath": "fixtures/upstream/src/components/Tabs.tsx",
+      "gitBlobSha": "81d537f4983babd5395fba02bef39f6d26a9b7df",
+      "bytes": 3283,
+      "sha256": "dc0da9480c734f9c047ce1d653e5e195fa37dcaee9340de7cc2d8008fa42549f"
+    },
+    {
+      "upstreamPath": "src/components/Badge.tsx",
+      "fixturePath": "fixtures/upstream/src/components/Badge.tsx",
+      "gitBlobSha": "8d9aa096180e569dc5aed5331550dd25ad1ea753",
+      "bytes": 910,
+      "sha256": "c36bc771f46d5d4f5ab1dd78255ac4f6531b1f7e2c3da3ef3985eefda3095920"
+    },
+    {
+      "upstreamPath": "src/layouts/PageSection.tsx",
+      "fixturePath": "fixtures/upstream/src/layouts/PageSection.tsx",
+      "gitBlobSha": "2d1be36e4f7e62f1615ef39c070077cfd5196680",
+      "bytes": 914,
+      "sha256": "9128fa2c433185c5355cc6081d790677ade776289b592c6baee4c40be04c3fce"
+    }
+  ]
+}

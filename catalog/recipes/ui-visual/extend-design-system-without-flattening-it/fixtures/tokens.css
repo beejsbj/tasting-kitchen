@@ -35,3 +35,19 @@
   color: var(--ink);
   border-color: var(--line);
 }
+
+body { margin: 0; padding: var(--space-4); }
+.surface__title { margin: var(--space-1) 0; font-size: 1.5rem; }
+.surface__description { max-width: 55ch; line-height: 1.5; }
+.eyebrow { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
+.action { font: inherit; cursor: pointer; margin: var(--space-1); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.status { border: 1px solid var(--line); padding: var(--space-1) var(--space-2); font-size: .875rem; }
+.labeled-value { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-3); }
+.signal-arc { display: grid; justify-items: start; gap: var(--space-2); }
+.signal-arc__track {
+  display: block; width: 6rem; height: 6rem; border-radius: 50%;
+  background: conic-gradient(var(--ink) var(--signal-angle), var(--line) 0);
+  mask: radial-gradient(transparent 55%, black 56%);
+}
+.signal-arc label { display: grid; gap: var(--space-1); }
