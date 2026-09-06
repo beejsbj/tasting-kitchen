@@ -99,7 +99,7 @@ try {
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
   const cardModels = page.getByRole("group", { name: `Models for ${target.title}` });
   const effort = filterConfig.reasoningEffort;
-  const exactButton = cardModels.getByRole("button", { name: new RegExp(` effort`, "i") }).filter({ hasText: effort }).first();
+  const exactButton = cardModels.getByRole("button", { name: new RegExp(` ${effort} effort`, "i") }).first();
   if (await exactButton.count()) {
     await exactButton.click(); await settle(page); url = new URL(page.url());
     const opened = registry.dishes.find(dish => dish.id === url.searchParams.get("dishes"));

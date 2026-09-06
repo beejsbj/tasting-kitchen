@@ -1,3 +1,4 @@
+import { effortLabel } from '../lib/effort-label';
 import { KitchenButton } from './KitchenButton';
 import { modelFamily, shortHash } from '../lib/registry';
 import type { Configuration } from '../types';
@@ -17,7 +18,7 @@ export function ModelChoices({ configurations, selectedId, onSelect, label = 'Mo
         const peers = configs.filter((item) => item.reasoningEffort === config.reasoningEffort);
         const detail = peers.length > 1 ? ` · ${config.serviceTier}${peers.some((item) => item.id !== config.id && item.serviceTier === config.serviceTier) ? ` · ${config.harness} · ${shortHash(config.configHash ?? config.id)}` : ''}` : '';
         const preserved = config.historical ? ' · preserved' : '';
-        return <KitchenButton key={config.id} className="model-choice__effort" aria-pressed={config.id === selectedId} aria-label={`${family} ${config.reasoningEffort} effort · ${config.serviceTier} · ${config.harness}${preserved}${peers.length > 1 ? ` · ${shortHash(config.configHash ?? config.id)}` : ''}`} title={`${config.model} · ${config.harness} · ${config.serviceTier}${preserved}`} onClick={() => onSelect(config)}>{config.reasoningEffort}{detail}{preserved}</KitchenButton>;
+        return <KitchenButton key={config.id} className="model-choice__effort" aria-pressed={config.id === selectedId} aria-label={`${family} ${config.reasoningEffort} effort · ${config.serviceTier} · ${config.harness}${preserved}${peers.length > 1 ? ` · ${shortHash(config.configHash ?? config.id)}` : ''}`} title={`${config.model} · ${config.reasoningEffort} effort · ${config.harness} · ${config.serviceTier}${preserved}`} onClick={() => onSelect(config)}>{effortLabel(config.reasoningEffort)}{detail}{preserved}</KitchenButton>;
       })}</div>
     </div>;
   })}</div>;
