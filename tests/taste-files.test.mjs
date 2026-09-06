@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { publicTextFindings, scanWebArtifactNetwork } from "../lib/taste/files.mjs";
+import { publicTextFindings, scanPublicTree, scanWebArtifactNetwork } from "../lib/taste/files.mjs";
 
 test("public scan distinguishes serialized page newlines from Windows absolute paths", () => {
   const serialized = JSON.stringify({ response: "Finished the page:\nNext line includes more prose." }, null, 2);
@@ -22,6 +22,19 @@ test("public scan distinguishes JavaScript regex literals from Unix absolute pat
   assert.ok(publicTextFindings("replace(/etc/g) is text, not an instance method call").includes("absolute path"));
   assert.ok(publicTextFindings("Read /var/log/model-tasting.log before continuing").includes("absolute path"));
   assert.ok(publicTextFindings("Open /workspace/output/index.html").includes("absolute path"));
+});
+
+test("public tree scan permits only parent references that resolve inside the artifact", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-public-tree-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "source"));
+  await writeFile(path.join(root, "logic.mjs"), "export const ready = true;\n");
+  await writeFile(path.join(root, "source/inside.mjs"), 'import { ready } from "../logic.mjs";\n');
+
+  await assert.doesNotReject(scanPublicTree(root));
+
+  await writeFile(path.join(root, "source/outside.mjs"), 'import "../../outside.mjs";\n');
+  await assert.rejects(scanPublicTree(root), /path traversal/);
 });
 
 test("web artifact scan rejects remote runtime dependencies", async (t) => {
