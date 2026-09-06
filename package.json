@@ -17,7 +17,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes",
     "typecheck": "tsc --noEmit",
     "test:browser": "node scripts/verify-gallery-browser.mjs",
-    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs"
+    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

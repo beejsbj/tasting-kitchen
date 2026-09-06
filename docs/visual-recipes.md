@@ -1,6 +1,6 @@
 # Visual Recipe contracts
 
-The public Book has ten active Recipes. It includes uncooked authored definitions; a Recipe Book entry is not evidence that a model has produced a Dish.
+The public Book has thirteen active Recipes. It includes uncooked authored definitions; a Recipe Book entry is not evidence that a model has produced a Dish.
 
 ## Restored cooked Recipes
 
@@ -26,6 +26,16 @@ The `fresh-visual-ui` menu contains four ready, uncooked candidates:
 | `fresh-system-hem` | Hem Estimates garment-repair workflow continuing its supplied system |
 
 Their complete inputs, output contracts, validator boundaries and unsolved human probes are recorded in [fresh-visual-recipes.md](fresh-visual-recipes.md). Ready means supported by the execution boundary; it does not mean cooked, accepted or visually approved. No fresh cooked Dish is claimed here.
+
+## Conventional website recipes
+
+The `standard-web` menu contains three additional, uncooked baseline tasks:
+
+- `standard-service-business` — an ordinary service-business brochure website.
+- `standard-developer-portfolio` — a typical developer portfolio.
+- `standard-developer-homepage` — a familiar Tailwind-style developer-product homepage.
+
+These deliberately test conventional website work, with original supplied content and ordinary interactions. The first two leave the visual language open within mainstream expectations; the third explicitly asks for a familiar Tailwind-style treatment. See [standard-web-recipes.md](standard-web-recipes.md) for the briefs, content packets, and checks.
 
 ## Design-system extensions
 

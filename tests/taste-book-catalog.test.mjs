@@ -26,7 +26,12 @@ test('fresh recipes and supplied systems are browseable while the old backlog is
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
   assert.equal(fresh.length, 4);
   assert.ok(fresh.every(entry => entry.dishCount === 0));
-  assert.equal(book.recipes.length, 10);
+  assert.equal(book.recipes.length, 13);
+  for (const id of ['standard-service-business', 'standard-developer-portfolio', 'standard-developer-homepage']) {
+    const entry = book.recipes.find(item => item.recipe.id === id);
+    assert.ok(entry, `Standard website recipe ${id} is active`);
+    assert.equal(entry.dishCount, 0);
+  }
   for (const id of archive.archivedRecipeIds) assert.ok(!book.recipes.some(entry => entry.recipe.id === id));
   for (const id of ['extend-conduit-design-system', 'extend-qrng-design-system', 'extend-emotitone-design-system']) {
     const entry = book.recipes.find(item => item.recipe.id === id);

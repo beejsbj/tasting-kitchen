@@ -171,7 +171,7 @@ The public site supports:
 - Cuisine filtering; and
 - Menu views with explicit coverage.
 
-The public Book contains the ten active Recipes, including uncooked Recipes. The four fresh visual Recipes are `fresh-product-span`, `fresh-editorial-second-life`, `fresh-interaction-paper-echo`, and `fresh-system-hem`; they are authored candidates and have no claimed cooked Dishes. Fifty-one other old Recipes are hidden in `catalog/archive.json` and remain outside the public Book. The historical `visual-ui` menu is deferred and is not the current fresh menu.
+The public Book contains active Recipes, including uncooked Recipes. The current inventory is recorded in [visual-recipes.md](visual-recipes.md): the original cooked Recipes, four fresh visual candidates, three supplied design-system extensions, and three conventional website baselines. Hidden Recipes remain in the catalog archive and outside the public Book. The historical `visual-ui` menu is deferred; `fresh-visual-ui` and `standard-web` contain the new candidates.
 
 The Dishes counter uses card names and summaries from the frozen executed Recipe Revision that produced each Dish. The Recipe Book shows the current authored definition and permits editing its title, summary, setup instructions, prompt turns, and public text fixtures. A Recipe Book edit never changes an existing Dish; execution-affecting edits bump the Recipe patch version for a future Cook.
 
