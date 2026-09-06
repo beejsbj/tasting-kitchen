@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { computeRecipeHash } from "../lib/taste/catalog.mjs";
 import { buildRegistry } from "../lib/taste/registry.mjs";
 import { coverage } from "../lib/taste/index.mjs";
 
@@ -25,13 +26,31 @@ test("builds the gallery registry without private runtime data", async (t) => {
     validation: { mode: "completeness", checks: [{ id: "entry", type: "file-exists", required: true, description: "Transcript exists.", target: "output/session.json" }] },
   };
   await json(path.join(root, "catalog/recipes/talk/talk-once/recipe.json"), recipe);
+  const frozenExecution = {
+    kind: recipe.kind,
+    harness: recipe.harness,
+    setup: recipe.setup,
+    turns: recipe.turns,
+    output: recipe.output,
+    validation: recipe.validation,
+  };
+  const frozenHash = computeRecipeHash(frozenExecution, {});
+  await json(path.join(root, "catalog/revisions/recipes", `${frozenHash.slice("sha256:".length)}.json`), {
+    schemaVersion: 1,
+    recipeId: recipe.id,
+    hash: frozenHash,
+    version: recipe.version,
+    execution: frozenExecution,
+    fixtures: [],
+    display: { title: "Frozen historical title", summary: "Frozen historical summary.", lineage: recipe.origin, cuisines: recipe.cuisines },
+  });
   const dishId = "dish_talk-once_v_one";
   await mkdir(path.join(root, "dishes", dishId, "artifact/output"), { recursive: true });
   await json(path.join(root, "dishes", dishId, "artifact/output/session.json"), { turns: [] });
   await json(path.join(root, "dishes", dishId, "validation.json"), { passed: true });
   await json(path.join(root, "dishes", dishId, "trace.json"), { turns: [] });
   await json(path.join(root, "dishes", dishId, "dish.json"), {
-    schemaVersion: 1, id: dishId, recipe: { id: "talk-once", version: "1.0.0", hash: `sha256:${"1".repeat(64)}` }, executedAt: "2026-08-14T12:00:00.000Z",
+    schemaVersion: 1, id: dishId, recipe: { id: "talk-once", version: "1.0.0", hash: frozenHash }, executedAt: "2026-08-14T12:00:00.000Z",
     identity: { variantId: "v", provider: "openai", requestedModel: "m", observedModel: "m", harness: "codex-cli", harnessVersion: "fake", reasoningEffort: "high", serviceTier: "default", configHash: `sha256:${"2".repeat(64)}` }, status: "accepted",
     artifact: { kind: "session", entry: "artifact/output/session.json", files: [{ path: "artifact/output/session.json", sha256: "0".repeat(64), bytes: 13 }], treeHash: `sha256:${"3".repeat(64)}` }, validation: { passed: true, report: "validation.json" }, publicTrace: "trace.json", dishHash: `sha256:${"4".repeat(64)}`,
   });
@@ -61,7 +80,13 @@ test("builds the gallery registry without private runtime data", async (t) => {
   const { output, registry } = await buildRegistry({ repoRoot: root, now: new Date("2026-08-14T12:00:00.000Z") });
   assert.equal(registry.basePath, "/");
   assert.match(registry.configurations[0].configHash, /^sha256:[a-f0-9]{64}$/);
-  assert.deepEqual(registry.recipes, []);
+  assert.equal(registry.recipes.length, 1);
+  assert.equal(registry.recipes[0].title, recipe.title);
+  assert.equal(registry.recipes[0].summary, recipe.summary);
+  assert.equal(registry.recipeRevisions[0].display.title, "Frozen historical title");
+  assert.equal(registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
+  assert.equal(registry.recipeRevisions[0].hash, frozenHash);
+  assert.equal(registry.recipeRevisions[0].execution.turns[0].content, "Hello.");
   assert.equal(registry.dishes[0].artifactBase, `/dishes/${dishId}/`);
   assert.deepEqual(registry.reviews, [review]);
   const artifactUrl = `${registry.dishes[0].artifactBase}${registry.dishes[0].artifact.entry}`;
@@ -75,6 +100,16 @@ test("builds the gallery registry without private runtime data", async (t) => {
 
   const subpath = await buildRegistry({ repoRoot: root, basePath: "/kitchen/" });
   assert.equal(subpath.registry.dishes[0].artifactBase, `/kitchen/dishes/${dishId}/`);
+
+  const editedRecipe = { ...recipe, title: "Current public title", summary: "Current public summary." };
+  await json(path.join(root, "catalog/recipes/talk/talk-once/recipe.json"), editedRecipe);
+  const edited = await buildRegistry({ repoRoot: root });
+  assert.equal(edited.registry.recipes[0].title, "Current public title");
+  assert.equal(edited.registry.recipes[0].summary, "Current public summary.");
+  assert.equal(edited.registry.recipeRevisions[0].display.title, "Frozen historical title");
+  assert.equal(edited.registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
+  assert.equal(edited.registry.recipeRevisions[0].hash, frozenHash);
+  assert.equal(edited.registry.dishes[0].recipe.hash, frozenHash);
 
   const staleFixture = path.join(root, "public", "data", "fixtures", "stale", "failed-attempt.txt");
   await mkdir(path.dirname(staleFixture), { recursive: true });
