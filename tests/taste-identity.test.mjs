@@ -60,6 +60,29 @@ test("verified identity preserves requested fast and observed priority separatel
   assert.equal(identity.serviceTier, "priority");
 });
 
+test("default-tier identity remains explicit when the rollout omits the observed tier", async (t) => {
+  const codexHome = await mkdtemp(path.join(os.tmpdir(), "taste-identity-"));
+  t.after(() => rm(codexHome, { recursive: true, force: true }));
+  const sessions = path.join(codexHome, "sessions");
+  await mkdir(sessions);
+  await writeFile(path.join(sessions, "rollout.jsonl"), [
+    { type: "session_meta", payload: { id: THREAD_ID, cli_version: "0.151.0", model_provider: "openai" } },
+    { type: "turn_context", payload: { model: "gpt-5.6-luna", effort: "xhigh", personality: "none" } },
+  ].map(JSON.stringify).join("\n") + "\n");
+
+  const identity = await verifyObservedIdentity({
+    codexHome,
+    threadId: THREAD_ID,
+    cliVersion: "codex-cli 0.151.0",
+    variant: { model: "gpt-5.6-luna", provider: "openai", reasoningEffort: "xhigh", personality: "none", serviceTier: "default" },
+  });
+
+  assert.equal(identity.serviceTier, "default");
+  assert.equal(identity.requestedServiceTier, "default");
+  assert.equal(identity.observedServiceTier, undefined);
+  assert.equal(identity.serviceTierEvidence, "requested-default");
+});
+
 test("identity verifier rejects reverse tier alias and unrelated identity drift", async (t) => {
   await assert.rejects(verifyFixture(t, { requestedTier: "priority", observedTier: "fast" }), /tier requested priority, observed fast/);
   await assert.rejects(verifyFixture(t, { requestedTier: "fast", observedTier: "priority", observedModel: "gpt-5.6-sol" }), /model requested gpt-5\.6-luna/);

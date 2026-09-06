@@ -22,7 +22,7 @@ Verification performed:
 - Catalog validation passes after adding four ignored provenance records.
 - All 36 validator self-tests pass, including the actual mounted command against temporary positive shells and rejection of wrong answers, missing exceptions, mutated arguments, absent output, syntax errors, disconnected imports, altered snapshots and unavailable packages. Positive shells use explicit lookup doubles; they are validator tests, not solved recipes or taste evidence, and are deleted afterward.
 - Scoped ESLint passes for the four recipe directories.
-- Fresh menu dry planning supports exactly these four IDs for all five configured model configurations; no model execution or revision freezing is involved.
+- Fresh menu dry planning supports exactly these four IDs for all six configured model configurations; no model execution or revision freezing is involved.
 - Hem's separate baseline browser smoke test exercises its supplied queue, all three detail/back paths, materials, specimen action, disabled state, main focus, loaded token styles and narrow-screen overflow. This checks only supplied behavior; the missing estimate workflow still needs to be authored and inspected.
 
 Reproduce from the repository root:

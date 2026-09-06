@@ -132,6 +132,9 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
   });
   const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.observedModel, "gpt-5.6-sol");
+  assert.equal(dish.identity.serviceTier, "default");
+  assert.equal(dish.identity.requestedServiceTier, "default");
+  assert.equal("observedServiceTier" in dish.identity, false);
   assert.equal(dish.artifact.entry, "artifact/output/session.json");
   assert.deepEqual(dish.artifact.files.map((file) => file.path), ["artifact/output/session.json"]);
   assert.match(dish.dishHash, /^sha256:[a-f0-9]{64}$/);

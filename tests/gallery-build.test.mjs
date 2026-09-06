@@ -16,7 +16,7 @@ test("the static gallery preserves an honest uncooked public catalog", async () 
   assert.match(html, /\/assets\//);
   assert.equal(registry.schemaVersion, 2);
   assert.equal(registry.cuisines.length, 9);
-  assert.equal(registry.configurations.length, 5);
+  assert.equal(registry.configurations.length, 6);
   assert.deepEqual(registry.recipes, []);
   assert.deepEqual(registry.dishes, []);
   assert.deepEqual(registry.reviews, []);

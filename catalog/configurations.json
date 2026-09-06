@@ -120,6 +120,30 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
       }
+    },
+    {
+      "id": "codex-luna-xhigh",
+      "label": "Luna · Extra High · via Codex CLI · host-unsandboxed fallback",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "xhigh",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-unsandboxed-v1",
+        "label": "via Codex CLI · host-unsandboxed fallback",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     }
   ]
 }

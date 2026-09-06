@@ -285,7 +285,7 @@ function validateConfigurations(doc) {
   required(doc, ["schemaVersion", "configurations"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
   if (!array(doc.configurations, `${label}.configurations`, { min: 1 })) return new Map();
-  if (doc.configurations.length !== 5) fail(label, `expected 5 seed configurations, found ${doc.configurations.length}`);
+  if (doc.configurations.length !== 6) fail(label, `expected 6 configurations, found ${doc.configurations.length}`);
   const map = new Map();
   const tuples = [];
   const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
@@ -323,7 +323,6 @@ function validateConfigurations(doc) {
       fail(item, "the probed Codex runner may currently promise exactly files and shell");
     }
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
-    if (variant.model === "gpt-5.6-luna" && variant.serviceTier !== "fast") fail(item, "Luna seed must be explicitly fast");
     tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }
   unique(tuples, `${label}.configurations configuration`);
@@ -598,10 +597,17 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
       const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
       for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
       const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
-      const observedTier = dish.identity.observedServiceTier ?? dish.identity.serviceTier;
+      const observedTierRecorded = dish.identity.observedServiceTier !== undefined;
+      const observedTier = observedTierRecorded ? dish.identity.observedServiceTier : dish.identity.serviceTier;
       if (requestedTier !== variant.serviceTier) fail(relative, `identity requested service tier does not match variant ${variant.id}`);
-      if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
-      if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
+      if (observedTierRecorded) {
+        if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
+        if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
+      } else if (dish.identity.requestedServiceTier !== undefined && dish.identity.serviceTier !== requestedTier) {
+        fail(relative, "identity.serviceTier must preserve the requested tier when the observed tier was not recorded");
+      } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
+        fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
+      }
     }
   }
 

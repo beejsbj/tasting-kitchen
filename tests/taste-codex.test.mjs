@@ -125,10 +125,23 @@ test("resume plans name the exact UUID and force Luna fast on every turn", async
     prompt: "x", threadId: "--last", model: "gpt-5.6-luna", reasoningEffort: "low",
     workspace: f.workspace, codexHome: f.codexHome, artifactDir: path.join(f.root, "bad"),
   }), /exact UUID/u);
-  assert.throws(() => planCodexTurn({
-    prompt: "x", model: "gpt-5.6-luna", reasoningEffort: "low", serviceTier: "default",
-    workspace: f.workspace, codexHome: f.codexHome, artifactDir: path.join(f.root, "wrong-tier"),
-  }), /explicitly request the fast/u);
+});
+
+test("Luna default tier stays non-fast", async () => {
+  const f = await fixture();
+  const plan = planCodexTurn({
+    prompt: "Cook without Fast mode",
+    model: "gpt-5.6-luna",
+    reasoningEffort: "xhigh",
+    serviceTier: "default",
+    workspace: f.workspace,
+    codexHome: f.codexHome,
+    artifactDir: path.join(f.root, "luna-default"),
+  });
+
+  assert.ok(configValues(plan.args).includes('service_tier="default"'));
+  assert.equal(plan.args.some((arg, index) => arg === "--enable" && plan.args[index + 1] === "fast_mode"), false);
+  assert.deepEqual(plan.args.slice(plan.args.indexOf("--disable"), plan.args.indexOf("--disable") + 2), ["--disable", "fast_mode"]);
 });
 
 test("runner argv maps recipe boundaries and variant identity without execution", async () => {
