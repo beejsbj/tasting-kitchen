@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-product-span_codex-luna-xhigh_20260906224623944_77b8387a",
+  "recipe": {
+    "id": "fresh-product-span",
+    "version": "1.0.0",
+    "hash": "sha256:957fe42b206ccdb78fd057da1630e05f51156c26de1f106311156e01910836a3"
+  },
+  "executedAt": "2026-09-06T22:46:23.944Z",
+  "finalizedAt": "2026-09-06T23:02:45.176Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "ab1c88cc976a6b4ce982f55796a8bae7d4a1ee63b96d620af934adb95306a1ab",
+        "bytes": 9953
+      },
+      {
+        "path": "artifact/data/product.json",
+        "sha256": "8c62b24cd3d8dba2fb079dd7253f685199e87a27013341a6b658b2324c9fa64a",
+        "bytes": 3177
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "576de11140430adeb7cbee477f6d5d52da7dabf724b47d7d081f95f388e0472d",
+        "bytes": 18377
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "b35994a7f4b1715e48c434c057352e301d32763e57b0d6bb23e3799f42255eb9",
+        "bytes": 2493
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "91da290622bec694aa61e34578f5bd3ecaf45bd33bcd92ca0681e9fd85750538",
+        "bytes": 31370
+      }
+    ],
+    "treeHash": "sha256:c1eb19971752cd34c4e512023a1f9f81e29429b2c0c8ee25845df9919a4b791e"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:cbfd83bb88a75fa5e46873b1b1672ac27ec68640e8bef85e7caec83894c56383"
+}

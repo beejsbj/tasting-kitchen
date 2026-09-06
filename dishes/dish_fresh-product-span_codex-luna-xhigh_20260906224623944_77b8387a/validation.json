@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "mechanical-contract",
+      "type": "command",
+      "required": true,
+      "description": "Validate required nonempty files, local literal resource/import links, JavaScript syntax, immutable data hashes and shared pure-logic vectors. Does not prove rendering, event wiring, accessibility or taste.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "browser-and-taste",
+      "type": "manual",
+      "required": false,
+      "description": "At 360px and 1440px, inspect hierarchy and honest product representation. Change size, finish, quantity and mesh; try sold-out selection, replace and clear bag, and recover from invalid inquiry. Check arithmetic shown equals shared logic, no request is sent, keyboard/focus/errors and narrow-screen fit.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}
