@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "menuId": "fresh-visual-ui",
+  "title": "Fresh Visual UI",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    {
+      "recipeId": "fresh-product-span",
+      "recipeHash": "sha256:957fe42b206ccdb78fd057da1630e05f51156c26de1f106311156e01910836a3"
+    },
+    {
+      "recipeId": "fresh-editorial-second-life",
+      "recipeHash": "sha256:3a0adef2d084c4b01877ae8a72fd4c82d96f0f9602b6d7e6a95daf364317e891"
+    },
+    {
+      "recipeId": "fresh-interaction-paper-echo",
+      "recipeHash": "sha256:b23668ce0e1ecbbce76cc8a020de4958908895e917d30387600264908bd9354a"
+    },
+    {
+      "recipeId": "fresh-system-hem",
+      "recipeHash": "sha256:c9b54887e8e8a83e9008be4f79287a90c99cb5b6a7863e7f61d5c7b6006b6d7f"
+    }
+  ],
+  "hash": "sha256:e6812cb60f51919bd4a2e0eed2c316d5a8732ac52cb2f5007432ac7a97523e0a"
+}
