@@ -1,5 +1,5 @@
 {
-  "product": "QRNG Lottery demo",
+  "product": "P5 Lottery demo",
   "contexts": [
     {"id": "overview", "need": "Show the live-pot slip, wallet state, and recent winners without hiding the board language."},
     {"id": "setup", "need": "Pick exactly five numbers, roll the fixed sample, change ticket count, and enter an approval state."},

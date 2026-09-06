@@ -1,4 +1,4 @@
-# QRNG lottery source packet
+# P5 Lottery source packet
 
 `fixtures/upstream/` contains byte-for-byte copies of selected public files from
 `beejsbj/qrng-lottery` at commit
