@@ -1,0 +1,232 @@
+/* buttons and icons and smaller reusable bits here */
+.buttons ul {
+  display: flex;
+  gap: 10px;
+  /*justify-content: space-between;*/
+}
+
+.buttons picture {
+  max-width: 20px;
+}
+
+.button {
+  --h: 10;
+  background-color: black;
+  padding: 10px;
+  font-family: "Luckiest Guy", cursive;
+  color: var(--paper);
+  position: relative;
+  /*overflow: hidden;*/
+  /*transition: 0.3s;*/
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.button {
+  font-family: "expose", "Luckiest Guy", cursive;
+  background-color: var(--shade2);
+  color: white;
+}
+
+.button.rounded {
+  border-radius: 5px;
+}
+
+.button.outline {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+.button.text {
+  background-color: transparent;
+  background-color: var(--white);
+  color: var(--color);
+  padding: 10px;
+}
+
+.button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) skewX(10deg) skewY(-20deg);
+  background-color: hsla(215, 100%, 58%, 1);
+  filter: sepia(50%) saturate(3);
+  transition: 0.3s;
+  z-index: 1;
+  width: 30%;
+  height: 50%;
+  display: none;
+}
+
+/*todo:  add distortion animation*/
+.button:hover::after {
+  animation: jelly infinite 0.5s;
+}
+
+.button.roll {
+  /*background-image: linear-gradient(hsla(173, 66%, 37%, 1.00), hsla(95, 77%, 54%, 1.00)) ;*/
+  background-color: var(--white);
+  color: var(--black);
+}
+.button.submit:hover {
+  background-color: var(--color);
+}
+.button.roll:hover {
+  background-color: yellow;
+}
+
+/* rainbowkit styling */
+
+.wallet-wrapper,
+.connect-wrapper {
+  background-color: var(--paper);
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  min-height: 44px;
+  width: 100%;
+}
+
+.connect-wrapper {
+  /* --paper: var(--white); */
+}
+
+.wallet-wrapper button,
+.connect-wrapper button {
+  font-family: "Luckiest Guy", cursive;
+  color: var(--white);
+  font-size: 1rem;
+  align-items: flex-end;
+  min-width: 0;
+}
+.connect-wrapper button {
+  background-color: var(--white);
+  color: var(--black);
+  /* width: 100%; */
+}
+
+.wallet-wrapper button:hover,
+.wallet-wrapper button:focus {
+  background-color: var(--black);
+}
+.connect-wrapper button:hover,
+.connect-wrapper button:focus {
+  filter: invert(1);
+}
+
+.wallet-wrapper picture {
+  border-radius: 50%;
+  overflow: hidden;
+  width: 1.5em;
+}
+
+.wallet-wrapper .balance {
+  color: hsla(29, 85%, 52%, 1);
+}
+
+@media (max-width: 599px) {
+  .wallet-wrapper,
+  .connect-wrapper {
+    gap: 4px;
+    justify-content: stretch;
+  }
+
+  .wallet-wrapper button,
+  .connect-wrapper button {
+    align-items: center;
+    flex: 1 1 0;
+    flex-direction: column;
+    font-size: 0.72rem;
+    justify-content: center;
+    line-height: 1;
+    min-height: 50px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .wallet-wrapper .balance {
+    display: block;
+    font-size: 0.68rem;
+  }
+}
+
+/* active button */
+.button {
+  /* overflow: hidden; */
+}
+.button:before {
+  content: "";
+  position: absolute;
+  aspect-ratio: 1;
+  height: 0;
+  width: auto;
+
+  top: 50%;
+  left: 50%;
+  top: calc(var(--mouse-y) * 1px);
+  left: calc(var(--mouse-x) * 1px);
+  /* transform-style: flat; */
+  transform: translate(-50%, -50%)
+    rotate(calc(var(--mouse-y) * var(--mouse-x) * 2deg));
+  background: url("../assets/stars.svg");
+  z-index: 100;
+}
+
+.button:active::before {
+  transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+
+  height: 200%;
+}
+
+button.plus,
+button.minus {
+  font-size: 2rem;
+  background: var(--ink);
+  align-items: center;
+  transition: 0.1s ease-out;
+}
+
+button.plus {
+  filter: invert(100%);
+}
+
+button.plus:hover {
+  filter: none;
+  transform: translateY(5px);
+}
+button.minus:hover {
+  filter: invert(100%);
+  transform: translateY(-5px);
+}
+
+button.minus:active {
+  transform: translateY(5px);
+}
+button.plus:active {
+  transform: translateY(-5px);
+}
+
+button.disabled {
+  /* pointer-events: none; */
+  filter: grayscale(70%);
+  /* strike */
+  text-decoration: line-through;
+}
+
+button.wobble-connect {
+  animation: wobble-hor-bottom 0.6s both;
+  animation-iteration-count: 2;
+  filter: invert(100%);
+}
+
+li a {
+  color: var(--color);
+  display: inline;
+}

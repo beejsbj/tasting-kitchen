@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "id": "extend-conduit-design-system",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Conduit extension",
+  "summary": "Extend an authentic, bounded Conduit design-system snapshot with a live listing-provenance feature while preserving the feature's ownership boundary.",
+  "origin": "hybrid",
+  "originNote": "A related variant of the design-system extension recipe, grounded in a vendored Conduit Market StyleGuide snapshot and constrained by the static browser runtime.",
+  "variation": "Variant of extend-design-system-without-flattening-it. Its provenance is an exact local snapshot of beejsbj/conduit-market-client at portfolio/showcase-2025 commit 6c3de0c9b493b5b00e231e08c4d95a753183d268; fixture provenance records per-file Git and SHA-256 digests.",
+  "tags": [
+    "design-system",
+    "visual-language",
+    "implementation",
+    "source-synthesis"
+  ],
+  "kind": "web",
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the local brief, provenance record, exact upstream reference snapshot, and validator. Build a self-contained browser artifact; copy or embed every runtime input it needs into the allowed output paths. fixtures/ and validation/ are working inputs and are not shipped with the Dish. The files in fixtures/upstream/ are intentionally immutable React/TypeScript and Tailwind references, not executable static-web-v1 modules. Use them as evidence, then create browser CSS and JavaScript modules in src/ that adapt the useful token roles and component behavior. No network, package install, React runtime, Tailwind compilation, account, relay, inventory or payment service is available.",
+    "fixtures": [
+      {
+        "id": "conduit-brief",
+        "path": "fixtures/brief.json",
+        "mountAs": "fixtures/brief.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "source-provenance",
+        "path": "fixtures/provenance.json",
+        "mountAs": "fixtures/provenance.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "source-notes",
+        "path": "fixtures/README.md",
+        "mountAs": "fixtures/README.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "source-theme",
+        "path": "fixtures/upstream/src/styles/theme.css",
+        "mountAs": "fixtures/upstream/src/styles/theme.css",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "source-typography",
+        "path": "fixtures/upstream/src/styles/typography.css",
+        "mountAs": "fixtures/upstream/src/styles/typography.css",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "source-styleguide-page",
+        "path": "fixtures/upstream/src/pages/StyleGuide.tsx",
+        "mountAs": "fixtures/upstream/src/pages/StyleGuide.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-color-guide",
+        "path": "fixtures/upstream/src/components/StyleGuide/ColorGuide.tsx",
+        "mountAs": "fixtures/upstream/src/components/StyleGuide/ColorGuide.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-button-guide",
+        "path": "fixtures/upstream/src/components/StyleGuide/ButtonGuide.tsx",
+        "mountAs": "fixtures/upstream/src/components/StyleGuide/ButtonGuide.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-button",
+        "path": "fixtures/upstream/src/components/Buttons/Button.tsx",
+        "mountAs": "fixtures/upstream/src/components/Buttons/Button.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-tabs",
+        "path": "fixtures/upstream/src/components/Tabs.tsx",
+        "mountAs": "fixtures/upstream/src/components/Tabs.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-badge",
+        "path": "fixtures/upstream/src/components/Badge.tsx",
+        "mountAs": "fixtures/upstream/src/components/Badge.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "source-page-section",
+        "path": "fixtures/upstream/src/layouts/PageSection.tsx",
+        "mountAs": "fixtures/upstream/src/layouts/PageSection.tsx",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "output-validator",
+        "path": "validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "extend-conduit",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json, fixtures/provenance.json, fixtures/README.md, and the exact sources under fixtures/upstream/. Build index.html, styles.css, styleguide.js, extension-decisions.json, src/conduit-tokens.css, src/conduit-primitives.js and src/listing-provenance.js. The entry must load styles.css and styleguide.js; styleguide.js must import and render the two source modules. Adapt the supplied Conduit language rather than copying Tailwind class strings or presenting TSX as runnable: preserve its paper/ink base, purple/secondary/tertiary/accent role distinctions, rounded display and sans/mono voice intent, compact Badge treatment, Button variants, tabbed guide composition and readable PageSection-like width. Build a usable styleguide that demonstrates the adapted tokens and primitives and all three supplied listing contexts. Implement the concrete listing-provenance inspector as a local module. Its selector must work with pointer and keyboard and update visible label, detail and text state for each supplied sample; it may not make a request. Include the live component, its states and public API in the guide. In extension-decisions.json, record arrays named shared, local and declined. Shared and declined may be empty when the supplied evidence does not justify a promotion or prune; do not invent either. Record the local feature with its source path and evidence. Preserve visible focus, no color-only semantic state, responsive reading at 390px and 1440px, and reduced motion if you add motion. Keep fixture references out of published output."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "extension-decisions.json",
+      "*.css",
+      "*.js",
+      "src/**"
+    ],
+    "limits": {
+      "maxFiles": 30,
+      "maxBytes": 5242880
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "entry-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The self-contained Conduit styleguide entry exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "extension-record-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The machine-readable extension boundary record exists.",
+        "target": "extension-decisions.json"
+      },
+      {
+        "id": "conduit-boundary-contract",
+        "type": "command",
+        "required": true,
+        "description": "Required browser source files and the extension record exist, the entry and guide reference their required resources, declared source paths are contained, and published JavaScript parses.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "conduit-review",
+        "type": "manual",
+        "required": false,
+        "description": "In a browser, inspect the source imports and the live guide: check all three contexts, keyboard and pointer selection, visible text state, focus, responsive reading, and whether the local feature uses the supplied Conduit language without claiming the React reference snapshot ran."
+      }
+    ]
+  },
+  "cuisines": [
+    "ui-visual"
+  ]
+}

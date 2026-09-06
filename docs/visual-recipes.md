@@ -30,3 +30,21 @@ No validator executes a browser, checks inline-script syntax, resolves every dep
 Retained the four IDs, concise names, existing `visual-ui` membership, lineage, output packaging, immutable/editable fixture distinction, single-turn boundary, editorial map, Latchlight facts and three-way system decision ledger. Those already supported distinct comparisons. Expanded the thin editorial packet and system usage evidence; made the ritual reproducible; specified useful local product actions; removed the product's table prohibition. No palette, typography or animation prescription was added to the open briefs.
 
 Current versions are `2.1.0` for product launch and shared-result ritual, and `1.1.0` for culture feature and design-system extension. These minor bumps identify the changed prompts, source packets and validation contracts; new execution hashes are expected. Existing immutable Recipe snapshots and accepted Dishes remain byte-for-byte unchanged, including the historical `1.0.0` launch and ritual results. Only a separately authorized Cook can freeze and execute these new drafts.
+
+## Extension variants from existing projects
+
+The separate `design-system-extensions` Menu includes the Northstar baseline and three variants. The original four-member `visual-ui` Menu remains the small starting set. Each variant has its own Recipe identity and task; compare models within an exact variant revision. Different supplied systems and extension tasks do not imply equal difficulty or a held-constant comparison across variants.
+
+| Variant | Supplied system and extension |
+| --- | --- |
+| `extend-conduit-design-system` — Conduit extension | The specified `portfolio/showcase-2025` branch's StyleGuide and selected supporting source. Add a listing-provenance inspector with three selectable local sample states. |
+| `extend-qrng-design-system` — QRNG extension | The lottery frontend's actual visual and component language, with an explicitly authored browser starter. Complete ticket count, approval and receipt behavior. The supplied URL's `contracts/` directory contains Solidity infrastructure; the visual reference comes from the adjacent `frontend/`. |
+| `extend-emotitone-design-system` — Emotitone extension | The Vue application's instrument-panel styles, clipped panel/control geometry, tabs and movable-do data, with a browser tabs adapter. Add a Major/Minor degree lens that updates the supplied degree attributes. |
+
+Each recipe supplies a bounded local snapshot with a pinned upstream commit, original paths and file digests. The fixture notes identify omitted dependencies and assets. These are authentic source references, not invented replacement design systems or live upstream URLs that can change between models.
+
+The current output contract remains self-contained `static-web-v1`. Source excerpts use their upstream frameworks; the task explicitly adapts the relevant language into browser modules and extends that implementation. It does not claim to test a native React/Vue patch against the complete upstream application. That stronger continuation test would require a prepared dependency/build environment and a separate contract. Fidelity, component reuse and interaction quality remain human review questions.
+
+The new variants are uncooked. They do not appear on the public counter until accepted Dishes exist. Optional reusable skill guidance is discussed separately in [skill-guidance.md](skill-guidance.md); it has not been added to these recipes implicitly.
+
+Authoring verification: all 27 vendored files matched both their recorded SHA-256 digests and bytes fetched from the pinned upstream commits. Each new validator passed a scratch positive case and rejected malformed output; those checks establish mechanical boundaries, not visual quality. Chrome smoke checks exercised the QRNG starter's selection guard, roll, submit and approval callback, and the Emotitone adapter's keyboard tab selection. They do not constitute completed extensions or accepted Dishes. The four-member extension Menu dry-plans with no unsupported cells under `codex-sol-high`.
