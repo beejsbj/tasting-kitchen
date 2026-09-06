@@ -54,12 +54,31 @@ try {
   assert.deepEqual(url.searchParams.get("models")?.split(","), [filterConfig.id], "card opens the exact latest configuration");
   assert.deepEqual(url.searchParams.get("dishes")?.split(","), [targetLatest.id], "card opens the latest Dish by time then ID");
   assert.equal(await page.locator(".comparison-slot").count(), 1, "a Recipe opens as a one-pane Dish viewer");
-  assert.equal(await page.getByRole("group", { name: "Configuration 1" }).count(), 1, "viewer configuration is a pill group");
+  const artifact = page.locator(".comparison-slot iframe"); const artifactBox = await artifact.boundingBox();
+  assert.ok(artifactBox && artifactBox.y === 0 && artifactBox.height >= 899, "one-pane artifact should fill the viewport from its top edge");
+  const dock = page.getByRole("navigation", { name: "Artifact controls" }); const dockBox = await dock.boundingBox();
+  assert.ok(dockBox && dockBox.x > 1000 && dockBox.y < 40, "viewer toolbar should float at the top-right over the artifact");
+  assert.equal(await page.getByRole("group", { name: "Configuration 1" }).count(), 0, "model choices stay hidden until the toolbar opens");
+  assert.equal(await page.locator(".receipt").count(), 0, "receipts do not push the artifact down");
   assert.equal(await page.locator(".tasting-room select").count(), 0, "current Recipe viewer has no configuration, Repeat, or revision select");
-  await page.getByRole("button", { name: /Read the recipe/i }).click(); await settle(page); assert.equal(await page.locator("dialog").count(), 1); await page.keyboard.press("Escape"); await settle(page); assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("data-brief-control")), "true", "Escape should return focus to the brief trigger");
+  await page.getByRole("button", { name: "Models and comparison" }).click(); await settle(page);
+  assert.equal(await page.getByRole("group", { name: "Configuration 1" }).count(), 1, "Models popover contains the configuration pill group");
+  await page.keyboard.press("Escape"); await settle(page);
+  assert.equal(await page.getByRole("button", { name: "Models and comparison" }).evaluate(node => node === document.activeElement), true, "Escape should return focus to the Models trigger");
+  assert.equal(await page.locator(".comparison-slot").count(), 1, "closing a popover must not close the Recipe viewer");
+  await page.getByRole("button", { name: "Configuration receipts" }).click(); await settle(page);
+  assert.equal(await page.getByText("Configuration receipts", { exact: true }).count(), 1, "receipt details are behind their toolbar control");
+  await page.keyboard.press("Escape"); await settle(page);
+  await page.getByRole("button", { name: "Read the recipe" }).click(); await settle(page);
+  const brief = page.locator('[role="dialog"]'); assert.equal(await brief.count(), 1, "Recipe brief is an accessible dialog sheet");
+  const briefBox = await brief.boundingBox(); assert.ok(briefBox && Math.abs((briefBox.x + briefBox.width) - 1280) < 1, "Recipe brief should slide in from the right edge");
+  for (let i = 0; i < 12; i++) await page.keyboard.press("Tab");
+  assert.equal(await brief.evaluate(node => node.contains(document.activeElement)), true, "focus should remain trapped in the recipe sheet");
+  await page.keyboard.press("Escape"); await settle(page); assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("data-brief-control")), "true", "Escape should return focus to the brief trigger");
   const onePaneUrl = page.url();
-  await page.getByRole("button", { name: /^\+ Compare$/ }).click(); await settle(page);
+  await page.getByRole("button", { name: "Compare another" }).click(); await settle(page);
   assert.equal(await page.locator(".comparison-slot").count(), 2, "Compare should add a second pane");
+  await page.getByRole("button", { name: "Models and comparison" }).click(); await settle(page);
   await page.getByRole("button", { name: "Remove configuration 2" }).click(); await settle(page);
   assert.equal(await page.locator(".comparison-slot").count(), 1, "remove should return to one pane");
   await page.goBack(); await settle(page);
@@ -99,7 +118,7 @@ try {
     const repeat = { ...menuRegistry.dishes.find(dish => dish.recipe.id === menuRecipes[0].id && dish.identity.configHash === missingConfig), id: "dish_browser_repeat", executedAt: "2099-01-01T00:00:00.000Z", dishHash: "sha256:browser-repeat" }; const repeatRegistry = { ...menuRegistry, dishes: [...menuRegistry.dishes, repeat] }; await menuPage.unroute("**/data/registry.json"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(repeatRegistry) })); await menuPage.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); await menuPage.getByRole("button", { name: /2 dishes/ }).first().click(); await settle(menuPage); assert.equal(await menuPage.getByRole("group", { name: "Dishes for configuration 1" }).count(), 1, "Repeats should be direct Dish pills"); await menuPage.getByRole("button", { name: "Repeat 2 for configuration 1" }).click(); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("dishes"), "dish_browser_repeat"); await menuPage.close();
   }
 
-  await page.goto(`${base}/?recipe=${target.id}`, { waitUntil: "networkidle" }); await page.route("**/data/fixtures/**", route => route.abort()); await page.getByRole("button", { name: /Read the recipe/i }).click(); await settle(page); if (await page.locator("dialog .fixture summary").count()) await page.locator("dialog .fixture summary").first().click(); await page.waitForTimeout(900); assert.match(await page.locator("dialog").innerText(), /Failed to fetch|Input could not be loaded/); await page.unroute("**/data/fixtures/**");
+  await page.goto(`${base}/?recipe=${target.id}`, { waitUntil: "networkidle" }); await page.route("**/data/fixtures/**", route => route.abort()); await page.getByRole("button", { name: "Read the recipe" }).click(); await settle(page); if (await page.locator('[role="dialog"] .fixture summary').count()) await page.locator('[role="dialog"] .fixture summary').first().click(); await page.waitForTimeout(900); assert.match(await page.locator('[role="dialog"]').innerText(), /Failed to fetch|Input could not be loaded/); await page.unroute("**/data/fixtures/**");
   await page.goto(`${base}/`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: /Visual system/i }).click(); await settle(page); assert.match(await page.locator("body").innerText(), /Back to the Kitchen/); await save(page, "styleguide-desktop");
 
   const sandbox = await browser.newPage(); await sandbox.route("http://scratch.test/sandbox/index.html", route => route.fulfill({ status: 200, headers: { "content-type": "text/html", "content-security-policy": "default-src 'none'; script-src 'self'; connect-src 'self'", "access-control-allow-origin": "*" }, body: '<p id="status">loading</p><script type="module" src="/sandbox/module.js"></script>' })); await sandbox.route("http://scratch.test/sandbox/module.js", route => route.fulfill({ status: 200, headers: { "content-type": "text/javascript", "access-control-allow-origin": "*" }, body: "const data = await fetch('/sandbox/data.json').then(response => response.json()); document.querySelector('#status').textContent = data.ok ? 'module-fetch-passed' : 'failed';" })); await sandbox.route("http://scratch.test/sandbox/data.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json", "access-control-allow-origin": "*" }, body: '{"ok":true}' })); await sandbox.setContent('<iframe id="frame" sandbox="allow-scripts" src="http://scratch.test/sandbox/index.html"></iframe>'); await sandbox.waitForTimeout(1000); assert.equal(await sandbox.frames()[1].locator("#status").innerText(), "module-fetch-passed"); assert.equal(await sandbox.locator("#frame").evaluate(frame => frame.contentDocument === null), true, "sandbox frame should be unreadable by parent"); await sandbox.close();
