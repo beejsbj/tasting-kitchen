@@ -8,7 +8,7 @@ import { buildRecipeBook } from '../lib/taste/recipe-book.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 
-test('old Dishes retain their original executed recipe identities', async () => {
+test('historical Dishes retain their original executed recipe identities outside the public Book', async () => {
   const [dishes, revisions] = await Promise.all([loadDishes(root), loadRecipeRevisions(root)]);
   const ids = new Set(dishes.map(dish => dish.recipe.id));
   assert.equal(ids.size, 3);
@@ -26,7 +26,14 @@ test('fresh recipes and supplied systems are browseable while the old backlog is
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
   assert.equal(fresh.length, 4);
   assert.ok(fresh.every(entry => entry.dishCount === 0));
-  assert.equal(book.recipes.length, 13);
+  assert.equal(book.recipes.length, 10);
+  assert.ok(book.recipes.every(entry => entry.dishCount === 0));
+  assert.equal(book.archivedCount, 54);
+  assert.equal(archive.archivedRecipeIds.length, 54);
+  for (const id of ['responsive-product-launch', 'shared-result-ritual', 'permission-ladder-publish']) {
+    assert.ok(archive.archivedRecipeIds.includes(id));
+    assert.ok(!book.recipes.some(entry => entry.recipe.id === id));
+  }
   for (const id of ['standard-service-business', 'standard-developer-portfolio', 'standard-developer-homepage']) {
     const entry = book.recipes.find(item => item.recipe.id === id);
     assert.ok(entry, `Standard website recipe ${id} is active`);

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "permission-ladder-publish",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Prepare, pause for approval, publish, then verify",
   "summary": "Move through an enforced permission ladder in a disposable room and check the human-visible result after mutation.",
   "cuisines": [

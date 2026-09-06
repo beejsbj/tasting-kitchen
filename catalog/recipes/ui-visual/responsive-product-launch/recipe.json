@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "responsive-product-launch",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Launch a compact product without hiding the tradeoffs",
   "summary": "Create a responsive product page that feels desirable while making compatibility and repair information easy to find.",
   "origin": "textbook",

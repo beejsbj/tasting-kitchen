@@ -1,10 +1,10 @@
 # Visual Recipe contracts
 
-The public Book has thirteen active Recipes. It includes uncooked authored definitions; a Recipe Book entry is not evidence that a model has produced a Dish.
+The public Book has ten active Recipes. Every active Recipe is uncooked; a Recipe Book entry is not evidence that a model has produced a Dish.
 
-## Restored cooked Recipes
+## Historical archive
 
-The original 15 accepted Dishes remain unchanged. Their three original Recipes and exact definitions are restored:
+The original 15 accepted Dishes, their three original Recipe definitions, and their executed revisions remain byte-for-byte historical records. All three Recipes are now hidden and outside the public Book:
 
 | Recipe ID | Definition |
 | --- | --- |
@@ -12,7 +12,7 @@ The original 15 accepted Dishes remain unchanged. Their three original Recipes a
 | `shared-result-ritual` | Stage a shared result as an event |
 | `permission-ladder-publish` | Prepare, pause for approval, publish, then verify |
 
-Displayed Dish cards use the names and prompt definitions frozen into the executed Recipe Revision. The current authored definitions are editable in the separate Recipe Book and do not rewrite those Dishes.
+The public gallery has no Dish records yet. When Dishes are cooked, every Dish and Repeat appears separately under its Recipe rather than inside model or effort tabs. Historical Dish names and prompt definitions remain frozen into their executed Recipe Revisions.
 
 ## Fresh visual Recipes
 
@@ -49,7 +49,7 @@ Each extension supplies a bounded local snapshot with a pinned upstream commit, 
 
 Northstar is not an active menu member. These variants remain separate Recipe identities with their own supplied systems and extension tasks; comparing models within one exact variant revision does not make different variants like-for-like.
 
-The old `visual-ui` menu and its historical visual candidates are deferred catalog material, not the current four-member public visual menu. Fifty-one other old Recipes are hidden in `catalog/archive.json` and stay outside the public Book.
+The old `visual-ui` menu and its historical visual candidates are deferred catalog material, not the current four-member public visual menu. Fifty-four old Recipes are hidden in `catalog/archive.json` and stay outside the public Book.
 
 ## Recipe Book editing
 

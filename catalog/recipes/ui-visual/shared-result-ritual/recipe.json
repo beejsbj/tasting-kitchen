@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "shared-result-ritual",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Stage a shared result as an event",
   "summary": "Build waiting, interruption, reveal, and selected states for a public drawing without turning it into a dashboard.",
   "origin": "mothers",

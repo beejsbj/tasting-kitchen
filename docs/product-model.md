@@ -164,16 +164,16 @@ The site is the Tasting surface; the CLI is the v1 cooking surface.
 
 The public site supports:
 
-- a Dishes-first counter with Dish-led previews and model/thinking filters;
+- a Dishes counter that groups every visible Dish and Repeat beneath its Recipe, with model/thinking filters;
 - a separate Recipe Book at `?view=recipes` for current authored definitions;
 - Recipe detail pages containing all matching models, configurations, and Repeats;
 - model and configuration facets on the Dishes counter;
 - Cuisine filtering; and
 - Menu views with explicit coverage.
 
-The public Book contains active Recipes, including uncooked Recipes. The current inventory is recorded in [visual-recipes.md](visual-recipes.md): the original cooked Recipes, four fresh visual candidates, three supplied design-system extensions, and three conventional website baselines. Hidden Recipes remain in the catalog archive and outside the public Book. The historical `visual-ui` menu is deferred; `fresh-visual-ui` and `standard-web` contain the new candidates.
+The public Book contains active Recipes, including uncooked Recipes. The current inventory is recorded in [visual-recipes.md](visual-recipes.md): four fresh visual candidates, three supplied design-system extensions, and three conventional website baselines. All ten active Recipes are uncooked. Hidden Recipes, their historical revisions, and their accepted Dishes remain recoverable in the catalog archive and outside the public Book. The historical `visual-ui` menu is deferred; `fresh-visual-ui` and `standard-web` contain the new candidates.
 
-The Dishes counter uses card names and summaries from the frozen executed Recipe Revision that produced each Dish. The Recipe Book shows the current authored definition and permits editing its title, summary, setup instructions, prompt turns, and public text fixtures. A Recipe Book edit never changes an existing Dish; execution-affecting edits bump the Recipe patch version for a future Cook.
+The Dishes counter shows each Dish separately, grouped under its frozen executed Recipe Revision; a Repeat is a separate visible Dish, never a model or effort tab hidden inside a card. The Recipe Book shows the current authored definition and permits editing its title, summary, setup instructions, prompt turns, and public text fixtures. A Recipe Book edit never changes an existing Dish; execution-affecting edits bump the Recipe patch version for a future Cook.
 
 Local development exposes `GET /api/recipes` and optimistic `PATCH /api/recipes/:id` with an `expectedHash`; saves replace the recipe source and edited public fixtures coherently. Production serves the active public source text from `public/data/recipe-book.json`; its static sidecar is read-only, while the separate hosted GitHub flow can save current definitions.
 
