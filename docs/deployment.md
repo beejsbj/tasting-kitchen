@@ -36,7 +36,7 @@ Target: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify resourc
 
 The September 5 preflight found canonical HTTPS reaching Cloudflare with valid TLS but returning 503. The existing wildcard ingress covers the hostname. Authenticated Coolify inventory remains unverified because the documented credential source did not contain a usable key. Do not create a token or alter shared routes as a workaround.
 
-Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. This repository has no configured Git remote; choose the authorized image/source delivery path during that preflight.
+Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The private source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
 
 Prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm the old proof and neighboring artifact routes still work. Roll back by disabling only the new resource/route or restoring its previous image digest; the proof remains available throughout.
 
@@ -50,8 +50,12 @@ The owner Cook UI, authentication/job service and additional harnesses are separ
 
 `vercel.json` configures the source build and preserves the artifact sandbox/CORS headers. `.vercelignore` excludes private evidence, environment files and local working material from CLI source uploads. The Vercel project is `beejsbjs-projects/tasting-kitchen`.
 
-A standalone review deployment was verified on September 6, 2026: https://tasting-kitchen-iblcoj643-beejsbjs-projects.vercel.app . The live browser suite passed; the gallery, registry and artifact returned 200, missing artifacts returned 404, and sandbox/CORS headers matched the serving contract. It contains the 15 original accepted Dishes.
+The private [GitHub repository](https://github.com/beejsbj/tasting-kitchen) is connected to the Vercel project. [PR #1](https://github.com/beejsbj/tasting-kitchen/pull/1) contains the visual Kitchen implementation.
 
-The project has no Git integration yet. No Kitchen GitHub repository was found, and creation of a private repository is awaiting the owner’s answer. The CLI briefly inferred the parent Cockpit repository when initializing the staging directory; that link was disconnected and the initial automatically promoted deployment was removed. The surviving deployment is a Preview. Future staging directories must have their own Git boundary to prevent ancestor repository inference.
+The revised [review preview](https://tasting-kitchen-5ayne3etw-beejsbjs-projects.vercel.app) was deployed September 6, 2026 from application commit `4e9bab9`. It contains the 15 original accepted Dishes. It is a Preview, not a production promotion.
+
+Automatic Git deployments currently stop before building with `COMMIT_AUTHOR_REQUIRED`: Vercel cannot find a GitHub account for the commit author. A CLI source deployment carrying that Git identity is blocked for the same reason. The account association must be resolved before automatic PR previews work.
+
+The review preview was deployed through the authenticated owner account using the already-built static output. To repeat that route, build the desired commit, copy only `dist/` into a clean staging directory, and give that directory its own empty Git boundary to prevent ancestor-repository inference. Link it to the existing `tasting-kitchen` project. Its static `vercel.json` sets `framework`, `buildCommand` and `installCommand` to null while retaining the source configuration's artifact and data headers. Deploy with `vercel deploy --target preview --yes`, and record the source commit and URL in the PR. Never copy credentials, the source repository, or private evidence into that directory.
 
 Vercel serves the review surface; the existing homelab proof and canonical Coolify deployment state are unchanged.
