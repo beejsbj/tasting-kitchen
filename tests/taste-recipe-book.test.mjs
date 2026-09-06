@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
@@ -57,9 +57,14 @@ test("recipe book exposes current visible authoring definitions without private 
   assert.equal(JSON.stringify(book).includes("private fixture"), false);
   assert.equal(JSON.stringify(book).includes("private-note"), false);
 
-  const hidden = JSON.parse(await readFile(path.join(root, "catalog/recipes/ui/editable-card/recipe.json"), "utf8"));
+  const recipeFile = path.join(root, "catalog/recipes/ui/editable-card/recipe.json");
+  const hidden = JSON.parse(await readFile(recipeFile, "utf8"));
+  hidden.status = "draft";
+  await json(recipeFile, hidden);
+  assert.deepEqual(await buildRecipeBook(root), { schemaVersion: 1, recipes: [], archivedCount: 0 });
+
   hidden.status = "hidden";
-  await json(path.join(root, "catalog/recipes/ui/editable-card/recipe.json"), hidden);
+  await json(recipeFile, hidden);
   assert.deepEqual(await buildRecipeBook(root), { schemaVersion: 1, recipes: [], archivedCount: 1 });
 });
 
@@ -118,6 +123,32 @@ test("metadata saves with complete unchanged execution fields do not bump versio
   });
   assert.equal(saved.recipe.title, "Renamed card");
   assert.equal(saved.recipe.version, "1.0.0");
+});
+
+test("recipe edits require a prompt as the first turn", async (t) => {
+  const { root } = await fixture(t);
+  const before = (await buildRecipeBook(root)).recipes[0];
+  await assert.rejects(
+    saveRecipeEdits(root, {
+      recipeId: "editable-card",
+      expectedHash: before.fileHash,
+      updates: { turns: [{ id: "revise", role: "correction", content: "Start with a correction." }] },
+    }),
+    (error) => error.code === "VALIDATION" && /first turn.*prompt/u.test(error.message),
+  );
+});
+
+test("a locked read recovers an interrupted recipe-directory swap", async (t) => {
+  const { root, recipeDir } = await fixture(t);
+  const backup = `${recipeDir}.recipe-book-backup`;
+  const staging = `${recipeDir}.recipe-book-staging`;
+  await rename(recipeDir, backup);
+  await cp(backup, staging, { recursive: true });
+
+  const book = await buildRecipeBook(root);
+  assert.equal(book.recipes[0].recipe.title, "Editable card");
+  await assert.rejects(readFile(path.join(backup, "recipe.json")), /ENOENT/u);
+  await assert.rejects(readFile(path.join(staging, "recipe.json")), /ENOENT/u);
 });
 
 test("invalid, unsafe, and symlinked edits do not mutate recipe sources", async (t) => {

@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
+import { buildRecipeBook, saveRecipeEdits } from "../lib/taste/recipe-book.mjs";
 import { loadRecipeFromGitHub, saveRecipeViaGitHub, verifyGitHubAccess } from "../src/lib/github-recipe-save.ts";
 
 const api = "https://api.github.com/repos/beejsbj/tasting-kitchen";
@@ -17,6 +21,11 @@ function response(value, status = 200) {
 
 function blob(bytes) {
   return { content: Buffer.from(bytes).toString("base64"), encoding: "base64" };
+}
+
+async function json(filename, value) {
+  await mkdir(path.dirname(filename), { recursive: true });
+  await writeFile(filename, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function fixture() {
@@ -143,12 +152,63 @@ test("saveRecipeViaGitHub creates one tree and one commit for every changed reci
   assert.equal(requests.filter((request) => request.url === `${api}/git/refs/heads/main` && request.init.method === "PATCH").length, 1);
 });
 
+test("local and GitHub recipe saves preserve one validation and hashing contract", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-save-parity-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const source = fixture();
+  await json(path.join(root, "catalog/cuisines.json"), { schemaVersion: 1, cuisines: [{ id: "ui", label: "UI", description: "UI recipes.", order: 1 }] });
+  await json(path.join(root, "catalog/tags.json"), { schemaVersion: 1, tags: ["design"] });
+  await json(path.join(root, "catalog/configurations.json"), { schemaVersion: 1, configurations: [] });
+  await json(path.join(root, source.entry.sourcePath), source.record);
+  for (const [filename, bytes] of source.fixtures) {
+    const target = path.join(root, filename);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, bytes);
+  }
+
+  const updates = {
+    title: "Edited card",
+    summary: source.entry.recipe.summary,
+    setupInstructions: "Use the revised source.",
+    turns: source.entry.recipe.turns,
+    fixtureEdits: [
+      { id: "card-source", text: "<template><main>revised</main></template>\n" },
+      { id: "card-data", text: '{"title":"revised"}\n' },
+    ],
+  };
+  const localEntry = (await buildRecipeBook(root)).recipes[0];
+  const local = await saveRecipeEdits(root, { recipeId: source.record.id, expectedHash: localEntry.fileHash, updates });
+  const { entry } = installGitHubMock(t);
+  const hosted = await saveRecipeViaGitHub({ token: "test-token", branch: "main", entry, updates });
+
+  assert.equal(hosted.fileHash, local.fileHash);
+  assert.equal(hosted.recipe.recipeHash, local.recipe.recipeHash);
+  assert.equal(hosted.recipe.version, local.recipe.version);
+  assert.deepEqual(hosted.recipe.turns, local.recipe.turns);
+  assert.deepEqual(hosted.fixtures, local.fixtures);
+});
+
 test("a stale fixture hash prevents every GitHub write", async (t) => {
   const { entry, requests } = installGitHubMock(t);
   entry.fileHash = "sha256:0000000000000000000000000000000000000000000000000000000000000000";
   await assert.rejects(
     saveRecipeViaGitHub({ token: "test-token", branch: "main", entry, updates: { title: "Edited card", summary: entry.recipe.summary, setupInstructions: entry.recipe.setup.instructions, turns: entry.recipe.turns, fixtureEdits: [] } }),
     /changed since it was opened/,
+  );
+  assert.equal(requests.some((request) => request.init.method === "POST" || request.init.method === "PATCH"), false);
+});
+
+test("GitHub saves require a prompt as the first turn", async (t) => {
+  const { entry, requests } = installGitHubMock(t);
+  await assert.rejects(
+    saveRecipeViaGitHub({ token: "test-token", branch: "main", entry, updates: {
+      title: entry.recipe.title,
+      summary: entry.recipe.summary,
+      setupInstructions: entry.recipe.setup.instructions,
+      turns: [{ id: "revise", role: "correction", content: "Start with a correction." }],
+      fixtureEdits: [],
+    } }),
+    /first turn must have the prompt role/u,
   );
   assert.equal(requests.some((request) => request.init.method === "POST" || request.init.method === "PATCH"), false);
 });

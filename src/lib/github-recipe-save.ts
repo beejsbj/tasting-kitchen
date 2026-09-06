@@ -236,7 +236,7 @@ function textValue(value: unknown, label: string, maximum: number): string {
 function validateTurns(turns: unknown): RecipeTurn[] {
   if (!Array.isArray(turns) || turns.length === 0 || turns.length > 40) fail("turns must be a non-empty array of at most 40 turns.");
   const ids = new Set<string>();
-  return turns.map((turn, index) => {
+  const validated = turns.map((turn, index) => {
     const value = object(turn, `Turn ${index + 1}`);
     const id = string(value.id, `Turn ${index + 1} id`);
     const role = string(value.role, `Turn ${index + 1} role`);
@@ -244,6 +244,8 @@ function validateTurns(turns: unknown): RecipeTurn[] {
     ids.add(id);
     return { id, role: role as RecipeTurn["role"], content: textValue(value.content, `Turn ${index + 1} content`, 50000) };
   });
+  if (validated[0].role !== "prompt") fail("The first turn must have the prompt role.");
+  return validated;
 }
 
 function isTextFixture(fixture: JsonObject): boolean {

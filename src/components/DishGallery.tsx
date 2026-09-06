@@ -8,7 +8,7 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
     if (!matches.length) return null;
     return <section className="dish-group" key={recipe.id} aria-labelledby={`dish-group-${recipe.id}`} data-recipe-id={recipe.id}>
       <header className="dish-group__heading"><div><h3 id={`dish-group-${recipe.id}`}>{recipe.title}</h3><p>{recipe.summary}</p></div><span>{matches.length} {matches.length === 1 ? 'dish' : 'dishes'}</span></header>
-      <div className="recipe-grid">{matches.map((dish, index) => {
+      <div className="recipe-grid">{matches.map((dish) => {
         const revision = registry.recipeRevisions.find(item => item.recipeId === recipe.id && item.hash === dish.recipe.hash);
         const executedRecipe = recipeAtRevision(recipe, revision);
         const config = registry.configurations.find(item => item.configHash === dish.identity.configHash);
@@ -20,8 +20,8 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
         return <article className="recipe-card dish-card" key={dish.id} data-dish-id={dish.id}>
           <button className="recipe-card__open" onClick={() => onOpen(recipe, dish)} aria-label={`Open ${executedRecipe.title}, ${model}, ${effort} effort, iteration ${iteration}, ${date}`}>
             <div className="recipe-card__preview" aria-hidden="true" inert>
-              {dish.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading={index < 2 ? 'eager' : 'lazy'} /> : dish.artifact.kind === 'web'
-                ? <iframe src={artifactUrl(dish)} title={`${executedRecipe.title} preview`} tabIndex={-1} loading={index < 2 ? 'eager' : 'lazy'} sandbox="allow-scripts" />
+              {dish.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading="lazy" /> : dish.artifact.kind === 'web'
+                ? <iframe src={artifactUrl(dish)} title={`${executedRecipe.title} preview`} tabIndex={-1} loading="lazy" sandbox="allow-scripts" />
                 : <div className="recipe-card__transcript"><span>{dish.artifact.kind === 'session' ? 'Conversation' : dish.artifact.kind}</span><p>{executedRecipe.turns[0]?.content.slice(0, 240)}</p><span>{executedRecipe.turns.length} turns</span></div>}
             </div>
             <span className="recipe-card__body">

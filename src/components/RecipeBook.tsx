@@ -7,16 +7,23 @@ import { GitHubRecipeConnection, recipeBranch, type GitHubConnection } from './G
 import { loadRecipeFromGitHub, saveRecipeViaGitHub } from '../lib/github-recipe-save';
 
 const draftKey = (id: string) => `tasting-kitchen:recipe-draft:${id}`;
-function readDraft(entry: RecipeBookEntry): RecipeEdits {
+type LoadedDraft = { updates: RecipeEdits; baseHash: string; stale: boolean };
+
+function readDraft(entry: RecipeBookEntry): LoadedDraft {
   try {
     const draft = JSON.parse(localStorage.getItem(draftKey(entry.recipe.id)) ?? 'null');
-    if (draft?.baseHash === entry.fileHash && draft.updates && Array.isArray(draft.updates.turns) && Array.isArray(draft.updates.fixtureEdits)) return draft.updates;
+    if (typeof draft?.baseHash === 'string' && draft.updates && Array.isArray(draft.updates.turns) && Array.isArray(draft.updates.fixtureEdits)) {
+      return { updates: draft.updates, baseHash: draft.baseHash, stale: draft.baseHash !== entry.fileHash };
+    }
   } catch { /* A missing or invalid browser draft does not change the recipe. */ }
-  return initialEdits(entry);
+  return { updates: initialEdits(entry), baseHash: entry.fileHash, stale: false };
 }
 
 function RecipeEditor({ entry, writable, onSaved, onBack, onDishes, registry, connection, onConnect, onDisconnect }: { entry: RecipeBookEntry; writable: boolean; onSaved: (entry: RecipeBookEntry) => void; onBack: () => void; onDishes: () => void; registry: Registry; connection?: GitHubConnection; onConnect: () => void; onDisconnect: () => void }) {
-  const [edits, setEdits] = useState(() => readDraft(entry));
+  const [loadedDraft] = useState(() => readDraft(entry));
+  const [edits, setEdits] = useState(loadedDraft.updates);
+  const [draftBaseHash, setDraftBaseHash] = useState(loadedDraft.baseHash);
+  const [staleDraft, setStaleDraft] = useState(loadedDraft.stale);
   const [editing, setEditing] = useState(false);
   const [inputId, setInputId] = useState(entry.fixtures[0]?.id ?? '');
   const [saving, setSaving] = useState(false);
@@ -29,24 +36,24 @@ function RecipeEditor({ entry, writable, onSaved, onBack, onDishes, registry, co
   const update = (patch: Partial<RecipeEdits>) => { setEdits(value => ({ ...value, ...patch })); setNotice(''); setError(''); };
 
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty || staleDraft) return;
     try { localStorage.setItem(draftKey(entry.recipe.id), JSON.stringify({ baseHash: entry.fileHash, updates: edits })); }
     catch { /* Saving to the repository and downloading remain available. */ }
-  }, [dirty, edits, entry.fileHash, entry.recipe.id]);
+  }, [dirty, edits, entry.fileHash, entry.recipe.id, staleDraft]);
 
   async function save() {
     if (!writable && !connection) { onConnect(); return; }
     setSaving(true); setError(''); setNotice('');
     try {
       const next = writable ? await saveRecipe(entry, edits) : await saveRecipeViaGitHub({ token: connection!.token, branch: recipeBranch, entry, updates: edits });
-      onSaved(next); setEdits(initialEdits(next));
+      onSaved(next); setEdits(initialEdits(next)); setDraftBaseHash(next.fileHash); setStaleDraft(false);
       try { localStorage.removeItem(draftKey(entry.recipe.id)); } catch { /* Repository save already succeeded. */ }
       setNotice(writable ? 'Saved to the repository. Existing Dishes are unchanged.' : `Committed to ${recipeBranch} on GitHub. Existing Dishes are unchanged; the shared preview updates after its next deployment.`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Save failed. Your edits are still here.'); }
     finally { setSaving(false); }
   }
   function download() {
-    const blob = new Blob([JSON.stringify({ recipeId: entry.recipe.id, expectedHash: entry.fileHash, updates: edits }, null, 2) + '\n'], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ recipeId: entry.recipe.id, expectedHash: draftBaseHash, updates: edits }, null, 2) + '\n'], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const link = document.createElement('a');
     link.href = url; link.download = `${entry.recipe.id}-edits.json`; link.click(); URL.revokeObjectURL(url);
     setNotice('Downloaded recipe edits. The repository has not changed.');
@@ -54,7 +61,7 @@ function RecipeEditor({ entry, writable, onSaved, onBack, onDishes, registry, co
   async function reload() {
     if (!connection) return;
     setSaving(true); setError('');
-    try { const next = await loadRecipeFromGitHub({ token: connection.token, branch: recipeBranch, entry }); onSaved(next); setEdits(initialEdits(next)); setNotice('Loaded the current recipe from GitHub.'); }
+    try { const next = await loadRecipeFromGitHub({ token: connection.token, branch: recipeBranch, entry }); onSaved(next); setEdits(initialEdits(next)); setDraftBaseHash(next.fileHash); setStaleDraft(false); setNotice('Loaded the current recipe from GitHub.'); }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Reload failed.'); }
     finally { setSaving(false); }
   }
@@ -63,15 +70,16 @@ function RecipeEditor({ entry, writable, onSaved, onBack, onDishes, registry, co
       <KitchenButton onClick={onBack}><ArrowLeft size={16} /> All recipes</KitchenButton>
       <div className="recipe-editor__actions">
         <KitchenButton aria-pressed={editing} onClick={() => setEditing(value => !value)}><Pencil size={16} />{editing ? 'Read recipe' : 'Edit recipe'}</KitchenButton>
-        {editing && <><KitchenButton tone="primary" disabled={!dirty || saving} onClick={save}><Save size={16} />{saving ? 'Saving…' : writable ? 'Save to repository' : 'Save via GitHub'}</KitchenButton>{!writable && <KitchenButton onClick={download}><Download size={16} /> Download edits</KitchenButton>}
-          {dirty && <KitchenButton disabled={saving} onClick={() => { setEdits(initialEdits(entry)); localStorage.removeItem(draftKey(entry.recipe.id)); setNotice('Changes discarded.'); setError(''); }}>Discard changes</KitchenButton>}</>}
+        {editing && <><KitchenButton tone="primary" disabled={!dirty || saving || staleDraft} onClick={save}><Save size={16} />{saving ? 'Saving…' : writable ? 'Save to repository' : 'Save via GitHub'}</KitchenButton>{(dirty || staleDraft) && <KitchenButton onClick={download}><Download size={16} /> Download edits</KitchenButton>}
+          {(dirty || staleDraft) && <KitchenButton disabled={saving} onClick={() => { setEdits(initialEdits(entry)); setDraftBaseHash(entry.fileHash); setStaleDraft(false); localStorage.removeItem(draftKey(entry.recipe.id)); setNotice('Changes discarded.'); setError(''); }}>Discard changes</KitchenButton>}</>}
       </div>
     </div>
     <header className="recipe-editor__heading">
       <span className="recipe-book__eyebrow">Recipe · v{entry.recipe.version}</span>
       {editing ? <><label className="recipe-field">Title<input value={edits.title} maxLength={100} onChange={event => update({ title: event.target.value })} /></label><label className="recipe-field">Summary<textarea rows={3} maxLength={300} value={edits.summary} onChange={event => update({ summary: event.target.value })} /></label></> : <><h2>{edits.title}</h2><p>{edits.summary}</p></>}
-      <div className="recipe-editor__metadata"><span>{currentDishes ? `${currentDishes} Dishes for this recipe version` : 'Not cooked at this version'}</span><span>{entry.recipe.origin === 'mothers' ? 'Mother’s' : entry.recipe.origin === 'hybrid' ? 'Hybrid' : 'Textbook'}</span>{dirty && <span>Local changes</span>}{entry.dishCount > 0 && <KitchenButton onClick={onDishes}>View {entry.dishCount} Dishes <ArrowUpRight size={15} /></KitchenButton>}</div>
+      <div className="recipe-editor__metadata"><span>{currentDishes ? `${currentDishes} Dishes for this recipe version` : 'Not cooked at this version'}</span><span>{entry.recipe.origin === 'mothers' ? 'Mother’s' : entry.recipe.origin === 'hybrid' ? 'Hybrid' : 'Textbook'}</span>{(dirty || staleDraft) && <span>Local changes</span>}{entry.dishCount > 0 && <KitchenButton onClick={onDishes}>View {entry.dishCount} Dishes <ArrowUpRight size={15} /></KitchenButton>}</div>
     </header>
+    {staleDraft && <p role="alert" className="recipe-editor-error">This browser draft was written against an earlier recipe version. Its text is preserved here, but it cannot be saved directly. Download the edits for recovery, or discard them to use the current recipe.</p>}
     {editing && <div className="recipe-editor-note">{writable ? 'Save updates the recipe and its supplied files in this checkout. Generated Dishes retain their original briefs.' : <><span>{connection ? `Connected as ${connection.login}. Saves commit to ${recipeBranch} on GitHub.` : 'Changes stay in this browser until you save. Connect GitHub to commit the recipe and its supplied files.'}</span>{connection && <div><KitchenButton onClick={reload} disabled={dirty || saving} title={dirty ? 'Download or discard local changes before reloading' : undefined}>Reload from GitHub</KitchenButton><KitchenButton onClick={onDisconnect}>Disconnect GitHub</KitchenButton></div>}</>}</div>}
     {notice && <p role="status" className="recipe-editor-note">{notice}</p>}{error && <p role="alert" className="recipe-editor-error">{error}</p>}
     <section className="recipe-editor__section"><h3>Setup</h3>{editing ? <label className="recipe-field"><span className="sr-only">Setup instructions</span><textarea rows={9} value={edits.setupInstructions} onChange={event => update({ setupInstructions: event.target.value })} /></label> : <p className="recipe-prose">{edits.setupInstructions}</p>}</section>

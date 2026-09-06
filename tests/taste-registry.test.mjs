@@ -16,7 +16,10 @@ async function json(filename, value) {
 test("builds the gallery registry without private runtime data", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-registry-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await json(path.join(root, "catalog/cuisines.json"), { schemaVersion: 1, cuisines: [{ id: "talk", label: "Talk", description: "Conversation tests.", order: 10 }] });
+  await json(path.join(root, "catalog/cuisines.json"), { schemaVersion: 1, cuisines: [
+    { id: "talk", label: "Talk", description: "Conversation tests.", order: 10 },
+    { id: "frozen-talk", label: "Frozen talk", description: "Historical conversation tests.", order: 20 },
+  ] });
   await json(path.join(root, "catalog/tags.json"), { schemaVersion: 1, tags: ["presence"] });
   await json(path.join(root, "catalog/configurations.json"), { schemaVersion: 1, configurations: [{ id: "v", label: "V", provider: "openai", model: "m", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: [] }] });
   const recipe = {
@@ -42,7 +45,7 @@ test("builds the gallery registry without private runtime data", async (t) => {
     version: recipe.version,
     execution: frozenExecution,
     fixtures: [],
-    display: { title: "Frozen historical title", summary: "Frozen historical summary.", lineage: recipe.origin, cuisines: recipe.cuisines },
+    display: { title: "Frozen historical title", summary: "Frozen historical summary.", lineage: "hybrid", cuisines: ["frozen-talk"] },
   });
   const dishId = "dish_talk-once_v_one";
   await mkdir(path.join(root, "dishes", dishId, "artifact/output"), { recursive: true });
@@ -83,6 +86,8 @@ test("builds the gallery registry without private runtime data", async (t) => {
   assert.equal(registry.recipes.length, 1);
   assert.equal(registry.recipes[0].title, "Frozen historical title");
   assert.equal(registry.recipes[0].summary, "Frozen historical summary.");
+  assert.equal(registry.recipes[0].origin, "hybrid");
+  assert.deepEqual(registry.recipes[0].cuisines, ["frozen-talk"]);
   assert.equal(registry.recipeRevisions[0].display.title, "Frozen historical title");
   assert.equal(registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
   assert.equal(registry.recipeRevisions[0].hash, frozenHash);
@@ -106,6 +111,8 @@ test("builds the gallery registry without private runtime data", async (t) => {
   const edited = await buildRegistry({ repoRoot: root });
   assert.equal(edited.registry.recipes[0].title, "Frozen historical title");
   assert.equal(edited.registry.recipes[0].summary, "Frozen historical summary.");
+  assert.equal(edited.registry.recipes[0].origin, "hybrid");
+  assert.deepEqual(edited.registry.recipes[0].cuisines, ["frozen-talk"]);
   assert.equal(edited.registry.recipeRevisions[0].display.title, "Frozen historical title");
   assert.equal(edited.registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
   assert.equal(edited.registry.recipeRevisions[0].hash, frozenHash);
