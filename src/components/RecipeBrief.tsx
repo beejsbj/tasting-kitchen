@@ -1,4 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+import { IconButton } from "./ui/ViewerControls";
+import { useEffect, useState } from "react";
 import { Badge } from "./Badge";
 import { KitchenButton } from "./KitchenButton";
 import { shortHash } from "../lib/registry";
@@ -20,18 +23,10 @@ function Fixture({ fixture }: { fixture: Recipe["setup"]["fixtures"][number] }) 
   return <details className="fixture"><summary>{fixture.id}<span>{fixture.mediaType}</span></summary><p><code>{fixture.mountAs}</code>{fixture.sha256 && <span> · {shortHash(fixture.sha256)}</span>}</p>{fixture.url ? <><a href={fixture.url} target="_blank" rel="noreferrer">Open exact input ↗</a>{fixture.mediaType.startsWith("image/") ? <img src={fixture.url} alt={`Supplied ${fixture.id} reference`} /> : <pre>{error || text || "Loading input…"}</pre>}</> : <p>This input is recorded, but its public preview is unavailable.</p>}</details>;
 }
 export function RecipeBrief({ recipe, reviews = [], onClose }: { recipe: Recipe; reviews?: ReviewEntry[]; onClose: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const node = dialog.current;
-    const trigger = document.querySelector<HTMLButtonElement>("[data-brief-control]");
-    node?.showModal();
-    return () => {
-      node?.close();
-      queueMicrotask(() => { if (trigger?.isConnected && !document.querySelector("dialog[open]")) trigger.focus(); });
-    };
-  }, []);
-  return <dialog ref={dialog} className="recipe-brief" onCancel={onClose} aria-labelledby="recipe-brief-title">
-    <header><span className="eyebrow">The exact recipe · {shortHash(recipe.recipeHash)}</span><KitchenButton aria-label="Close recipe brief" onClick={onClose}>×</KitchenButton></header>
+  return <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal>
+    <Dialog.Overlay className="fixed inset-0 z-50 bg-black/20" />
+    <Dialog.Content className="recipe-sheet fixed inset-y-0 right-0 z-50 w-[min(32rem,100vw)] overflow-y-auto border-l border-slate-200 bg-white text-slate-800 shadow-2xl focus:outline-none" aria-describedby={undefined} onEscapeKeyDown={(event) => event.stopPropagation()} onCloseAutoFocus={(event) => { event.preventDefault(); document.querySelector<HTMLButtonElement>('[data-brief-control]')?.focus(); }}>
+    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3"><Dialog.Title className="m-0 text-base font-semibold">Recipe · {shortHash(recipe.recipeHash)}</Dialog.Title><Dialog.Close asChild><IconButton aria-label="Close recipe brief"><X size={18} /></IconButton></Dialog.Close></header>
     <section className="recipe-brief__intro"><Badge origin={recipe.origin} /><h2 id="recipe-brief-title">{recipe.title}</h2><p>{recipe.summary}</p></section>
     <section><h3>What the model receives</h3><p>{recipe.setup.instructions}</p>{recipe.setup.fixtures.map((fixture) => <Fixture key={`${recipe.recipeHash}-${fixture.id}`} fixture={fixture} />)}</section>
     <section><h3>The brief, in order</h3><ol className="turn-list">{recipe.turns.map((turn, index) => <li key={turn.id}><span>{String(index + 1).padStart(2, "0")} · {turn.role.replaceAll("-", " ")}</span><p>{turn.content}</p></li>)}</ol></section>
@@ -41,5 +36,5 @@ export function RecipeBrief({ recipe, reviews = [], onClose }: { recipe: Recipe;
     <section><h3>Where this recipe comes from</h3><p>{recipe.originNote || (recipe.origin === "textbook" ? "A recognizable task that gives models room for judgment." : "A public-safe task drawn from a particular working practice.")}</p></section>
     {reviews.length > 0 && <section><h3>Artifact review</h3>{reviews.flatMap(({ review, variant }) => review.probes.map((probe) => <article className="review-note" key={`${review.id}-${probe.id}`}><strong>{variant.label}</strong><span>{review.reviewerKind} review · {probe.verdict} · {probe.viewport.width}×{probe.viewport.height}</span><p>{probe.finding}</p></article>))}</section>}
     <footer><KitchenButton tone="primary" onClick={onClose}>Back to tasting</KitchenButton></footer>
-  </dialog>;
+  </Dialog.Content></Dialog.Portal></Dialog.Root>;
 }

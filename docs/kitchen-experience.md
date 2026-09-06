@@ -16,10 +16,10 @@ The exact palette and materials were not previously settled. The implemented tre
 - A recipe's preview and title open its newest accepted Dish among the active filters. With no filters, this is the newest accepted Dish for that Recipe. “Newest” sorts by `executedAt`, breaking ties by Dish ID.
 - A card's model button opens that family's newest matching Dish. An effort button opens the newest Dish for one exact configuration snapshot. “Thinking” means reasoning effort, not service tier.
 - Every direct selection includes Recipe ID, Recipe Revision hash, configuration ID and Dish ID in the URL. Friendly model names never replace exact configuration identity.
-- The viewer opens one artifact. Compare adds up to two more panes. Model changes stay on the same Recipe Revision; missing output remains missing. Repeated configurations can be compared to inspect Repeats.
+- The viewer opens one artifact at full viewport size. A floating toolbar provides Home, Compare, model selection, the recipe sidebar, receipts and direct artifact access. Tailwind styles standard Radix popovers and the right-hand recipe sheet; controls do not reserve a header or footer around the artifact. Compare adds up to two more panes. Model changes stay on the same Recipe Revision; missing output remains missing. Repeated configurations can be compared to inspect Repeats.
 - Repeat buttons are ordered by execution time, then Dish ID. Default selection is the newest Repeat. Recipe Revision browsing appears only when more than one cooked revision exists.
 - Selection and comparison changes have browser-history entries. Search replaces the current entry. Returning to the counter retains its filters.
-- The frozen brief, inputs and execution receipt remain inspectable. They do not occupy the main artifact surface by default.
+- The frozen brief and inputs open in a right-hand sidebar with focus containment, Escape dismissal and focus restoration. Execution receipts open from the toolbar. They do not occupy the main artifact surface by default.
 
 ## Names and copy
 

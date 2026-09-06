@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BookOpen, Home, Columns2, SlidersHorizontal, Info, ExternalLink } from "lucide-react";
+import { ControlPopover, IconButton } from "./components/ui/ViewerControls";
 import { ArtifactPane } from "./components/ArtifactPane";
 import { KitchenButton } from "./components/KitchenButton";
 import { KitchenHero } from "./components/KitchenHero";
@@ -43,7 +45,7 @@ export default function App() {
   useEffect(() => { loadRegistry().then(setRegistry).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Catalog unavailable")); }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && state.recipe && !state.brief) update({ recipe: "", revision: "", dishes: [] });
+      if (event.key === "Escape" && !event.defaultPrevented && !document.querySelector('[role="dialog"]') && state.recipe && !state.brief) update({ recipe: "", revision: "", dishes: [] });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -97,23 +99,41 @@ export default function App() {
       const dishes = [...state.dishes]; dishes[index] = "";
       update({ models, dishes });
     }
-    return <main className="tasting-room">
-      <header className="tasting-room__header"><KitchenButton onClick={closeRecipe}>← Counter</KitchenButton><Mark /><KitchenButton onClick={() => update({ brief: true }, "replace")} data-brief-control>Read the recipe ↗</KitchenButton></header>
-      <section className="tasting-room__intro"><div><h1>{currentRecipe.title}</h1></div>{hashes.length > 1 && <details className="revision-picker"><summary>Revision {shortHash(recipeHash)}</summary><div className="pill-row">{hashes.map((hash) => <KitchenButton key={hash} aria-pressed={recipeHash === hash} onClick={() => update({ revision: hash, dishes: [] })}>{shortHash(hash)}{hash === currentRecipe.recipeHash ? ' · latest' : ''}</KitchenButton>)}</div></details>}</section>
-      {state.revision && !hashes.includes(state.revision) && <p role="status" className="helper">No public dishes for this revision. <KitchenButton onClick={() => openRecipe(currentRecipe)}>Open latest dish</KitchenButton></p>}
-      {resolved.slots.some((slot) => !slot.config) && <p role="status">This configuration is unavailable. <KitchenButton onClick={() => openRecipe(currentRecipe)}>Open latest dish</KitchenButton></p>}
-      <div className="comparison-toolbar"><p>{selected.length > 1 ? comparisonNote : `${slots[0]?.dish ? new Date(slots[0].dish.executedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not cooked'} · ${shortHash(recipeHash)}`}</p><KitchenButton disabled={selected.length >= 3 || !selected.length} onClick={() => {
-        const next = registry.configurations.find((candidate) => !selected.some((config) => config.id === candidate.id) && recipeDishes.some((dish) => dish.recipe.hash === recipeHash && dish.identity.configHash === candidate.configHash)) ?? selected[0];
-        if (next) update({ models: [...selected.map((config) => config.id), next.id], dishes: slots.map((slot) => slot.dish?.id ?? '') });
-      }}>+ Compare{selected.length > 1 ? ' another' : ''}</KitchenButton></div>
+    const addComparison = () => {
+      const next = registry.configurations.find((candidate) => !selected.some((config) => config.id === candidate.id) && recipeDishes.some((dish) => dish.recipe.hash === recipeHash && dish.identity.configHash === candidate.configHash)) ?? selected[0];
+      if (next) update({ models: [...selected.map((config) => config.id), next.id], dishes: slots.map((slot) => slot.dish?.id ?? '') });
+    };
+    const chooseRepeat = (index: number, id: string) => { const dishes = slots.map((slot) => slot.dish?.id ?? ''); dishes[index] = id; update({ dishes }); };
+    return <main className="tasting-room tasting-room--immersive">
+      <h1 className="sr-only">{currentRecipe.title}</h1>
       <section className="comparison-grid" style={{ "--columns": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
-        {slots.map(({ config, repeats, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
-          <header className="comparison-slot__head"><ModelChoices configurations={viewerConfigurations} selectedId={config.id} label={`Configuration ${index + 1}`} onSelect={(candidate) => chooseConfig(index, candidate.id)} />{slots.length > 1 && <KitchenButton aria-label={`Remove configuration ${index + 1}`} onClick={() => update({ models: selected.filter((_, i) => i !== index).map((item) => item.id), dishes: slots.filter((_, i) => i !== index).map((item) => item.dish?.id ?? '') })}>×</KitchenButton>}</header>
-          <div className="comparison-slot__repeat">{repeats.length > 1 ? <div className="repeat-pills" role="group" aria-label={`Dishes for configuration ${index + 1}`}><span>Repeat</span>{repeats.map((repeat, i) => <KitchenButton key={repeat.id} aria-label={`Repeat ${i + 1} for configuration ${index + 1}`} aria-pressed={dish?.id === repeat.id} title={new Date(repeat.executedAt).toLocaleString()} onClick={() => { const dishes = slots.map((slot) => slot.dish?.id ?? ''); dishes[index] = repeat.id; update({ dishes }); }}>{i + 1}</KitchenButton>)}</div> : <span>{config.model} · {config.reasoningEffort}</span>}{dish && <a href={artifactUrl(dish)} target="_blank" rel="noreferrer">Open artifact ↗</a>}</div>
-          <ArtifactPane recipe={recipe} variant={config} dish={dish} reviews={reviewsForDish(registry.reviews, dish)} />
-          {dish && <details className="receipt"><summary>Configuration &amp; receipt <code>{shortHash(dish.dishHash)}</code></summary><dl><dt>Requested</dt><dd>{dish.identity.requestedModel}</dd><dt>Observed</dt><dd>{dish.identity.observedModel}</dd><dt>Harness</dt><dd>{dish.identity.harness} {dish.identity.harnessVersion}</dd><dt>Effort</dt><dd>{dish.identity.reasoningEffort}</dd><dt>Tier requested / observed</dt><dd>{dish.identity.requestedServiceTier ?? dish.identity.serviceTier} / {dish.identity.observedServiceTier ?? "not recorded"}</dd><dt>Recipe revision</dt><dd>{shortHash(dish.recipe.hash)}</dd><dt>Executed</dt><dd>{new Date(dish.executedAt).toLocaleString()}</dd></dl><a href={artifactUrl(dish, "dish.json")} target="_blank" rel="noreferrer">Immutable manifest ↗</a></details>}
+        {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
+          {slots.length > 1 && <div className="pane-label">{index + 1} · {modelFamily(config.model)} · {config.reasoningEffort}</div>}
+          <ArtifactPane recipe={recipe} variant={config} dish={dish} reviews={[]} />
         </article>)}
       </section>
+      <nav aria-label="Artifact controls" className="viewer-dock fixed right-3 top-4 z-30 flex max-h-[calc(100dvh-2rem)] flex-col items-center gap-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-slate-800 shadow-lg backdrop-blur-md sm:right-5 sm:top-6">
+        <IconButton aria-label="Back to recipes" title="Back to recipes" onClick={closeRecipe}><Home size={19} /></IconButton>
+        <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= 3 || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
+        <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />}>
+          <h2 className="mb-4 text-base font-semibold">{currentRecipe.title}</h2>
+          {slots.map(({ config, repeats, dish }, index) => <section key={index} className="mb-4 border-b border-slate-100 pb-4 last:mb-0 last:border-0 last:pb-0">
+            <div className="mb-2 flex items-center justify-between"><span className="text-xs font-medium text-slate-500">{slots.length > 1 ? `Pane ${index + 1}` : 'Model & thinking'}</span>{slots.length > 1 && <button className="min-h-8 rounded-md border-0 bg-transparent px-2 text-xs text-slate-500 hover:bg-slate-100" aria-label={`Remove configuration ${index + 1}`} onClick={() => update({ models: selected.filter((_, i) => i !== index).map((item) => item.id), dishes: slots.filter((_, i) => i !== index).map((item) => item.dish?.id ?? '') })}>Remove</button>}</div>
+            <ModelChoices configurations={viewerConfigurations} selectedId={config.id} label={`Configuration ${index + 1}`} onSelect={(candidate) => chooseConfig(index, candidate.id)} />
+            {repeats.length > 1 && slots.length > 1 && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label={`Dishes for configuration ${index + 1}`}>{repeats.map((repeat, i) => <IconButton key={repeat.id} aria-label={`Repeat ${i + 1} for configuration ${index + 1}`} aria-pressed={dish?.id === repeat.id} onClick={() => chooseRepeat(index, repeat.id)}>{i + 1}</IconButton>)}</div>}
+          </section>)}
+          {hashes.length > 1 && <div className="mt-4 border-t border-slate-200 pt-3"><p className="text-xs text-slate-500">Recipe revision</p><div className="pill-row">{hashes.map((hash) => <KitchenButton key={hash} aria-pressed={recipeHash === hash} onClick={() => update({ revision: hash, dishes: [] })}>{shortHash(hash)}</KitchenButton>)}</div></div>}
+          {slots.length > 1 && <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>}
+        </ControlPopover>
+        <IconButton aria-label="Read the recipe" title="Read the recipe" data-brief-control onClick={() => update({ brief: true }, "replace")}><BookOpen size={19} /></IconButton>
+        <ControlPopover label="Configuration receipts" icon={<Info size={19} />}>
+          <h2 className="mb-3 text-base font-semibold">Configuration receipts</h2>
+          {slots.map(({ dish, config }, index) => <section key={index} className="receipt border-b border-slate-100 last:border-0"><h3 className="text-sm font-semibold">{modelFamily(config.model)} · {config.reasoningEffort}</h3>{dish ? <><dl><dt>Requested</dt><dd>{dish.identity.requestedModel}</dd><dt>Observed</dt><dd>{dish.identity.observedModel}</dd><dt>Harness</dt><dd>{dish.identity.harness} {dish.identity.harnessVersion}</dd><dt>Tier requested / observed</dt><dd>{dish.identity.requestedServiceTier ?? dish.identity.serviceTier} / {dish.identity.observedServiceTier ?? 'not recorded'}</dd><dt>Recipe revision</dt><dd>{shortHash(dish.recipe.hash)}</dd><dt>Executed</dt><dd>{new Date(dish.executedAt).toLocaleString()}</dd></dl><a href={artifactUrl(dish, 'dish.json')} target="_blank" rel="noreferrer">Immutable manifest ↗</a>{reviewsForDish(registry.reviews, dish).flatMap((review) => review.probes.map((probe) => <p key={`${review.id}-${probe.id}`} className="mt-3 text-xs">{review.reviewerKind} review · {probe.verdict}: {probe.finding}</p>))}<a className="mt-3 block" href={artifactUrl(dish)} target="_blank" rel="noreferrer">Open artifact ↗</a></> : <p>No dish for these settings.</p>}</section>)}
+        </ControlPopover>
+        {slots.length === 1 && slots[0].dish && <a aria-label="Open artifact in new tab" title="Open artifact in new tab" className="inline-flex size-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100" href={artifactUrl(slots[0].dish)} target="_blank" rel="noreferrer"><ExternalLink size={18} /></a>}
+        {slots.length === 1 && slots[0].repeats.length > 1 && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label="Dishes for configuration 1">{slots[0].repeats.map((repeat, i) => <IconButton key={repeat.id} aria-label={`Repeat ${i + 1} for configuration 1`} aria-pressed={slots[0].dish?.id === repeat.id} onClick={() => chooseRepeat(0, repeat.id)}>{i + 1}</IconButton>)}</div>}
+      </nav>
+      {((state.revision && !hashes.includes(state.revision)) || resolved.slots.some((slot) => !slot.config)) && <div role="status" className="fixed left-4 top-4 rounded-lg border border-slate-200 bg-white p-4 shadow-lg">This selection is unavailable. <KitchenButton onClick={() => openRecipe(currentRecipe)}>Open latest dish</KitchenButton></div>}
 
       {state.brief && <RecipeBrief recipe={recipe} reviews={slots.flatMap(({ dish, config }) => reviewsForDish(registry.reviews, dish).map((review) => ({ review, variant: config })))} onClose={() => update({ brief: false }, "replace")} />}
     </main>;
