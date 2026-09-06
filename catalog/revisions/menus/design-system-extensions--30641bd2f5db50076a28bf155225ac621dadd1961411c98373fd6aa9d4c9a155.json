@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "menuId": "design-system-extensions",
+  "title": "Design-system extensions",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    {
+      "recipeId": "extend-conduit-design-system",
+      "recipeHash": "sha256:1c651912ec6b376cc2fedd11cd969b6ded1c019fdd62c533d176b1ff9d8655f6"
+    },
+    {
+      "recipeId": "extend-qrng-design-system",
+      "recipeHash": "sha256:9804e3e736a282ee6424d696d87df63033685f47d0e06e2cd704de83502cb6ca"
+    },
+    {
+      "recipeId": "extend-emotitone-design-system",
+      "recipeHash": "sha256:783327e8f8a98b9e89868c34c5db37c2b01eb9ba703a3a25838b7a03a42da75b"
+    }
+  ],
+  "hash": "sha256:30641bd2f5db50076a28bf155225ac621dadd1961411c98373fd6aa9d4c9a155"
+}

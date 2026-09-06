@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "menuId": "standard-web",
+  "title": "Standard Web",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "recipes": [
+    {
+      "recipeId": "standard-service-business",
+      "recipeHash": "sha256:c82881255860db69b54453ea301106b0cfd17d219d11b8af6026e0b931e5884f"
+    },
+    {
+      "recipeId": "standard-developer-portfolio",
+      "recipeHash": "sha256:8649c94f34c6f0ea1333cd9b9253f27aff118a7079a62e461ede2bfd81fdeaa7"
+    },
+    {
+      "recipeId": "standard-developer-homepage",
+      "recipeHash": "sha256:f0fd767c99d02a6d3a341d0f3bff41cd265c399231447bccefb9983af6ef281a"
+    }
+  ],
+  "hash": "sha256:19a0273291582ab473965015f2605ce53567d0d0b61469c14f69b6fa97e3cfe5"
+}
