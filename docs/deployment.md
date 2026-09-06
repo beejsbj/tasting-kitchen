@@ -45,3 +45,13 @@ Prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors
 Add a Recipe or model configuration when it answers a useful question. Dry-plan, inspect, cook with explicit intent, run validation, rebuild and promote a new image. Preserve old accepted Dishes and their executed revisions. Keep failed attempts private and add human/agent observations as hash-bound reviews.
 
 The owner Cook UI, authentication/job service and additional harnesses are separate later releases. They are not prerequisites for operating this static gallery with the local CLI/API.
+
+## Vercel review previews
+
+`vercel.json` configures the source build and preserves the artifact sandbox/CORS headers. `.vercelignore` excludes private evidence, environment files and local working material from CLI source uploads. The Vercel project is `beejsbjs-projects/tasting-kitchen`.
+
+A standalone review deployment was verified on September 6, 2026: https://tasting-kitchen-iblcoj643-beejsbjs-projects.vercel.app . The live browser suite passed; the gallery, registry and artifact returned 200, missing artifacts returned 404, and sandbox/CORS headers matched the serving contract. It contains the 15 original accepted Dishes.
+
+The project has no Git integration yet. No Kitchen GitHub repository was found, and creation of a private repository is awaiting the owner’s answer. The CLI briefly inferred the parent Cockpit repository when initializing the staging directory; that link was disconnected and the initial automatically promoted deployment was removed. The surviving deployment is a Preview. Future staging directories must have their own Git boundary to prevent ancestor repository inference.
+
+Vercel serves the review surface; the existing homelab proof and canonical Coolify deployment state are unchanged.
