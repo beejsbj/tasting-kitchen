@@ -1,0 +1,7 @@
+private/
+.env*
+analysis/
+work/
+outputs/
+node_modules/
+.git/
