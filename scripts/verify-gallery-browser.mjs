@@ -18,6 +18,10 @@ const configFor = (registry, dish) => registry.configurations.find(config => con
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); recordErrors(page, "gallery");
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  await page.keyboard.press('Tab');
+  await page.getByRole('link', { name: 'Skip to the recipes' }).press('Enter');
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'counter-content', 'skip link should move keyboard focus to recipes');
+  await page.goto(`${base}/`, { waitUntil: 'networkidle' });
   const registry = await page.evaluate(async () => fetch("/data/registry.json").then(response => response.json()));
   const acceptedRecipes = registry.recipes.filter(recipe => registry.dishes.some(dish => dish.recipe.id === recipe.id));
   assert.equal(await page.locator(".recipe-card").count(), acceptedRecipes.length, "counter should show every accepted recipe");
