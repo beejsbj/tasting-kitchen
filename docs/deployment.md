@@ -52,7 +52,7 @@ The owner Cook UI, authentication/job service and additional harnesses are separ
 
 The private [GitHub repository](https://github.com/beejsbj/tasting-kitchen) is connected to the Vercel project. [PR #1](https://github.com/beejsbj/tasting-kitchen/pull/1) contains the visual Kitchen implementation.
 
-The revised [review preview](https://tasting-kitchen-5ayne3etw-beejsbjs-projects.vercel.app) was deployed September 6, 2026 from application commit `4e9bab9`. It contains the 15 original accepted Dishes. It is a Preview, not a production promotion.
+The revised [review preview](https://tasting-kitchen-1b2rycvn8-beejsbjs-projects.vercel.app) was deployed September 6, 2026 from application commit `67a84fc`. It contains the 15 original accepted Dishes. It is a Preview, not a production promotion.
 
 Automatic Git deployments currently stop before building with `COMMIT_AUTHOR_REQUIRED`: Vercel cannot find a GitHub account for the commit author. A CLI source deployment carrying that Git identity is blocked for the same reason. The account association must be resolved before automatic PR previews work.
 
