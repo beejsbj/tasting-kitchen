@@ -1,0 +1,35 @@
+{
+  "currency": "CAD",
+  "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+  "labour": [
+    {
+      "id": "bench",
+      "label": "Bench work",
+      "unit": "15 minutes",
+      "unitCents": 900
+    }
+  ],
+  "materials": [
+    {
+      "id": "patch",
+      "label": "Cotton patch",
+      "unit": "piece",
+      "unitCents": 350,
+      "note": "Unbleached cotton, cut to fit."
+    },
+    {
+      "id": "zip",
+      "label": "Concealed zip",
+      "unit": "piece",
+      "unitCents": 1200,
+      "note": "Standard stocked length; confirm fit on the bench."
+    },
+    {
+      "id": "thread",
+      "label": "Thread allowance",
+      "unit": "job",
+      "unitCents": 200,
+      "note": "One allowance covers a single job."
+    }
+  ]
+}

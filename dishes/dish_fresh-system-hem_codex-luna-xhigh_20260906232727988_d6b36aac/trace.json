@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "fresh-system-hem",
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "prompt": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.\n\nExtend Hem’s working repair-workshop interface with estimates and local approval. Inspect the supplied source and read fixtures/system-guide.md. Preserve the system’s recognisable language and functioning contexts while solving the missing workflow.",
+      "response": "Implemented locally.\n\n- Added rate-backed [`logic.mjs`](artifact/logic.mjs).\n- Added per-job estimates, validation, totals, local approval/revision in [`source/estimate-view.mjs`](artifact/source/estimate-view.mjs).\n- Preserved queue, detail, materials, primitives, and job statuses.\n- Documented changes and inspection in [`CHANGES.md`](artifact/CHANGES.md).\n\nVerification:\n- `node validation/validate-output.mjs` passed: 16 vectors.\n- Chrome probes passed at 360px and 1440px.\n- Immutable data hashes remain unchanged.\n- “Ready” remains only the supplied job status, not estimate acceptance.",
+      "usage": {
+        "input_tokens": 1746864,
+        "cached_input_tokens": 1628800,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 38428,
+        "reasoning_output_tokens": 18547
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        }
+      ]
+    }
+  ]
+}
