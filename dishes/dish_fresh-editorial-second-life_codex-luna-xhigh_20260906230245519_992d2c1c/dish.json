@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-editorial-second-life_codex-luna-xhigh_20260906230245519_992d2c1c",
+  "recipe": {
+    "id": "fresh-editorial-second-life",
+    "version": "1.0.0",
+    "hash": "sha256:3a0adef2d084c4b01877ae8a72fd4c82d96f0f9602b6d7e6a95daf364317e891"
+  },
+  "executedAt": "2026-09-06T23:02:45.519Z",
+  "finalizedAt": "2026-09-06T23:15:27.576Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "5bd518d8a9da95c8c707bd6577991303573925ac4254769c406f4f266a2bebc3",
+        "bytes": 14417
+      },
+      {
+        "path": "artifact/data/article.json",
+        "sha256": "ef9a2e19ba5b5d65c260697052fd0e274b679b0b9dde6d45b7cde398a259e970",
+        "bytes": 10041
+      },
+      {
+        "path": "artifact/data/ledger.json",
+        "sha256": "93fde73b1179a9b9dc1ed7d4ea4bb1292316a6e2fbe73f70cf24487fed3b3c7f",
+        "bytes": 707
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "31c91f5d5d94be6bb46e215ac55d8480e3ee46aa9ed6c103bd31ea1caf109ab4",
+        "bytes": 701
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "274b7a6dea52d431744fb751d01a16ca5b512336ead3d3ec878114defef8938c",
+        "bytes": 599
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "28362d6edfe60e5f9db907a0697d5913008f9d1f7288ba5a1d64273b9363751d",
+        "bytes": 23233
+      }
+    ],
+    "treeHash": "sha256:1e2a258c584666d638273d3ead1f94778f6c43aeb896e1fdd6b017e9d4427a86"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:68744eaa1d5b277134205c58154adaed35a1da7afd7e744bf5144837d13419fe"
+}
