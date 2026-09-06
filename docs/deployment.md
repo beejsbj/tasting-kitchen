@@ -18,7 +18,9 @@ For the browser regression suite, start `npm run dev -- --host 127.0.0.1 --port 
 
 The Docker build pins its Node and Nginx base images by digest. Update those pins deliberately when maintaining the release. Port `8080` serves the gallery; `/healthz` returns `ok`. The image has a healthcheck. No persistent runtime volume or environment variable is required for the public site.
 
-`npm run build` regenerates the public registry and stages accepted public artifacts and exact input snapshots before Vite builds. Do not copy `catalog/`, `private/`, the repository root, or raw attempts into a webroot. The Docker context excludes private data and local environment files.
+`npm run build` regenerates the public registry, writes the active public Recipe Book to `public/data/recipe-book.json`, and stages accepted public artifacts and exact input snapshots before Vite builds. The sidecar contains active public source text only; it contains no secrets. Do not copy `catalog/`, `private/`, the repository root, or raw attempts into a webroot. The Docker context excludes private data and local environment files.
+
+During local Vite development, `GET /api/recipes` exposes the current active catalog and same-origin `PATCH /api/recipes/:id` accepts an `expectedHash` and validated updates. Production has no mutation API. The browser can keep drafts or download edits; a hosted save requires the owner's in-memory fine-grained GitHub token and commits directly to `VITE_RECIPE_BRANCH` (default `main`) with one atomic, non-force conflict-checked commit. It sends the token only to `api.github.com` and never runs a model.
 
 The root path is canonical. `TASTE_BASE_PATH=/model-tasting/ npm run build` prepares an alternative subpath build for a webroot already configured to serve that prefix; the included Docker/Nginx configuration serves the canonical root path.
 
@@ -52,10 +54,10 @@ The owner Cook UI, authentication/job service and additional harnesses are separ
 
 The private [GitHub repository](https://github.com/beejsbj/tasting-kitchen) is connected to the Vercel project. [PR #1](https://github.com/beejsbj/tasting-kitchen/pull/1) contains the visual Kitchen implementation.
 
-The revised [review preview](https://tasting-kitchen-ollk9h7bv-beejsbjs-projects.vercel.app) was deployed September 6, 2026 from application commit `b86595d`. It contains the 15 original accepted Dishes. It is a Preview, not a production promotion.
+The historical [review preview](https://tasting-kitchen-ollk9h7bv-beejsbjs-projects.vercel.app) was deployed September 6, 2026 from application commit `b86595d`. It contains the 15 original accepted Dishes and remains an old preview until the current `work/recipe-book` build is deployed. It is a Preview, not a production promotion; do not infer the new Recipe Book from its current contents.
 
 Automatic Git deployments currently stop before building with `COMMIT_AUTHOR_REQUIRED`: Vercel cannot find a GitHub account for the commit author. A CLI source deployment carrying that Git identity is blocked for the same reason. The account association must be resolved before automatic PR previews work.
 
-The review preview was deployed through the authenticated owner account using the already-built static output. To repeat that route, build the desired commit, copy only `dist/` into a clean staging directory, and give that directory its own empty Git boundary to prevent ancestor-repository inference. Link it to the existing `tasting-kitchen` project. Its static `vercel.json` sets `framework`, `buildCommand` and `installCommand` to null while retaining the source configuration's artifact and data headers. Deploy with `vercel deploy --target preview --yes`, and record the source commit and URL in the PR. Never copy credentials, the source repository, or private evidence into that directory.
+The review preview was deployed through the authenticated owner account using the already-built static output. To repeat that route, set `VITE_RECIPE_BRANCH=work/recipe-book` for a review build, build the desired commit, copy only `dist/` into a clean staging directory, and give that directory its own empty Git boundary to prevent ancestor-repository inference. Link it to the existing `tasting-kitchen` project. Its static `vercel.json` sets `framework`, `buildCommand` and `installCommand` to null while retaining the source configuration's artifact and data headers. Deploy with `vercel deploy --target preview --yes`, and record the source commit and URL in the PR. Never copy credentials, the source repository, or private evidence into that directory.
 
 Vercel serves the review surface; the existing homelab proof and canonical Coolify deployment state are unchanged.

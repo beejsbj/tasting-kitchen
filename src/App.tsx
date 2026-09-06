@@ -1,6 +1,8 @@
 import { CounterFilters } from "./components/CounterFilters";
+import { RecipeBook } from './components/RecipeBook';
+import { KitchenNavigation } from './components/KitchenNavigation';
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, Home, Columns2, SlidersHorizontal, Info, ExternalLink } from "lucide-react";
+import { BookOpen, Home, Columns2, SlidersHorizontal, Info, ExternalLink, NotebookPen } from "lucide-react";
 import { ControlPopover, IconButton } from "./components/ui/ViewerControls";
 import { ArtifactPane } from "./components/ArtifactPane";
 import { KitchenButton } from "./components/KitchenButton";
@@ -42,7 +44,7 @@ export default function App() {
   const [registry, setRegistry] = useState<Registry>();
   const [error, setError] = useState("");
   const [state, update] = useUrlState();
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [state.recipe, state.view, state.styleguide]);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [state.recipe, state.editRecipe, state.view, state.styleguide]);
   useEffect(() => { loadRegistry().then(setRegistry).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Catalog unavailable")); }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -71,11 +73,13 @@ export default function App() {
   const closeRecipe = () => update({ recipe: "", revision: "", dishes: [], brief: false });
   const openRecipe = (recipe: Recipe, dish?: Dish) => {
     const latest = dish ?? latestDish(dishesFor(registry.dishes, recipe.id));
-    if (latest) update({ ...selectionForDish(registry, latest), brief: false });
+    if (latest) update({ ...selectionForDish(registry, latest), view: 'dishes', editRecipe: '', brief: false });
   };
 
   if (state.styleguide) return <StyleGuide registry={registry} onExit={() => update({ styleguide: false })} />;
-  if (state.recipe && !currentRecipe) return <main className="kitchen"><Mark /><EmptyState title="That recipe isn’t on the public counter."><p>It may be private, uncooked, or no longer available at this address.</p><KitchenButton onClick={closeRecipe}>Back to recipes</KitchenButton></EmptyState></main>;
+  const navigate = (view: 'dishes' | 'recipes' | 'menus') => update({ view, recipe: '', editRecipe: '', menu: '', revision: '', dishes: [], brief: false });
+  if (state.view === 'recipes' && !state.recipe) return <main className="kitchen"><KitchenNavigation active="recipes" onNavigate={navigate} /><div className="counter-content"><RecipeBook selectedId={state.editRecipe} onSelect={editRecipe => update({ editRecipe })} registry={registry} onDishes={id => { const recipe = registry.recipes.find(item => item.id === id); if (recipe) openRecipe(recipe); }} /></div><footer className="kitchen-footer"><Mark /><KitchenButton onClick={() => update({ styleguide: true })}>Visual system ↗</KitchenButton></footer></main>;
+  if (state.recipe && !currentRecipe) return <main className="kitchen"><Mark /><EmptyState title="That recipe isn’t on the public counter."><p>It may be private, uncooked, or no longer available at this address.</p><KitchenButton onClick={closeRecipe}>Back to dishes</KitchenButton></EmptyState></main>;
 
   if (currentRecipe) {
     const recipeDishes = dishesFor(registry.dishes, currentRecipe.id);
@@ -114,7 +118,8 @@ export default function App() {
         </article>)}
       </section>
       <nav aria-label="Artifact controls" className="viewer-dock fixed right-3 top-4 z-30 flex max-h-[calc(100dvh-2rem)] flex-col items-center gap-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-slate-800 shadow-lg backdrop-blur-md sm:right-5 sm:top-6">
-        <IconButton aria-label="Back to recipes" title="Back to recipes" onClick={closeRecipe}><Home size={19} /></IconButton>
+        <IconButton aria-label="Back to dishes" title="Back to dishes" onClick={closeRecipe}><Home size={19} /></IconButton>
+        <IconButton aria-label="Open recipe in book" title="Open recipe in book" onClick={() => update({ view: 'recipes', editRecipe: currentRecipe.id, recipe: '', brief: false })}><NotebookPen size={19} /></IconButton>
         <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= 3 || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
         <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />}>
           <h2 className="mb-4 text-base font-semibold">{currentRecipe.title}</h2>
@@ -142,11 +147,11 @@ export default function App() {
 
   const menuRevision = registry.menuRevisions.find((menu) => menu.menuId === state.menu && (!state.menuRevision || menu.hash === state.menuRevision));
   return <main className="kitchen">
-    <a className="skip-link" href="#counter-content">Skip to the recipes</a>
-    <header className="kitchen-header"><KitchenButton className="brand-button" aria-label="Tasting Kitchen home" onClick={() => update({ view: 'recipes', menu: '', cuisine: 'all', origin: 'all', query: '', family: 'all', effort: 'all', harness: 'all', tier: 'all' })}><Mark /></KitchenButton><nav aria-label="Browse the Kitchen">{(['recipes', 'menus'] as const).map((view) => <KitchenButton key={view} aria-current={(state.view === view || view === 'recipes' && state.view === 'models') ? 'page' : undefined} onClick={() => update({ view, menu: '' })}>{view === 'recipes' ? 'Recipes' : 'Menus'}</KitchenButton>)}</nav></header>
+    <a className="skip-link" href="#counter-content">Skip to the dishes</a>
+    <KitchenNavigation active={state.view === 'menus' ? 'menus' : 'dishes'} onNavigate={navigate} />
     <KitchenHero recipes={registry.recipes.length} dishes={registry.dishes.length} models={families.length} />
     <section className="counter-content" id="counter-content" tabIndex={-1}>
-      <header className="section-heading"><h2>{state.view === 'menus' ? 'Menus' : 'Recipes'}</h2><span>{state.view === 'menus' ? `${registry.menus.length} public menus` : `${visibleRecipes.length} on the counter`}</span></header>
+      <header className="section-heading"><h2>{state.view === 'menus' ? 'Menus' : 'Dishes'}</h2><span>{state.view === 'menus' ? `${registry.menus.length} public menus` : `${visibleRecipes.length} recipes on the counter`}</span></header>
       {state.view !== 'menus' && <CounterFilters registry={registry} state={state} update={update} />}
       {state.view !== "menus" && (visibleRecipes.length ? <div className="recipe-grid">{visibleRecipes.map((recipe, index) => <RecipeCard key={recipe.id} recipe={recipe} index={index} configurations={registry.configurations} dishes={dishesFor(registry.dishes, recipe.id).filter((dish) => configurations.some((config) => config.configHash === dish.identity.configHash))} onOpen={(dish) => openRecipe(recipe, dish)} />)}</div> : <EmptyState title="No matching recipes."><p>Try another model or clear your filters.</p><KitchenButton onClick={() => update({ query: "", cuisine: "all", origin: "all", family: "all", effort: "all", harness: "all", tier: "all" })}>Clear filters</KitchenButton></EmptyState>)}
       {state.view === "menus" && (registry.menus.length ? <><div className="menu-grid">{registry.menus.map((menu) => <KitchenButton className="menu-card" key={menu.id} onClick={() => update({ menu: menu.id, menuRevision: "" })}><span className="eyebrow">A Menu for comparison</span><strong>{menu.title}</strong><span>{menu.summary}</span><span>Inspect the Menu →</span></KitchenButton>)}</div>{menuRevision && <section className="menu-detail"><header><h3>{menuRevision.title}</h3><label className="field">Menu revision<select value={menuRevision.hash} onChange={(event) => update({ menuRevision: event.target.value })}>{registry.menuRevisions.filter((item) => item.menuId === menuRevision.menuId).map((item) => <option key={item.hash} value={item.hash}>{shortHash(item.hash)}</option>)}</select></label><p>All {menuRevision.recipes.length} pinned recipes count toward coverage. A blank cell stays blank.</p></header><div className="coverage-scroll"><table className="coverage-table"><caption>Coverage by exact requested configuration</caption><thead><tr><th scope="col">Recipe</th>{registry.configurations.map((config) => <th scope="col" key={config.id}>{configLabel(config)}<small>{menuRevision.recipes.filter((member) => dishesFor(registry.dishes, member.recipeId, member.recipeHash, config.configHash).length).length}/{menuRevision.recipes.length} represented</small></th>)}</tr></thead><tbody>{menuRevision.recipes.map((member) => { const recipe = allRecipes.find((item) => item.id === member.recipeId); return <tr key={member.recipeId}><th scope="row">{recipe?.title ?? member.recipeId}<small>{shortHash(member.recipeHash)}</small></th>{registry.configurations.map((config) => { const count = dishesFor(registry.dishes, member.recipeId, member.recipeHash, config.configHash).length; return <td key={config.id}>{count && recipe ? <KitchenButton onClick={() => update({ recipe: recipe.id, revision: member.recipeHash, models: [config.id], dishes: [] })}>{count} {count === 1 ? "dish" : "dishes"} ↗</KitchenButton> : <span className="missing-cell">Not cooked</span>}</td>; })}</tr>; })}</tbody></table></div></section>}</> : <EmptyState title="No menus yet."><p>Menus group recipes for comparison. They appear here once every recipe has a dish.</p><KitchenButton tone="primary" onClick={() => update({ view: "recipes" })}>Browse recipes →</KitchenButton></EmptyState>)}

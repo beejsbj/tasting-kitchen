@@ -81,8 +81,8 @@ test("builds the gallery registry without private runtime data", async (t) => {
   assert.equal(registry.basePath, "/");
   assert.match(registry.configurations[0].configHash, /^sha256:[a-f0-9]{64}$/);
   assert.equal(registry.recipes.length, 1);
-  assert.equal(registry.recipes[0].title, recipe.title);
-  assert.equal(registry.recipes[0].summary, recipe.summary);
+  assert.equal(registry.recipes[0].title, "Frozen historical title");
+  assert.equal(registry.recipes[0].summary, "Frozen historical summary.");
   assert.equal(registry.recipeRevisions[0].display.title, "Frozen historical title");
   assert.equal(registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
   assert.equal(registry.recipeRevisions[0].hash, frozenHash);
@@ -104,8 +104,8 @@ test("builds the gallery registry without private runtime data", async (t) => {
   const editedRecipe = { ...recipe, title: "Current public title", summary: "Current public summary." };
   await json(path.join(root, "catalog/recipes/talk/talk-once/recipe.json"), editedRecipe);
   const edited = await buildRegistry({ repoRoot: root });
-  assert.equal(edited.registry.recipes[0].title, "Current public title");
-  assert.equal(edited.registry.recipes[0].summary, "Current public summary.");
+  assert.equal(edited.registry.recipes[0].title, "Frozen historical title");
+  assert.equal(edited.registry.recipes[0].summary, "Frozen historical summary.");
   assert.equal(edited.registry.recipeRevisions[0].display.title, "Frozen historical title");
   assert.equal(edited.registry.recipeRevisions[0].display.summary, "Frozen historical summary.");
   assert.equal(edited.registry.recipeRevisions[0].hash, frozenHash);

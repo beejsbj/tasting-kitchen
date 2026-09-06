@@ -19,7 +19,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); recordErrors(page, "gallery");
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
   await page.keyboard.press('Tab');
-  await page.getByRole('link', { name: 'Skip to the recipes' }).press('Enter');
+  await page.getByRole('link', { name: 'Skip to the dishes' }).press('Enter');
   assert.equal(await page.evaluate(() => document.activeElement?.id), 'counter-content', 'skip link should move keyboard focus to recipes');
   await page.goto(`${base}/`, { waitUntil: 'networkidle' });
   const registry = await page.evaluate(async () => fetch("/data/registry.json").then(response => response.json()));
@@ -129,6 +129,33 @@ try {
 
   await page.goto(`${base}/?recipe=${target.id}`, { waitUntil: "networkidle" }); await page.route("**/data/fixtures/**", route => route.abort()); await page.getByRole("button", { name: "Read the recipe" }).click(); await settle(page); if (await page.locator('[role="dialog"] .fixture summary').count()) await page.locator('[role="dialog"] .fixture summary').first().click(); await page.waitForTimeout(900); assert.match(await page.locator('[role="dialog"]').innerText(), /Failed to fetch|Input could not be loaded/); await page.unroute("**/data/fixtures/**");
   await page.goto(`${base}/`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: /Visual system/i }).click(); await settle(page); assert.match(await page.locator("body").innerText(), /Back to the Kitchen/); await save(page, "styleguide-desktop");
+
+  await page.goto(`${base}/?view=recipes`, { waitUntil: "networkidle" });
+  const book = await page.evaluate(async () => fetch("/data/recipe-book.json").then(response => response.json()));
+  assert.equal(await page.locator(".recipe-book-card").count(), book.recipes.length, "Recipe Book includes active uncooked definitions");
+  const uncooked = book.recipes.filter(entry => !entry.dishCount);
+  assert.ok(uncooked.length > 0, "the authored candidates must be inspectable before cooking");
+  await page.getByRole("button", { name: "Not cooked", exact: true }).click();
+  assert.equal(await page.locator(".recipe-book-card").count(), uncooked.length);
+  await page.getByRole("button", { name: "Design systems", exact: true }).click();
+  const systems = book.recipes.filter(entry => entry.recipe.tags.includes("design-system"));
+  assert.equal(await page.locator(".recipe-book-card").count(), systems.length);
+  const candidate = systems.find(entry => !entry.dishCount);
+  await page.getByRole("button").filter({ has: page.getByRole("heading", { name: candidate.recipe.title, exact: true }) }).click();
+  assert.equal(new URL(page.url()).searchParams.get("edit"), candidate.recipe.id);
+  assert.equal(await page.evaluate(() => scrollY), 0, "opening the authored recipe resets scroll");
+  assert.equal(await page.getByRole("textbox", { name: "File contents", exact: true }).inputValue(), candidate.fixtures[0].text);
+  await page.getByRole("button", { name: "Edit recipe", exact: true }).click();
+  const draftTitle = `${candidate.recipe.title} draft`;
+  await page.getByRole("textbox", { name: "Title", exact: true }).fill(draftTitle);
+  await page.reload({ waitUntil: "networkidle" });
+  assert.equal(await page.getByRole("heading", { name: draftTitle, exact: true }).count(), 1, "browser draft survives reload without a repository write");
+  await page.getByRole("button", { name: "Edit recipe", exact: true }).click();
+  await page.getByRole("button", { name: "Discard changes", exact: true }).click();
+  assert.equal(await page.getByRole("textbox", { name: "Title", exact: true }).inputValue(), candidate.recipe.title);
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Recipe editor fits a phone");
+  await save(page, "recipe-book-phone");
 
   const sandbox = await browser.newPage(); await sandbox.route("http://scratch.test/sandbox/index.html", route => route.fulfill({ status: 200, headers: { "content-type": "text/html", "content-security-policy": "default-src 'none'; script-src 'self'; connect-src 'self'", "access-control-allow-origin": "*" }, body: '<p id="status">loading</p><script type="module" src="/sandbox/module.js"></script>' })); await sandbox.route("http://scratch.test/sandbox/module.js", route => route.fulfill({ status: 200, headers: { "content-type": "text/javascript", "access-control-allow-origin": "*" }, body: "const data = await fetch('/sandbox/data.json').then(response => response.json()); document.querySelector('#status').textContent = data.ok ? 'module-fetch-passed' : 'failed';" })); await sandbox.route("http://scratch.test/sandbox/data.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json", "access-control-allow-origin": "*" }, body: '{"ok":true}' })); await sandbox.setContent('<iframe id="frame" sandbox="allow-scripts" src="http://scratch.test/sandbox/index.html"></iframe>'); await sandbox.waitForTimeout(1000); assert.equal(await sandbox.frames()[1].locator("#status").innerText(), "module-fetch-passed"); assert.equal(await sandbox.locator("#frame").evaluate(frame => frame.contentDocument === null), true, "sandbox frame should be unreadable by parent"); await sandbox.close();
   assert.deepEqual(errors.filter(error => !error.text.includes("ERR_FAILED")), [], "gallery should have no uninduced browser errors"); console.log("gallery browser verification passed");

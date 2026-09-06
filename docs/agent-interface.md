@@ -1,7 +1,6 @@
 # Kitchen agent interface
 
-Import `lib/taste/index.mjs` for machine use. The interface is read-first and
-never runs a model unless `cook(..., { execute: true })` is requested.
+Import `lib/taste/index.mjs` for cooking and Recipe Book authoring. The authoring functions are also available from `lib/taste/recipe-book.mjs`. The cooking interface is read-first and never runs a model unless `cook(..., { execute: true })` is requested. Recipe Book saves edit current definitions only; they do not mutate executed Dishes.
 
 - `discover(repoRoot)` lists private catalog Recipes, configurations, Cuisines,
   Menus, immutable Recipe and configuration revisions, and accepted Dishes.
@@ -15,8 +14,16 @@ never runs a model unless `cook(..., { execute: true })` is requested.
   Recipe Revisions and its Menu Revision before fanout.
 - `coverage(menuRevision, dishes, configurationHashes?)` keeps the complete
   pinned Menu denominator and reports missing cells explicitly.
+- `buildRecipeBook(repoRoot)` returns the active public Recipes, their current
+  public source text, Dish counts, and the archived count. Hidden Recipes are
+  omitted.
+- `saveRecipeEdits(repoRoot, { recipeId, expectedHash, updates })` validates and
+  atomically saves an active Recipe's editable fields and public text fixtures.
+  The expected hash provides optimistic conflict protection; execution-affecting
+  changes bump the patch version.
 
-The CLI mirrors these commands. `--config` is canonical; `--variant` remains a
+The CLI mirrors the cooking commands above. Recipe Book authoring functions are
+JavaScript APIs, not CLI subcommands. `--config` is canonical; `--variant` remains a
 compatibility alias. `taste inspect` requires exactly one selector:
 `--recipe`, `--menu`, or `--revision`. Commands reject irrelevant flags and
 extra positionals. `--execute` also requires `TASTE_ALLOW_MODEL_RUNS=1`.
@@ -47,7 +54,7 @@ const catalog = await discover(repoRoot);
 const brief = await inspect(repoRoot, { recipeId: "responsive-product-launch" });
 const preview = await cook(repoRoot, {
   configurationId: "codex-sol-high",
-  menuId: "visual-ui",
+  menuId: "fresh-visual-ui",
   intent: "fill-missing",
 }); // No workspace, revision or model execution side effects.
 ```

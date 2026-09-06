@@ -1,6 +1,6 @@
 # Tasting Kitchen product model
 
-Status: canonical product-language and schema contract, confirmed 2026-08-19.
+Status: canonical product-language and schema contract, confirmed 2026-09-06.
 
 This document defines the target model for Tasting Kitchen. It is the source of truth for product vocabulary, comparison claims, versioning, and public visibility. The current repository still contains legacy `domain`, `flight`, and `collection` concepts; those are implementation migration targets, not competing product language.
 
@@ -164,17 +164,22 @@ The site is the Tasting surface; the CLI is the v1 cooking surface.
 
 The public site supports:
 
-- a Recipe-first view with Dish-led previews;
+- a Dishes-first counter with Dish-led previews and model/thinking filters;
+- a separate Recipe Book at `?view=recipes` for current authored definitions;
 - Recipe detail pages containing all matching models, configurations, and Repeats;
-- a faceted model-first view;
+- model and configuration facets on the Dishes counter;
 - Cuisine filtering; and
 - Menu views with explicit coverage.
 
-A Recipe appears publicly only after it has at least one accepted Dish. Draft and Ready-but-uncooked Recipes remain in the private CLI/catalog.
+The public Book contains the ten active Recipes, including uncooked Recipes. The four fresh visual Recipes are `fresh-product-span`, `fresh-editorial-second-life`, `fresh-interaction-paper-echo`, and `fresh-system-hem`; they are authored candidates and have no claimed cooked Dishes. Fifty-one other old Recipes are hidden in `catalog/archive.json` and remain outside the public Book. The historical `visual-ui` menu is deferred and is not the current fresh menu.
+
+The Dishes counter uses card names and summaries from the frozen executed Recipe Revision that produced each Dish. The Recipe Book shows the current authored definition and permits editing its title, summary, setup instructions, prompt turns, and public text fixtures. A Recipe Book edit never changes an existing Dish; execution-affecting edits bump the Recipe patch version for a future Cook.
+
+Local development exposes `GET /api/recipes` and optimistic `PATCH /api/recipes/:id` with an `expectedHash`; saves replace the recipe source and edited public fixtures coherently. Production serves the active public source text from `public/data/recipe-book.json`; its static sidecar is read-only, while the separate hosted GitHub flow can save current definitions.
 
 A Menu Revision appears publicly only when every pinned Recipe Revision has at least one accepted Dish somewhere. It need not have complete coverage from any single model or configuration.
 
-The owner-only Cook button is post-v1. Public model-running controls are not part of v1.
+The owner-only Cook button remains outside the public site. Recipe editing is available through the Book; hosted repository saves require an owner-supplied GitHub fine-grained token with repository Contents read/write access. The token is held in browser memory and sent only to `api.github.com`; saves make one atomic commit to the configured branch with conflict protection. No model cook is started by a save.
 
 ## Coverage and comparison claims
 

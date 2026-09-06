@@ -4,5 +4,6 @@ import App from "./App";
 import "./styles/tokens.css";
 import "./styles/app.css";
 import "./styles/controls.css";
+import "./styles/recipe-book.css";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
