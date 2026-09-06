@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10151b" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2310151b'/%3E%3Cpath d='M4 12V4h2v8zm3-3V4h2v5zm3 3V6h2v6z' fill='%23f28d62'/%3E%3C/svg%3E" />
+    <title>Paper Echo — make a mark, meet its answer</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <div class="page-noise" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="wordmark" href="./" aria-label="Paper Echo, start a blank pattern">
+          <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Paper Echo</span>
+        </a>
+        <p class="header-note">A small instrument for making a call<br /><span>and meeting what comes back.</span></p>
+        <span class="header-code" aria-label="Eight beat object">PE / 08</span>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span>Eight-beat listening object</p>
+          <h1 id="page-title">Make a mark.<br /><em>Meet its answer.</em></h1>
+          <p class="intro-copy" id="intro-copy">Make a mark in time. Turn it over. Meet the answer.</p>
+        </section>
+
+        <section class="instrument" aria-labelledby="instrument-title">
+          <div class="instrument-head">
+            <div>
+              <p class="section-kicker">The listening surface <span>01</span></p>
+              <h2 id="instrument-title">Send a phrase into the paper.</h2>
+            </div>
+            <div class="status-chip" id="status-chip" data-status="rest" role="status" aria-live="polite">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span id="status-label">Resting</span>
+            </div>
+          </div>
+
+          <div class="phrase-stack">
+            <section class="phrase phrase--call" aria-labelledby="call-title">
+              <div class="phrase-head">
+                <div class="phrase-title-wrap">
+                  <span class="phrase-number">01</span>
+                  <div>
+                    <h3 id="call-title">Your call</h3>
+                    <p>Place up to eight marks in time.</p>
+                  </div>
+                </div>
+                <span class="phrase-count" id="call-count">0 / 8 marked</span>
+              </div>
+              <div class="step-grid step-grid--call" id="call-grid" role="group" aria-label="Your call, eight editable beat positions"></div>
+            </section>
+
+            <div class="echo-seam" aria-hidden="true">
+              <span class="seam-rule"></span>
+              <span class="seam-label"><span class="seam-spark">✦</span> turned over <span class="seam-arrow">↘</span></span>
+              <span class="seam-rule"></span>
+            </div>
+
+            <section class="phrase phrase--response" aria-labelledby="response-title">
+              <div class="phrase-head">
+                <div class="phrase-title-wrap">
+                  <span class="phrase-number phrase-number--answer">02</span>
+                  <div>
+                    <h3 id="response-title">The answer</h3>
+                    <p>Reversed, then shifted right by <strong id="offset-inline">0</strong>.</p>
+                  </div>
+                </div>
+                <span class="phrase-count phrase-count--answer" id="response-count">0 / 8 returned</span>
+              </div>
+              <div class="step-grid step-grid--response" id="response-grid" role="list" aria-label="The reflected answer, eight read-only beat positions"></div>
+            </section>
+          </div>
+
+          <div class="instrument-foot">
+            <div class="legend" aria-label="Mark legend">
+              <span class="legend-item"><i class="legend-mark legend-mark--call" aria-hidden="true"></i> call</span>
+              <span class="legend-item"><i class="legend-mark legend-mark--answer" aria-hidden="true"></i> answer</span>
+            </div>
+            <p class="timing-note"><span class="timing-pulse" aria-hidden="true"></span>One pass / 4.8 seconds</p>
+          </div>
+
+          <div class="playback-bar">
+            <button class="button button--primary" id="play-button" type="button" aria-label="Play the call and reflected answer" aria-keyshortcuts="Space">
+              <span class="button-symbol" aria-hidden="true">▶</span>
+              <span>Play the echo</span>
+              <kbd>Space</kbd>
+            </button>
+            <button class="button button--quiet" id="stop-button" type="button">Stop</button>
+            <p class="playback-message" id="playback-message" role="status" aria-live="polite">Ready when you are.</p>
+          </div>
+        </section>
+
+        <section class="control-layout" aria-label="Pattern controls">
+          <section class="control-panel control-panel--presets" aria-labelledby="preset-title">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Borrow a gesture <span>02</span></p>
+                <h2 id="preset-title">Begin with a pattern.</h2>
+              </div>
+              <span class="panel-index">presets</span>
+            </div>
+            <div class="preset-list" id="preset-list"></div>
+            <p class="panel-footnote">Or make one from silence above.</p>
+          </section>
+
+          <section class="control-panel control-panel--offset" aria-labelledby="offset-title">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Move the seam <span>03</span></p>
+                <h2 id="offset-title">Echo offset.</h2>
+              </div>
+              <output class="offset-readout" id="offset-readout" for="offset-range"><span>+ </span>0</output>
+            </div>
+            <p class="panel-description">Turn the call over, then move its answer to the right.</p>
+            <div class="offset-control">
+              <div class="offset-buttons" id="offset-buttons" role="group" aria-label="Echo offset, choose a value from zero to seven"></div>
+              <div class="range-wrap">
+                <span>0</span>
+                <input id="offset-range" type="range" min="0" max="7" step="1" value="0" aria-label="Echo offset from zero to seven" />
+                <span>7</span>
+              </div>
+            </div>
+            <p class="offset-caption" id="offset-caption">No shift — the reflection keeps its edge.</p>
+          </section>
+        </section>
+
+        <section class="share-panel" aria-labelledby="share-title">
+          <div class="share-copy">
+            <p class="section-kicker">Keep the gesture <span>04</span></p>
+            <h2 id="share-title">Pass the paper.</h2>
+            <p id="share-notice">This address contains only your eight marks and echo offset. No account or upload.</p>
+          </div>
+          <div class="share-action">
+            <label for="share-address">Your shareable address</label>
+            <div class="share-input-row">
+              <input id="share-address" type="text" readonly spellcheck="false" aria-describedby="share-help" />
+              <button class="button button--copy" id="copy-button" type="button">Copy address</button>
+            </div>
+            <p class="share-help" id="share-help">If copying is unavailable, the address stays selectable here.</p>
+            <p class="share-feedback" id="share-feedback" role="status" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="reset-row" aria-label="Reset controls">
+          <p><span class="reset-mark" aria-hidden="true">↺</span> Clear the surface and return to rest.</p>
+          <button class="reset-button" id="reset-button" type="button">Reset pattern</button>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>Paper Echo / a quiet exchange</span>
+        <span>Built for the space between marks.</span>
+      </footer>
+    </div>
+  </body>
+</html>

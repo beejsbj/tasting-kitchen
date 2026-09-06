@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-interaction-paper-echo_codex-luna-xhigh_20260906231527851_67821e90",
+  "recipe": {
+    "id": "fresh-interaction-paper-echo",
+    "version": "1.0.0",
+    "hash": "sha256:b23668ce0e1ecbbce76cc8a020de4958908895e917d30387600264908bd9354a"
+  },
+  "executedAt": "2026-09-06T23:15:27.851Z",
+  "finalizedAt": "2026-09-06T23:27:27.820Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "54dd8b38f8ff32d40248cf76a016f989204ede65c8f66216506c35a31c76761b",
+        "bytes": 10920
+      },
+      {
+        "path": "artifact/data/patterns.json",
+        "sha256": "b0d17b7bc7194a47f154506e09ffbcc950a0f63be092867321c2a615db3c529c",
+        "bytes": 968
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "3543619bc3edd8e401f668da2f541dcfc7b4e1549354b9240aff79d8257134fb",
+        "bytes": 8314
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "d246b45d880da4212262dfa82de2c6ace280dac81aaf9b772a5d2e229c825eba",
+        "bytes": 1376
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "d215b5201044d5a161d6187a61c2756cac937c9d72215e1210425ef6e9aff8ea",
+        "bytes": 24339
+      }
+    ],
+    "treeHash": "sha256:cd48a4a82efc247b05a93e04f98908bc1dd63bab29f7e977511ee453085ed0a6"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:1837b2c4a618881182d3c2ee296e3f03b6dd8801cc1a0866cccb58ed67db786c"
+}
