@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "research-memo-to-deck",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Turn a research memo into a decision deck",
   "summary": "Transform a closed evidence memo into a short slide narrative that supports a bounded decision without hiding uncertainty.",
   "cuisines": ["editing-presentation"],

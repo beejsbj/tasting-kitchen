@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "collision-model-prototypes",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Prototype four different scheduling collision models",
   "summary": "Create four comparable direct-manipulation prototypes, then preserve one model while borrowing one preview gesture.",
   "cuisines": ["ux-interaction"],

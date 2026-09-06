@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "status": "ready",
   "title": "P5 Lottery extension",
-  "summary": "Extend the P5 Lottery’s paper-slip interface into a working local ticket and receipt styleguide without pretending its React wallet stack is available.",
+  "summary": "Extend P5 Lottery’s paper-slip interface with ticket controls, local approval, and receipts.",
   "origin": "hybrid",
   "originNote": "Combines the established extension exercise with a pinned public P5 Lottery frontend and a documented static-web adaptation boundary.",
   "tags": ["design-system", "visual-language", "implementation", "surgical-change", "state-modeling"],

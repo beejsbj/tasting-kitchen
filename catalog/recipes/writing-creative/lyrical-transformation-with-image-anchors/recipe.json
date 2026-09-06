@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "lyrical-transformation-with-image-anchors",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Turn image notes into a lyric without genericizing them",
   "summary": "Transform synthetic fragments into a lyric or poem while preserving concrete image anchors, rhythmic pressure, and an unresolved emotional turn.",
   "cuisines": ["writing-creative"],

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "retire-completed-reminder",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Retire a one-shot reminder after early completion",
   "summary": "Inspect a disposable reminder store, reconcile completion evidence, and verify that the reminder will stay silent.",
   "cuisines": ["agentic-assistant"],

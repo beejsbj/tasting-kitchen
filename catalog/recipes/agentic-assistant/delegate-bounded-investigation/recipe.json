@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "delegate-bounded-investigation",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Delegate one bounded investigation",
   "summary": "Give one worker a narrow evidence question, inspect the return, and keep the parent accountable for the recommendation.",
   "cuisines": ["agentic-assistant"],

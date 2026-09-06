@@ -242,7 +242,7 @@ test("planSelection returns exact variant identity and explicit capability/statu
   assert.throws(() => planSelection(catalog, { variantId: "exact-variant", flight: ["missing"] }), /Unknown recipe/);
 });
 
-test("the lean motion and design-system patch is represented as three ready recipes and one revision", async () => {
+test("the lean motion and design-system patch is represented as archived recipes with their authored contracts intact", async () => {
   const catalog = await loadCatalog(projectRoot);
   assert.ok(catalog.tags.includes("design-system"));
   const byId = new Map(catalog.recipes.map((item) => [item.id, item]));
@@ -254,7 +254,7 @@ test("the lean motion and design-system patch is represented as three ready reci
   for (const [id, cuisine, origin, kind] of expected) {
     const item = byId.get(id);
     assert.ok(item, `missing ${id}`);
-    assert.equal(item.status, "ready");
+    assert.equal(item.status, "hidden");
     assert.deepEqual(item.cuisines, [cuisine]);
     assert.equal(item.origin, origin);
     assert.equal(item.kind, kind);

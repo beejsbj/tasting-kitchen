@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "one-current-journal-question",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Offer one current journal question",
   "summary": "Use a week of mixed notes to ask one alive question without turning the fragments into a questionnaire or a grand pattern.",
   "cuisines": ["conversation-journaling"],

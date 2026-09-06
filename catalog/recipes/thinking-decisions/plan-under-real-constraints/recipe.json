@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "plan-under-real-constraints",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Plan a weekend project under real constraints",
   "summary": "Turn a small oral-history event into a phased, dependency-aware plan and revise it when a critical volunteer becomes unavailable.",
   "cuisines": ["thinking-decisions"],

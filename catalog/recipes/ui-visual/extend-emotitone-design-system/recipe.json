@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "status": "ready",
   "title": "Emotitone extension",
-  "summary": "Continue Emotitone Solfrege's dark, touch-sized interface with a static shared tabs adapter and a local degree lens grounded in its movable-do data.",
+  "summary": "Build a degree lens for exploring Major and Minor in Emotitone’s instrument interface.",
   "cuisines": ["ui-visual"],
   "origin": "hybrid",
   "originNote": "A bounded adaptation of the public Emotitone Solfrege Vue sources for a no-network static-web cooking boundary.",

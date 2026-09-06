@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "refactor-policy-without-api-drift",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Refactor a policy module without widening its interface",
   "summary": "Remove duplicated decision branches while preserving one public function, rule precedence, messages, and behavior.",
   "cuisines": ["coding-engineering"],

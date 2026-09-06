@@ -1,0 +1,8 @@
+@import "./source/tokens.css";
+@import "./source/primitives.css";
+.shell { width: min(64rem, 100% - 2rem); margin-inline: auto; padding-block: var(--hem-space-8); }
+.mast { border-bottom: 2px solid var(--hem-ink); margin-bottom: var(--hem-space-6); padding-bottom: var(--hem-space-6); }
+.eyebrow { font-family: var(--hem-label); color: var(--hem-muted); }
+nav { display: flex; gap: var(--hem-space-3); flex-wrap: wrap; }
+#content { outline-offset: 6px; }
+footer { margin-top: var(--hem-space-8); border-top: 1px dashed var(--hem-seam); padding-top: var(--hem-space-4); color: var(--hem-muted); }

@@ -1,0 +1,15 @@
+# Span
+Build a conventional product detail page that helps someone judge whether this rack fits their home, choose a variant, and prepare a useful inquiry. The supplied facts are the entire fictional commercial record. There are no photos: you may author an illustration, diagram, or other honest product representation using local SVG/CSS, or let type and specification do the work. Do not imply that an illustration is a photograph.
+
+Make dimensions, materials, capacity, price, availability, delivery, care, returns and warranty findable. Use the full facts where they affect a decision; no fabricated reviews, certifications, discounts, shipping dates or sustainability claims. The visual hierarchy, composition, imagery and brand expression are yours.
+
+Selection starts at Narrow / Chalk, quantity 1, no mesh. Support both sizes, both finishes, quantities 1–3, and one optional mesh per rack. Update an estimate with merchandise, shipping and total before tax. Shipping is free at CAD 180 merchandise; otherwise CAD 18. Selecting sold-out stock or exceeding stock must keep the selection visible, explain the issue, and disable adding to the local bag. Adding an available selection replaces the single local bag entry (no inventory decrement); changing the selector does not silently change the bag. A clear-bag control removes it. No checkout.
+
+Offer a local inquiry preview with topic, question and current size/finish. Require a known topic and 10–500 trimmed characters. Show recoverable errors beside the relevant input. No email or personal information is needed. Clearly state that nothing was sent. The inquiry remains possible for unavailable variants.
+
+Use actual shared exports from logic.mjs in the UI. Pure API:
+- estimate({size, finish, quantity, mesh}, product) returns {available, reason, merchandiseCents, shippingCents, totalCents}. reason is null, "sold-out" or "insufficient-stock". Invalid size, finish, noninteger/out-of-range quantity or nonboolean mesh throws RangeError. Valid unavailable selections still return their estimate.
+- prepareInquiry({topic, question, size, finish}, product) returns {ok:false, errors:[...]} using stable field names in order topic, question, size, finish; or {ok:true, preview:{topic, question, size, finish, notice}}. Trim question; notice equals product.inquiryNotice. Invalid values are errors, not exceptions.
+Neither function mutates arguments. Bag UI behavior is inspected in the browser, not inferred from these functions.
+
+Required output: index.html, styles.css, app.mjs, logic.mjs, data/product.json. The immutable data fixture is already mounted at the last path. app.mjs must import and call both logic exports and load that data. index.html loads styles.css and app.mjs using relative URLs. Optional self-authored assets go under assets/. Browser ES modules and plain CSS/JS only; no packages, build step, remote fonts, network services or live checkout. Work at 360px and 1440px; keyboard operation, visible focus and accessible form feedback are part of the task. Run node validation/validate-output.mjs before finishing.

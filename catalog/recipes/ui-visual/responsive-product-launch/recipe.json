@@ -1,36 +1,94 @@
 {
   "schemaVersion": 1,
   "id": "responsive-product-launch",
-  "version": "2.1.0",
+  "version": "1.0.0",
   "status": "ready",
-  "title": "Product launch page",
-  "summary": "Build a responsive product page that makes compatibility and repair information easy to find.",
+  "title": "Launch a compact product without hiding the tradeoffs",
+  "summary": "Create a responsive product page that feels desirable while making compatibility and repair information easy to find.",
   "origin": "textbook",
   "originNote": "A conventional product-launch control with a real tension between persuasion and decision clarity.",
-  "tags": ["visual-composition", "visual-language", "accessibility", "implementation"],
+  "tags": [
+    "visual-composition",
+    "visual-language",
+    "accessibility",
+    "implementation"
+  ],
   "kind": "web",
-  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
-  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
-  "setup": {
-    "instructions": "Mount the supplied product packet and validator in the fresh workspace. Produce a self-contained static website with no network dependencies. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish.",
-    "fixtures": [
-      {"id": "product-packet", "path": "fixtures/product.json", "mountAs": "fixtures/product.json", "public": true, "editable": false, "mediaType": "application/json"},
-      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files"
     ]
   },
-  "turns": [{
-    "id": "build-page",
-    "role": "prompt",
-    "content": "Read fixtures/product.json and build the complete responsive launch page as index.html with any local CSS or JavaScript it needs. Use every supplied product, mount, compatibility, runtime, repair, and action fact accurately; do not invent testimonials, reviews, discounts, awards, environmental claims, or other product facts. Make the object desirable while keeping mounting limits, runtime, and repairability in the main decision path. Choose the visual interpretation freely: palette, typography, imagery made locally, and layout are yours. Make the two mounting modes easy to compare. Implement the supplied local action behavior; no checkout or external destination is needed. It must work at 390px and 1440px, use semantic HTML, support keyboard navigation, and expose a visible keyboard focus state. Avoid horizontal page overflow and honor prefers-reduced-motion if adding motion. Do not explain the design instead of building it."
-  }],
-  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "setup": {
+    "instructions": "Mount the supplied product packet in the fresh workspace. Produce a self-contained static website with no network dependencies.",
+    "fixtures": [
+      {
+        "id": "product-packet",
+        "path": "fixtures/product.json",
+        "mountAs": "fixtures/product.json",
+        "public": true,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-page",
+      "role": "prompt",
+      "content": "Read fixtures/product.json and build the complete responsive launch page as index.html with any local CSS or JavaScript it needs. The page should make the object desirable without burying the mounting limits, repairability, or runtime caveat. Use only the supplied facts and copy. Give the page a chosen visual point of view; do not default to a generic SaaS landing page. It must work at 390px and 1440px, use semantic HTML, expose a visible keyboard focus state, and include data-section=\"compatibility\" on the compatibility region and data-section=\"repair\" on the repair region. Do not explain the design instead of building it."
+    },
+    {
+      "id": "comparison-without-table",
+      "role": "correction",
+      "content": "Revise the artifact with one new constraint: the two mounting modes must remain easy to compare, but do not solve that comparison with a feature-table grid. Preserve the rest of the chosen direction and overwrite the same artifact."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "*.css",
+      "*.js",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 30,
+      "maxBytes": 5242880
+    }
+  },
   "validation": {
     "mode": "interaction",
     "checks": [
-      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The runnable launch page exists.", "target": "index.html"},
-      {"id": "launch-contract", "type": "command", "required": true, "description": "The entry and any shipped JavaScript or stylesheet assets are nonempty, and JavaScript parses as modules.", "argv": ["node", "validation/validate-output.mjs"]},
-      {"id": "responsive-human-check", "type": "manual", "required": false, "description": "At 390px and 1440px, verify every product fact, compare mounting limits, choose either mount and inspect repair information using only the keyboard. Inspect hierarchy, desirability, readable text, focus, and overflow. These are human observations, not automatic guarantees."}
+      {
+        "id": "entry-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The runnable launch page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "decision-sections-present",
+        "type": "command",
+        "required": true,
+        "description": "Compatibility and repair decision surfaces are present in the built page.",
+        "argv": [
+          "node",
+          "-e",
+          "const s=require('fs').readFileSync('index.html','utf8');if(!s.includes('data-section=\\\"compatibility\\\"')||!s.includes('data-section=\\\"repair\\\"'))process.exit(1)"
+        ]
+      },
+      {
+        "id": "responsive-human-check",
+        "type": "manual",
+        "required": false,
+        "description": "Inspect at 390px and 1440px for a legible hierarchy and comparable mounting modes."
+      }
     ]
   },
-  "cuisines": ["ui-visual"]
+  "cuisines": [
+    "ui-visual"
+  ]
 }

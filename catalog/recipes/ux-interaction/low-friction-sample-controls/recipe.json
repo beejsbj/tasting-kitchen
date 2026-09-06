@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "low-friction-sample-controls",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Keep a sample sketchpad immediate as control depth grows",
   "summary": "Build an eight-pad sound sketchpad with hold-slide controls, multi-edit, direct rearrangement, and explicit destructive moments.",
   "cuisines": ["ux-interaction"],

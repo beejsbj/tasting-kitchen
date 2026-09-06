@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "bounded-tool-repair",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Apply one authorized repair and verify the visible state",
   "summary": "Operate a disposable noticeboard tool within exact scope, then check both stored and rendered state.",
   "cuisines": ["agentic-assistant"],

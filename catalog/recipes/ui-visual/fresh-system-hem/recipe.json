@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "id": "fresh-system-hem",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "Hem Estimates",
+  "summary": "Extend a working garment-repair design system with editable estimates and local approval, preserving its existing workshop contexts.",
+  "cuisines": [
+    "ui-visual",
+    "ux-interaction"
+  ],
+  "origin": "textbook",
+  "originNote": "New original fictional task and local source packet authored for this recipe; no existing recipe subject or implementation adapted.",
+  "tags": [
+    "design-system",
+    "implementation",
+    "visual-language"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/system-guide.md",
+        "mountAs": "fixtures/system-guide.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "jobs",
+        "path": "fixtures/jobs.json",
+        "mountAs": "data/jobs.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "rates",
+        "path": "fixtures/rates.json",
+        "mountAs": "data/rates.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "baseline-index-html",
+        "path": "fixtures/source/index.html",
+        "mountAs": "index.html",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "baseline-styles-css",
+        "path": "fixtures/source/styles.css",
+        "mountAs": "styles.css",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "baseline-app-mjs",
+        "path": "fixtures/source/app.mjs",
+        "mountAs": "app.mjs",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "baseline-tokens-css",
+        "path": "fixtures/source/tokens.css",
+        "mountAs": "source/tokens.css",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "baseline-primitives-css",
+        "path": "fixtures/source/primitives.css",
+        "mountAs": "source/primitives.css",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "baseline-primitives-mjs",
+        "path": "fixtures/source/primitives.mjs",
+        "mountAs": "source/primitives.mjs",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "baseline-contexts-mjs",
+        "path": "fixtures/source/contexts.mjs",
+        "mountAs": "source/contexts.mjs",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "validator-contract-json",
+        "path": "validation/contract.json",
+        "mountAs": "validation/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-cases-json",
+        "path": "validation/cases.json",
+        "mountAs": "validation/cases.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-mechanics-mjs",
+        "path": "validation/mechanics.mjs",
+        "mountAs": "validation/mechanics.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "validator-validate-output-mjs",
+        "path": "validation/validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "content": "Extend Hem’s working repair-workshop interface with estimates and local approval. Inspect the supplied source and read fixtures/system-guide.md. Preserve the system’s recognisable language and functioning contexts while solving the missing workflow."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "styles.css",
+      "app.mjs",
+      "logic.mjs",
+      "data/jobs.json",
+      "data/rates.json",
+      "CHANGES.md",
+      "source/tokens.css",
+      "source/primitives.css",
+      "source/primitives.mjs",
+      "source/contexts.mjs",
+      "source/estimate-view.mjs",
+      "assets/**",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 120,
+      "maxBytes": 5000000
+    }
+  },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      {
+        "id": "mechanical-contract",
+        "type": "command",
+        "required": true,
+        "description": "Validate required nonempty files, local literal resource/import links, JavaScript syntax, immutable data hashes and shared pure-logic vectors. Does not prove rendering, event wiring, accessibility or taste.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "browser-and-taste",
+        "type": "manual",
+        "required": false,
+        "description": "At 360px and 1440px, traverse all baseline views and each job. Build estimates, edit invalid quantities, approve, then change/remove a line and confirm approval invalidation. Switch jobs and return; verify independent session drafts. Inspect actual primitive reuse, new specimens, focus/errors and visual continuity."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

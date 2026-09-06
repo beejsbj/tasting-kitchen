@@ -2,36 +2,108 @@
   "schemaVersion": 1,
   "id": "editorial-culture-feature",
   "version": "1.1.0",
-  "status": "ready",
-  "title": "Culture feature",
-  "summary": "Build a responsive editorial feature with long-form copy, visual pauses, captions, and a chronology.",
+  "status": "hidden",
+  "title": "Shape a long cultural feature for reading and wandering",
+  "summary": "Design a responsive editorial feature that carries a long argument, visual pauses, captions, and a compact chronology.",
   "origin": "textbook",
   "originNote": "A recognizable editorial-design control that makes image-led atmosphere compete with sustained reading.",
-  "tags": ["visual-composition", "visual-language", "reference-translation", "accessibility"],
+  "tags": [
+    "visual-composition",
+    "visual-language",
+    "reference-translation",
+    "accessibility"
+  ],
   "kind": "web",
-  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
-  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files"
+    ]
+  },
   "setup": {
     "instructions": "Mount the supplied article packet, abstract map, and validator. Build a self-contained static feature page; the supplied SVG is the only image. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish.",
     "fixtures": [
-      {"id": "article-packet", "path": "fixtures/article.json", "mountAs": "fixtures/article.json", "public": true, "editable": false, "mediaType": "application/json"},
-      {"id": "night-map", "path": "fixtures/night-map.svg", "mountAs": "fixtures/night-map.svg", "public": true, "editable": false, "mediaType": "image/svg+xml"},
-      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
+      {
+        "id": "article-packet",
+        "path": "fixtures/article.json",
+        "mountAs": "fixtures/article.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "night-map",
+        "path": "fixtures/night-map.svg",
+        "mountAs": "fixtures/night-map.svg",
+        "public": true,
+        "editable": false,
+        "mediaType": "image/svg+xml"
+      },
+      {
+        "id": "output-validator",
+        "path": "validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
     ]
   },
-  "turns": [{
-    "id": "build-feature",
-    "role": "prompt",
-    "content": "Using fixtures/article.json and fixtures/night-map.svg, build a complete responsive cultural feature as index.html. Copy the supplied SVG to assets/night-map.svg and use it in the page. Preserve every supplied paragraph, chronology entry, caption, quotation, and attribution exactly in visible, selectable text. Do not invent photography, facts, quotations, or additional reporting. Make the page inviting to wander without breaking the long reading path. Establish a clear opening hierarchy in which the title, dek, and first paragraph have distinct roles rather than equal visual volume. Include a strong opening composition, the supplied map and caption, one use of the supplied pull quote, and the complete chronology. Avoid a blog-template stack of identical cards. Use semantic article, heading, figure, caption, quotation, and time markup. Keep the body paragraphs in their supplied order; use the source note and pull-quote attribution visibly so the fictional material is not presented as real reporting. The map is supplied content, not a palette or layout reference. Typography, spacing, section rhythm, and locally made non-reportorial ornament are open. At 390px and 1440px maintain readable text, keyboard focus for any controls, and no horizontal page overflow; honor reduced motion if motion is used."
-  }],
-  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "*.css", "*.js", "assets/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "turns": [
+    {
+      "id": "build-feature",
+      "role": "prompt",
+      "content": "Using fixtures/article.json and fixtures/night-map.svg, build a complete responsive cultural feature as index.html. Copy the supplied SVG to assets/night-map.svg and use it in the page. Preserve every supplied paragraph, chronology entry, caption, quotation, and attribution exactly in visible, selectable text. Do not invent photography, facts, quotations, or additional reporting. Make the page inviting to wander without breaking the long reading path. Establish a clear opening hierarchy in which the title, dek, and first paragraph have distinct roles rather than equal visual volume. Include a strong opening composition, the supplied map and caption, one use of the supplied pull quote, and the complete chronology. Avoid a blog-template stack of identical cards. Use semantic article, heading, figure, caption, quotation, and time markup. Keep the body paragraphs in their supplied order; use the source note and pull-quote attribution visibly so the fictional material is not presented as real reporting. The map is supplied content, not a palette or layout reference. Typography, spacing, section rhythm, and locally made non-reportorial ornament are open. At 390px and 1440px maintain readable text, keyboard focus for any controls, and no horizontal page overflow; honor reduced motion if motion is used."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "*.css",
+      "*.js",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 30,
+      "maxBytes": 5242880
+    }
+  },
   "validation": {
     "mode": "files",
     "checks": [
-      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The editorial page exists.", "target": "index.html"},
-      {"id": "editorial-contract", "type": "command", "required": true, "description": "The entry, assets/night-map.svg, and any shipped JavaScript or stylesheet assets are nonempty; JavaScript parses as modules.", "argv": ["node", "validation/validate-output.mjs"]},
-      {"id": "reading-human-check", "type": "manual", "required": false, "description": "At mobile and desktop widths, inspect whether the opening leads into sustained reading while the map, quote, and chronology create useful pauses."}
+      {
+        "id": "entry-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The editorial page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "editorial-contract",
+        "type": "command",
+        "required": true,
+        "description": "The entry, assets/night-map.svg, and any shipped JavaScript or stylesheet assets are nonempty; JavaScript parses as modules.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "reading-human-check",
+        "type": "manual",
+        "required": false,
+        "description": "At mobile and desktop widths, inspect whether the opening leads into sustained reading while the map, quote, and chronology create useful pauses."
+      }
     ]
   },
-  "cuisines": ["ui-visual"]
+  "cuisines": [
+    "ui-visual"
+  ]
 }

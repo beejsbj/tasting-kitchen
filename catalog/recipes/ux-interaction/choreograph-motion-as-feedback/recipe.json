@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "choreograph-motion-as-feedback",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Choreograph motion as feedback",
   "summary": "Build a small consequential product flow where motion explains state change, causality, confirmation, retained history, and recovery.",
   "cuisines": ["ux-interaction"],

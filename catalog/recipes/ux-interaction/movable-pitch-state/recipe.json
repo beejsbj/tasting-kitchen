@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "movable-pitch-state",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Make movable pitch state agree across an instrument",
   "summary": "Build a small playable keyboard where note identity, scale degree, tonic, and pressed state remain distinct through a reference-frame change.",
   "cuisines": ["ux-interaction"],

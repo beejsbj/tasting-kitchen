@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "motif-variation",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Develop a motif without losing its identity",
   "summary": "Turn one compact melodic cell into an A/B/development/return form while preserving a perceptible family resemblance.",
   "cuisines": ["music-creative-code"],

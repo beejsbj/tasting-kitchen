@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "fresh-editorial-second-life",
+  "version": "1.0.0",
+  "status": "ready",
+  "title": "A Second Life for the Moon",
+  "summary": "A sustained editorial feature about a theatre-materials depot, with a seasonal ledger and explicit limits on its data.",
+  "cuisines": [
+    "ui-visual"
+  ],
+  "origin": "textbook",
+  "originNote": "New original fictional task and local source packet authored for this recipe; no existing recipe subject or implementation adapted.",
+  "tags": [
+    "visual-composition",
+    "visual-language",
+    "presentation"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "article",
+        "path": "fixtures/article.json",
+        "mountAs": "data/article.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "ledger",
+        "path": "fixtures/ledger.json",
+        "mountAs": "data/ledger.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-contract-json",
+        "path": "validation/contract.json",
+        "mountAs": "validation/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-cases-json",
+        "path": "validation/cases.json",
+        "mountAs": "validation/cases.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "validator-mechanics-mjs",
+        "path": "validation/mechanics.mjs",
+        "mountAs": "validation/mechanics.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "validator-validate-output-mjs",
+        "path": "validation/validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "content": "Design and build the Common Measure feature “A Second Life for the Moon.” Give the complete article a sustained editorial composition and make its ledger useful without overstating the figures. Read fixtures/brief.md and both data snapshots; author the visual answer."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "styles.css",
+      "app.mjs",
+      "logic.mjs",
+      "data/article.json",
+      "data/ledger.json",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 120,
+      "maxBytes": 5000000
+    }
+  },
+  "validation": {
+    "mode": "tests",
+    "checks": [
+      {
+        "id": "mechanical-contract",
+        "type": "command",
+        "required": true,
+        "description": "Validate required nonempty files, local literal resource/import links, JavaScript syntax, immutable data hashes and shared pure-logic vectors. Does not prove rendering, event wiring, accessibility or taste.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "browser-and-taste",
+        "type": "manual",
+        "required": false,
+        "description": "Read beginning, middle and end at 360px and 1440px. Confirm all seven sections and both notes are rendered intact, measure reading rhythm and editorial hierarchy, operate section/note return links and seasonal ledger via keyboard, inspect units and caveats, and verify no page overflow."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

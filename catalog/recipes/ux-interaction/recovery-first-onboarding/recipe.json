@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "recovery-first-onboarding",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Design an onboarding flow that survives interruption",
   "summary": "Build a mobile-first three-step setup with validation, backtracking, draft recovery, and an honest network failure.",
   "cuisines": ["ux-interaction"],

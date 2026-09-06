@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "semantic-token-field",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Make words behave according to their meaning",
   "summary": "Build an editable planning field whose marked words have distinct physical responses without sacrificing text editing.",
   "cuisines": ["ux-interaction"],

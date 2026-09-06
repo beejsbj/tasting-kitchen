@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "stay-with-uncertain-evening",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Stay with an uncertain evening",
   "summary": "Respond to a sensory, unresolved reflection without converting it into diagnosis, reassurance, or a plan.",
   "cuisines": ["conversation-journaling"],

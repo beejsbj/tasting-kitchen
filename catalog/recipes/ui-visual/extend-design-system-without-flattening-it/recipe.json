@@ -2,40 +2,140 @@
   "schemaVersion": 1,
   "id": "extend-design-system-without-flattening-it",
   "version": "1.1.0",
-  "status": "ready",
-  "title": "Design-system extension",
-  "summary": "Extend a supplied component system by promoting one repeated need, pruning one premature abstraction, and keeping one behavior-heavy exception local.",
+  "status": "hidden",
+  "title": "Extend a design system without flattening it",
+  "summary": "Continue a supplied component system by promoting one repeated need, pruning one premature abstraction, and protecting one behavior-heavy exception.",
   "origin": "hybrid",
   "originNote": "Combines a standard design-system continuation task with history-derived corrections about extraction boundaries and real-component specimens.",
-  "tags": ["design-system", "visual-language", "implementation", "surgical-change"],
+  "tags": [
+    "design-system",
+    "visual-language",
+    "implementation",
+    "surgical-change"
+  ],
   "kind": "web",
-  "presentation": {"profile": "static-web-v1", "semanticRuntime": null},
-  "harness": {"workspace": "write", "web": "disabled", "capabilities": ["files"]},
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files"
+    ]
+  },
   "setup": {
     "instructions": "Mount the synthetic component system, product brief, and validator. Build a self-contained styleguide that imports the editable source modules it demonstrates; do not copy their markup into lookalike specimens. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish.",
     "fixtures": [
-      {"id": "system-brief", "path": "fixtures/brief.json", "mountAs": "fixtures/brief.json", "public": true, "editable": false, "mediaType": "application/json"},
-      {"id": "source-components", "path": "fixtures/components.js", "mountAs": "src/components.js", "public": true, "editable": true, "mediaType": "text/javascript"},
-      {"id": "source-feature", "path": "fixtures/signal-panel.js", "mountAs": "src/signal-panel.js", "public": true, "editable": true, "mediaType": "text/javascript"},
-      {"id": "source-tokens", "path": "fixtures/tokens.css", "mountAs": "src/tokens.css", "public": true, "editable": true, "mediaType": "text/css"},
-      {"id": "source-contexts", "path": "fixtures/contexts.js", "mountAs": "src/contexts.js", "public": true, "editable": true, "mediaType": "text/javascript"},
-      {"id": "output-validator", "path": "validate-output.mjs", "mountAs": "validation/validate-output.mjs", "public": true, "editable": false, "mediaType": "text/javascript"}
+      {
+        "id": "system-brief",
+        "path": "fixtures/brief.json",
+        "mountAs": "fixtures/brief.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "source-components",
+        "path": "fixtures/components.js",
+        "mountAs": "src/components.js",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "source-feature",
+        "path": "fixtures/signal-panel.js",
+        "mountAs": "src/signal-panel.js",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "source-tokens",
+        "path": "fixtures/tokens.css",
+        "mountAs": "src/tokens.css",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/css"
+      },
+      {
+        "id": "source-contexts",
+        "path": "fixtures/contexts.js",
+        "mountAs": "src/contexts.js",
+        "public": true,
+        "editable": true,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "output-validator",
+        "path": "validate-output.mjs",
+        "mountAs": "validation/validate-output.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
     ]
   },
-  "turns": [{
-    "id": "continue-system",
-    "role": "prompt",
-    "content": "Read fixtures/brief.json and the supplied files in src/. Extend the actual component system for overview, setup, and inspection, then build index.html, styleguide.js, styles.css, and system-decisions.json as a responsive styleguide. Import and render the real source modules rather than recreating specimen-only copies. From the supplied usage evidence, choose exactly one repeated need to promote into the shared system, one shared abstraction to prune because its evidence is insufficient, and one behavior-heavy or unique element to keep local to its feature. Do not assume a named answer merely because a candidate already exists; judge frequency, semantic stability, behavior ownership, and the cost of future change. Record each choice with a distinct JavaScript symbol, its source path, and a concise reason under the keys promote, prune, and keepLocal. Implement those decisions in the real modules and render the same three rationales visibly in the styleguide. Show all three product contexts. Keep established token roles and hierarchy unless the evidence warrants a surgical change; semantic state must never rely on color alone. The editable contexts.js provides the baseline usage evidence. Fulfill the concrete extensionBrief, including setup pair/cancel and the inspection sample selector. A prune ledger source is the surviving file from which the shared symbol was removed, not a requirement to retain that export. Preserve or improve keyboard operation, visible focus, responsive reading at 390px and 1440px, and reduced-motion behavior if adding motion. No specific new component architecture, palette expansion, or animation style is required."
-  }],
-  "output": {"kind": "web", "entry": "index.html", "include": ["index.html", "system-decisions.json", "*.css", "*.js", "src/**"], "limits": {"maxFiles": 30, "maxBytes": 5242880}},
+  "turns": [
+    {
+      "id": "continue-system",
+      "role": "prompt",
+      "content": "Read fixtures/brief.json and the supplied files in src/. Extend the actual component system for overview, setup, and inspection, then build index.html, styleguide.js, styles.css, and system-decisions.json as a responsive styleguide. Import and render the real source modules rather than recreating specimen-only copies. From the supplied usage evidence, choose exactly one repeated need to promote into the shared system, one shared abstraction to prune because its evidence is insufficient, and one behavior-heavy or unique element to keep local to its feature. Do not assume a named answer merely because a candidate already exists; judge frequency, semantic stability, behavior ownership, and the cost of future change. Record each choice with a distinct JavaScript symbol, its source path, and a concise reason under the keys promote, prune, and keepLocal. Implement those decisions in the real modules and render the same three rationales visibly in the styleguide. Show all three product contexts. Keep established token roles and hierarchy unless the evidence warrants a surgical change; semantic state must never rely on color alone. The editable contexts.js provides the baseline usage evidence. Fulfill the concrete extensionBrief, including setup pair/cancel and the inspection sample selector. A prune ledger source is the surviving file from which the shared symbol was removed, not a requirement to retain that export. Preserve or improve keyboard operation, visible focus, responsive reading at 390px and 1440px, and reduced-motion behavior if adding motion. No specific new component architecture, palette expansion, or animation style is required."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "system-decisions.json",
+      "*.css",
+      "*.js",
+      "src/**"
+    ],
+    "limits": {
+      "maxFiles": 30,
+      "maxBytes": 5242880
+    }
+  },
   "validation": {
     "mode": "files",
     "checks": [
-      {"id": "entry-exists", "type": "file-exists", "required": true, "description": "The importing styleguide exists.", "target": "index.html"},
-      {"id": "decisions-exist", "type": "file-exists", "required": true, "description": "The machine-readable system decision ledger exists.", "target": "system-decisions.json"},
-      {"id": "system-boundary-contract", "type": "command", "required": true, "description": "The required source files are nonempty and parseable, and the decision manifest names three distinct symbols, nonempty reasons, and contained existing source paths.", "argv": ["node", "validation/validate-output.mjs"]},
-      {"id": "system-review", "type": "manual", "required": false, "description": "In a browser and the published source, verify that the styleguide imports the real modules, every ledger claim agrees with the export/local-source boundary, all three product contexts are visible, setup Pair device/Cancel changes and resets state, the signal selector works with pointer and keyboard, semantic state does not rely on color alone, and the extension feels native without flattening feature-specific behavior."}
+      {
+        "id": "entry-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The importing styleguide exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "decisions-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The machine-readable system decision ledger exists.",
+        "target": "system-decisions.json"
+      },
+      {
+        "id": "system-boundary-contract",
+        "type": "command",
+        "required": true,
+        "description": "The required source files are nonempty and parseable, and the decision manifest names three distinct symbols, nonempty reasons, and contained existing source paths.",
+        "argv": [
+          "node",
+          "validation/validate-output.mjs"
+        ]
+      },
+      {
+        "id": "system-review",
+        "type": "manual",
+        "required": false,
+        "description": "In a browser and the published source, verify that the styleguide imports the real modules, every ledger claim agrees with the export/local-source boundary, all three product contexts are visible, setup Pair device/Cancel changes and resets state, the signal selector works with pointer and keyboard, semantic state does not rely on color alone, and the extension feels native without flattening feature-specific behavior."
+      }
     ]
   },
-  "cuisines": ["ui-visual"]
+  "cuisines": [
+    "ui-visual"
+  ]
 }

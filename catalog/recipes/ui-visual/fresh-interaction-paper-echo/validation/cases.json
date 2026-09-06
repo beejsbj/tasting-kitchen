@@ -1,0 +1,6206 @@
+[
+  {
+    "label": "echo vector 1",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 2",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00000000.0"
+  },
+  {
+    "label": "decode vector 3",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 4",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 5",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00000000.1"
+  },
+  {
+    "label": "decode vector 6",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 7",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 8",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00000000.2"
+  },
+  {
+    "label": "decode vector 9",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 10",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 11",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00000000.3"
+  },
+  {
+    "label": "decode vector 12",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 13",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 14",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00000000.4"
+  },
+  {
+    "label": "decode vector 15",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 16",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 17",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00000000.5"
+  },
+  {
+    "label": "decode vector 18",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 19",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 20",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00000000.6"
+  },
+  {
+    "label": "decode vector 21",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 22",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 23",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00000000.7"
+  },
+  {
+    "label": "decode vector 24",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 25",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      0
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 26",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      0
+    ],
+    "expected": "#echo=11111111.0"
+  },
+  {
+    "label": "decode vector 27",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.0"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 28",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      1
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 29",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      1
+    ],
+    "expected": "#echo=11111111.1"
+  },
+  {
+    "label": "decode vector 30",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.1"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 31",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      2
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 32",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      2
+    ],
+    "expected": "#echo=11111111.2"
+  },
+  {
+    "label": "decode vector 33",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.2"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 34",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      3
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 35",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      3
+    ],
+    "expected": "#echo=11111111.3"
+  },
+  {
+    "label": "decode vector 36",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.3"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 37",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      4
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 38",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      4
+    ],
+    "expected": "#echo=11111111.4"
+  },
+  {
+    "label": "decode vector 39",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.4"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 40",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      5
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 41",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      5
+    ],
+    "expected": "#echo=11111111.5"
+  },
+  {
+    "label": "decode vector 42",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.5"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 43",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      6
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 44",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      6
+    ],
+    "expected": "#echo=11111111.6"
+  },
+  {
+    "label": "decode vector 45",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.6"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 46",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      7
+    ],
+    "expected": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 47",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      7
+    ],
+    "expected": "#echo=11111111.7"
+  },
+  {
+    "label": "decode vector 48",
+    "fn": "decode",
+    "args": [
+      "#echo=11111111.7"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 49",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 50",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=10011010.0"
+  },
+  {
+    "label": "decode vector 51",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.0"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 52",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 53",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=10011010.1"
+  },
+  {
+    "label": "decode vector 54",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.1"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 55",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 56",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=10011010.2"
+  },
+  {
+    "label": "decode vector 57",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.2"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 58",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 59",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=10011010.3"
+  },
+  {
+    "label": "decode vector 60",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.3"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 61",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 62",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=10011010.4"
+  },
+  {
+    "label": "decode vector 63",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.4"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 64",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 65",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=10011010.5"
+  },
+  {
+    "label": "decode vector 66",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.5"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 67",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 68",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=10011010.6"
+  },
+  {
+    "label": "decode vector 69",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.6"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 70",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 71",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=10011010.7"
+  },
+  {
+    "label": "decode vector 72",
+    "fn": "decode",
+    "args": [
+      "#echo=10011010.7"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 73",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 74",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=10000000.0"
+  },
+  {
+    "label": "decode vector 75",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.0"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 76",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 77",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=10000000.1"
+  },
+  {
+    "label": "decode vector 78",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.1"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 79",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 80",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=10000000.2"
+  },
+  {
+    "label": "decode vector 81",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.2"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 82",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 83",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=10000000.3"
+  },
+  {
+    "label": "decode vector 84",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.3"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 85",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 86",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=10000000.4"
+  },
+  {
+    "label": "decode vector 87",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.4"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 88",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 89",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=10000000.5"
+  },
+  {
+    "label": "decode vector 90",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.5"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 91",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 92",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=10000000.6"
+  },
+  {
+    "label": "decode vector 93",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.6"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 94",
+    "fn": "echo",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 95",
+    "fn": "encode",
+    "args": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=10000000.7"
+  },
+  {
+    "label": "decode vector 96",
+    "fn": "decode",
+    "args": [
+      "#echo=10000000.7"
+    ],
+    "expected": {
+      "steps": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 97",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 98",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=01000000.0"
+  },
+  {
+    "label": "decode vector 99",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 100",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 101",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=01000000.1"
+  },
+  {
+    "label": "decode vector 102",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 103",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 104",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=01000000.2"
+  },
+  {
+    "label": "decode vector 105",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 106",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 107",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=01000000.3"
+  },
+  {
+    "label": "decode vector 108",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 109",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 110",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=01000000.4"
+  },
+  {
+    "label": "decode vector 111",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 112",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 113",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=01000000.5"
+  },
+  {
+    "label": "decode vector 114",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 115",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 116",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=01000000.6"
+  },
+  {
+    "label": "decode vector 117",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 118",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 119",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=01000000.7"
+  },
+  {
+    "label": "decode vector 120",
+    "fn": "decode",
+    "args": [
+      "#echo=01000000.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 121",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 122",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00100000.0"
+  },
+  {
+    "label": "decode vector 123",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 124",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 125",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00100000.1"
+  },
+  {
+    "label": "decode vector 126",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 127",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 128",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00100000.2"
+  },
+  {
+    "label": "decode vector 129",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 130",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 131",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00100000.3"
+  },
+  {
+    "label": "decode vector 132",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 133",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 134",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00100000.4"
+  },
+  {
+    "label": "decode vector 135",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 136",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 137",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00100000.5"
+  },
+  {
+    "label": "decode vector 138",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 139",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 140",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00100000.6"
+  },
+  {
+    "label": "decode vector 141",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 142",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 143",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00100000.7"
+  },
+  {
+    "label": "decode vector 144",
+    "fn": "decode",
+    "args": [
+      "#echo=00100000.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 145",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 146",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00010000.0"
+  },
+  {
+    "label": "decode vector 147",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 148",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 149",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00010000.1"
+  },
+  {
+    "label": "decode vector 150",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 151",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 152",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00010000.2"
+  },
+  {
+    "label": "decode vector 153",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 154",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 155",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00010000.3"
+  },
+  {
+    "label": "decode vector 156",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 157",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 158",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00010000.4"
+  },
+  {
+    "label": "decode vector 159",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 160",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 161",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00010000.5"
+  },
+  {
+    "label": "decode vector 162",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 163",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 164",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00010000.6"
+  },
+  {
+    "label": "decode vector 165",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 166",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 167",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00010000.7"
+  },
+  {
+    "label": "decode vector 168",
+    "fn": "decode",
+    "args": [
+      "#echo=00010000.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 169",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 170",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00001000.0"
+  },
+  {
+    "label": "decode vector 171",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 172",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 173",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00001000.1"
+  },
+  {
+    "label": "decode vector 174",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 175",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 176",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00001000.2"
+  },
+  {
+    "label": "decode vector 177",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 178",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 179",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00001000.3"
+  },
+  {
+    "label": "decode vector 180",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 181",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 182",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00001000.4"
+  },
+  {
+    "label": "decode vector 183",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 184",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 185",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00001000.5"
+  },
+  {
+    "label": "decode vector 186",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 187",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 188",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00001000.6"
+  },
+  {
+    "label": "decode vector 189",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 190",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 191",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00001000.7"
+  },
+  {
+    "label": "decode vector 192",
+    "fn": "decode",
+    "args": [
+      "#echo=00001000.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 193",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 194",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00000100.0"
+  },
+  {
+    "label": "decode vector 195",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 196",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 197",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00000100.1"
+  },
+  {
+    "label": "decode vector 198",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 199",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 200",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00000100.2"
+  },
+  {
+    "label": "decode vector 201",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 202",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 203",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00000100.3"
+  },
+  {
+    "label": "decode vector 204",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 205",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 206",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00000100.4"
+  },
+  {
+    "label": "decode vector 207",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 208",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 209",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00000100.5"
+  },
+  {
+    "label": "decode vector 210",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 211",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 212",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00000100.6"
+  },
+  {
+    "label": "decode vector 213",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 214",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 215",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00000100.7"
+  },
+  {
+    "label": "decode vector 216",
+    "fn": "decode",
+    "args": [
+      "#echo=00000100.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 217",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      0
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 218",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      0
+    ],
+    "expected": "#echo=00000010.0"
+  },
+  {
+    "label": "decode vector 219",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 220",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 221",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      1
+    ],
+    "expected": "#echo=00000010.1"
+  },
+  {
+    "label": "decode vector 222",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 223",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 224",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      2
+    ],
+    "expected": "#echo=00000010.2"
+  },
+  {
+    "label": "decode vector 225",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 226",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 227",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      3
+    ],
+    "expected": "#echo=00000010.3"
+  },
+  {
+    "label": "decode vector 228",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 229",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 230",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      4
+    ],
+    "expected": "#echo=00000010.4"
+  },
+  {
+    "label": "decode vector 231",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 232",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 233",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      5
+    ],
+    "expected": "#echo=00000010.5"
+  },
+  {
+    "label": "decode vector 234",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 235",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 236",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      6
+    ],
+    "expected": "#echo=00000010.6"
+  },
+  {
+    "label": "decode vector 237",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 238",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      7
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 239",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      7
+    ],
+    "expected": "#echo=00000010.7"
+  },
+  {
+    "label": "decode vector 240",
+    "fn": "decode",
+    "args": [
+      "#echo=00000010.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "echo vector 241",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      0
+    ],
+    "expected": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 242",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      0
+    ],
+    "expected": "#echo=00000001.0"
+  },
+  {
+    "label": "decode vector 243",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.0"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 0
+    }
+  },
+  {
+    "label": "echo vector 244",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      1
+    ],
+    "expected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 245",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      1
+    ],
+    "expected": "#echo=00000001.1"
+  },
+  {
+    "label": "decode vector 246",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.1"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 1
+    }
+  },
+  {
+    "label": "echo vector 247",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      2
+    ],
+    "expected": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 248",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      2
+    ],
+    "expected": "#echo=00000001.2"
+  },
+  {
+    "label": "decode vector 249",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.2"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 2
+    }
+  },
+  {
+    "label": "echo vector 250",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      3
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 251",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      3
+    ],
+    "expected": "#echo=00000001.3"
+  },
+  {
+    "label": "decode vector 252",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.3"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 3
+    }
+  },
+  {
+    "label": "echo vector 253",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      4
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 254",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      4
+    ],
+    "expected": "#echo=00000001.4"
+  },
+  {
+    "label": "decode vector 255",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.4"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 4
+    }
+  },
+  {
+    "label": "echo vector 256",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      5
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 257",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      5
+    ],
+    "expected": "#echo=00000001.5"
+  },
+  {
+    "label": "decode vector 258",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.5"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 5
+    }
+  },
+  {
+    "label": "echo vector 259",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      6
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "label": "encode vector 260",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      6
+    ],
+    "expected": "#echo=00000001.6"
+  },
+  {
+    "label": "decode vector 261",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.6"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 6
+    }
+  },
+  {
+    "label": "echo vector 262",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      7
+    ],
+    "expected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "label": "encode vector 263",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      7
+    ],
+    "expected": "#echo=00000001.7"
+  },
+  {
+    "label": "decode vector 264",
+    "fn": "decode",
+    "args": [
+      "#echo=00000001.7"
+    ],
+    "expected": {
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "offset": 7
+    }
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      -1
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      -1
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      8
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      8
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0.5
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      0.5
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "1"
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "1"
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "echo",
+    "args": [
+      null,
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid pattern or offset",
+    "fn": "encode",
+    "args": [
+      null,
+      0
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      ""
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      null
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      4
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=0000000.0"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.8"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.0extra"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.0\n"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=00000002.0"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "#echo=00000000.01"
+    ],
+    "expected": null
+  },
+  {
+    "label": "reject noncanonical fragment",
+    "fn": "decode",
+    "args": [
+      "echo=00000000.0"
+    ],
+    "expected": null
+  },
+  {
+    "label": "playback boundary 0",
+    "fn": "frameAt",
+    "args": [
+      0
+    ],
+    "expected": {
+      "phrase": "call",
+      "index": 0
+    }
+  },
+  {
+    "label": "playback boundary 299.9",
+    "fn": "frameAt",
+    "args": [
+      299.9
+    ],
+    "expected": {
+      "phrase": "call",
+      "index": 0
+    }
+  },
+  {
+    "label": "playback boundary 300",
+    "fn": "frameAt",
+    "args": [
+      300
+    ],
+    "expected": {
+      "phrase": "call",
+      "index": 1
+    }
+  },
+  {
+    "label": "playback boundary 2399.9",
+    "fn": "frameAt",
+    "args": [
+      2399.9
+    ],
+    "expected": {
+      "phrase": "call",
+      "index": 7
+    }
+  },
+  {
+    "label": "playback boundary 2400",
+    "fn": "frameAt",
+    "args": [
+      2400
+    ],
+    "expected": {
+      "phrase": "response",
+      "index": 0
+    }
+  },
+  {
+    "label": "playback boundary 4799.9",
+    "fn": "frameAt",
+    "args": [
+      4799.9
+    ],
+    "expected": {
+      "phrase": "response",
+      "index": 7
+    }
+  },
+  {
+    "label": "playback boundary 4800",
+    "fn": "frameAt",
+    "args": [
+      4800
+    ],
+    "expected": null
+  },
+  {
+    "label": "playback boundary -1",
+    "fn": "frameAt",
+    "args": [
+      -1
+    ],
+    "expected": null
+  },
+  {
+    "label": "playback boundary None",
+    "fn": "frameAt",
+    "args": [
+      null
+    ],
+    "expected": null
+  },
+  {
+    "label": "playback boundary 300",
+    "fn": "frameAt",
+    "args": [
+      "300"
+    ],
+    "expected": null
+  }
+]

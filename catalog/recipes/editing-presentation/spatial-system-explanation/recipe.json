@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "spatial-system-explanation",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Turn a process brief into a spatial explanation",
   "summary": "Transform a linear service description into an accessible system map where position and connection reveal persistence, authority, and feedback.",
   "cuisines": ["editing-presentation"],

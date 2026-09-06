@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "supportive-reflection-with-choice",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Supportive reflection with one gentle question",
   "summary": "A conventional supportive-conversation control that must reflect uncertainty without diagnosing or rushing into advice.",
   "cuisines": ["conversation-journaling"],

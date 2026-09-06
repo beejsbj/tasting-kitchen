@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "orchestrate-partial-workers",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Orchestrate partial workers into one accountable result",
   "summary": "Coordinate three bounded evidence shards, preserve a known gap, and deliver the requested synthesis instead of a worker-status report.",
   "cuisines": ["agentic-assistant"],

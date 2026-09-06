@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "correct-the-object-model",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Correct the object model, not just the wording",
   "summary": "Revise a product architecture after learning that conversations themselves, not derived tasks, are the spatial cards.",
   "cuisines": ["thinking-decisions"],

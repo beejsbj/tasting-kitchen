@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "fix-duration-parser",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Fix a failing duration parser with the smallest patch",
   "summary": "Navigate a tiny unfamiliar module, reproduce its unit failure, and repair hours without widening the public interface.",
   "cuisines": ["coding-engineering"],

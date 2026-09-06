@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "preserve-dirty-work-and-finish",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Finish a bounded change while preserving unrelated work",
   "summary": "Repair a misleading project summary, keep two user-owned files byte-identical, verify behavior, and leave an honest receipt.",
   "cuisines": ["coding-engineering"],

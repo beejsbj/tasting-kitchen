@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "divergent-concept-directions",
   "version": "1.0.0",
-  "status": "ready",
+  "status": "hidden",
   "title": "Generate four genuinely different concepts",
   "summary": "Explore four mechanisms for a neighborhood knowledge program without disguising minor variations as divergent ideas.",
   "cuisines": ["thinking-decisions"],
