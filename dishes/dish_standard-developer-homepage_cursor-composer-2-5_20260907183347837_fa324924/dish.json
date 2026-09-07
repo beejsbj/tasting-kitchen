@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_standard-developer-homepage_cursor-composer-2-5_20260907183347837_fa324924",
+  "recipe": {
+    "id": "standard-developer-homepage",
+    "version": "1.0.0",
+    "hash": "sha256:f0fd767c99d02a6d3a341d0f3bff41cd265c399231447bccefb9983af6ef281a"
+  },
+  "executedAt": "2026-09-07T18:33:47.837Z",
+  "finalizedAt": "2026-09-07T18:34:51.338Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "724c569dc88bdcc2b00a9a70809d31db6966b52df63ab4f8e40e02b340aba010",
+        "bytes": 6740
+      },
+      {
+        "path": "artifact/data/content.json",
+        "sha256": "58f036f0449ea36304f3310f05b219c0cfb061b90a43d61fb865b1428833e18f",
+        "bytes": 6385
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "ff3bd7f9436a14b523e3985988b8ba1a7f9b000db1cd1f234c8b31298c78da71",
+        "bytes": 5973
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "0709613eb6491f591aac61ec7eac2c266842c8a9168e97824f4c8cfe55c985c7",
+        "bytes": 12280
+      }
+    ],
+    "treeHash": "sha256:e4b8c5a21042ea557ffe774c8cd55822f2e188064ab708f86d8042a911d75968"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:cc1e13d2d206d83b47c28d17bbc594c620c2655c3915a81f92c54a27eb12ffdb"
+}

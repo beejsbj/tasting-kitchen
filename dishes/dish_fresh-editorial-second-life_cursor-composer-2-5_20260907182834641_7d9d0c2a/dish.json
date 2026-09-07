@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-editorial-second-life_cursor-composer-2-5_20260907182834641_7d9d0c2a",
+  "recipe": {
+    "id": "fresh-editorial-second-life",
+    "version": "1.0.0",
+    "hash": "sha256:3a0adef2d084c4b01877ae8a72fd4c82d96f0f9602b6d7e6a95daf364317e891"
+  },
+  "executedAt": "2026-09-07T18:28:34.641Z",
+  "finalizedAt": "2026-09-07T18:29:53.253Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "7a359c6f094ede9b97211d69d57bacf5f3383f383ba644ef6765d434aa800879",
+        "bytes": 15853
+      },
+      {
+        "path": "artifact/data/article.json",
+        "sha256": "ef9a2e19ba5b5d65c260697052fd0e274b679b0b9dde6d45b7cde398a259e970",
+        "bytes": 10041
+      },
+      {
+        "path": "artifact/data/ledger.json",
+        "sha256": "93fde73b1179a9b9dc1ed7d4ea4bb1292316a6e2fbe73f70cf24487fed3b3c7f",
+        "bytes": 707
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "bf62d00f292a9e643472d4aee1b933665197c2c5b7c73be1ed4508eec8e33a15",
+        "bytes": 701
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "e84e5d57c8a77dd096f0a25a9746914b9d7356ea4e216685c5a8f443bed72795",
+        "bytes": 603
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "9983c3e6be5c02ef5fa4f3073eca874093510c98ada3978ba9e079170810fa7f",
+        "bytes": 17139
+      }
+    ],
+    "treeHash": "sha256:77f4e55cfad5f62ac4aa61aa275591fdfbbf0762e7422175e37cb562c8fc510c"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:fd98b55d1efceef5092aa63b887e53c1e43f51ec66b45d219afc287a7dc69ecb"
+}

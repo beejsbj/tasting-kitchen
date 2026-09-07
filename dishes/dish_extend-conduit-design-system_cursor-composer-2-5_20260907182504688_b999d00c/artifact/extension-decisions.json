@@ -1,0 +1,11 @@
+{
+  "shared": [],
+  "local": [
+    {
+      "symbol": "createListingProvenanceInspector",
+      "reason": "The upstream snapshot documents Conduit tokens, tabs, buttons, and Badge roles but does not establish a reusable provenance primitive. The brief requires a keyboard-operable local sample inspector for three embedded listing provenance states without relay or account calls, so the feature stays in a dedicated module.",
+      "source": "src/listing-provenance.js"
+    }
+  ],
+  "declined": []
+}

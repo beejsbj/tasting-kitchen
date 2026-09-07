@@ -21,7 +21,7 @@ const configFor = (registry, dish) => registry.configurations.find(config => con
 try {
   const live = await browser.newPage();
   await live.goto(`${base}/`, { waitUntil: 'networkidle' });
-  assert.equal(await live.locator('.dish-card').count(), 10, 'the live gallery exposes the ten active Dishes');
+  assert.equal(await live.locator('.dish-card').count(), 20, 'the live gallery exposes both Dishes for every active Recipe');
   assert.equal(await live.getByRole('heading', { name: 'No dishes yet.', exact: true }).count(), 0);
   await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
   await live.locator('.recipe-book-card').first().waitFor();

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "H-041",
+    "item": "Blue chore jacket",
+    "owner": "Customer A",
+    "status": "queued",
+    "work": "Replace two pocket corners; keep the visible hand stitching.",
+    "condition": "Washed cotton, worn through at both corners.",
+    "due": "2026-09-12"
+  },
+  {
+    "id": "H-042",
+    "item": "Ochre cushion cover",
+    "owner": "Customer B",
+    "status": "in-progress",
+    "work": "Replace the concealed zip with the same opening length.",
+    "condition": "Zip teeth separate; fabric intact.",
+    "due": "2026-09-13"
+  },
+  {
+    "id": "H-043",
+    "item": "Striped market bag",
+    "owner": "Customer C",
+    "status": "ready",
+    "work": "Reinforce both handle joins.",
+    "condition": "Reinforcement complete; awaiting collection.",
+    "due": "2026-09-10"
+  }
+]

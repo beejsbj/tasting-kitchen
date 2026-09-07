@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-system-hem_cursor-composer-2-5_20260907183253453_892137a3",
+  "recipe": {
+    "id": "fresh-system-hem",
+    "version": "1.0.0",
+    "hash": "sha256:c9b54887e8e8a83e9008be4f79287a90c99cb5b6a7863e7f61d5c7b6006b6d7f"
+  },
+  "executedAt": "2026-09-07T18:32:53.453Z",
+  "finalizedAt": "2026-09-07T18:33:47.420Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "cf5d3edd921445ef83785597f9d3af978abfb3ab5593b7d68c7287c95d792f36",
+        "bytes": 1008
+      },
+      {
+        "path": "artifact/CHANGES.md",
+        "sha256": "26b5b998e334e7368eb56674b67fad672afaf46b482b1cb4da4035d1c6acde49",
+        "bytes": 1620
+      },
+      {
+        "path": "artifact/data/jobs.json",
+        "sha256": "1ae3e61ed9e04df118083ab46c455d72012a8af4f7a6d0390931c55d909f7cb5",
+        "bytes": 794
+      },
+      {
+        "path": "artifact/data/rates.json",
+        "sha256": "cf31901d9c930ce426fc275cf9be50ad19dbc6e7104e583f9811e88d93006c0a",
+        "bytes": 789
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "b9c58526db0186577a948427a6a147470aacd804c5c1730857f7d96c31d9eed7",
+        "bytes": 938
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "aee5a4a95c895043820cb7cd62c3b2b4da7ac9ee2047d786ea66815048d4ad6a",
+        "bytes": 1399
+      },
+      {
+        "path": "artifact/source/contexts.mjs",
+        "sha256": "dd19d9935a4d7f2022032eca6639c806051eb2e83e590da0bc09d01826c9c9bd",
+        "bytes": 1992
+      },
+      {
+        "path": "artifact/source/estimate-view.mjs",
+        "sha256": "c7811c038e3d3efcbd549c330bad4fb8f8a41f8436690ff8cd3e2a57bd2d5aa5",
+        "bytes": 11866
+      },
+      {
+        "path": "artifact/source/primitives.css",
+        "sha256": "5bb17296ffe37325afa1ba4bea6e8350859c7665161e8a3fb15c3ade4ddc0f3d",
+        "bytes": 2530
+      },
+      {
+        "path": "artifact/source/primitives.mjs",
+        "sha256": "50d11e23ff4be407540e94dac9b4e902306bd9212af6d26cbb0731e2e8c9d7bd",
+        "bytes": 1543
+      },
+      {
+        "path": "artifact/source/tokens.css",
+        "sha256": "7b97d84f0a36304ac8932bf85c4f48446837a07ef22a2ee81bb2f7ef25f9348e",
+        "bytes": 733
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "13153b1b5dd221af2fbf01070831185ea16852b31d6563af68cd009e6fa47f20",
+        "bytes": 5159
+      }
+    ],
+    "treeHash": "sha256:f14af880b712c1a2c54f4ca0f1e74133c4685809180e40108086a20b790e1463"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:d751f7ccb56ae89e8a8dde742fc4090ce1121560e7e487d53efa29a9f58f0355"
+}

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_extend-qrng-design-system_cursor-composer-2-5_20260907182706146_66383a31",
+  "recipe": {
+    "id": "extend-qrng-design-system",
+    "version": "1.0.0",
+    "hash": "sha256:9804e3e736a282ee6424d696d87df63033685f47d0e06e2cd704de83502cb6ca"
+  },
+  "executedAt": "2026-09-07T18:27:06.146Z",
+  "finalizedAt": "2026-09-07T18:28:34.281Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/index.html",
+        "sha256": "f70207293d7cc3af273e65cc21ef3e1d8cb0f80700d01a5293d4f500d3139978",
+        "bytes": 393
+      },
+      {
+        "path": "artifact/src/assets/stars.svg",
+        "sha256": "5833285b9fa2da63cb6f6c1c11eb44ab584d3438aec32d8b8b928aa412d86769",
+        "bytes": 2730
+      },
+      {
+        "path": "artifact/src/components.js",
+        "sha256": "a55f6efb34db43c05780214ea45e31e591fe7f63925c90342dde681fd4e3eb81",
+        "bytes": 912
+      },
+      {
+        "path": "artifact/src/contexts.js",
+        "sha256": "88cab1e1fa9aa4bff09579fc7e7cd6986de203ce881c2497d371866abfc5ff47",
+        "bytes": 3834
+      },
+      {
+        "path": "artifact/src/lottery-board.js",
+        "sha256": "7bc1d4359c3506c34798c15fee57637e9a9e5dc5583ebbc4072b4d9c639061e3",
+        "bytes": 5038
+      },
+      {
+        "path": "artifact/src/past-winners.js",
+        "sha256": "f129abc53d906205839ab5dcc7bec4b00fb782077d29d08f28c82e5c79bf8867",
+        "bytes": 1189
+      },
+      {
+        "path": "artifact/src/ticket-counter.js",
+        "sha256": "c87973037a67e571b2a9a2ff2bae366ba3ee4e9b12894008d2d7fc6d7d744985",
+        "bytes": 1973
+      },
+      {
+        "path": "artifact/src/tokens.css",
+        "sha256": "d575e90dd29b21779fcf08750d9d4a67ac8c02cfbc8886fbfd7bf4841ac280c3",
+        "bytes": 2427
+      },
+      {
+        "path": "artifact/styleguide.js",
+        "sha256": "62f1a5e3fca0dc020e6ea9215228f19740d86ae36e1f26c14abe7e64d9677a6a",
+        "bytes": 4788
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "f4f220ec2c3e750ab373daaafbe5de66306ebb765084d4a9b03589ee48b44abd",
+        "bytes": 11289
+      },
+      {
+        "path": "artifact/system-decisions.json",
+        "sha256": "bfa0d2ae7b2394000b4817618381b83c558faab375c928743389e8b85f0bcc08",
+        "bytes": 917
+      }
+    ],
+    "treeHash": "sha256:284bc06755f9eb28e4ea6979c6d65d505ee45247c0b1f2e9cfe80228ab532185"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:254702d72eabdeae25ca03fc82462fe8689a54498a53e75636bb80659f38395c"
+}

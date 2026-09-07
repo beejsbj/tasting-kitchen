@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maya Chen — Frontend Developer</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" id="top">
+    <div class="header-inner">
+      <a class="site-logo" href="#top">Maya Chen</a>
+
+      <button
+        type="button"
+        class="nav-toggle"
+        id="nav-toggle"
+        aria-expanded="false"
+        aria-controls="site-nav"
+      >
+        <span class="nav-toggle-label">Menu</span>
+        <span class="nav-toggle-icon" aria-hidden="true"></span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Primary">
+        <ul class="nav-list">
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#experience">Experience</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <p class="hero-role" id="hero-role"></p>
+        <h1 id="hero-heading"></h1>
+        <p class="hero-intro" id="hero-intro"></p>
+        <p class="hero-availability" id="hero-availability"></p>
+        <p class="hero-location" id="hero-location"></p>
+      </div>
+    </section>
+
+    <section class="section" id="projects" aria-labelledby="projects-heading">
+      <div class="container">
+        <h2 id="projects-heading">Selected projects</h2>
+
+        <div class="filter-bar" role="group" aria-labelledby="filter-label">
+          <span id="filter-label" class="filter-label"></span>
+          <div class="filter-controls" id="filter-controls"></div>
+        </div>
+
+        <p class="filter-status" id="filter-status" aria-live="polite" aria-atomic="true"></p>
+
+        <ul class="project-list" id="project-list" role="list"></ul>
+      </div>
+    </section>
+
+    <section class="section case-studies" id="case-studies" aria-labelledby="case-studies-heading">
+      <div class="container">
+        <h2 id="case-studies-heading" class="visually-hidden">Project case studies</h2>
+        <div id="case-study-details"></div>
+      </div>
+    </section>
+
+    <section class="section" id="about" aria-labelledby="about-heading">
+      <div class="container">
+        <h2 id="about-heading">About</h2>
+        <div class="about-content" id="about-content"></div>
+      </div>
+    </section>
+
+    <section class="section" id="skills" aria-labelledby="skills-heading">
+      <div class="container">
+        <h2 id="skills-heading">Skills</h2>
+        <div class="skills-grid" id="skills-grid"></div>
+      </div>
+    </section>
+
+    <section class="section" id="experience" aria-labelledby="experience-heading">
+      <div class="container">
+        <h2 id="experience-heading">Experience</h2>
+        <div class="experience-list" id="experience-list"></div>
+      </div>
+    </section>
+
+    <section class="section" id="education" aria-labelledby="education-heading">
+      <div class="container">
+        <h2 id="education-heading">Education</h2>
+        <div id="education-content"></div>
+      </div>
+    </section>
+
+    <section class="section contact-section" id="contact" aria-labelledby="contact-heading">
+      <div class="container">
+        <h2 id="contact-heading">Contact</h2>
+        <p id="contact-copy"></p>
+        <p class="contact-email">
+          <a id="contact-email" href=""></a>
+        </p>
+        <p class="contact-note" id="contact-note"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p id="footer-text"></p>
+      <p class="fiction-notice" id="fiction-notice"></p>
+    </div>
+  </footer>
+
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

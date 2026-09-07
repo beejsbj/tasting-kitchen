@@ -18,10 +18,12 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.equal(registry.cuisines.length, 9);
   assert.equal(registry.configurations.length, 7);
   assert.equal(registry.recipes.length, 10);
-  assert.equal(registry.dishes.length, 10);
+  assert.equal(registry.dishes.length, 20);
   assert.ok(registry.dishes.every((dish) => dish.status === "accepted"));
-  assert.ok(registry.dishes.every((dish) => dish.identity.variantId === "codex-luna-xhigh"));
-  assert.ok(registry.dishes.every((dish) => dish.identity.reasoningEffort === "xhigh"));
+  assert.equal(registry.dishes.filter((dish) => dish.identity.variantId === "codex-luna-xhigh").length, 10);
+  assert.equal(registry.dishes.filter((dish) => dish.identity.variantId === "cursor-composer-2-5").length, 10);
+  assert.ok(registry.dishes.filter((dish) => dish.identity.variantId === "codex-luna-xhigh").every((dish) => dish.identity.reasoningEffort === "xhigh"));
+  assert.ok(registry.dishes.filter((dish) => dish.identity.variantId === "cursor-composer-2-5").every((dish) => dish.identity.reasoningEffort === "adaptive" && dish.identity.requestedModel === "composer-2.5[fast=false]" && dish.identity.observedModel === "Composer 2.5"));
   assert.ok(registry.dishes.every((dish) => dish.identity.serviceTier === "default"));
   assert.deepEqual(registry.reviews, []);
   assert.equal(registry.recipeRevisions.length, 10);
@@ -29,7 +31,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.equal(registry.menuRevisions.length, 3);
   assert.equal(recipeBook.recipes.length, 10);
   assert.equal(recipeBook.archivedCount, 54);
-  assert.ok(recipeBook.recipes.every((recipe) => recipe.dishCount === 1));
+  assert.ok(recipeBook.recipes.every((recipe) => recipe.dishCount === 2));
   assert.ok(assets.some((filename) => filename.endsWith(".js")));
   assert.ok(assets.some((filename) => filename.endsWith(".css")));
   const javascript = await Promise.all(
@@ -51,7 +53,7 @@ test("the built site publishes only active Dishes and their selected public arti
   const registry = JSON.parse(await readFile(path.join(root, "dist/data/registry.json"), "utf8"));
   const activeRecipeIds = new Set(registry.recipes.map((recipe) => recipe.id));
   assert.equal(activeRecipeIds.size, 10);
-  assert.equal(registry.dishes.length, 10);
+  assert.equal(registry.dishes.length, 20);
   assert.ok(registry.dishes.every((dish) => activeRecipeIds.has(dish.recipe.id)));
   assert.ok(registry.recipeRevisions.every((revision) => activeRecipeIds.has(revision.recipeId)));
   assert.ok(registry.menuRevisions.every((menu) => menu.recipes.every((recipe) => activeRecipeIds.has(recipe.recipeId))));

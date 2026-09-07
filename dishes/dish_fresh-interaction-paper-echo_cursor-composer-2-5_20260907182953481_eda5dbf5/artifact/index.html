@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper Echo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <main class="echo-object" id="app">
+    <header class="masthead">
+      <h1 class="title" id="app-title">Paper Echo</h1>
+      <p class="intro" id="intro-text"></p>
+    </header>
+
+    <section class="composition" aria-labelledby="call-heading">
+      <div class="phrase phrase--call">
+        <h2 class="phrase-label" id="call-heading">Call</h2>
+        <div class="beat-row" id="call-beats" role="group" aria-label="Eight-beat call"></div>
+      </div>
+
+      <div class="crease" aria-hidden="true">
+        <span class="crease-line"></span>
+        <div class="offset-dial" id="offset-control">
+          <label class="offset-label" for="offset-input">Echo offset</label>
+          <div class="offset-stepper">
+            <button type="button" class="offset-btn" id="offset-down" aria-label="Decrease echo offset">−</button>
+            <input
+              type="number"
+              id="offset-input"
+              class="offset-input"
+              min="0"
+              max="7"
+              step="1"
+              value="0"
+              inputmode="numeric"
+              aria-describedby="offset-hint"
+            >
+            <button type="button" class="offset-btn" id="offset-up" aria-label="Increase echo offset">+</button>
+          </div>
+          <p class="offset-hint" id="offset-hint">Turn the reflection</p>
+        </div>
+        <span class="crease-line"></span>
+      </div>
+
+      <div class="phrase phrase--response">
+        <h2 class="phrase-label" id="response-heading">Response</h2>
+        <div class="beat-row" id="response-beats" role="group" aria-label="Eight-beat response" aria-readonly="true"></div>
+      </div>
+    </section>
+
+    <p class="empty-copy" id="empty-copy" hidden></p>
+
+    <div class="toolbar">
+      <div class="presets" id="preset-group" role="group" aria-label="Pattern presets"></div>
+
+      <div class="transport" role="group" aria-label="Playback controls">
+        <button type="button" class="btn btn--play" id="play-btn" aria-pressed="false">Play</button>
+        <button type="button" class="btn btn--stop" id="stop-btn" disabled>Stop</button>
+        <button type="button" class="btn btn--reset" id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <section class="share-panel" aria-labelledby="share-heading">
+      <h2 class="share-heading" id="share-heading">Share</h2>
+      <p class="share-notice" id="share-notice"></p>
+      <div class="share-row">
+        <button type="button" class="btn btn--share" id="share-btn">Copy address</button>
+        <output class="share-url" id="share-url" for="share-btn"></output>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

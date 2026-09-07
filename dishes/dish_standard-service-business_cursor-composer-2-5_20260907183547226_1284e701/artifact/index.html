@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alder Street Plumbing</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header" id="top">
+    <div class="header-inner">
+      <a class="logo" href="#top" id="site-name">Alder Street Plumbing</a>
+      <button
+        type="button"
+        class="nav-toggle"
+        id="nav-toggle"
+        aria-expanded="false"
+        aria-controls="site-nav"
+      >
+        <span class="nav-toggle-label">Menu</span>
+        <span class="nav-toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Primary">
+        <ul class="nav-list" id="nav-list"></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="hero" aria-labelledby="hero-heading">
+      <div class="container hero-inner">
+        <p class="tagline" id="tagline"></p>
+        <h1 id="hero-heading"></h1>
+        <p class="hero-intro" id="hero-intro"></p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#enquiry" id="primary-action"></a>
+          <a class="btn btn-secondary" href="#services" id="secondary-action"></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="services" aria-labelledby="services-heading">
+      <div class="container">
+        <h2 id="services-heading">Our services</h2>
+        <p class="section-lead">Repairs and installations for everyday household plumbing.</p>
+        <div class="services-grid" id="services-grid"></div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="about" aria-labelledby="about-heading">
+      <div class="container about-grid">
+        <div class="about-copy">
+          <h2 id="about-heading"></h2>
+          <div id="about-paragraphs"></div>
+        </div>
+        <aside class="trust-panel" aria-labelledby="trust-heading">
+          <h3 id="trust-heading">What to expect</h3>
+          <ul class="trust-list" id="trust-list"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="process" aria-labelledby="process-heading">
+      <div class="container">
+        <h2 id="process-heading">How a visit works</h2>
+        <ol class="process-steps" id="process-steps"></ol>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="area" aria-labelledby="area-heading">
+      <div class="container area-grid">
+        <div>
+          <h2 id="area-heading">Service area and hours</h2>
+          <p class="location-note" id="location"></p>
+          <p class="hours-note" id="hours"></p>
+          <p class="availability-note" id="availability"></p>
+          <h3>Neighbourhoods we serve</h3>
+          <ul class="area-list" id="area-list"></ul>
+          <p class="outside-area" id="outside-area"></p>
+        </div>
+        <div class="contact-card">
+          <h3>Contact</h3>
+          <p class="contact-email" id="contact-email"></p>
+          <p class="contact-note" id="contact-note"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faq-heading">
+      <div class="container">
+        <h2 id="faq-heading">Frequently asked questions</h2>
+        <div class="faq-list" id="faq-list"></div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="enquiry" aria-labelledby="enquiry-heading">
+      <div class="container enquiry-container">
+        <h2 id="enquiry-heading"></h2>
+        <p class="enquiry-intro" id="enquiry-intro"></p>
+
+        <form class="enquiry-form" id="enquiry-form" novalidate>
+          <div class="form-field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required>
+            <p class="field-error" id="name-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+            <p class="field-error" id="email-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="service">Service</label>
+            <select id="service" name="service" required>
+              <option value="">Choose a service</option>
+            </select>
+            <p class="field-error" id="service-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="neighbourhood">Neighbourhood</label>
+            <select id="neighbourhood" name="neighbourhood" required>
+              <option value="">Choose a neighbourhood</option>
+            </select>
+            <p class="field-error" id="neighbourhood-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field" id="other-area-field" hidden>
+            <label for="other-area">Area name</label>
+            <input type="text" id="other-area" name="other-area" autocomplete="off">
+            <p class="field-error" id="other-area-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="description">Job description</label>
+            <textarea id="description" name="description" rows="5" required></textarea>
+            <p class="field-error" id="description-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-button">Preview enquiry</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+
+        <div class="enquiry-preview" id="enquiry-preview" hidden>
+          <p class="preview-success" id="preview-success" role="status"></p>
+          <dl class="preview-summary" id="preview-summary"></dl>
+          <div class="preview-actions">
+            <button type="button" class="btn btn-secondary" id="edit-enquiry">Edit enquiry</button>
+          </div>
+        </div>
+
+        <p class="privacy-note" id="privacy-note"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p id="footer-text"></p>
+      <p class="fiction-notice" id="fiction-notice"></p>
+    </div>
+  </footer>
+
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

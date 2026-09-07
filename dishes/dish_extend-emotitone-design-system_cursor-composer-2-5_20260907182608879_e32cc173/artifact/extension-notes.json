@@ -1,0 +1,5 @@
+{
+  "sharedModule": "src/static-tabs.js owns the shared browser tabs behavior: tablist semantics, selected state, focus order, and Arrow/Home/End navigation. It continues the existing Tabs.vue family already established by the supplied references; the extension does not promote a new shared extraction.",
+  "featureBoundary": "styleguide.js owns the Degree Lens state and rendering only. It imports samplesFor from src/mode-samples.js, keeps Major/Minor and degree selection local, and exposes solfege label, interval, emotion, description, texture, and shape as a reading tool. It does not own audio, MIDI, or application stores.",
+  "staticBoundary": "index.html, styles.css, styleguide.js, and the two local browser adapters are the published zero-dependency adaptation. The exact public files under src/reference/ remain provenance evidence and are not browser modules: no Vue 3 runtime, TypeScript compiler, Tailwind processor, Lets Jazz font asset, network request, audio library, or MIDI permission is available or claimed here."
+}

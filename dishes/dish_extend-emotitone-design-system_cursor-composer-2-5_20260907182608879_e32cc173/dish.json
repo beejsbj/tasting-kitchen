@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_extend-emotitone-design-system_cursor-composer-2-5_20260907182608879_e32cc173",
+  "recipe": {
+    "id": "extend-emotitone-design-system",
+    "version": "1.0.1",
+    "hash": "sha256:db5933d04d863f7f01b7d11d545e5afc09ad9d84016779cc31712c3cb62c5b3d"
+  },
+  "executedAt": "2026-09-07T18:26:08.879Z",
+  "finalizedAt": "2026-09-07T18:27:05.890Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/extension-notes.json",
+        "sha256": "8711611b6fdc9814f9f6b15744ac0f027db9e33a5c3a33b9e79ff3ec9dd8a7aa",
+        "bytes": 1040
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "321b441a97732c5725534d9e494c0bee056bd9a61fab10914ea6b424611c2f2a",
+        "bytes": 13727
+      },
+      {
+        "path": "artifact/src/mode-samples.js",
+        "sha256": "e1e70e10957a981714542e888fc44d9c6acf30cb7060c6365376a444cd1f188c",
+        "bytes": 1959
+      },
+      {
+        "path": "artifact/src/reference/AppHeader.vue",
+        "sha256": "03488ce91f397bd6ac5854c0ffddf91b8d2a934d0e14dc1a7965a98cabcdda05",
+        "bytes": 4232
+      },
+      {
+        "path": "artifact/src/reference/IconButton.vue",
+        "sha256": "fd465a437cf992a67e6c484566725027d4359f754f850c9685feb2d2d801cd5f",
+        "bytes": 1593
+      },
+      {
+        "path": "artifact/src/reference/OverlayPanelShell.vue",
+        "sha256": "f8b1cc9f79e7f0b9c6e5789819ae166a370b3e1a92af25a2ac7acbfa0671a6b0",
+        "bytes": 2903
+      },
+      {
+        "path": "artifact/src/reference/README.md",
+        "sha256": "81c2ad470031616adb28a68eb32ad2fe9125262a300e892f29c408546bcec15b",
+        "bytes": 2246
+      },
+      {
+        "path": "artifact/src/reference/solfege.ts",
+        "sha256": "298f64acec07b1b43782afc11ae3e353f8d8d89564da592a8cd3a42691ee59c3",
+        "bytes": 7957
+      },
+      {
+        "path": "artifact/src/reference/style.css",
+        "sha256": "e68c8640fdc55e92f44357a6a5f54bf8cd2ecbdc6ab7619bc3a88930933adddb",
+        "bytes": 2099
+      },
+      {
+        "path": "artifact/src/reference/Tabs.vue",
+        "sha256": "216d51dfaf7fe5619669dc6943e5996850525fbc436e9e7522809c1507668455",
+        "bytes": 1630
+      },
+      {
+        "path": "artifact/src/reference/TabsContent.vue",
+        "sha256": "0da396fce285e1f5a6665307ffe5c26e48925fbf90ad1c89eda1f23852b83ea0",
+        "bytes": 626
+      },
+      {
+        "path": "artifact/src/reference/TabsList.vue",
+        "sha256": "488b9413922f30678b49410546a2d3dfc0493c0f35cf96b8bcb8ea8f87af4e65",
+        "bytes": 887
+      },
+      {
+        "path": "artifact/src/reference/TabsTrigger.vue",
+        "sha256": "254134eb355f54192ca3fdf936e582e15fe9b1c00760c2cc81e84e3f9ed9e418",
+        "bytes": 1368
+      },
+      {
+        "path": "artifact/src/source-provenance.json",
+        "sha256": "94c8fd6aa1c3c9c9090ad52fbd95a0556c0d19f361010f0c84a1c850a3ab4187",
+        "bytes": 1839
+      },
+      {
+        "path": "artifact/src/static-tabs.js",
+        "sha256": "7270889db696e915405055b8351373a3d23500b387a035ed54f700e4cf7fe6d4",
+        "bytes": 2653
+      },
+      {
+        "path": "artifact/styleguide.js",
+        "sha256": "c76c2513b1482db60897cba059d6db28d97b6ef9b9ce434483008053ae139925",
+        "bytes": 5790
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "421fc2b18facce9d21f33d96dff88db2f0cdd5d6ad687382023d2a6091e8cd92",
+        "bytes": 29271
+      }
+    ],
+    "treeHash": "sha256:1b7197c1f89523dd0eb155c2f287698afe4fe0f19ab47ef681e82e3a1a5d1abc"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:b7246a45ef94bd5d814fb11581a66dde97e7776af857c1986e859dd17c9dca11"
+}

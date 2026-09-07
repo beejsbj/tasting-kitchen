@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_fresh-product-span_cursor-composer-2-5_20260907183104864_52ebf551",
+  "recipe": {
+    "id": "fresh-product-span",
+    "version": "1.0.0",
+    "hash": "sha256:957fe42b206ccdb78fd057da1630e05f51156c26de1f106311156e01910836a3"
+  },
+  "executedAt": "2026-09-07T18:31:04.864Z",
+  "finalizedAt": "2026-09-07T18:32:53.167Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "692798b84af5b50275a3511b40a8efd6359378e92978aa1db0e7b8725f466782",
+        "bytes": 10167
+      },
+      {
+        "path": "artifact/data/product.json",
+        "sha256": "8c62b24cd3d8dba2fb079dd7253f685199e87a27013341a6b658b2324c9fa64a",
+        "bytes": 3177
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "1d2701b42c905390be030ec3cc1fa1d00f54ffc13458a4df5ede5044e65a0368",
+        "bytes": 17609
+      },
+      {
+        "path": "artifact/logic.mjs",
+        "sha256": "b35994a7f4b1715e48c434c057352e301d32763e57b0d6bb23e3799f42255eb9",
+        "bytes": 2493
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "14598a7e373e9784e3d97b65ac6559ec289598b9faf23958809620b84f509c01",
+        "bytes": 23267
+      }
+    ],
+    "treeHash": "sha256:abd51da2d29eb1e7439ca17bab00359a1377786fe91e48f454890c020378a3f1"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:b7ae2f7756229f0a965824ab78c06ea69294a5dfd86b492b14338cb5e1099ffb"
+}

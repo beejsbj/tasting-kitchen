@@ -25,9 +25,9 @@ test('the ten active recipes are cooked and browseable while the old backlog is 
   const archive = JSON.parse(await readFile(path.join(root, 'catalog/archive.json'), 'utf8'));
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
   assert.equal(fresh.length, 4);
-  assert.ok(fresh.every(entry => entry.dishCount === 1));
+  assert.ok(fresh.every(entry => entry.dishCount === 2));
   assert.equal(book.recipes.length, 10);
-  assert.ok(book.recipes.every(entry => entry.dishCount === 1));
+  assert.ok(book.recipes.every(entry => entry.dishCount === 2));
   assert.equal(book.archivedCount, 54);
   assert.equal(archive.archivedRecipeIds.length, 54);
   for (const id of ['responsive-product-launch', 'shared-result-ritual', 'permission-ladder-publish']) {
@@ -37,7 +37,7 @@ test('the ten active recipes are cooked and browseable while the old backlog is 
   for (const id of ['standard-service-business', 'standard-developer-portfolio', 'standard-developer-homepage']) {
     const entry = book.recipes.find(item => item.recipe.id === id);
     assert.ok(entry, `Standard website recipe ${id} is active`);
-    assert.equal(entry.dishCount, 1);
+    assert.equal(entry.dishCount, 2);
   }
   for (const id of archive.archivedRecipeIds) assert.ok(!book.recipes.some(entry => entry.recipe.id === id));
   for (const id of ['extend-conduit-design-system', 'extend-qrng-design-system', 'extend-emotitone-design-system']) {

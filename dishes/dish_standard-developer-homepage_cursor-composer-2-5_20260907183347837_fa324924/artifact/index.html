@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patchlane — Configuration checks for small development teams</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#top" aria-label="Patchlane home">
+        <svg class="logo-mark" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+          <rect width="28" height="28" rx="6" fill="currentColor"/>
+          <path d="M8 14h12M14 8v12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Patchlane</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle-label">Menu</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <path fill="currentColor" d="M3 5h14v1.5H3V5zm0 4.25h14v1.5H3V9.25zm0 4.25h14v1.5H3v-1.5z"/>
+        </svg>
+      </button>
+
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul class="nav-list">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#workflow">Workflow</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero section">
+      <div class="container hero-inner">
+        <p class="eyebrow">Configuration checks for small development teams</p>
+        <h1>Catch missing configuration before release.</h1>
+        <p class="hero-intro">Define the environment keys your project expects, then run a repeatable check from your terminal or CI job. Patchlane reports missing names without printing secret values.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#installation">See installation</a>
+          <a class="btn btn-secondary" href="#pricing">View pricing</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section section-alt">
+      <div class="container">
+        <header class="section-header">
+          <h2>Features</h2>
+          <p>Everything you need to verify environment key names before shipping.</p>
+        </header>
+        <ul class="feature-grid" id="feature-grid"></ul>
+      </div>
+    </section>
+
+    <section id="workflow" class="section">
+      <div class="container">
+        <header class="section-header">
+          <h2>How it works</h2>
+          <p>A straightforward check you can run locally or in CI.</p>
+        </header>
+        <ol class="workflow-steps" id="workflow-steps"></ol>
+      </div>
+    </section>
+
+    <section id="installation" class="section section-alt">
+      <div class="container">
+        <header class="section-header">
+          <h2 id="installation-heading">Start with a local check</h2>
+        </header>
+
+        <p class="fiction-notice" id="fiction-notice"></p>
+
+        <div class="install-block">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="code-panel-label">Install</span>
+              <button type="button" class="btn btn-small" id="copy-install" data-copy-target="install-command">
+                <span id="copy-label">Copy install command</span>
+              </button>
+            </div>
+            <pre class="code-block"><code id="install-command"></code></pre>
+            <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+            <p class="copy-fallback hidden" id="copy-fallback"></p>
+          </div>
+
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="code-panel-label">Run</span>
+            </div>
+            <pre class="code-block"><code id="run-command"></code></pre>
+          </div>
+        </div>
+
+        <p class="install-note" id="install-note"></p>
+
+        <div class="specimen-grid">
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="code-panel-label" id="config-filename">patchlane.json</span>
+            </div>
+            <pre class="code-block code-scroll"><code id="config-specimen"></code></pre>
+          </div>
+          <div class="code-panel">
+            <div class="code-panel-header">
+              <span class="code-panel-label">Example output</span>
+            </div>
+            <pre class="code-block code-scroll"><code id="output-specimen"></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="section">
+      <div class="container">
+        <header class="section-header">
+          <h2 id="pricing-heading">Simple plans for a small workflow</h2>
+          <p id="pricing-intro"></p>
+        </header>
+        <div class="pricing-grid" id="pricing-grid"></div>
+        <div class="plan-preview-panel" id="plan-preview-panel" hidden>
+          <h3 id="plan-preview-title">Plan preview</h3>
+          <p id="plan-preview-text"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section section-alt">
+      <div class="container">
+        <header class="section-header">
+          <h2>Frequently asked questions</h2>
+        </header>
+        <div class="faq-list" id="faq-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p id="footer-text"></p>
+      <p class="footer-fiction" id="footer-fiction"></p>
+      <p class="footer-contact">
+        <span id="contact-address"></span>
+        <span class="footer-contact-note" id="contact-note"></span>
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

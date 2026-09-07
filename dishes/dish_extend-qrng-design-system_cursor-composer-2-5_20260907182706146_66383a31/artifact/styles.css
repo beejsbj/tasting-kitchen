@@ -1,0 +1,586 @@
+@import url("./src/tokens.css");
+
+.styleguide {
+  display: grid;
+  gap: clamp(18px, 3vw, 32px);
+  margin: 0 auto;
+  max-width: var(--standard);
+  padding: clamp(16px, 3vw, 40px) clamp(14px, 2.5vw, 28px) 56px;
+  width: 100%;
+}
+
+.styleguide-hero {
+  color: var(--white);
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.styleguide-hero h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  margin: 0;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.styleguide-hero p {
+  font-family: ui-monospace, monospace;
+  font-size: clamp(0.78rem, 2vw, 0.92rem);
+  margin: 0 auto;
+  max-width: 52ch;
+}
+
+.styleguide-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.styleguide-nav a {
+  background: var(--black);
+  border: 3px solid var(--black);
+  color: var(--white);
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 10px 14px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.styleguide-nav a:hover,
+.styleguide-nav a:focus-visible {
+  background: var(--yellow);
+  color: var(--black);
+}
+
+.styleguide-section {
+  display: grid;
+  gap: 14px;
+}
+
+.styleguide-section > header {
+  color: var(--white);
+  display: grid;
+  gap: 6px;
+}
+
+.styleguide-section > header h2 {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  margin: 0;
+  text-transform: uppercase;
+  transform: rotate(1deg);
+}
+
+.styleguide-section > header p {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.styleguide-mount {
+  display: grid;
+  gap: 16px;
+}
+
+.decisions-panel {
+  background: var(--paper);
+  border: 4px solid var(--black);
+  box-shadow: -7px 7px 0 var(--shadow);
+  display: grid;
+  gap: 12px;
+  padding: var(--space);
+}
+
+.decisions-panel h2 {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.decision-row {
+  border-left: 4px solid var(--black);
+  display: grid;
+  gap: 4px;
+  padding-left: 12px;
+}
+
+.decision-row h3 {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.decision-row p {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.overview-stack,
+.setup-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.bid-card,
+.past-card,
+.ticket-card,
+.approval-card,
+.receipt-card {
+  transform: rotate(-0.6deg);
+}
+
+.past-card,
+.ticket-card {
+  background: var(--shade);
+  background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.18), transparent 50%);
+  color: var(--white);
+}
+
+.past-card::before,
+.ticket-card::before {
+  background: var(--black);
+  content: "";
+  height: 10px;
+  left: 18%;
+  position: absolute;
+  right: 18%;
+  top: -7px;
+  transform: rotate(-1deg);
+}
+
+.past-card .paper-card__header h2,
+.ticket-card .paper-card__header h2,
+.past-card .paper-card__description,
+.ticket-card .paper-card__description {
+  color: var(--white);
+}
+
+.past-card .paper-card__header h2,
+.ticket-card .paper-card__header h2 {
+  background: var(--black);
+}
+
+.ticket-counter {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(48px, 0.7fr) minmax(78px, 1fr) minmax(48px, 0.7fr);
+  justify-self: stretch;
+}
+
+.ticket-box {
+  align-content: center;
+  aspect-ratio: 1 / 1;
+  background: var(--white);
+  color: var(--shade);
+  display: grid;
+  justify-items: center;
+  line-height: 0.9;
+  margin: 0;
+  padding: 10px 4px;
+  transform: rotate(-1deg);
+  width: 50px;
+}
+
+.ticket-box span {
+  display: block;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+}
+
+.ticket-box small,
+.ticket-limit {
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ticket-limit { opacity: 0.9; }
+
+button.plus,
+button.minus {
+  align-items: center;
+  display: flex;
+  font-size: 2rem;
+  justify-content: center;
+  min-height: 48px;
+}
+
+button.plus { filter: invert(100%); }
+button.plus:hover:not(:disabled) { filter: none; transform: translateY(5px); }
+button.minus:hover:not(:disabled) { filter: invert(100%); transform: translateY(-5px); }
+
+.winner-board {
+  display: grid;
+  gap: 9px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.winner-row {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.86);
+  color: var(--white);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 36px minmax(42px, 0.7fr) minmax(70px, 1fr);
+  padding: 8px;
+  position: relative;
+  transform: rotate(-0.5deg);
+}
+
+.winner-row:nth-child(even) { transform: rotate(0.7deg); }
+
+.winner-row.latest {
+  background: var(--black);
+  box-shadow: -4px 4px 0 var(--yellow);
+}
+
+.winner-rank,
+.winner-week {
+  font-family: ui-monospace, monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.winner-number {
+  background: var(--white);
+  color: var(--shade);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 0.8;
+  padding: 4px;
+  text-align: center;
+}
+
+.winner-pot {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  overflow-wrap: anywhere;
+}
+
+.winner-week {
+  color: var(--yellow);
+  grid-column: 2 / -1;
+  justify-self: end;
+}
+
+.lottery-module form {
+  display: grid;
+  gap: 10px;
+}
+
+.lottery-module .buttons {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.lottery-module .buttons .roll {
+  background: var(--white);
+  color: var(--black);
+}
+
+.lottery-module .buttons .roll:hover:not(:disabled) {
+  background: var(--yellow);
+}
+
+.board-status {
+  background: var(--white);
+  border-left: 4px solid var(--black);
+  border-right: 4px solid var(--black);
+  color: var(--black);
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.board-status span {
+  background: var(--black);
+  color: var(--yellow);
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 4px 9px;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.dial-board {
+  background-color: var(--black);
+  display: grid;
+  gap: clamp(7px, 1.2vw, 14px);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: clamp(14px, 2vw, 24px);
+  width: 100%;
+}
+
+.dial-board li {
+  display: grid;
+  justify-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.dial-board .dials {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.dial-board label {
+  aspect-ratio: 1 / 1;
+  background-color: var(--white);
+  color: var(--black);
+  cursor: pointer;
+  display: block;
+  position: relative;
+  transition: transform 0.2s, background-color 0.2s;
+  width: clamp(42px, 5.2vw, 64px);
+}
+
+.dial-board label span {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.dial-board li:nth-of-type(odd) label:hover {
+  animation: tiltScale 0.1s;
+  filter: sepia(50%) saturate(3);
+  transform: scale(1.14) rotate(-13deg);
+}
+
+.dial-board li:nth-of-type(even) label:hover {
+  animation: alttiltScale 0.1s;
+  filter: sepia(50%) saturate(3);
+  transform: scale(1.14) rotate(13deg);
+}
+
+.dial-board label::after,
+.dial-board label::before {
+  background-color: hsla(0, 100%, 45%, 1);
+  content: "";
+  left: 50%;
+  padding: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) skew(20deg) scale(0, 0.2);
+  transition: 0.3s;
+  z-index: 1;
+}
+
+.dial-board label::before {
+  background-color: hsla(180, 100%, 50%, 1);
+  mix-blend-mode: screen;
+}
+
+.dial-board li:nth-of-type(odd) .dials:checked + label,
+.dial-board li:nth-of-type(odd) label.punched-slip {
+  animation: slipPunch 180ms steps(2, end) both;
+  background-color: var(--yellow);
+  transform: scale(1.14) rotate(-13deg);
+}
+
+.dial-board li:nth-of-type(even) .dials:checked + label,
+.dial-board li:nth-of-type(even) label.punched-slip {
+  animation: slipPunchAlt 180ms steps(2, end) both;
+  background-color: var(--yellow);
+  transform: scale(1.14) rotate(13deg);
+}
+
+.dial-board .dials:checked + label span,
+.dial-board label.punched-slip span {
+  font-size: 1.3rem;
+}
+
+.dial-board .dials:checked + label::after,
+.dial-board label.punched-slip::after {
+  transform: translate(-50%, -50%) skew(20deg) scale(1.4, 0.1) !important;
+}
+
+.dial-board .dials:checked + label::before,
+.dial-board label.punched-slip::before {
+  transform: translate(-50%, -50%) skew(-20deg) scale(0.1, 1.2) !important;
+}
+
+.dial-board.is-rolling {
+  animation: boardShuffle 680ms steps(5, end) both;
+}
+
+.wallet-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.receipt-values {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.receipt-values div {
+  border-bottom: 2px dashed rgba(0, 0, 0, 0.25);
+  display: grid;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.receipt-values dt {
+  font-family: ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.receipt-values dd {
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  margin: 0;
+}
+
+.receipt-card--idle .receipt-values dd:first-of-type + dd,
+.receipt-card--idle .status {
+  opacity: 0.72;
+}
+
+.button:active::before {
+  background: url("./src/assets/stars.svg") center / contain no-repeat;
+  content: "";
+  height: 200%;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 200%;
+  z-index: 0;
+}
+
+@keyframes tiltScale {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.14) rotate(-13deg); }
+}
+
+@keyframes alttiltScale {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.14) rotate(13deg); }
+}
+
+@keyframes slipPunch {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.14) rotate(-13deg); }
+}
+
+@keyframes slipPunchAlt {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.14) rotate(13deg); }
+}
+
+@keyframes boardShuffle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-1.5deg) scale(1.01); }
+  50% { transform: rotate(1.2deg) scale(0.99); }
+  75% { transform: rotate(-0.8deg) scale(1.02); }
+}
+
+@media (max-width: 599px) {
+  .dial-board {
+    gap: 4px;
+    padding: 12px 8px;
+  }
+
+  .dial-board label {
+    width: clamp(34px, 11.5vw, 42px);
+  }
+
+  .lottery-module .buttons button {
+    font-size: clamp(1.2rem, 8vw, 1.8rem);
+    min-width: 0;
+    padding: 16px 8px;
+  }
+
+  .ticket-counter {
+    grid-template-columns: minmax(44px, 0.6fr) minmax(74px, 1fr) minmax(44px, 0.6fr);
+  }
+
+  .winner-row {
+    grid-template-columns: 34px minmax(44px, 0.7fr) 1fr;
+  }
+
+  .bid-card,
+  .past-card,
+  .ticket-card,
+  .approval-card,
+  .receipt-card {
+    transform: none;
+  }
+}
+
+@media (min-width: 925px) {
+  .overview-stack {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .setup-stack {
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+    grid-template-rows: auto auto;
+  }
+
+  .setup-stack .lottery-module {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .setup-stack .ticket-card {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .setup-stack .approval-card {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (min-width: 1440px) {
+  .styleguide {
+    max-width: 1320px;
+  }
+
+  .dial-board {
+    gap: 18px;
+    padding: 28px;
+  }
+}
+
+@media (max-width: 390px) {
+  .styleguide {
+    padding-inline: 10px;
+  }
+
+  .styleguide-hero h1 {
+    font-size: 1.8rem;
+  }
+}

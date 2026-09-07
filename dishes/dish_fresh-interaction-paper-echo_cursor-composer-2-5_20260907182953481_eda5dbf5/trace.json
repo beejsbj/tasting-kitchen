@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "fresh-interaction-paper-echo",
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "prompt": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.\n\nBuild Paper Echo: an expressive object for making an eight-beat call and meeting its reflected answer. Read fixtures/brief.md and data/patterns.json for the deterministic behavior; discover its visual and tactile language yourself.",
+      "response": "I'll read the brief and pattern data first, then explore the workspace to see what's editable and what web output is missing.\nImplementing the logic module and full web app with an expressive paper-and-ink visual language.\nRunning validation and fixing reduced-motion playback so all positions are emphasized statically.\nThe validator flags the SVG data URL in CSS. Replacing it with a CSS-only texture.\n**Paper Echo** is built and validation passes (302 logic vectors).\n\n### What it does\n- **Call row** — eight toggleable beat marks (keyboard-focusable buttons with `aria-pressed`)\n- **Crease** — echo offset dial (0–7) between call and response\n- **Response row** — live reflection: reverse the call, rotate right by offset\n- **Presets** — knock, rain, blank from `patterns.json`\n- **Play** — highlights 16 positions at 300ms each via `frameAt`; Stop returns to rest; repeated Play replaces the timer\n- **Share** — URL fragment `#echo=XXXXXXXX.N`; copy with clipboard fallback to selectable `<output>`\n- **Reset** — blank pattern, offset 0, clears hash\n\n### Visual language\nInk-on-stock metaphor without literal paper simulation: warm stock tones, serif display type, circular ink marks, a rose crease between phrases, and a subtle crosshatch grain. Reduced motion drops animated transitions but keeps step highlighting.\n\n### Files created\n- `logic.mjs` — `echo`, `encode`, `decode`, `frameAt`\n- `app.mjs` — UI wiring and playback\n- `index.html` — semantic structure\n- `styles.css` — responsive layout (360px–1440px)\n\nOpen `index.html` locally to try it.",
+      "usage": {
+        "inputTokens": 54670,
+        "outputTokens": 9928,
+        "cacheReadTokens": 386554,
+        "cacheWriteTokens": 0
+      },
+      "actions": []
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "hash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+  "configuration": {
+    "id": "cursor-composer-2-5",
+    "label": "Composer 2.5 · Adaptive · Non-fast · via Cursor Agent",
+    "provider": "cursor",
+    "model": "composer-2.5[fast=false]",
+    "harness": "cursor-agent",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "personality": "default",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "cursor-linux-host-unsandboxed-v1",
+      "label": "via Cursor Agent · host-unsandboxed",
+      "runtime": "linux-host",
+      "sandbox": "disabled",
+      "approvalPolicy": "force",
+      "nativeWeb": "not-enforced",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary"
+    },
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "output-contract",
+      "type": "command",
+      "required": true,
+      "description": "Check nonempty output, minimal HTML shell and explicit stylesheet/module references, JSON and JavaScript syntax, and common literal local resource paths. Does not prove rendered content, event wiring, accessibility or visual quality.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "browser-and-taste",
+      "type": "manual",
+      "required": false,
+      "description": "Inspect 360px/1440px familiar Tailwind idiom and readable code/prices. Verify exact clipboard text after success, rejection/unavailable fallback, FAQ keyboard toggles, every local plan preview and no network actions.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "promote": {
+    "symbol": "StatusMark",
+    "source": "src/components.js",
+    "reason": "Overview, wallet approval, and receipt each repeated the same compact status span markup. Promoting it to StatusMark keeps the paper-slip state labels consistent without copying the status helper into every context."
+  },
+  "prune": {
+    "symbol": null,
+    "source": null,
+    "reason": "The upstream packet exposes reusable CSS selectors but no undersupported shared JavaScript component export to remove. Pruning a fake shared module would invent abstraction the evidence does not support."
+  },
+  "keepLocal": {
+    "symbol": "LotteryBoard",
+    "source": "src/lottery-board.js",
+    "reason": "The 50-number board owns exactly-five selection, deterministic ROLL output, pointer and keyboard operation, and submit gating. That behavior stays local because it is feature-specific, not a generic form primitive."
+  }
+}

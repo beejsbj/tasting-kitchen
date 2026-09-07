@@ -1,0 +1,56 @@
+{
+  "name": "Paper Echo",
+  "description": "An eight-beat mark sent out and answered by its own reflection.",
+  "presets": [
+    {
+      "id": "knock",
+      "label": "A knock at the door",
+      "steps": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "rain",
+      "label": "Rain on the sill",
+      "steps": [
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "blank",
+      "label": "A blank page",
+      "steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "intro": "Make a mark in time. Turn it over. Meet the answer.",
+  "emptyCopy": "Silence is a pattern too.",
+  "shareNotice": "This address contains only your eight marks and echo offset. No account or upload.",
+  "timing": {
+    "stepMs": 300,
+    "stepsPerPhrase": 8,
+    "phraseCount": 2
+  }
+}

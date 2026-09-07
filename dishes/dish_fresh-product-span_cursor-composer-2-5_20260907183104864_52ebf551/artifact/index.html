@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#3d3830" />
+    <title>Span folding drying rack — Span Works</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page" id="top">
+      <header class="header">
+        <a class="brand" href="#top" aria-label="Span Works home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-name">Span <em>Works</em></span>
+        </a>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="#specs">Specification</a>
+          <a href="#configure">Configure</a>
+          <a href="#inquiry">Inquiry</a>
+        </nav>
+        <button class="bag-toggle" id="bag-toggle" type="button" aria-controls="bag-panel" aria-expanded="false">
+          Bag <span class="bag-badge" id="bag-count">0</span>
+        </button>
+      </header>
+
+      <aside class="bag-panel" id="bag-panel" aria-label="Local bag" hidden>
+        <div class="bag-panel-header">
+          <div>
+            <p class="label">Local bag</p>
+            <h2>Your selection</h2>
+          </div>
+          <button class="icon-btn" id="bag-close" type="button" aria-label="Close bag">×</button>
+        </div>
+        <div id="bag-content" class="bag-panel-body">
+          <p class="empty-state">Nothing held here yet. Add an available configuration to keep it nearby.</p>
+        </div>
+        <p class="bag-panel-note">This is a local bag only. There is no checkout or inventory reservation.</p>
+      </aside>
+
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-text">
+            <p class="label hero-label">Folding drying rack</p>
+            <h1 id="hero-title">Room for the wet things.<br /><span>Room back when they are dry.</span></h1>
+            <p class="hero-intro" id="hero-intro">Room for the wet things. Room back when they are dry.</p>
+            <p class="hero-description" id="hero-description">
+              A freestanding laundry rack with two independently folding wings and replaceable beech rails.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#configure">Choose your rack</a>
+              <a class="link-quiet" href="#specs">Read the specification</a>
+            </div>
+          </div>
+
+          <figure
+            class="hero-figure"
+            aria-label="Illustrated view of the Span folding drying rack. This is a product illustration, not a photograph."
+          >
+            <svg class="rack-svg" viewBox="0 0 640 480" role="img" aria-labelledby="rack-title rack-desc">
+              <title id="rack-title">Span folding drying rack illustration</title>
+              <desc id="rack-desc">
+                A line drawing of a freestanding rack with two angled wings and horizontal beech rails.
+              </desc>
+              <rect width="640" height="480" fill="#ebe4d8" />
+              <g fill="none" stroke="#3d3830" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="320" cy="410" rx="200" ry="14" fill="#d4cbb9" stroke="none" opacity="0.5" />
+                <path stroke-width="5" d="M248 110 L248 380 M392 110 L392 380 M248 380 H392" />
+                <path stroke="#a85d4a" stroke-width="6" d="M248 128 L110 190 L110 360 L248 380 M392 128 L530 190 L530 360 L392 380" />
+                <path stroke-width="3" d="M126 210 L238 162 M126 246 L238 198 M126 282 L238 234 M126 318 L238 270 M126 354 L238 306" />
+                <path stroke-width="3" d="M514 210 L402 162 M514 246 L402 198 M514 282 L402 234 M514 318 L402 270 M514 354 L402 306" />
+                <path stroke="#7a8b6f" stroke-width="3" d="M260 155 H380 M260 195 H380 M260 235 H380 M260 275 H380 M260 315 H380 M260 355 H380" />
+                <path stroke="#a85d4a" stroke-width="5" d="M228 380 L208 398 M412 380 L432 398 M110 360 L96 378 M530 360 L544 378" />
+                <circle cx="248" cy="128" r="7" fill="#7a8b6f" />
+                <circle cx="392" cy="128" r="7" fill="#7a8b6f" />
+              </g>
+              <g fill="#6b6458" font-family="Georgia, serif" font-size="11" letter-spacing="0.08em">
+                <text x="320" y="448" text-anchor="middle">ILLUSTRATED VIEW — NOT A PHOTOGRAPH</text>
+              </g>
+            </svg>
+            <figcaption class="figure-caption">Two wings fold independently · beech rails · powder-coated steel</figcaption>
+          </figure>
+        </section>
+
+        <section class="stats" aria-label="At a glance">
+          <div class="stat">
+            <span class="stat-value" id="fact-line">12</span>
+            <span class="stat-unit">metres</span>
+            <span class="stat-label">hanging line</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="fact-load">12</span>
+            <span class="stat-unit">kg</span>
+            <span class="stat-label">load capacity</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="fact-folded">9</span>
+            <span class="stat-unit">cm</span>
+            <span class="stat-label">deep when folded</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">2</span>
+            <span class="stat-unit">wings</span>
+            <span class="stat-label">fold independently</span>
+          </div>
+        </section>
+
+        <div class="main-grid">
+          <section class="specs" id="specs" aria-labelledby="specs-title">
+            <header class="section-header">
+              <p class="label">Specification</p>
+              <h2 id="specs-title">Built for the in-between</h2>
+              <p>Open it for a load. Fold it down when the room needs to be room again.</p>
+            </header>
+
+            <div class="config-highlight">
+              <span class="label">Current configuration</span>
+              <p class="config-name">
+                <strong id="current-size-label">Narrow</strong>
+                <span class="config-slash">/</span>
+                <strong id="current-finish-label">Chalk</strong>
+              </p>
+              <p class="config-meta" id="current-dimensions">94 × 52 × 102 cm open · 102 × 52 × 9 cm folded</p>
+            </div>
+
+            <div class="spec-grid">
+              <article class="spec-card spec-card-wide">
+                <h3>Dimensions</h3>
+                <div class="dim-pair">
+                  <div>
+                    <span class="dim-label">Open</span>
+                    <strong id="open-dimensions">94 × 52 × 102</strong>
+                    <small>cm · W × D × H</small>
+                  </div>
+                  <div>
+                    <span class="dim-label">Folded</span>
+                    <strong id="folded-dimensions">102 × 52 × 9</strong>
+                    <small>cm · W × D × H</small>
+                  </div>
+                </div>
+                <div class="ruler" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <b id="ruler-label">94 cm wide</b>
+                </div>
+              </article>
+
+              <article class="spec-card">
+                <h3 id="capacity-title">12 m line</h3>
+                <p id="capacity-copy">Carries up to 12 kg across its rails.</p>
+                <p class="spec-metric" id="weight-value">4.8 kg</p>
+                <small class="spec-note">rack weight</small>
+              </article>
+
+              <article class="spec-card">
+                <h3>Materials</h3>
+                <p id="material-copy">Warm white powder-coated steel with replaceable beech rails.</p>
+                <div class="swatches" aria-hidden="true">
+                  <span class="swatch swatch-steel"></span> steel
+                  <span class="swatch swatch-beech"></span> beech
+                </div>
+              </article>
+
+              <article class="spec-card spec-card-wide">
+                <h3>Included</h3>
+                <ul class="list-plain" id="included-list">
+                  <li>Assembled rack</li>
+                  <li>Two spare rail end caps</li>
+                  <li>Care and repair card</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <aside class="configure" id="configure" aria-labelledby="configure-title">
+            <header class="configure-header">
+              <p class="label">Configure</p>
+              <h2 id="configure-title">Choose a rack</h2>
+              <p class="configure-note">A single local bag entry keeps your decision clear.</p>
+            </header>
+
+            <form id="selector-form">
+              <fieldset class="field-group">
+                <legend>Size</legend>
+                <div class="option-grid">
+                  <label class="option-card is-selected">
+                    <input type="radio" name="size" value="narrow" checked />
+                    <span class="option-body">
+                      <strong>Narrow</strong>
+                      <small>94 cm wide · 12 m line</small>
+                    </span>
+                    <span class="option-price" id="narrow-price">CAD 148</span>
+                  </label>
+                  <label class="option-card">
+                    <input type="radio" name="size" value="wide" />
+                    <span class="option-body">
+                      <strong>Wide</strong>
+                      <small>128 cm wide · 18 m line</small>
+                    </span>
+                    <span class="option-price" id="wide-price">CAD 184</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset class="field-group">
+                <legend>Finish</legend>
+                <div class="option-grid">
+                  <label class="finish-option is-selected">
+                    <input type="radio" name="finish" value="chalk" checked />
+                    <span class="finish-chip finish-chalk" aria-hidden="true"></span>
+                    <span>
+                      <strong>Chalk</strong>
+                      <small>Warm white steel</small>
+                    </span>
+                  </label>
+                  <label class="finish-option">
+                    <input type="radio" name="finish" value="oxide" />
+                    <span class="finish-chip finish-oxide" aria-hidden="true"></span>
+                    <span>
+                      <strong>Oxide</strong>
+                      <small>Muted red steel</small>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div class="configure-row">
+                <fieldset class="field-group field-group-inline">
+                  <legend>Quantity</legend>
+                  <div class="qty-control">
+                    <button type="button" id="quantity-decrease" aria-label="Decrease quantity">−</button>
+                    <input
+                      id="quantity"
+                      name="quantity"
+                      type="number"
+                      value="1"
+                      min="1"
+                      max="3"
+                      inputmode="numeric"
+                      aria-label="Quantity"
+                    />
+                    <button type="button" id="quantity-increase" aria-label="Increase quantity">+</button>
+                  </div>
+                </fieldset>
+
+                <label class="mesh-toggle">
+                  <input id="mesh" name="mesh" type="checkbox" />
+                  <span class="mesh-check" aria-hidden="true"></span>
+                  <span>
+                    <strong>Flat-dry mesh</strong>
+                    <small>+ <span id="mesh-price">CAD 24</span> · one shelf per rack</small>
+                  </span>
+                </label>
+              </div>
+
+              <p class="stock-message" id="stock-message" role="status" aria-live="polite">2 Narrow / Chalk available</p>
+
+              <div class="estimate" aria-live="polite">
+                <div class="estimate-line">
+                  <span>Merchandise</span>
+                  <strong id="merchandise-total">CAD 148</strong>
+                </div>
+                <div class="estimate-line">
+                  <span>Shipping <small id="shipping-note">CAD 18 flat</small></span>
+                  <strong id="shipping-total">CAD 18</strong>
+                </div>
+                <div class="estimate-divider"></div>
+                <div class="estimate-line estimate-total">
+                  <span>Estimated total <small>before tax</small></span>
+                  <strong id="grand-total">CAD 166</strong>
+                </div>
+              </div>
+
+              <button class="btn btn-primary btn-block" id="add-to-bag" type="submit">Add to local bag</button>
+              <p class="form-feedback" id="selection-feedback" role="status" aria-live="polite"></p>
+            </form>
+
+            <p class="delivery-info">
+              <strong id="delivery-region">Canada only</strong>
+              <span id="dispatch-copy">In-stock orders dispatch in 3–5 business days. Delivery time varies by address.</span>
+            </p>
+          </aside>
+        </div>
+
+        <section class="info-band" aria-label="Product details">
+          <div class="info-band-inner">
+            <div class="info-block">
+              <h3>Care &amp; repair</h3>
+              <ul class="list-plain" id="care-list">
+                <li>Wipe steel with a damp cloth and dry it.</li>
+                <li>Allow beech rails to dry before folding.</li>
+                <li>Use indoors on a level floor; neither a seat nor a climbing frame.</li>
+              </ul>
+              <p class="repair-note" id="repair-copy">
+                Individual rails and end caps can be requested through the local inquiry preview.
+              </p>
+            </div>
+
+            <div class="info-block">
+              <h3>Delivery &amp; policy</h3>
+              <dl class="policy-dl">
+                <div>
+                  <dt>Dispatch</dt>
+                  <dd id="policy-dispatch">In-stock orders dispatch in 3–5 business days.</dd>
+                </div>
+                <div>
+                  <dt>Returns</dt>
+                  <dd id="policy-returns">30 days after delivery, unused, in original packaging.</dd>
+                </div>
+                <div>
+                  <dt>Warranty</dt>
+                  <dd id="policy-warranty">Two-year manufacturing-defect warranty.</dd>
+                </div>
+                <div>
+                  <dt>Tax</dt>
+                  <dd id="policy-tax">Prices and estimates exclude applicable tax.</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="info-block info-block-wide" id="faq">
+              <h3>Questions</h3>
+              <div class="faq-list" id="faq-list">
+                <details>
+                  <summary>Will it hold a full wash?</summary>
+                  <p>Line length and load limits describe capacity.</p>
+                </details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="inquiry" id="inquiry" aria-labelledby="inquiry-heading">
+          <div class="inquiry-intro">
+            <p class="label">Local inquiry</p>
+            <h2 id="inquiry-heading">Need to know more?</h2>
+            <p>Ask about fit, a repair, or availability. No email or personal information needed.</p>
+          </div>
+
+          <div class="inquiry-form-wrap">
+            <p class="inquiry-selection" id="inquiry-current">Current selection: Narrow / Chalk</p>
+            <form id="inquiry-form" novalidate>
+              <div class="form-field">
+                <label for="inquiry-topic">Topic</label>
+                <select id="inquiry-topic" name="topic" aria-describedby="topic-error">
+                  <option value="">Choose a topic</option>
+                </select>
+                <p class="field-error" id="topic-error" aria-live="polite"></p>
+              </div>
+
+              <div class="form-field">
+                <label for="inquiry-question">Your question <span class="field-hint">10–500 characters</span></label>
+                <textarea
+                  id="inquiry-question"
+                  name="question"
+                  rows="4"
+                  minlength="10"
+                  maxlength="500"
+                  placeholder="What would help you decide?"
+                  aria-describedby="question-error question-count"
+                ></textarea>
+                <div class="field-footer">
+                  <p class="field-error" id="question-error" aria-live="polite"></p>
+                  <span id="question-count">0 / 500</span>
+                </div>
+              </div>
+
+              <button class="btn btn-secondary btn-block" type="submit">Make a local preview</button>
+              <p class="inquiry-note">Nothing is sent. This preview stays in this page.</p>
+            </form>
+
+            <div class="inquiry-preview" id="inquiry-preview" hidden aria-live="polite"></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span class="brand-name">Span <em>Works</em></span>
+        <span>Fictional product brief · 2026-09-01</span>
+        <a href="#top">Back to top</a>
+      </footer>
+    </div>
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>

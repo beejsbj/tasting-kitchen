@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "fresh-editorial-second-life",
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "prompt": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.\n\nDesign and build the Common Measure feature “A Second Life for the Moon.” Give the complete article a sustained editorial composition and make its ledger useful without overstating the figures. Read fixtures/brief.md and both data snapshots; author the visual answer.",
+      "response": "I'll read the brief and data snapshots first, then explore the project structure to see what's editable versus immutable.\nReviewing a prior artifact for structure and validation patterns.\nBuilding the editorial feature with a distinct art direction—stage-journal aesthetic with a sticky section navigator, accessible ledger, and original SVG illustrations.\nBuilt the complete Common Measure feature locally. Validation passed: **7/7 vectors**, all required files present, immutable data hashes unchanged.\n\n**Output files**\n- `index.html` — entry shell with skip link and module bootstrap\n- `styles.css` — stage-journal art direction: plum/ink hero, parchment body, copper accents, sticky section rail on wide screens\n- `app.mjs` — renders the full article from snapshots, section navigator, ledger UI, note bridges with return links, original SVG illustrations\n- `logic.mjs` — `summarize(rows, period)` with season filtering and `RangeError` on invalid periods\n\n**Editorial composition**\n- Seven chapters with numbered headers, lead paragraphs, and margin pull quotes drawn from the body text\n- Original diagrams for the moon (hero + door section) and intake card (description section), with captions from the fixture\n- Sticky “In this feature” navigator on desktop; compact grid on narrow viewports\n\n**Ledger**\n- All / Spring / Summer segmented controls update visible rows and totals via `summarize`\n- Totals cards show months, loans, loaned kg, returned kg with explicit units\n- Accessible table with labelled internal scroll at narrow widths; bar chart uses text labels (“out” / “back”) and pattern fill so it does not rely on colour alone\n- Footnote states what the figures do not claim\n\n**Navigation**\n- Ledger section → “About the ledger” → `#method-note` with return to ledger\n- Alteration section → “Loan and transfer terms” → `#terms-note` with return to alteration\n- Per-section and footer links back to contents / top\n\nServe the workspace directory and open `index.html` in a browser to read the feature.",
+      "usage": {
+        "inputTokens": 38034,
+        "outputTokens": 13230,
+        "cacheReadTokens": 244335,
+        "cacheWriteTokens": 0
+      },
+      "actions": []
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_standard-service-business_cursor-composer-2-5_20260907183547226_1284e701",
+  "recipe": {
+    "id": "standard-service-business",
+    "version": "1.0.0",
+    "hash": "sha256:c82881255860db69b54453ea301106b0cfd17d219d11b8af6026e0b931e5884f"
+  },
+  "executedAt": "2026-09-07T18:35:47.226Z",
+  "finalizedAt": "2026-09-07T18:36:36.180Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "3038e9cb97df6027ae3e385efb8422b921ef66e9c5af14b8a3cbaa5ab7dfbd67",
+        "bytes": 10694
+      },
+      {
+        "path": "artifact/data/content.json",
+        "sha256": "6356369fd0b946915f7a1615fb1f242a52add12259b48586e4407ff17f6f4c07",
+        "bytes": 5691
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "d48e72e0c4750025e83b5f13a68d72f0353d026d789dc53ce13eece7592b46ba",
+        "bytes": 6501
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "1af4a9683c191edef1892e13d9ee6bb6c1f0a584d842aec024a23542385d6449",
+        "bytes": 12184
+      }
+    ],
+    "treeHash": "sha256:46e34368dcf049f2903b2d5ad34c0600626bac72112fca0393d8ac63ec24c807"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:5c2c07ab4451ef674eeaa729e82e405b4bef7ae1dea834b27d3e68b2127627f4"
+}

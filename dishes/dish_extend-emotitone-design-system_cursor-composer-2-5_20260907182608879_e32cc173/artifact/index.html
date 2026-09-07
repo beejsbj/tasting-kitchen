@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090b0f" />
+    <meta
+      name="description"
+      content="A local, source-grounded Emotitone Solfrege styleguide and Degree Lens."
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23e6a33b'/%3E%3C/svg%3E" />
+    <title>Emotitone / Solfrege study</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to the styleguide</a>
+
+    <div class="site-frame" id="app">
+      <header class="app-header" aria-labelledby="page-title">
+        <div class="status-row">
+          <span class="local-status" aria-hidden="true"><span></span></span>
+          <span class="status-copy">local study / no signal required</span>
+        </div>
+        <h1 class="app-title" id="page-title">
+          <span>Emotitone</span>
+          <small>solfrege study</small>
+        </h1>
+        <p class="header-caption">
+          A static extension of the public visual language, with one bounded reading tool.
+        </p>
+      </header>
+
+      <main id="main-content">
+        <section class="hero composition-frame" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="eyebrow-mark"></span> source-led interface study / 01</p>
+            <h2 id="hero-title">Read the feeling<br /><em>inside the interval.</em></h2>
+            <p class="hero-lede">
+              Degree Lens translates a selected scale degree into its movable-do identity,
+              interval, and emotional texture. It is a quiet local instrument for reading —
+              never a live app port.
+            </p>
+            <div class="hero-actions" aria-label="Styleguide navigation">
+              <a class="button button--primary" href="#degree-lens">Open Degree Lens <span aria-hidden="true">↘</span></a>
+              <a class="button button--ghost" href="#reference-map">View source roles <span aria-hidden="true">↓</span></a>
+            </div>
+          </div>
+          <div class="hero-signal" aria-label="Nocturne Signal direction">
+            <div class="signal-orbit signal-orbit--outer"></div>
+            <div class="signal-orbit signal-orbit--inner"></div>
+            <div class="signal-core"><span>Do</span><small>1P / home</small></div>
+            <span class="signal-label signal-label--top">01 / tonic center</span>
+            <span class="signal-label signal-label--right">local data</span>
+            <span class="signal-label signal-label--bottom">move / listen / name</span>
+          </div>
+        </section>
+
+        <section class="tool-shell clipped-shell" id="degree-lens" aria-labelledby="lens-title">
+          <div class="shell-edge" aria-hidden="true"></div>
+          <div class="shell-fleck shell-fleck--one" aria-hidden="true"></div>
+          <div class="shell-fleck shell-fleck--two" aria-hidden="true"></div>
+          <header class="panel-header">
+            <div>
+              <p class="section-index">02 / unique specimen</p>
+              <h2 id="lens-title">Degree Lens</h2>
+            </div>
+            <p class="panel-header-note">read-only / interval identities</p>
+          </header>
+          <div class="panel-toolbar lens-toolbar">
+            <div class="mode-switch" role="group" aria-label="Choose a musical mode">
+              <button class="mode-button" type="button" data-mode="major" aria-pressed="true">Major</button>
+              <button class="mode-button" type="button" data-mode="minor" aria-pressed="false">Minor</button>
+            </div>
+            <p class="live-status" id="mode-status" aria-live="polite">Major / 7 degrees / movable do</p>
+          </div>
+          <div class="lens-body">
+            <div class="degree-selector">
+              <div class="selector-heading">
+                <div>
+                  <p class="micro-label">choose a degree</p>
+                  <h3>Scale position</h3>
+                </div>
+                <span class="key-hint"><kbd>←</kbd><kbd>→</kbd> or <kbd>1</kbd>–<kbd>7</kbd></span>
+              </div>
+              <div class="degree-grid" id="degree-buttons" role="group" aria-label="Choose a scale degree"></div>
+              <p class="selector-help">Pointer and keyboard both move the lens. The selected key keeps its shape and label visible without relying on color alone.</p>
+            </div>
+
+            <article class="reading-card" aria-labelledby="reading-title">
+              <div class="reading-heading">
+                <div class="lens-glyph" id="lens-glyph" data-shape="circle" role="img" aria-label="Circle texture shape">Do</div>
+                <div>
+                  <p class="micro-label" id="reading-position">major / degree 1 of 7</p>
+                  <h3 id="reading-title">Do</h3>
+                  <p class="interval-line" id="reading-interval">1P <span>·</span> perfect unison</p>
+                </div>
+              </div>
+              <dl class="reading-grid">
+                <div class="reading-field reading-field--wide">
+                  <dt>Emotion</dt>
+                  <dd id="reading-emotion">Home, rest, stability</dd>
+                </div>
+                <div class="reading-field reading-field--wide">
+                  <dt>Description</dt>
+                  <dd id="reading-description">The foundation. Complete resolution.</dd>
+                </div>
+                <div class="reading-field">
+                  <dt>Texture</dt>
+                  <dd id="reading-texture">foundation, trust, warmth from peace</dd>
+                </div>
+                <div class="reading-field">
+                  <dt>Shape</dt>
+                  <dd id="reading-shape">circle</dd>
+                </div>
+              </dl>
+              <p class="reading-footnote"><span class="footnote-mark" aria-hidden="true">i</span> Bounded local sample, adapted from the supplied solfege identities. No audio, MIDI, or network state is involved.</p>
+            </article>
+          </div>
+          <footer class="panel-footer">
+            <span><span class="footer-dot" aria-hidden="true"></span> reading tool ready</span>
+            <span>mode data: <code>src/mode-samples.js</code></span>
+          </footer>
+        </section>
+
+        <section class="specimens-section" aria-labelledby="specimens-title">
+          <div class="section-heading-row">
+            <div>
+              <p class="section-index">03 / family specimens</p>
+              <h2 id="specimens-title">The shared language, in pieces.</h2>
+            </div>
+            <p class="section-heading-note">Two views, one local tabs adapter.</p>
+          </div>
+
+          <div class="specimen-grid">
+            <article class="specimen-card clipped-card" aria-labelledby="anatomy-title">
+              <header class="specimen-card-header">
+                <div>
+                  <p class="micro-label">reference adaptation / tabs 01</p>
+                  <h3 id="anatomy-title">Overlay anatomy</h3>
+                </div>
+                <code>createTabs()</code>
+              </header>
+              <div class="tabs-specimen" data-tabs-group="anatomy">
+                <div class="tabs-mount" data-tabs-mount="anatomy"></div>
+                <div class="tabs-panel" data-tab-panel="anatomy-shell" role="tabpanel" tabindex="0">
+                  <div class="mini-shell">
+                    <div class="mini-shell-bar"><span></span><span></span><span></span></div>
+                    <div class="mini-shell-header"><span>DEGREE LENS</span><b>●</b></div>
+                    <div class="mini-shell-body"><strong>header</strong><span>toolbar / body / footer boundaries</span></div>
+                    <div class="mini-shell-footer">layered shell / clipped corners</div>
+                  </div>
+                  <p class="tab-caption">The browser specimen keeps the layered shell idea from <code>OverlayPanelShell.vue</code> while its content stays plain HTML.</p>
+                </div>
+                <div class="tabs-panel" data-tab-panel="anatomy-controls" role="tabpanel" tabindex="0" hidden>
+                  <div class="control-row">
+                    <button class="icon-button icon-button--amber" type="button" aria-label="Previous degree"><span aria-hidden="true">←</span></button>
+                    <button class="icon-button icon-button--neutral" type="button" aria-label="Keep reading tool local"><span aria-hidden="true">◎</span></button>
+                    <button class="icon-button icon-button--green" type="button" aria-label="Next degree"><span aria-hidden="true">→</span></button>
+                  </div>
+                  <p class="tab-caption">Small slanted controls echo <code>IconButton.vue</code>; each has a text alternative and a visible focus ring.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="specimen-card clipped-card" aria-labelledby="semantics-title">
+              <header class="specimen-card-header">
+                <div>
+                  <p class="micro-label">reference adaptation / tabs 02</p>
+                  <h3 id="semantics-title">Selected semantics</h3>
+                </div>
+                <code>aria-selected</code>
+              </header>
+              <div class="tabs-specimen" data-tabs-group="semantics">
+                <div class="tabs-mount" data-tabs-mount="semantics"></div>
+                <div class="tabs-panel" data-tab-panel="semantics-state" role="tabpanel" tabindex="0">
+                  <div class="state-demo">
+                    <div class="state-line"><span class="state-chip state-chip--active">active</span><span>selected tab / readable in tone and weight</span></div>
+                    <div class="state-line"><span class="state-chip">inactive</span><span>resting tab / still keyboard reachable by arrow</span></div>
+                    <div class="state-line"><span class="state-chip state-chip--focus">focus</span><span>outline remains visible on dark surfaces</span></div>
+                  </div>
+                  <p class="tab-caption">The selected-state family follows <code>Tabs.vue</code>, <code>TabsList.vue</code>, <code>TabsTrigger.vue</code>, and <code>TabsContent.vue</code>.</p>
+                </div>
+                <div class="tabs-panel" data-tab-panel="semantics-keyboard" role="tabpanel" tabindex="0" hidden>
+                  <div class="keyboard-map">
+                    <span><kbd>←</kbd><kbd>→</kbd><b>move</b></span>
+                    <span><kbd>Home</kbd><b>first</b></span>
+                    <span><kbd>End</kbd><b>last</b></span>
+                    <span><kbd>Enter</kbd><b>select</b></span>
+                  </div>
+                  <p class="tab-caption">Arrow, Home, and End movement is supplied once by <code>src/static-tabs.js</code>.</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="reference-section" id="reference-map" aria-labelledby="reference-title">
+          <div class="section-heading-row">
+            <div>
+              <p class="section-index">04 / public source fixture</p>
+              <h2 id="reference-title">A visible map back to the source.</h2>
+            </div>
+            <p class="section-heading-note">Exact bytes stay under <code>src/reference/</code>.</p>
+          </div>
+          <div class="reference-layout">
+            <div class="reference-intro">
+              <p>
+                These references are preserved public Emotitone Solfrege material, not browser modules.
+                Their role here is evidence: they establish the recognizable language this static surface adapts.
+              </p>
+              <p class="reference-pin"><span class="pin-mark" aria-hidden="true">⌁</span><span>Pinned at <code>4cb0fdc</code><br />verified by <code>source-provenance.json</code></span></p>
+            </div>
+            <div class="reference-list">
+              <div class="reference-item"><code>style.css</code><span>dark tokens, font intent, touch controls, motion conventions</span><b>CSS</b></div>
+              <div class="reference-item"><code>AppHeader.vue</code><span>compact centered title and labeled status treatment</span><b>VUE</b></div>
+              <div class="reference-item"><code>OverlayPanelShell.vue</code><span>layered clipped shell with header / toolbar / body / footer</span><b>VUE</b></div>
+              <div class="reference-item"><code>IconButton.vue</code><span>slanted, restrained-tone control geometry</span><b>VUE</b></div>
+              <div class="reference-item"><code>Tabs*.vue</code><span>existing shared selected-tab family, continued by the local adapter</span><b>VUE</b></div>
+              <div class="reference-item"><code>solfege.ts</code><span>movable-do interval identities behind the bounded mode samples</span><b>TS</b></div>
+            </div>
+          </div>
+          <footer class="reference-footer">
+            <span>Source fixture: <code>src/reference/README.md</code></span>
+            <span>Static runtime: <code>index.html</code> + <code>styles.css</code> + local browser JS</span>
+          </footer>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>Emotitone / static extension</span>
+        <span>crafted for local reading · <a href="#page-title">back to top ↑</a></span>
+      </footer>
+    </div>
+
+    <script type="module" src="./styleguide.js"></script>
+  </body>
+</html>

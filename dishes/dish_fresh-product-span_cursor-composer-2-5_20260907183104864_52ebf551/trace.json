@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "fresh-product-span",
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "prompt": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.\n\nDesign and build Span’s product page from the supplied original commercial packet. Make selection useful and the product understandable. Read fixtures/brief.md and data/product.json for the facts and exact contract; author the visual answer.",
+      "response": "I'll read the brief, product data, and workspace structure first to understand the contract and what's already in place.\nLet me inspect the test cases to understand the logic API contract.\nA prior Span attempt exists — I'll use its logic as a reference, then build the full product page.\nBuilding a warm, editorial product page with the required logic and interactions.\nSpan’s product page is built and validation passes (43 logic vectors).\n\n**What’s included**\n\n- **Product page** — Warm editorial layout with an SVG rack illustration (labeled as illustration, not a photo), specification grid, and all product facts from `data/product.json`\n- **Configurator** — Narrow/Wide, Chalk/Oxide, quantity 1–3, optional mesh per rack; live estimate with merchandise, shipping (free at CAD 180), and total before tax\n- **Stock handling** — Sold-out and insufficient-stock states stay visible, explain the issue, and disable “Add to local bag”\n- **Local bag** — Single entry, replaced on add, unchanged when selectors change, clearable, no checkout\n- **Inquiry preview** — Topic + question (10–500 trimmed chars) with field-level errors; works for unavailable variants; shows “nothing was sent” notice\n- **Responsive** — Layout works at 360px and 1440px with keyboard focus and accessible form feedback\n\n**Files created:** `index.html`, `styles.css`, `app.mjs`, `logic.mjs` (using the immutable `data/product.json` fixture unchanged)",
+      "usage": {
+        "inputTokens": 74473,
+        "outputTokens": 18825,
+        "cacheReadTokens": 610257,
+        "cacheWriteTokens": 0
+      },
+      "actions": []
+    }
+  ]
+}

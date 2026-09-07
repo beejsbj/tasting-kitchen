@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "fresh-system-hem",
+  "turns": [
+    {
+      "id": "build",
+      "role": "prompt",
+      "prompt": "Read the mounted brief and source/data before editing. Immutable snapshots and validators must remain unchanged; only explicitly editable source fixtures may be edited. Author the missing web output locally in one turn. Ready denotes supported mechanics and static presentation, not a cooked or accepted result.\n\nExtend Hem’s working repair-workshop interface with estimates and local approval. Inspect the supplied source and read fixtures/system-guide.md. Preserve the system’s recognisable language and functioning contexts while solving the missing workflow.",
+      "response": "I'll read the brief, fixtures, and source layout first so we only touch editable fixtures and can add the missing web output in one pass.\nChecking the catalog recipe for reference patterns:\nImplementing the missing files and wiring the estimate workflow into the existing Hem system.\nExtended Hem’s repair-workshop interface with a full estimate workflow. Validation passes all 16 quote vectors; immutable data snapshots are unchanged.\n\n### What was added\n\n**`logic.mjs`** — Pure `quote(lines, rates)` function: preserves order and duplicates, validates labour (1–16) and material (1–10) quantities, throws `RangeError` on invalid input, returns `{lines, totalCents}` without mutating inputs.\n\n**`source/estimate-view.mjs`** — Per-job estimate UI built from Hem primitives:\n- Add labour/material lines from `rates.json`\n- Adjust quantities with inline validation (errors shown without discarding other input)\n- Remove lines; see unit and extended costs plus total before tax\n- Approve locally (disabled when empty); approval captures a visible snapshot\n- Edit/remove after approval returns to draft and clears the old approval\n- “Revise estimate” button for deliberate return to draft\n\n**Wiring** — `app.mjs` holds a `Map` of per-job estimate state (survives navigation within the session). `jobView` accepts the estimate panel as an addition. Draft/approved tags appear in the primitives specimen.\n\n**Presentation** — Responsive estimate layout at 360px and 1440px; footer notes that a full reload resets the demo.\n\n### Preserved unchanged\n\nQueue, job detail, materials catalogue, primitive specimen, job statuses (`queued` / `in-progress` / `ready`), and both JSON data files.\n\n### Verification\n\n```\nnode validation/validate-output.mjs → {\"passed\":true,\"vectors\":16,\"browserVerified\":false}\n```\n\n“Ready” remains the supplied job-status label only — not estimate acceptance.",
+      "usage": {
+        "inputTokens": 39850,
+        "outputTokens": 10802,
+        "cacheReadTokens": 334592,
+        "cacheWriteTokens": 0
+      },
+      "actions": []
+    }
+  ]
+}

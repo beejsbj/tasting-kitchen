@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_standard-developer-portfolio_cursor-composer-2-5_20260907183451480_8dc6f97f",
+  "recipe": {
+    "id": "standard-developer-portfolio",
+    "version": "1.0.0",
+    "hash": "sha256:8649c94f34c6f0ea1333cd9b9253f27aff118a7079a62e461ede2bfd81fdeaa7"
+  },
+  "executedAt": "2026-09-07T18:34:51.480Z",
+  "finalizedAt": "2026-09-07T18:35:47.117Z",
+  "identity": {
+    "variantId": "cursor-composer-2-5",
+    "provider": "cursor",
+    "requestedModel": "composer-2.5[fast=false]",
+    "observedModel": "Composer 2.5",
+    "harness": "cursor-agent",
+    "harnessVersion": "cursor-agent 2026.09.02-c22c1a3",
+    "reasoningEffort": "adaptive",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:579213ba9638fa4f19990ed8331aec980658050a34c51a2722061a5880fb69a5",
+    "catalogHash": "sha256:264aa941ebac4dbd4e8dbca7d807ff219232d940a8458d479237607d7635b09b"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "2503b75a4f88a10d4fd5934ca13db5355aeef84ca0f40c504759d0876dde2439",
+        "bytes": 8658
+      },
+      {
+        "path": "artifact/data/content.json",
+        "sha256": "fc035e4e61676a91e7e0e6795a3b3628343e506c0093b917b948f0f00fe4929b",
+        "bytes": 7046
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "11566f101bc19af5fb3d096e101b05e0d8057999aa3c5405646bf1bcc576824a",
+        "bytes": 3943
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "cc6caae69d6f4898c9cf11afe5531e2d4840a242beba82d1c013157dc7787cee",
+        "bytes": 11541
+      }
+    ],
+    "treeHash": "sha256:f141bd0f87535df2aeef28ddab0f4e089b1af4414f6f74994933a27471a5db34"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:7fa0236353c82e1c6b8b3b967afa76e615a0757e0baca0a7d68a50c81cdd74fb"
+}
