@@ -37,10 +37,15 @@ try {
   const registry = await page.evaluate(async () => fetch("/data/registry.json").then(response => response.json()));
   const acceptedRecipes = registry.recipes.filter(recipe => registry.dishes.some(dish => dish.recipe.id === recipe.id));
   assert.equal(await page.locator(".dish-card").count(), registry.dishes.length, "every individual Dish has a card");
-  assert.equal(await page.locator('.dish-group').count(), acceptedRecipes.length, 'Dishes group by Recipe');
+  assert.equal(await page.locator('.dish-grid').count(), 1, 'all Dishes share one grid');
+  assert.equal(await page.locator('.dish-group').count(), 0, 'Recipes do not split the Dish grid into sections');
   assert.equal(await page.locator('.dish-card .model-choices').count(), 0, 'cards have no model/effort selector');
   assert.equal(await page.locator('.dish-card').getByText('Iteration 2', { exact: true }).count(), 1, 'a Repeat is independently visible');
-  for (const recipe of acceptedRecipes) assert.equal(await page.locator(`[data-recipe-id="${recipe.id}"] .dish-card`).count(), registry.dishes.filter(dish => dish.recipe.id === recipe.id).length);
+  for (const recipe of acceptedRecipes) {
+    const recipeCards = page.locator(`.dish-card[data-recipe-id="${recipe.id}"]`);
+    assert.equal(await recipeCards.count(), registry.dishes.filter(dish => dish.recipe.id === recipe.id).length);
+    assert.equal(await recipeCards.getByText(recipe.title, { exact: true }).count(), await recipeCards.count(), 'each card names its Recipe');
+  }
   assert.equal(await page.getByRole("group", { name: "Filter by model" }).count(), 1, "model filtering belongs on the counter");
   assert.equal(await page.locator('select[aria-label="Harness"], select[aria-label="Service tier"]').count(), 0, "counter should not expose disconnected configuration dropdowns");
   for (let i = 0; i < await page.locator(".recipe-card").count(); i++) { await page.locator(".recipe-card").nth(i).scrollIntoViewIfNeeded(); await page.waitForTimeout(250); }
