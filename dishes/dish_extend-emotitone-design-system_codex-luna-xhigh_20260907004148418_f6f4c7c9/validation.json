@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "entry-exists",
+      "type": "file-exists",
+      "required": true,
+      "description": "The local importing styleguide exists.",
+      "passed": true,
+      "detail": "index.html exists"
+    },
+    {
+      "id": "extension-notes-exist",
+      "type": "file-exists",
+      "required": true,
+      "description": "The machine-readable extension boundary notes exist.",
+      "passed": true,
+      "detail": "extension-notes.json exists"
+    },
+    {
+      "id": "emotitone-boundary-contract",
+      "type": "command",
+      "required": true,
+      "description": "Required local source, provenance, adapter, notes, and output files are present; references retain their recorded digests; JSON has practical extension-boundary fields; and published JavaScript parses.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "emotitone-browser-review",
+      "type": "manual",
+      "required": false,
+      "description": "In a browser, inspect the named provenance references, two shared-tabs specimens, and the local Degree Lens at 390px and 1440px. Use keyboard and pointer to change mode and degree; verify the displayed local sample changes, focus remains visible, selected state has text or ARIA support beyond color, no horizontal page overflow occurs, and no runtime dependency or live MIDI claim appears.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}

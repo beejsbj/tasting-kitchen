@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "recipeId": "extend-emotitone-design-system",
+  "turns": [
+    {
+      "id": "continue-emotitone",
+      "role": "prompt",
+      "prompt": "Read src/source-provenance.json and src/reference/README.md before changing anything. The files in src/reference/ are exact, public Emotitone Solfrege references; retain their bytes and cite their role in the visible styleguide. They are Vue, TypeScript, and Tailwind-source material, so they cannot run directly in static-web-v1. Build index.html, styles.css, styleguide.js, and extension-notes.json; edit src/static-tabs.js as needed, but preserve the supplied src/mode-samples.js byte-for-byte because it is an immutable evaluation input. Use no network request, package install, framework runtime, font fetch, MIDI request, or other external dependency. Copy or embed every runtime input the artifact needs into the allowed published output paths; fixtures/ and validation/ are not shipped with the Dish. styleguide.js must import the local browser-JS shared tabs adapter and the local bounded mode samples; do not load .vue, .ts, or the uncompiled Tailwind source as browser modules. Use the imported references as evidence for the recognizable Emotitone language: dark layered surfaces, clipped-corner overlay shells, compact centered title/status treatment, slanted touch-sized controls, and tabs with selected-state semantics. Ground the Degree Lens in the layered OverlayPanelShell and IconButton geometry, while keeping the local browser implementation as an adaptation rather than an upstream runtime. Create a responsive styleguide that visibly names the source references, demonstrates the shared tabs adapter in at least two specimens, and presents a useful local Degree Lens. The Degree Lens lets a person switch Major and Minor, choose a degree by keyboard or pointer, and updates its solfege label, interval, emotion, description, texture, and shape from the supplied local samples. It is a local reading tool, not audio, a MIDI connection, or a live app port. Keep tabs behavior shared in src/static-tabs.js and keep Degree Lens state/rendering local to styleguide.js; record that boundary and the static adaptation boundary in extension-notes.json. Preserve visible focus, semantic labels beyond color, responsive reading at 390px and 1440px, and reduced motion if motion is added. Do not manufacture a prune or a promotion decision: the supplied sources already establish the shared tabs family, while they do not provide evidence for a new shared extraction.\n\nImplement the static Emotitone extension described in the setup instructions. Work from the local source references and local browser adapters only. Do not edit the immutable src/mode-samples.js fixture. Keep source provenance intact, use imports in the styleguide, make the Degree Lens work, and describe actual boundaries in extension-notes.json without claiming an unavailable Vue, Tailwind, font, audio, or MIDI runtime.",
+      "response": "Implemented the static Emotitone extension.\n\n- Added [index.html](.../workspace/index.html), [styles.css](.../workspace/styles.css), [styleguide.js](.../workspace/styleguide.js), and [extension-notes.json](.../workspace/extension-notes.json).\n- Updated [src/static-tabs.js](.../workspace/src/static-tabs.js) with shared tab/panel semantics and keyboard navigation.\n- Degree Lens supports Major/Minor, pointer selection, arrow/Home/End keys, and number keys.\n- Preserved `src/reference/*` and immutable `src/mode-samples.js` bytes.\n- No Vue, TypeScript, Tailwind, font, audio, MIDI, network, or external runtime dependencies.\n- Validation passed, including Chrome checks at 390px and 1440px with no overflow or request failures.",
+      "usage": {
+        "input_tokens": 1418371,
+        "cached_input_tokens": 1325696,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 36007,
+        "reasoning_output_tokens": 7946
+      },
+      "actions": [
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "failed",
+          "exitCode": 1
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.started",
+          "type": "file_change",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "file_change",
+          "status": "completed"
+        },
+        {
+          "event": "item.started",
+          "type": "command_execution",
+          "status": "in_progress"
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        },
+        {
+          "event": "item.completed",
+          "type": "command_execution",
+          "status": "completed",
+          "exitCode": 0
+        }
+      ]
+    }
+  ]
+}
