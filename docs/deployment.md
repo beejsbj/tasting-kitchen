@@ -34,13 +34,11 @@ The registry and HTML revalidate; hashed application assets can be cached indefi
 
 ## Canonical deployment
 
-Target: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify resource. Retain the historical proof at `https://artifacts.burooj.dev/model-tasting/` until the canonical route is proven. A local build does not deploy either site.
-
-The September 5 preflight found canonical HTTPS reaching Cloudflare with valid TLS but returning 503. The existing wildcard ingress covers the hostname. Authenticated Coolify inventory remains unverified because the documented credential source did not contain a usable key. Do not create a token or alter shared routes as a workaround.
+Live: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify application `rlh7jvdyrxrsidy9hdwztmgz`. The canonical deployment was promoted from commit `9de3c02` on September 7, 2026. Its root, `/healthz`, registry, every represented artifact entry, public input previews, TLS and sandbox headers passed production checks. The historical proof at `https://artifacts.burooj.dev/model-tasting/` was then stopped and now returns 404; its stopped container and files remain available for rollback.
 
 Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The private source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
 
-Prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm the old proof and neighboring artifact routes still work. Roll back by disabling only the new resource/route or restoring its previous image digest; the proof remains available throughout.
+For each promotion, prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm neighboring artifact routes still work. Roll back in Coolify to the previous healthy image or stop the canonical application; during the initial cutover, the stopped historical proof container can also be restarted from `/mnt/server-ssd/services/model-tasting/compose.yaml`.
 
 ## Maintenance state
 
@@ -60,4 +58,4 @@ Automatic Git deployments currently stop before building with `COMMIT_AUTHOR_REQ
 
 The review preview was deployed through the authenticated owner account using the already-built static output. To repeat that route, set `VITE_RECIPE_BRANCH` to the branch that should receive hosted edits, build the desired commit, copy only `dist/` into a clean staging directory, and give that directory its own empty Git boundary to prevent ancestor-repository inference. Link it to the existing `tasting-kitchen` project. Its static `vercel.json` sets `framework`, `buildCommand` and `installCommand` to null while retaining the source configuration's artifact and data headers. Deploy with `vercel deploy --target preview --yes`, and record the source commit and URL in the PR. Never copy credentials, the source repository, or private evidence into that directory.
 
-Vercel serves the review surface; the existing homelab proof and canonical Coolify deployment state are unchanged.
+Vercel serves the review surface; Coolify serves the canonical production site.

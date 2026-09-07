@@ -4,11 +4,11 @@ A reusable system for learning model fingerprints through artifacts Burooj actua
 
 The project does not rank models. It gives exact model configurations the same stable task, preserves each output, and places the runnable results side by side so a human can develop intuition about what each model reaches for.
 
-Current proof gallery: <https://artifacts.burooj.dev/model-tasting/>
+Canonical gallery: <https://tasting-kitchen.burooj.dev/>
 
 Canonical home: `/mnt/server-ssd/BJsWorkspace/Projects/tasting-kitchen`
 
-Planned canonical deployment: <https://tasting-kitchen.burooj.dev/>
+The historical `https://artifacts.burooj.dev/model-tasting/` proof route was retired after the canonical deployment was verified on September 7, 2026.
 
 ## Language
 
