@@ -1,6 +1,6 @@
 # Visual Recipe contracts
 
-The public Book has ten active Recipes. Every active Recipe is uncooked; a Recipe Book entry is not evidence that a model has produced a Dish.
+The public Book has ten active Recipes. Every active Recipe now has one accepted `codex-luna-xhigh` Dish requested at extra-high reasoning on the default service tier. A Recipe Book entry alone is still not evidence that a model has produced a Dish; the Dish manifest and trace are the evidence.
 
 ## Historical archive
 
@@ -12,11 +12,11 @@ The original 15 accepted Dishes, their three original Recipe definitions, and th
 | `shared-result-ritual` | Stage a shared result as an event |
 | `permission-ladder-publish` | Prepare, pause for approval, publish, then verify |
 
-The public gallery has no Dish records yet. When Dishes are cooked, every Dish and Repeat appears separately under its Recipe rather than inside model or effort tabs. Historical Dish names and prompt definitions remain frozen into their executed Recipe Revisions.
+The public gallery has ten active Dish records. Every Dish and Repeat appears separately under its Recipe rather than inside model or effort tabs. Historical Dish names and prompt definitions remain frozen into their executed Recipe Revisions.
 
 ## Fresh visual Recipes
 
-The `fresh-visual-ui` menu contains four ready, uncooked candidates:
+The `fresh-visual-ui` menu contains four ready candidates, each with one accepted Dish:
 
 | Recipe ID | Subject |
 | --- | --- |
@@ -25,11 +25,11 @@ The `fresh-visual-ui` menu contains four ready, uncooked candidates:
 | `fresh-interaction-paper-echo` | Paper Echo, a deterministic eight-beat pattern echo |
 | `fresh-system-hem` | Hem Estimates garment-repair workflow continuing its supplied system |
 
-Their complete inputs, output contracts, validator boundaries and unsolved human probes are recorded in [fresh-visual-recipes.md](fresh-visual-recipes.md). Ready means supported by the execution boundary; it does not mean cooked, accepted or visually approved. No fresh cooked Dish is claimed here.
+Their complete inputs, output contracts, validator boundaries and remaining human-review probes are recorded in [fresh-visual-recipes.md](fresh-visual-recipes.md). Ready means supported by the execution boundary; acceptance records mechanical validation and does not claim an independent human visual verdict.
 
 ## Conventional website recipes
 
-The `standard-web` menu contains three additional, uncooked baseline tasks:
+The `standard-web` menu contains three additional baseline tasks, each with one accepted Dish:
 
 - `standard-service-business` — an ordinary service-business brochure website.
 - `standard-developer-portfolio` — a typical developer portfolio.

@@ -21,9 +21,9 @@ const configFor = (registry, dish) => registry.configurations.find(config => con
 try {
   const live = await browser.newPage();
   await live.goto(`${base}/`, { waitUntil: 'networkidle' });
-  assert.equal(await live.locator('.dish-card').count(), 0, 'archived results are absent from the live gallery');
-  assert.equal(await live.getByRole('heading', { name: 'No dishes yet.', exact: true }).count(), 1);
-  await live.getByRole('button', { name: 'Browse recipes', exact: true }).click();
+  assert.equal(await live.locator('.dish-card').count(), 10, 'the live gallery exposes the ten active Dishes');
+  assert.equal(await live.getByRole('heading', { name: 'No dishes yet.', exact: true }).count(), 0);
+  await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
   await live.locator('.recipe-book-card').first().waitFor();
   assert.equal(await live.locator('.recipe-book-card').count(), 10);
   await save(live, 'active-recipe-book'); await live.close();
@@ -44,7 +44,7 @@ try {
   assert.equal(await page.getByRole("group", { name: "Filter by model" }).count(), 1, "model filtering belongs on the counter");
   assert.equal(await page.locator('select[aria-label="Harness"], select[aria-label="Service tier"]').count(), 0, "counter should not expose disconnected configuration dropdowns");
   for (let i = 0; i < await page.locator(".recipe-card").count(); i++) { await page.locator(".recipe-card").nth(i).scrollIntoViewIfNeeded(); await page.waitForTimeout(250); }
-  await page.waitForLoadState("networkidle"); await page.evaluate(() => window.scrollTo(0, 0)); await save(page, "counter-desktop");
+  await settle(page); await page.evaluate(() => window.scrollTo(0, 0)); await save(page, "counter-desktop");
 
   const cardsBeforeFilter = await page.locator('.recipe-grid').first().boundingBox();
   await page.getByRole('button', { name: 'Cuisine and lineage filters' }).click();
@@ -55,7 +55,9 @@ try {
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: `Remove ${cuisine.label} filter`, exact: true }).click();
   assert.equal(new URL(page.url()).searchParams.has('cuisine'), false, 'removing a chip clears its URL filter');
-  const target = acceptedRecipes.find(recipe => recipe.kind === "web") ?? acceptedRecipes[0];
+  const target = acceptedRecipes.find(recipe => recipe.kind === "web" && registry.dishes.filter(dish => dish.recipe.id === recipe.id).length > 1)
+    ?? acceptedRecipes.find(recipe => recipe.kind === "web")
+    ?? acceptedRecipes[0];
   assert.ok(target, "registry should contain an accepted recipe");
   const targetDishes = registry.dishes.filter(dish => dish.recipe.id === target.id);
   const targetLatest = latest(targetDishes);
@@ -125,7 +127,7 @@ try {
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "mobile Recipe card and viewer should not overflow horizontally");
   await save(page, "recipe-phone");
 
-  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 0, "baseline should expose the empty Menu state"); assert.match(await page.locator("body").innerText(), /0 public menus/); await save(page, "menus-desktop");
+  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 3, "the cooked catalog should expose all three complete Menus"); assert.match(await page.locator("body").innerText(), /3 public menus/); await save(page, "menus-desktop");
 
   const menuRecipes = acceptedRecipes.filter(recipe => recipe.kind === "web").slice(0, 2);
   if (menuRecipes.length === 2) {
@@ -141,15 +143,15 @@ try {
 
   await page.goto(`${base}/?view=recipes`, { waitUntil: "networkidle" });
   const book = await page.evaluate(async () => fetch("/data/recipe-book.json").then(response => response.json()));
-  assert.equal(await page.locator(".recipe-book-card").count(), book.recipes.length, "Recipe Book includes active uncooked definitions");
+  assert.equal(await page.locator(".recipe-book-card").count(), book.recipes.length, "Recipe Book includes all active definitions");
   const uncooked = book.recipes.filter(entry => !entry.dishCount);
-  assert.ok(uncooked.length > 0, "the authored candidates must be inspectable before cooking");
+  assert.equal(uncooked.length, 0, "all ten active recipes should have a published Dish");
   await page.getByRole("button", { name: "Not cooked", exact: true }).click();
-  assert.equal(await page.locator(".recipe-book-card").count(), uncooked.length);
+  assert.equal(await page.locator(".recipe-book-card").count(), 0);
   await page.getByRole("button", { name: "Design systems", exact: true }).click();
   const systems = book.recipes.filter(entry => entry.recipe.tags.includes("design-system"));
   assert.equal(await page.locator(".recipe-book-card").count(), systems.length);
-  const candidate = systems.find(entry => !entry.dishCount);
+  const candidate = systems[0];
   await page.getByRole("button").filter({ has: page.getByRole("heading", { name: candidate.recipe.title, exact: true }) }).click();
   assert.equal(new URL(page.url()).searchParams.get("edit"), candidate.recipe.id);
   assert.equal(await page.evaluate(() => scrollY), 0, "opening the authored recipe resets scroll");

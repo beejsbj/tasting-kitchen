@@ -1,6 +1,6 @@
 # Fresh visual recipes
 
-Four new, uncooked identities in [Fresh Visual UI](../catalog/menus/fresh-visual-ui.json). Each is `ready` because its dependency-free Node validator and `static-web-v1` presentation contract are supported. Each has one prompt and `semanticRuntime: null`. Ready does not mean cooked, accepted, browser-approved or visually successful. Under the current product direction, these active candidates may appear in the separate Recipe book before they have Dishes.
+Four active identities in [Fresh Visual UI](../catalog/menus/fresh-visual-ui.json). Each is `ready` because its dependency-free Node validator and `static-web-v1` presentation contract are supported. Each has one prompt, `semanticRuntime: null`, and one accepted `codex-luna-xhigh` Dish requested at extra-high reasoning on the default service tier. Acceptance records the recipe validators and publication checks; it is not an independent human visual verdict.
 
 | Recipe ID / title | Original subject and what it reveals | Inputs and unsolved work |
 | --- | --- | --- |
@@ -41,4 +41,4 @@ The optional baseline smoke test uses the repository's installed Playwright and 
 
 All subjects, facts, copy, quotations, patterns, code and Hem's system were newly authored. No old brief, brand, fixture or source variant was adapted. The recipe schema, product model, catalog/runtime code, menu shape and one small existing output validator were consulted solely for contracts. Private provenance is confined to the four new IDs and is ignored by Git.
 
-This authoring pass creates four recipe definitions and their supporting packets. Accepted Dishes and frozen revisions remain unchanged; no live Cook was performed.
+The four definitions and supporting packets remain the active menu inputs. The September 6 cook froze their exact revisions and published one accepted Luna XHigh Dish for each; the immutable Dish manifests and traces carry the execution evidence.

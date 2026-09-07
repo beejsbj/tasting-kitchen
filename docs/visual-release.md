@@ -6,7 +6,7 @@ The canonical product model in `product-model.md` remains authoritative. This re
 
 ## Active public catalog
 
-The active public catalog has ten Recipes, all ready and uncooked. Four fresh authored candidates are collected in `fresh-visual-ui`: `fresh-product-span`, `fresh-editorial-second-life`, `fresh-interaction-paper-echo`, and `fresh-system-hem`. The public registry contains no Dishes or reviews.
+The active public catalog has ten ready Recipes and ten accepted Dishes. Four fresh authored candidates are collected in `fresh-visual-ui`: `fresh-product-span`, `fresh-editorial-second-life`, `fresh-interaction-paper-echo`, and `fresh-system-hem`. Each active Recipe has one `codex-luna-xhigh` Dish requested at extra-high reasoning on the default service tier. The public registry contains these ten Dishes and no artifact reviews.
 
 Three conventional website baselines are collected in `standard-web`: `standard-service-business`, `standard-developer-portfolio`, and `standard-developer-homepage`. They reveal familiar business, personal portfolio, and Tailwind-style developer-product work. See [standard-web-recipes.md](standard-web-recipes.md) for their supplied packets and review boundaries.
 
@@ -18,7 +18,7 @@ The September 6 discussion corrections and browsing contract are recorded in [ki
 
 ## Kitchen for people
 
-The default Dishes view starts with an honest empty state until a Dish is cooked. Once present, each Dish and Repeat is separately visible under its Recipe, so configuration and iteration are not hidden in per-card tabs. A visitor can inspect the task and its supplied inputs, open a runnable artifact, compare configurations on the same exact Recipe Revision, select another Repeat, and browse a Menu with honest coverage. The separate Recipe view (`?view=recipes`) shows current authored prompts, briefs and public source inputs, including uncooked Recipes. `?view=recipes&edit=<id>` opens an editor.
+The default Dishes view now starts with the ten accepted active results. Each Dish and Repeat is separately visible under its Recipe, so configuration and iteration are not hidden in per-card tabs. A visitor can inspect the task and its supplied inputs, open a runnable artifact, compare configurations on the same exact Recipe Revision, select another Repeat, and browse a Menu with honest coverage. The separate Recipe view (`?view=recipes`) shows current authored prompts, briefs and public source inputs, including uncooked Recipes when present. `?view=recipes&edit=<id>` opens an editor.
 
 The visual system must give this a recognizable working-Kitchen character while keeping artifacts dominant. Responsive layouts, keyboard navigation, clear focus, loading and failure states, and reduced-motion behavior are part of the product. A local style-guide surface imports the same components as the application.
 

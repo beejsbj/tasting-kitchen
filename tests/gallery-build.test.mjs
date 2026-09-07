@@ -5,7 +5,7 @@ import test from "node:test";
 
 const root = path.resolve(import.meta.dirname, "..");
 
-test("the static gallery preserves an honest uncooked public catalog", async () => {
+test("the static gallery preserves the cooked public catalog", async () => {
   const [html, registry, recipeBook, assets] = await Promise.all([
     readFile(path.join(root, "dist", "index.html"), "utf8"),
     readFile(path.join(root, "dist", "data", "registry.json"), "utf8").then(JSON.parse),
@@ -17,15 +17,19 @@ test("the static gallery preserves an honest uncooked public catalog", async () 
   assert.equal(registry.schemaVersion, 2);
   assert.equal(registry.cuisines.length, 9);
   assert.equal(registry.configurations.length, 6);
-  assert.deepEqual(registry.recipes, []);
-  assert.deepEqual(registry.dishes, []);
+  assert.equal(registry.recipes.length, 10);
+  assert.equal(registry.dishes.length, 10);
+  assert.ok(registry.dishes.every((dish) => dish.status === "accepted"));
+  assert.ok(registry.dishes.every((dish) => dish.identity.variantId === "codex-luna-xhigh"));
+  assert.ok(registry.dishes.every((dish) => dish.identity.reasoningEffort === "xhigh"));
+  assert.ok(registry.dishes.every((dish) => dish.identity.serviceTier === "default"));
   assert.deepEqual(registry.reviews, []);
-  assert.deepEqual(registry.recipeRevisions, []);
-  assert.deepEqual(registry.menus, []);
-  assert.deepEqual(registry.menuRevisions, []);
+  assert.equal(registry.recipeRevisions.length, 10);
+  assert.equal(registry.menus.length, 3);
+  assert.equal(registry.menuRevisions.length, 3);
   assert.equal(recipeBook.recipes.length, 10);
   assert.equal(recipeBook.archivedCount, 54);
-  assert.ok(recipeBook.recipes.every((recipe) => recipe.dishCount === 0));
+  assert.ok(recipeBook.recipes.every((recipe) => recipe.dishCount === 1));
   assert.ok(assets.some((filename) => filename.endsWith(".js")));
   assert.ok(assets.some((filename) => filename.endsWith(".css")));
   const javascript = await Promise.all(
@@ -43,9 +47,13 @@ test("the static gallery preserves an honest uncooked public catalog", async () 
 });
 
 
-test("the built site publishes no historical artifacts or fixtures while all active recipes are uncooked", async () => {
+test("the built site publishes only active Dishes and their selected public artifact files", async () => {
   const registry = JSON.parse(await readFile(path.join(root, "dist/data/registry.json"), "utf8"));
-  assert.deepEqual(registry.dishes, []);
-  assert.deepEqual(registry.recipeRevisions, []);
-  assert.deepEqual(registry.menuRevisions, []);
+  const activeRecipeIds = new Set(registry.recipes.map((recipe) => recipe.id));
+  assert.equal(activeRecipeIds.size, 10);
+  assert.equal(registry.dishes.length, 10);
+  assert.ok(registry.dishes.every((dish) => activeRecipeIds.has(dish.recipe.id)));
+  assert.ok(registry.recipeRevisions.every((revision) => activeRecipeIds.has(revision.recipeId)));
+  assert.ok(registry.menuRevisions.every((menu) => menu.recipes.every((recipe) => activeRecipeIds.has(recipe.recipeId))));
+  assert.ok(registry.dishes.every((dish) => dish.artifact.files.every((file) => !/^(?:fixtures|private)\//u.test(file.path))));
 });

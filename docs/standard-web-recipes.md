@@ -22,7 +22,7 @@ These are deliberately modest source checks. They do not fully parse HTML/CSS/Ja
 
 The self-tests run the actual mounted command against temporary structural doubles, then remove them. Negative cases cover absent output, whitespace-only output, malformed JSON, invalid JavaScript, a missing main landmark, disconnected module wiring, a remote script and a missing CSS asset. A separate assertion checks public immutable inputs and the runtime-input/validator publication boundary. These doubles are not finished recipe answers.
 
-Each brief and recipe names human browser/taste probes at 360px and 1440px: complete supplied content, conventional hierarchy, readable text, focus, keyboard use, all links, narrow-screen overflow and no network submission. The specific probes cover enquiry correction and re-preview; category changes and case-study reachability; clipboard success and denied/unavailable fallback, FAQ disclosure and all plan previews. No browser/taste verdict has been claimed for an uncooked page.
+Each brief and recipe names human browser/taste probes at 360px and 1440px: complete supplied content, conventional hierarchy, readable text, focus, keyboard use, all links, narrow-screen overflow and no network submission. The specific probes cover enquiry correction and re-preview; category changes and case-study reachability; clipboard success and denied/unavailable fallback, FAQ disclosure and all plan previews. Each recipe now has one mechanically accepted Luna XHigh Dish; an independent human visual verdict is still not claimed.
 
 ## Inspect and dry-plan
 
