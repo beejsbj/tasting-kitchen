@@ -2,7 +2,7 @@ import { CounterFilters } from "./components/CounterFilters";
 import { RecipeBook } from './components/RecipeBook';
 import { KitchenNavigation } from './components/KitchenNavigation';
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, Home, Columns2, SlidersHorizontal, Info, ExternalLink, NotebookPen } from "lucide-react";
+import { BookOpen, Home, Columns2, SlidersHorizontal, Info, ExternalLink, NotebookPen, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown } from "lucide-react";
 import { ControlPopover, IconButton } from "./components/ui/ViewerControls";
 import { ArtifactPane } from "./components/ArtifactPane";
 import { KitchenButton } from "./components/KitchenButton";
@@ -15,6 +15,7 @@ import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, dishesFor, loadRegistry, modelFamily, recipeAtRevision, reviewsForDish, shortHash } from "./lib/registry";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
+import { readDishVotes, writeDishVote, type DishVote } from './lib/dish-votes';
 import type { Configuration, Dish, Recipe, Registry } from "./types";
 
 function useUrlState() {
@@ -43,6 +44,7 @@ function EmptyState({ title, children }: { title: string; children: React.ReactN
 export default function App() {
   const [registry, setRegistry] = useState<Registry>();
   const [error, setError] = useState("");
+  const [dishVotes, setDishVotes] = useState(readDishVotes);
   const [state, update] = useUrlState();
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [state.recipe, state.editRecipe, state.view, state.styleguide]);
   useEffect(() => { loadRegistry().then(setRegistry).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Catalog unavailable")); }, []);
@@ -109,6 +111,16 @@ export default function App() {
       if (next) update({ models: [...selected.map((config) => config.id), next.id], dishes: slots.map((slot) => slot.dish?.id ?? '') });
     };
     const chooseRepeat = (index: number, id: string) => { const dishes = slots.map((slot) => slot.dish?.id ?? ''); dishes[index] = id; update({ dishes }); };
+    const navigableDishes = [...recipeDishes].sort((a, b) => a.executedAt.localeCompare(b.executedAt) || a.id.localeCompare(b.id));
+    const focusedDish = slots.length === 1 ? slots[0].dish : undefined;
+    const focusedIndex = focusedDish ? navigableDishes.findIndex((dish) => dish.id === focusedDish.id) : -1;
+    const navigateDish = (offset: -1 | 1) => {
+      const dish = navigableDishes[focusedIndex + offset];
+      if (dish) update({ ...selectionForDish(registry, dish), brief: false });
+    };
+    const vote = (value: DishVote) => {
+      if (focusedDish) setDishVotes((current) => writeDishVote(focusedDish.id, value, current));
+    };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
       <section className="comparison-grid" style={{ "--columns": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
@@ -120,6 +132,14 @@ export default function App() {
       <nav aria-label="Artifact controls" className="viewer-dock fixed right-3 top-4 z-30 flex max-h-[calc(100dvh-2rem)] flex-col items-center gap-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-slate-800 shadow-lg backdrop-blur-md sm:right-5 sm:top-6">
         <IconButton aria-label="Back to dishes" title="Back to dishes" onClick={closeRecipe}><Home size={19} /></IconButton>
         <IconButton aria-label="Open recipe in book" title="Open recipe in book" onClick={() => update({ view: 'recipes', editRecipe: currentRecipe.id, recipe: '', brief: false })}><NotebookPen size={19} /></IconButton>
+        {focusedDish && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label="Move between dishes for this recipe">
+          <IconButton aria-label="Previous dish" title="Previous dish" disabled={focusedIndex <= 0} onClick={() => navigateDish(-1)}><ChevronLeft size={19} /></IconButton>
+          <IconButton aria-label="Next dish" title="Next dish" disabled={focusedIndex >= navigableDishes.length - 1} onClick={() => navigateDish(1)}><ChevronRight size={19} /></IconButton>
+        </div>}
+        {focusedDish && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label="Rate this dish">
+          <IconButton aria-label="Good dish" title="Good dish" aria-pressed={dishVotes[focusedDish.id] === 'up'} onClick={() => vote('up')}><ThumbsUp size={18} /></IconButton>
+          <IconButton aria-label="Not a good dish" title="Not a good dish" aria-pressed={dishVotes[focusedDish.id] === 'down'} onClick={() => vote('down')}><ThumbsDown size={18} /></IconButton>
+        </div>}
         <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= 3 || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
         <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />}>
           <h2 className="mb-4 text-base font-semibold">{currentRecipe.title}</h2>
