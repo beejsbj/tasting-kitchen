@@ -20,6 +20,14 @@ export default defineConfig({
         next();
       });
     },
+    configurePreviewServer(server) {
+      server.middlewares.use((request, response, next) => {
+        if (!request.url?.startsWith('/api/votes')) return next();
+        response.statusCode = 200;
+        response.setHeader('content-type', 'application/json');
+        response.end(JSON.stringify({ mode: 'local' }));
+      });
+    },
   }],
   build: {
     outDir: "dist",

@@ -15,7 +15,7 @@ import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, dishesFor, loadRegistry, modelFamily, recipeAtRevision, reviewsForDish, shortHash } from "./lib/registry";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
-import { readDishVotes, writeDishVote, type DishVote } from './lib/dish-votes';
+import { readDishVotes, saveDishVotes, syncDishVotes, voteFor, writeDishVote, type DishVote, type VoteMode } from './lib/dish-votes';
 import type { Configuration, Dish, Recipe, Registry } from "./types";
 
 function useUrlState() {
@@ -45,9 +45,11 @@ export default function App() {
   const [registry, setRegistry] = useState<Registry>();
   const [error, setError] = useState("");
   const [dishVotes, setDishVotes] = useState(readDishVotes);
+  const [voteMode, setVoteMode] = useState<VoteMode>('local');
   const [state, update] = useUrlState();
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [state.recipe, state.editRecipe, state.view, state.styleguide]);
   useEffect(() => { loadRegistry().then(setRegistry).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Catalog unavailable")); }, []);
+  useEffect(() => { void syncDishVotes(readDishVotes()).then((result) => { setDishVotes(result.votes); setVoteMode(result.mode); }); }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented && !document.querySelector('[role="dialog"]') && state.recipe && !state.brief) update({ recipe: "", revision: "", dishes: [] });
@@ -119,7 +121,11 @@ export default function App() {
       if (dish) update({ ...selectionForDish(registry, dish), brief: false });
     };
     const vote = (value: DishVote) => {
-      if (focusedDish) setDishVotes((current) => writeDishVote(focusedDish.id, value, current));
+      if (focusedDish) setDishVotes((current) => {
+        const next = writeDishVote(focusedDish.id, value, current);
+        void saveDishVotes(next).then(setVoteMode);
+        return next;
+      });
     };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
@@ -136,9 +142,9 @@ export default function App() {
           <IconButton aria-label="Previous dish" title="Previous dish" disabled={focusedIndex <= 0} onClick={() => navigateDish(-1)}><ChevronLeft size={19} /></IconButton>
           <IconButton aria-label="Next dish" title="Next dish" disabled={focusedIndex >= navigableDishes.length - 1} onClick={() => navigateDish(1)}><ChevronRight size={19} /></IconButton>
         </div>}
-        {focusedDish && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label="Rate this dish">
-          <IconButton aria-label="Good dish" title="Good dish" aria-pressed={dishVotes[focusedDish.id] === 'up'} onClick={() => vote('up')}><ThumbsUp size={18} /></IconButton>
-          <IconButton aria-label="Not a good dish" title="Not a good dish" aria-pressed={dishVotes[focusedDish.id] === 'down'} onClick={() => vote('down')}><ThumbsDown size={18} /></IconButton>
+        {focusedDish && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label={`Rate this dish · ${voteMode === 'synced' ? 'Synced to Tasting Kitchen' : 'Saved on this device'}`}>
+          <IconButton aria-label="Good dish" title={`Good dish · ${voteMode === 'synced' ? 'Synced' : 'This device'}`} aria-pressed={voteFor(dishVotes, focusedDish.id) === 'up'} onClick={() => vote('up')}><ThumbsUp size={18} /></IconButton>
+          <IconButton aria-label="Not a good dish" title={`Not a good dish · ${voteMode === 'synced' ? 'Synced' : 'This device'}`} aria-pressed={voteFor(dishVotes, focusedDish.id) === 'down'} onClick={() => vote('down')}><ThumbsDown size={18} /></IconButton>
         </div>}
         <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= 3 || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
         <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />}>
