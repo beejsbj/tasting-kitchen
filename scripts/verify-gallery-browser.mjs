@@ -39,6 +39,8 @@ try {
   assert.equal(await page.locator(".dish-card").count(), registry.dishes.length, "every individual Dish has a card");
   assert.equal(await page.locator('.dish-grid').count(), 1, 'all Dishes share one grid');
   assert.equal(await page.locator('.dish-group').count(), 0, 'Recipes do not split the Dish grid into sections');
+  assert.equal(await page.locator('.dish-card__recipe-tag').count(), registry.dishes.length, 'each Dish presents its Recipe as a tag');
+  assert.equal(await page.locator('.dish-card__recipe-tag-label').getByText('Recipe', { exact: true }).count(), registry.dishes.length, 'Recipe tags identify their role');
   assert.equal(await page.locator('.dish-card .model-choices').count(), 0, 'cards have no model/effort selector');
   assert.equal(await page.locator('.dish-card').getByText('Iteration 2', { exact: true }).count(), 1, 'a Repeat is independently visible');
   for (const recipe of acceptedRecipes) {

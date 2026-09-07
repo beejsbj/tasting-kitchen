@@ -57,6 +57,9 @@ h1, h2, h3 { font-family: var(--font-display); }
 .recipe-card__body { width: 100%; padding: var(--space-4); display: flex; flex-direction: column; text-align: left; }
 .recipe-card__eyebrow { display: flex; width: 100%; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); font: var(--text-xs) var(--font-mono); color: var(--ink-muted); }
 .recipe-card__eyebrow > span:last-child { margin-left: auto; }
+.dish-card__recipe-tag { display: inline-flex; align-items: center; max-width: 100%; overflow: hidden; border: var(--line-width) solid var(--signal); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--signal) 8%, var(--surface)); color: var(--signal); font-family: var(--font-body); font-weight: 650; letter-spacing: 0; text-transform: none; }
+.dish-card__recipe-tag-label { align-self: stretch; display: inline-flex; align-items: center; flex-shrink: 0; padding: var(--space-1) var(--space-2); background: var(--signal); color: var(--signal-ink); font: 650 .65rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.dish-card__recipe-tag > span:last-child { min-width: 0; overflow: hidden; padding: var(--space-1) var(--space-2); text-overflow: ellipsis; white-space: nowrap; }
 .badge { display: inline-flex; align-items: center; gap: var(--space-1); font: var(--text-xs) var(--font-mono); color: var(--ink-muted); }
 .badge::before { content: ''; width: var(--space-1); height: var(--space-1); background: currentColor; border-radius: var(--radius-pill); }
 .badge--mothers { color: var(--mother); }.badge--hybrid { color: var(--hybrid); }

@@ -21,7 +21,9 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
                 : <div className="recipe-card__transcript"><span>{dish.artifact.kind === 'session' ? 'Conversation' : dish.artifact.kind}</span><p>{executedRecipe.turns[0]?.content.slice(0, 240)}</p><span>{executedRecipe.turns.length} turns</span></div>}
             </div>
             <span className="recipe-card__body">
-              <span className="recipe-card__eyebrow"><span>{executedRecipe.title}</span></span>
+              <span className="recipe-card__eyebrow">
+                <span className="dish-card__recipe-tag"><span className="dish-card__recipe-tag-label">Recipe</span><span>{executedRecipe.title}</span></span>
+              </span>
               <span className="recipe-card__title"><span>{model} <span className="dish-card__effort" title={`${effort} reasoning effort`}>{effortLabel(effort)}</span></span><span aria-hidden="true">↗</span></span>
               <span className="dish-card__metadata"><span>Iteration {iteration}</span><time dateTime={dish.executedAt}>{date}</time></span>
               <span className="dish-card__revision" title={dish.recipe.hash}>Recipe v{dish.recipe.version} · {shortHash(dish.recipe.hash)}</span>
