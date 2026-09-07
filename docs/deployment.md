@@ -34,7 +34,7 @@ The registry and HTML revalidate; hashed application assets can be cached indefi
 
 ## Canonical deployment
 
-Live: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify application `rlh7jvdyrxrsidy9hdwztmgz`. The canonical deployment was promoted from commit `9de3c02` on September 7, 2026. Its root, `/healthz`, registry, every represented artifact entry, public input previews, TLS and sandbox headers passed production checks. The historical proof at `https://artifacts.burooj.dev/model-tasting/` was then stopped and now returns 404; its stopped container and files remain available for rollback.
+Live: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify application `rlh7jvdyrxrsidy9hdwztmgz`. The canonical deployment was promoted from commit `d2f9e01` on September 7, 2026. Its HTTP-to-HTTPS redirect, root, `/healthz`, registry, every represented artifact entry, public input previews, TLS and sandbox headers passed production checks. The historical proof at `https://artifacts.burooj.dev/model-tasting/` was then stopped and now returns 404; its stopped container and files remain available for rollback.
 
 Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The private source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
 
