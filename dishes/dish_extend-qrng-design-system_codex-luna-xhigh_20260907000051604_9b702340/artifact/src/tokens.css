@@ -1,0 +1,73 @@
+:root {
+  /* Direction: ink-and-crimson paper ledger. */
+  --ink: #111111;
+  --ink-soft: #332b26;
+  --white: #fffef6;
+  --paper: #f6f0dc;
+  --paper-deep: #e5d9b9;
+  --paper-reject: #f0d4c7;
+  --red: #ad0d1b;
+  --red-deep: #780a15;
+  --yellow: #fff200;
+  --green: #b9e94a;
+  --muted: #6d5e54;
+  --shadow: rgba(0, 0, 0, 0.82);
+
+  --font-stamp: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
+  --font-body: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+
+  --border-strong: 4px;
+  --border-control: 3px;
+  --hairline: 1px;
+  --slip-shadow: -8px 8px 0 var(--shadow);
+  --small-slip-shadow: -4px 4px 0 var(--ink);
+  --stamp-skew: -1deg;
+  --slip-clip: polygon(1% 0, 99% 1%, 100% 98%, 2% 100%, 0 62%);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --page-gutter: clamp(16px, 4vw, 56px);
+  --content-width: 1320px;
+  --card-gap: clamp(12px, 1.6vw, 22px);
+  --dial-gap: clamp(5px, 0.8vw, 11px);
+  --dial-size: clamp(39px, 4.4vw, 64px);
+
+  --type-kicker: 0.72rem;
+  --type-label: 0.78rem;
+  --type-body: 0.96rem;
+  --type-title: clamp(1.9rem, 3.4vw, 3.5rem);
+  --type-hero: clamp(3.1rem, 8vw, 7.8rem);
+  --line-tight: 0.92;
+  --line-body: 1.35;
+
+  --motion-fast: 140ms;
+  --motion-settle: 220ms;
+  --ease-snappy: steps(2, end);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  min-width: 320px;
+  background: var(--red);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-x: clip;
+}
+
+body { margin: 0; min-width: 320px; }
+
+button, input { font: inherit; }
+
+button { border-radius: 0; }
+
+a { color: inherit; }
+
+::selection { background: var(--yellow); color: var(--ink); }

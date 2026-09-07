@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_extend-qrng-design-system_codex-luna-xhigh_20260907000051604_9b702340",
+  "recipe": {
+    "id": "extend-qrng-design-system",
+    "version": "1.0.0",
+    "hash": "sha256:9804e3e736a282ee6424d696d87df63033685f47d0e06e2cd704de83502cb6ca"
+  },
+  "executedAt": "2026-09-07T00:00:51.604Z",
+  "finalizedAt": "2026-09-07T00:21:09.975Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/index.html",
+        "sha256": "9d041d49138c1dcf5fe2fb787dac7301ef2db079a89307756208f32a27ff2005",
+        "bytes": 5326
+      },
+      {
+        "path": "artifact/src/components.js",
+        "sha256": "c8d92baa35f320ca880983fdf4914d4d051f1b6bf6365eaf81b2f253a9076d3d",
+        "bytes": 4852
+      },
+      {
+        "path": "artifact/src/contexts.js",
+        "sha256": "922fea084d4ad5d2f69640f19b49a9bde00686c968083437daf011a9f97104e7",
+        "bytes": 5305
+      },
+      {
+        "path": "artifact/src/lottery-board.js",
+        "sha256": "45dfd6be46e3e669c537210101475838f9bc69c4ee7ab23c76a6dfc2024e1297",
+        "bytes": 4054
+      },
+      {
+        "path": "artifact/src/tokens.css",
+        "sha256": "3a1cb6e3568f745bbf3bcc2a2607d7fb1f83a45c5628bd13fb7ae6d3008466c3",
+        "bytes": 1746
+      },
+      {
+        "path": "artifact/styleguide.js",
+        "sha256": "564c59e61b588c9f9acd0ee2367d425667f39ad7fe3d505d411c13e38428e5e6",
+        "bytes": 1785
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "4fe74a6cc3b61a6a8479781a5ee43a1485091698c16277e9168c976ee64b10aa",
+        "bytes": 19805
+      },
+      {
+        "path": "artifact/system-decisions.json",
+        "sha256": "82dff080d383642db6f45f421a62147e88a2f96de1076cb597cd57c49481b7b1",
+        "bytes": 814
+      }
+    ],
+    "treeHash": "sha256:a44b64221810c9167c1662d3370ea063d65f8eb2c15b38d800c9c6ecc1db2736"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:695c30111cbb8473874896d574085648dafb92230692faeb94767ff64c550718"
+}

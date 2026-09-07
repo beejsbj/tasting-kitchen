@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="P5 Lottery browser styleguide — a local paper-slip system." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fff200'/%3E%3Ctext x='2' y='12' font-size='10'%3EP5%3C%2Ftext%3E%3C%2Fsvg%3E" />
+    <title>P5 Lottery / paper-slip styleguide</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="styleguide-shell">
+      <header class="site-header">
+        <div class="site-header__copy">
+          <p class="site-kicker">P5 lottery / browser edition / source packet extended</p>
+          <h1 class="site-title">Punch five.<br />Leave a receipt.</h1>
+          <p class="site-intro">A responsive styleguide for the original paper-slip language: red field, ink-black rules, off-white stock, yellow attention marks, and local state you can inspect.</p>
+        </div>
+        <div class="site-header__mark" aria-label="P5 Lottery mark">P5<br />LOTTO</div>
+        <nav class="site-nav" aria-label="Styleguide sections">
+          <a href="#contexts">01 / contexts</a>
+          <a href="#guide">02 / system notes</a>
+          <a href="#decisions">03 / decisions</a>
+        </nav>
+      </header>
+
+      <section class="hero-strip" aria-labelledby="hero-title">
+        <div class="hero-strip__copy">
+          <p class="section-kicker">direction frozen / ink-and-crimson paper ledger</p>
+          <h2 class="hero-strip__title" id="hero-title">The board is the hero. The receipt is the proof.</h2>
+          <p>Everything here stays in the browser. Roll the fixed sample, punch by pointer or keyboard, choose between 1 and 10 tickets, then approve or reject to make the local receipt change.</p>
+        </div>
+        <div class="hero-strip__meta" aria-label="Local demo constraints">
+          <strong>5 / 50</strong>
+          <span>exactly five slips<br />deterministic local roll</span>
+        </div>
+      </section>
+
+      <section id="contexts" aria-labelledby="contexts-title">
+        <div class="context-heading">
+          <div>
+            <p class="section-kicker">compositions / real source modules</p>
+            <h2 id="contexts-title">Three views of one punched entry</h2>
+          </div>
+          <p>The modules below are imported from <code>src/</code> and mounted as live DOM, not copied into specimen-only HTML.</p>
+        </div>
+        <div class="context-grid">
+          <div id="overview-mount"></div>
+          <div id="setup-mount"></div>
+          <div id="inspection-mount"></div>
+        </div>
+      </section>
+
+      <section class="guide-section" id="guide" aria-labelledby="guide-title">
+        <div class="guide-heading">
+          <p class="section-kicker">system notes / anatomy at a glance</p>
+          <h2 id="guide-title">One rough-edged grammar, four useful laws</h2>
+        </div>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <div class="swatches" aria-label="System color swatches">
+              <span class="swatch swatch--ink" title="ink black"></span>
+              <span class="swatch swatch--paper" title="off-white paper"></span>
+              <span class="swatch swatch--red" title="saturated red"></span>
+              <span class="swatch swatch--yellow" title="attention yellow"></span>
+            </div>
+            <h3>Materials</h3>
+            <p>Ink, paper, red field, yellow mark. The palette carries meaning, but status still gets a symbol and words.</p>
+          </article>
+          <article class="guide-card">
+            <h3>Surface</h3>
+            <ul>
+              <li>hard border + crooked shadow</li>
+              <li>stamped heading strip</li>
+              <li>optional yellow kicker</li>
+            </ul>
+          </article>
+          <article class="guide-card">
+            <h3>States</h3>
+            <ul>
+              <li>rest / hover / active</li>
+              <li>visible keyboard focus</li>
+              <li>selected shape + label</li>
+              <li>reduced-motion safe</li>
+            </ul>
+          </article>
+          <article class="guide-card">
+            <h3>Ownership</h3>
+            <p>The board owns its 50-number rule and fixed roll. The counter owns 1–10. Contexts coordinate the approval and receipt transition.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="decision-section" id="decisions" aria-labelledby="decisions-title">
+        <div class="decision-heading">
+          <p class="section-kicker">system-decisions.json / visible ledger</p>
+          <h2 id="decisions-title">Promote, prune, keep local</h2>
+          <p>These rationales are rendered from the decision manifest so the design system stays inspectable.</p>
+        </div>
+        <div class="decision-ledger" id="decisions-mount"></div>
+      </section>
+
+      <p class="footer-note">Local-only demo. No wallet, network, QRNG call, contract, deployment, persistence, sound, image, or external fetch is required to use this styleguide.</p>
+    </main>
+    <script type="module" src="./styleguide.js"></script>
+  </body>
+</html>

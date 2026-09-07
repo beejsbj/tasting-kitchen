@@ -1,0 +1,17 @@
+{
+  "promote": {
+    "symbol": "Status",
+    "source": "src/components.js",
+    "reason": "Overview, board approval, and receipt all use the same compact state anatomy; promote it once so symbol, words, tone, and live updates cannot drift."
+  },
+  "prune": {
+    "symbol": null,
+    "source": null,
+    "reason": "The evidence names reusable upstream CSS selectors but provides no undersupported shared JavaScript component to remove; keeping this as null avoids inventing an abstraction for the ledger."
+  },
+  "keepLocal": {
+    "symbol": "LotteryBoard",
+    "source": "src/lottery-board.js",
+    "reason": "The 50-number board owns exactly-five enforcement, pointer and keyboard selection, the fixed roll sequence, and its submit event; that behavior is specific to this feature and should remain local."
+  }
+}

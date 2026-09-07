@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "entry-exists",
+      "type": "file-exists",
+      "required": true,
+      "description": "The importing P5 Lottery styleguide entry exists.",
+      "passed": true,
+      "detail": "index.html exists"
+    },
+    {
+      "id": "decisions-exist",
+      "type": "file-exists",
+      "required": true,
+      "description": "The machine-readable P5 Lottery system-decision ledger exists.",
+      "passed": true,
+      "detail": "system-decisions.json exists"
+    },
+    {
+      "id": "source-boundary-contract",
+      "type": "command",
+      "required": true,
+      "description": "The source modules, styleguide files, and decision ledger are present, nonempty, and parse as JavaScript where applicable. The ledger supports truthful no-candidate promote/prune decisions and requires a named local behavior owner.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "qrng-system-review",
+      "type": "manual",
+      "required": false,
+      "description": "In a browser and the published source, verify that the styleguide imports the real modules, all three contexts are visible, five-number selection, deterministic roll, ticket bounds, submit guard, approval and rejection work locally, status has text plus a non-color cue, and the paper-slip language feels continuous with the pinned upstream source. This review judges source architecture and visual taste; the automatic validator does not.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}
