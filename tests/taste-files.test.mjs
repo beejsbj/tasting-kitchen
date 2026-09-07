@@ -24,6 +24,13 @@ test("public scan distinguishes JavaScript regex literals from Unix absolute pat
   assert.ok(publicTextFindings("Open /workspace/output/index.html").includes("absolute path"));
 });
 
+test("public scan permits quoted source-root aliases without permitting absolute paths", () => {
+  assert.deepEqual(publicTextFindings('import type { Note } from "@/types/music";'), []);
+  assert.deepEqual(publicTextFindings('src: url("@/assets/fonts/local.woff2")'), []);
+  assert.ok(publicTextFindings('import data from "/workspace/output/data.js";').includes("absolute path"));
+  assert.ok(publicTextFindings('src: url("/home/user/private.woff2")').includes("absolute home path"));
+});
+
 test("public tree scan permits only parent references that resolve inside the artifact", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-public-tree-"));
   t.after(() => rm(root, { recursive: true, force: true }));
