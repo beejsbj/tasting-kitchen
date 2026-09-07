@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Maya Chen is a frontend developer in Ottawa building clear, usable websites and product interfaces.">
+    <title>Maya Chen — Frontend developer</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header" data-header>
+      <div class="shell header-inner">
+        <a class="wordmark" href="#top" aria-label="Maya Chen, home">
+          <span class="wordmark-mark" aria-hidden="true">MC</span>
+          <span class="wordmark-name">Maya Chen</span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">
+          <span class="menu-toggle-label">Menu</span>
+          <span class="menu-icon" aria-hidden="true"><span></span><span></span></span>
+        </button>
+        <nav class="site-nav" id="primary-navigation" aria-label="Primary navigation">
+          <a href="#work">Work</a>
+          <a href="#about">About</a>
+          <a href="#experience">Experience</a>
+          <a class="nav-contact" href="#contact">Get in touch <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="shell hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Available for select work</p>
+            <h1 id="hero-title">I build clear, usable websites and product interfaces.</h1>
+            <p class="hero-intro">I'm a frontend developer working with small product teams. I enjoy turning a well-defined problem into a responsive interface that people can understand and use with confidence.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#work">View selected work <span aria-hidden="true">↓</span></a>
+              <a class="text-link" href="#contact">Let's talk <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+          <aside class="hero-note" aria-label="Availability and location">
+            <div class="note-rule"></div>
+            <p class="note-label">Currently</p>
+            <p class="note-value">Open to frontend roles and small website projects.</p>
+            <p class="note-detail">Remote within Canada or hybrid in Ottawa.</p>
+            <div class="note-meta">
+              <span>Based in</span>
+              <strong>Ottawa, Ontario</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="work-section section-pad" id="work" aria-labelledby="work-title">
+        <div class="shell">
+          <div class="section-heading section-heading-split">
+            <div>
+              <p class="eyebrow">Selected work</p>
+              <h2 id="work-title">A few things I've made.</h2>
+            </div>
+            <p class="section-lede">Small, focused projects with careful attention to content, interaction and the details between.</p>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-controls" role="group" aria-label="Filter projects">
+              <span class="filter-label">Filter projects</span>
+              <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All projects</button>
+              <button class="filter-button" type="button" data-filter="Websites" aria-pressed="false">Websites</button>
+              <button class="filter-button" type="button" data-filter="Product UI" aria-pressed="false">Product UI</button>
+            </div>
+            <p class="filter-status" id="filter-status" role="status" aria-live="polite">Showing 3 projects in All projects.</p>
+          </div>
+
+          <div class="project-grid" data-project-list>
+            <article class="project-card" data-category="Websites" data-project-card>
+              <div class="project-card-top">
+                <span class="project-index">01</span>
+                <span class="project-category">Websites</span>
+              </div>
+              <div class="project-card-content">
+                <div class="project-title-row">
+                  <h3>Cedar Classes</h3>
+                  <span class="project-year">2025</span>
+                </div>
+                <p>A community studio website that makes class descriptions, schedules and booking information easy to find.</p>
+                <div class="tag-list" aria-label="Technology stack">
+                  <span>HTML</span><span>CSS</span><span>JavaScript</span>
+                </div>
+              </div>
+              <div class="project-card-footer">
+                <span>Frontend development</span>
+                <a class="card-link" href="#case-cedar-classes">Read case study <span aria-hidden="true">↗</span></a>
+              </div>
+            </article>
+
+            <article class="project-card project-card-featured" data-category="Product UI" data-project-card>
+              <div class="project-card-top">
+                <span class="project-index">02</span>
+                <span class="project-category">Product UI</span>
+              </div>
+              <div class="project-card-content">
+                <div class="project-title-row">
+                  <h3>Stockroom Notes</h3>
+                  <span class="project-year">2025</span>
+                </div>
+                <p>A small inventory interface for recording supplies and flagging items that need attention.</p>
+                <div class="tag-list" aria-label="Technology stack">
+                  <span>React</span><span>TypeScript</span><span>CSS</span>
+                </div>
+              </div>
+              <div class="project-card-footer">
+                <span>Frontend implementation</span>
+                <a class="card-link" href="#case-stockroom-notes">Read case study <span aria-hidden="true">↗</span></a>
+              </div>
+            </article>
+
+            <article class="project-card" data-category="Websites" data-project-card>
+              <div class="project-card-top">
+                <span class="project-index">03</span>
+                <span class="project-category">Websites</span>
+              </div>
+              <div class="project-card-content">
+                <div class="project-title-row">
+                  <h3>Fieldwork Journal</h3>
+                  <span class="project-year">2024</span>
+                </div>
+                <p>A reading-focused website for a fictional independent design journal.</p>
+                <div class="tag-list" aria-label="Technology stack">
+                  <span>HTML</span><span>CSS</span><span>JavaScript</span>
+                </div>
+              </div>
+              <div class="project-card-footer">
+                <span>Frontend development</span>
+                <a class="card-link" href="#case-fieldwork-journal">Read case study <span aria-hidden="true">↗</span></a>
+              </div>
+            </article>
+          </div>
+          <p class="empty-state" data-empty-state hidden>No projects in this category.</p>
+        </div>
+      </section>
+
+      <section class="case-studies section-pad section-tint" aria-labelledby="case-studies-title">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow">Project notes</p>
+            <h2 id="case-studies-title">How I approach the work.</h2>
+            <p class="section-lede">The details behind each project are kept here so the work stays easy to explore, whatever filter is active above.</p>
+          </div>
+
+          <div class="case-study-list">
+            <article class="case-study" id="case-cedar-classes">
+              <div class="case-study-heading">
+                <p class="case-number">01 / Websites / 2025</p>
+                <h3>Cedar Classes</h3>
+                <p class="case-summary">A community studio website that makes class descriptions, schedules and booking information easy to find.</p>
+              </div>
+              <div class="case-study-copy">
+                <dl class="case-meta">
+                  <div><dt>Role</dt><dd>Frontend development and content structure, personal demonstration project</dd></div>
+                  <div><dt>Stack</dt><dd>HTML · CSS · JavaScript</dd></div>
+                </dl>
+                <div class="case-points">
+                  <div><h4>Problem</h4><p>The fictional studio's class details were scattered across long pages, so a visitor had to hunt for the time, skill level and materials list.</p></div>
+                  <div><h4>Approach</h4><p>I grouped classes into a consistent card structure and gave each class a detail section with its schedule, prerequisites and supplies. The small-screen navigation keeps the class list one tap away.</p></div>
+                  <div><h4>Result</h4><p>The completed demonstration includes six class pages, responsive navigation and a local booking enquiry preview. There is no live booking service or measured conversion result.</p></div>
+                  <div><h4>Learning</h4><p>Writing the content structure before choosing a layout helped keep the cards consistent without hiding useful detail.</p></div>
+                </div>
+                <p class="links-note">This local case study is the available project material. A hosted demo and public repository are not available.</p>
+              </div>
+            </article>
+
+            <article class="case-study" id="case-stockroom-notes">
+              <div class="case-study-heading">
+                <p class="case-number">02 / Product UI / 2025</p>
+                <h3>Stockroom Notes</h3>
+                <p class="case-summary">A small inventory interface for recording supplies and flagging items that need attention.</p>
+              </div>
+              <div class="case-study-copy">
+                <dl class="case-meta">
+                  <div><dt>Role</dt><dd>Frontend implementation, independent practice project</dd></div>
+                  <div><dt>Stack</dt><dd>React · TypeScript · CSS</dd></div>
+                </dl>
+                <div class="case-points">
+                  <div><h4>Problem</h4><p>A fictional workshop needed a readable way to review stock counts without presenting every editing control at once.</p></div>
+                  <div><h4>Approach</h4><p>I built a searchable table with clear stock states and a focused edit panel. Form labels, validation and keyboard focus were treated as part of the interface from the start.</p></div>
+                  <div><h4>Result</h4><p>The prototype supports searching, editing local sample records and reviewing low-stock items. It has no backend, production users or published performance measurements.</p></div>
+                  <div><h4>Learning</h4><p>Keeping the edit panel focused on one record made error messages easier to explain and test.</p></div>
+                </div>
+                <p class="links-note">Read this local case study. The original prototype and its source are not publicly available.</p>
+              </div>
+            </article>
+
+            <article class="case-study" id="case-fieldwork-journal">
+              <div class="case-study-heading">
+                <p class="case-number">03 / Websites / 2024</p>
+                <h3>Fieldwork Journal</h3>
+                <p class="case-summary">A reading-focused website for a fictional independent design journal.</p>
+              </div>
+              <div class="case-study-copy">
+                <dl class="case-meta">
+                  <div><dt>Role</dt><dd>Frontend development from a self-written brief</dd></div>
+                  <div><dt>Stack</dt><dd>HTML · CSS · JavaScript</dd></div>
+                </dl>
+                <div class="case-points">
+                  <div><h4>Problem</h4><p>The journal needed an article template that could handle short announcements and longer essays without separate layouts for every story.</p></div>
+                  <div><h4>Approach</h4><p>I created a shared reading layout, article metadata and related-story links, then checked headings and line length at narrow and wide widths.</p></div>
+                  <div><h4>Result</h4><p>The static demonstration contains an issue index and four sample articles. It is a portfolio exercise, with no audience or engagement figures claimed.</p></div>
+                  <div><h4>Learning</h4><p>A restrained template gave the writing room and made inconsistent spacing much easier to spot.</p></div>
+                </div>
+                <p class="links-note">The case study on this page is the supplied record. No external publication or repository link is available.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-section section-pad" id="about" aria-labelledby="about-title">
+        <div class="shell about-grid">
+          <div class="section-heading">
+            <p class="eyebrow">A little about me</p>
+            <h2 id="about-title">Thoughtful interfaces start with paying attention.</h2>
+          </div>
+          <div class="about-copy">
+            <p>I came to frontend development through maintaining a community newsletter website. I liked the mix of careful implementation and small decisions that make a page easier to use.</p>
+            <p>My recent work has focused on forms, content-heavy pages and component libraries. I like collaborating with designers, documenting tradeoffs and leaving code that another developer can pick up.</p>
+            <p>Away from the screen, I enjoy cooking, neighbourhood walks and sketching buildings. I'm currently practising accessible form patterns and learning more about browser performance tools.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="skills-section section-pad section-dark" aria-labelledby="skills-title">
+        <div class="shell">
+          <div class="section-heading section-heading-light">
+            <p class="eyebrow">Capabilities</p>
+            <h2 id="skills-title">Tools for doing the work well.</h2>
+          </div>
+          <div class="skills-grid">
+            <div class="skill-group"><h3>Frontend</h3><ul><li>Semantic HTML</li><li>CSS</li><li>JavaScript</li><li>TypeScript</li><li>React</li></ul></div>
+            <div class="skill-group"><h3>Working practices</h3><ul><li>Responsive layouts</li><li>Keyboard accessibility</li><li>Component documentation</li><li>Git</li><li>Browser testing</li></ul></div>
+            <div class="skill-group"><h3>Tools</h3><ul><li>Vite</li><li>Playwright</li><li>Figma handoff</li></ul></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="experience-section section-pad" id="experience" aria-labelledby="experience-title">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow">Experience</p>
+            <h2 id="experience-title">Where I've been putting it into practice.</h2>
+          </div>
+          <div class="experience-list">
+            <article class="experience-item">
+              <div class="experience-dates">2024–present</div>
+              <div class="experience-role"><h3>Frontend developer <span>at Common Desk Software</span></h3><p>Implement interface updates for a small scheduling product in collaboration with a designer and two other developers.</p><ul><li>Build and maintain React components for settings and account forms.</li><li>Document component states and review changes for keyboard use.</li><li>Write browser tests for recurring form and navigation flows.</li></ul></div>
+            </article>
+            <article class="experience-item">
+              <div class="experience-dates">2022–2024</div>
+              <div class="experience-role"><h3>Junior web developer <span>at Maple Row Studio</span></h3><p>Worked on small business websites and ongoing content updates in a four-person studio.</p><ul><li>Built responsive page sections from supplied designs and copy.</li><li>Maintained reusable HTML and CSS patterns across brochure sites.</li><li>Checked releases in major desktop and mobile browsers.</li></ul></div>
+            </article>
+          </div>
+
+          <div class="education-row">
+            <p class="eyebrow">Education</p>
+            <div><h3>Diploma in Web Development</h3><p>Ottawa Technical College (fictional) <span>·</span> 2022</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-section section-pad" id="contact" aria-labelledby="contact-title">
+        <div class="shell contact-panel">
+          <div class="contact-copy">
+            <p class="eyebrow">Contact</p>
+            <h2 id="contact-title">Have a frontend role or a small website project in mind?</h2>
+            <p>The fictional contact address is shown here for context. This preview does not send messages.</p>
+          </div>
+          <div class="contact-action">
+            <p class="contact-label">Fictional contact address</p>
+            <p class="contact-email">maya@mayachen.example</p>
+            <button class="button button-light" type="button" data-copy-email aria-describedby="copy-status">Copy address <span aria-hidden="true">↗</span></button>
+            <p class="copy-status" id="copy-status" role="status" aria-live="polite">Local preview only · no message will be sent.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <p>Maya Chen <span aria-hidden="true">·</span> Fictional developer portfolio <span aria-hidden="true">·</span> Contact shown for preview only</p>
+        <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
+      </div>
+      <div class="shell fictional-note">Maya Chen, her employers, education and projects are original fictional content for this portfolio exercise.</div>
+    </footer>
+  </body>
+</html>
