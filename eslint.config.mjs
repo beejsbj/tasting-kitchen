@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "out/**",
     "build/**",
+    "dishes/**",
     "private/**",
     "public/data/**",
     "public/dishes/**",
