@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_extend-conduit-design-system_codex-luna-xhigh_20260906234308634_008f475e",
+  "recipe": {
+    "id": "extend-conduit-design-system",
+    "version": "1.0.0",
+    "hash": "sha256:1c651912ec6b376cc2fedd11cd969b6ded1c019fdd62c533d176b1ff9d8655f6"
+  },
+  "executedAt": "2026-09-06T23:43:08.634Z",
+  "finalizedAt": "2026-09-07T00:00:51.324Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/extension-decisions.json",
+        "sha256": "354b2da7b5ae84eb13595ee80b43da2f318e745eb17287f1d6a548a2a9dfe2e0",
+        "bytes": 672
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "fb7dd127754425649429bb22cfd19831cabe89bca28dd871c44d1a6711eae355",
+        "bytes": 584
+      },
+      {
+        "path": "artifact/src/conduit-primitives.js",
+        "sha256": "b087485fe9d582a3832466ea2a654eff53c6984bc20b1286cbe8710f7fcae36f",
+        "bytes": 7254
+      },
+      {
+        "path": "artifact/src/conduit-tokens.css",
+        "sha256": "da0e98492f686a1aab268eece9a98b1c093252e0715110cf09ecf4c4ceffe123",
+        "bytes": 6935
+      },
+      {
+        "path": "artifact/src/listing-provenance.js",
+        "sha256": "2ad61125f57846095c9f753c63de7a3ff8ae1564e1c2f806e715f5d3d7084a8f",
+        "bytes": 6461
+      },
+      {
+        "path": "artifact/styleguide.js",
+        "sha256": "78b57186e4cdda17ef4c3751f20e97b87eb09e541fd41f1c91ec24ce7c7e22f9",
+        "bytes": 17210
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "013b83243ef991eb1cf11def5e51da5322ee782748499c885472cfacbb4c37ff",
+        "bytes": 28870
+      }
+    ],
+    "treeHash": "sha256:743e7d0bba72bbbda19b2b87cf8d27392589d4b118d9fbb768f029106c051a75"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:0d7d423a1b34deaa94cc692ddbc29fa3ccf21144a6e730fa99188a09465c49cb"
+}

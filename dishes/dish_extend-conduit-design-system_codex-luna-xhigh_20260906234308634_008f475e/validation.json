@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "entry-exists",
+      "type": "file-exists",
+      "required": true,
+      "description": "The self-contained Conduit styleguide entry exists.",
+      "passed": true,
+      "detail": "index.html exists"
+    },
+    {
+      "id": "extension-record-exists",
+      "type": "file-exists",
+      "required": true,
+      "description": "The machine-readable extension boundary record exists.",
+      "passed": true,
+      "detail": "extension-decisions.json exists"
+    },
+    {
+      "id": "conduit-boundary-contract",
+      "type": "command",
+      "required": true,
+      "description": "Required browser source files and the extension record exist, the entry and guide reference their required resources, declared source paths are contained, and published JavaScript parses.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "conduit-review",
+      "type": "manual",
+      "required": false,
+      "description": "In a browser, inspect the source imports and the live guide: check all three contexts, keyboard and pointer selection, visible text state, focus, responsive reading, and whether the local feature uses the supplied Conduit language without claiming the React reference snapshot ran.",
+      "passed": true,
+      "advisory": true,
+      "detail": "manual is a human review cue and does not gate publication"
+    }
+  ]
+}

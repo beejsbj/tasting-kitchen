@@ -1,0 +1,12 @@
+{
+  "shared": [],
+  "local": [
+    {
+      "symbol": "ListingProvenanceInspector",
+      "reason": "The listing provenance inspector is a concrete local feature requested for three supplied listing samples. The evidence establishes Conduit's token roles, tabs, buttons, badges, and readable section shell, but does not establish a reusable provenance primitive; keeping this behavior local preserves that boundary.",
+      "source": "src/listing-provenance.js",
+      "evidence": "The feature has its own keyboard-operable selector, sample-state copy, and local-only data contract. It performs no relay, account, inventory, or payment work."
+    }
+  ],
+  "declined": []
+}

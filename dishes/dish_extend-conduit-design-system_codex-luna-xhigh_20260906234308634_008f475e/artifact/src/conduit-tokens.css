@@ -1,0 +1,173 @@
+:root {
+  /* Conduit source roles: indigo paper, light ink, purple primary, orange secondary,
+     rose tertiary, and indigo accent. These are browser-native aliases, not utility classes. */
+  --base-h: 255;
+  --base-s: 8%;
+  --primary-h: 280;
+  --primary-s: 94%;
+  --secondary-h: 24;
+  --secondary-s: 77%;
+  --tertiary-h: 338;
+  --tertiary-s: 54%;
+  --accent-h: 255;
+  --accent-s: 67%;
+
+  --base-50: hsl(var(--base-h) var(--base-s) 95%);
+  --base-100: hsl(var(--base-h) var(--base-s) 90%);
+  --base-150: hsl(var(--base-h) var(--base-s) 85%);
+  --base-200: hsl(var(--base-h) var(--base-s) 80%);
+  --base-300: hsl(var(--base-h) var(--base-s) 70%);
+  --base-400: hsl(var(--base-h) var(--base-s) 60%);
+  --base-500: hsl(var(--base-h) var(--base-s) 50%);
+  --base-600: hsl(var(--base-h) var(--base-s) 40%);
+  --base-700: hsl(var(--base-h) var(--base-s) 30%);
+  --base-800: hsl(var(--base-h) var(--base-s) 20%);
+  --base-900: hsl(var(--base-h) var(--base-s) 10%);
+  --base-950: hsl(var(--base-h) var(--base-s) 5%);
+
+  --primary-100: hsl(var(--primary-h) var(--primary-s) 90%);
+  --primary-200: hsl(var(--primary-h) var(--primary-s) 80%);
+  --primary-300: hsl(var(--primary-h) var(--primary-s) 70%);
+  --primary-400: hsl(var(--primary-h) var(--primary-s) 60%);
+  --primary-500: hsl(var(--primary-h) var(--primary-s) 50%);
+  --primary-600: hsl(var(--primary-h) var(--primary-s) 40%);
+  --primary-700: hsl(var(--primary-h) var(--primary-s) 30%);
+  --primary-800: hsl(var(--primary-h) var(--primary-s) 20%);
+  --primary-900: hsl(var(--primary-h) var(--primary-s) 10%);
+
+  --secondary-100: hsl(var(--secondary-h) var(--secondary-s) 90%);
+  --secondary-200: hsl(var(--secondary-h) var(--secondary-s) 80%);
+  --secondary-300: hsl(var(--secondary-h) var(--secondary-s) 70%);
+  --secondary-400: hsl(var(--secondary-h) var(--secondary-s) 60%);
+  --secondary-500: hsl(var(--secondary-h) var(--secondary-s) 50%);
+  --secondary-600: hsl(var(--secondary-h) var(--secondary-s) 40%);
+  --secondary-700: hsl(var(--secondary-h) var(--secondary-s) 30%);
+  --secondary-800: hsl(var(--secondary-h) var(--secondary-s) 20%);
+  --secondary-900: hsl(var(--secondary-h) var(--secondary-s) 10%);
+
+  --tertiary-100: hsl(var(--tertiary-h) var(--tertiary-s) 90%);
+  --tertiary-200: hsl(var(--tertiary-h) var(--tertiary-s) 80%);
+  --tertiary-300: hsl(var(--tertiary-h) var(--tertiary-s) 70%);
+  --tertiary-400: hsl(var(--tertiary-h) var(--tertiary-s) 60%);
+  --tertiary-500: hsl(var(--tertiary-h) var(--tertiary-s) 50%);
+  --tertiary-600: hsl(var(--tertiary-h) var(--tertiary-s) 40%);
+  --tertiary-700: hsl(var(--tertiary-h) var(--tertiary-s) 30%);
+  --tertiary-800: hsl(var(--tertiary-h) var(--tertiary-s) 20%);
+  --tertiary-900: hsl(var(--tertiary-h) var(--tertiary-s) 10%);
+
+  --accent-100: hsl(var(--accent-h) var(--accent-s) 90%);
+  --accent-200: hsl(var(--accent-h) var(--accent-s) 80%);
+  --accent-300: hsl(var(--accent-h) var(--accent-s) 70%);
+  --accent-400: hsl(var(--accent-h) var(--accent-s) 60%);
+  --accent-500: hsl(var(--accent-h) var(--accent-s) 50%);
+  --accent-600: hsl(var(--accent-h) var(--accent-s) 40%);
+  --accent-700: hsl(var(--accent-h) var(--accent-s) 30%);
+  --accent-800: hsl(var(--accent-h) var(--accent-s) 20%);
+  --accent-900: hsl(var(--accent-h) var(--accent-s) 10%);
+  --accent-950: hsl(var(--accent-h) var(--accent-s) 5%);
+
+  /* Semantic surface and foreground roles. */
+  --paper: var(--accent-950);
+  --ink: var(--base-100);
+  --ink-soft: var(--base-300);
+  --ink-faint: var(--base-400);
+  --surface: hsl(var(--base-h) var(--base-s) 8%);
+  --surface-raised: hsl(var(--base-h) var(--base-s) 12%);
+  --surface-sunken: hsl(var(--base-h) var(--base-s) 4%);
+  --surface-highlight: hsl(var(--accent-h) 40% 12%);
+  --line: hsl(var(--base-h) 20% 30% / 0.7);
+  --line-strong: hsl(var(--base-h) 24% 48% / 0.75);
+
+  --role-primary: var(--primary-500);
+  --role-primary-strong: var(--primary-400);
+  --role-primary-soft: var(--primary-800);
+  --role-primary-foreground: var(--primary-100);
+  --role-secondary: var(--secondary-500);
+  --role-secondary-strong: var(--secondary-400);
+  --role-secondary-soft: var(--secondary-800);
+  --role-secondary-foreground: var(--secondary-100);
+  --role-tertiary: var(--tertiary-500);
+  --role-tertiary-strong: var(--tertiary-400);
+  --role-tertiary-soft: var(--tertiary-800);
+  --role-tertiary-foreground: var(--tertiary-100);
+  --role-accent: var(--accent-500);
+  --role-accent-strong: var(--accent-400);
+  --role-accent-soft: var(--accent-800);
+  --role-accent-foreground: var(--accent-100);
+
+  --status-verified: hsl(127 62% 54%);
+  --status-current: var(--role-secondary-strong);
+  --status-review: var(--role-tertiary-strong);
+  --status-verified-surface: hsl(127 35% 16%);
+  --status-current-surface: var(--role-secondary-soft);
+  --status-review-surface: var(--role-tertiary-soft);
+
+  /* Rounded display + sans/mono voice. No remote font is required. */
+  --font-display: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-size-xs: 0.6875rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-4xl: 3.25rem;
+  --font-size-5xl: 4.75rem;
+  --leading-tight: 1.08;
+  --leading-snug: 1.3;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 650;
+  --weight-bold: 750;
+
+  /* Geometry, density, and layout constraints. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-pill: 999px;
+  --border-thin: 1px;
+  --content-wide: 80rem;
+  --content-normal: 64rem;
+  --content-narrow: 48rem;
+  --content-x-narrow: 36rem;
+  --control-sm: 2rem;
+  --control-md: 2.5rem;
+  --control-lg: 3rem;
+
+  /* Interaction recipes. */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --ease-standard: cubic-bezier(0.2, 0.65, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.47, 1.64, 0.41, 0.8);
+  --shadow-card: 0 1.5rem 3rem hsl(var(--base-h) 40% 2% / 0.28), 0 0 0 var(--border-thin) hsl(var(--base-h) 20% 40% / 0.1);
+  --shadow-float: 0 1rem 2rem hsl(var(--base-h) 40% 2% / 0.32);
+  --shadow-primary: 0 0 1.5rem hsl(var(--primary-h) 88% 56% / 0.24);
+  --focus-ring: 0 0 0 0.1875rem var(--paper), 0 0 0 0.3125rem var(--role-secondary-strong);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 2rem;
+    --font-size-3xl: 2.5rem;
+    --font-size-4xl: 3.75rem;
+    --font-size-5xl: 5.75rem;
+  }
+}
