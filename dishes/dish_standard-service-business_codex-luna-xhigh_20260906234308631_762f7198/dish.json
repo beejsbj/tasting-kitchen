@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_standard-service-business_codex-luna-xhigh_20260906234308631_762f7198",
+  "recipe": {
+    "id": "standard-service-business",
+    "version": "1.0.0",
+    "hash": "sha256:c82881255860db69b54453ea301106b0cfd17d219d11b8af6026e0b931e5884f"
+  },
+  "executedAt": "2026-09-06T23:43:08.631Z",
+  "finalizedAt": "2026-09-07T00:00:33.223Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:3407173637f5ac0b38f193c60b4bbcfa051faddd06cb0bdb2ae8254fbc547ae3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "web",
+    "entry": "artifact/index.html",
+    "files": [
+      {
+        "path": "artifact/app.mjs",
+        "sha256": "eb21f9607feaa381f69d44e9c32cb3e2cd915ddedd37dcfb5fff070f0977861b",
+        "bytes": 5981
+      },
+      {
+        "path": "artifact/data/content.json",
+        "sha256": "6356369fd0b946915f7a1615fb1f242a52add12259b48586e4407ff17f6f4c07",
+        "bytes": 5691
+      },
+      {
+        "path": "artifact/index.html",
+        "sha256": "319db2e89f3d29c81ea191e14fdffce7f7be81aed0452133a7a61303ba039c91",
+        "bytes": 23552
+      },
+      {
+        "path": "artifact/styles.css",
+        "sha256": "da3e7997339089477ef07820d68ef65a0545b63e556f52e6810790217e15866f",
+        "bytes": 32779
+      }
+    ],
+    "treeHash": "sha256:bd0b2d8ea489274490bcf1cce1521c9790442198ef8a7dd8d5dcd603cb2752a1"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:d7f5b7ff1f02fcc69d962a47aa87640f156edac327fbae3c4347d5bdc1a77604"
+}
