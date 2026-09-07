@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Patchlane checks expected environment keys before release.">
+    <title>Patchlane — Configuration checks before release</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#top" aria-label="Patchlane home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 5.5h9.5a4.5 4.5 0 0 1 0 9H9v4H5v-13Z" fill="currentColor"/>
+              <path d="M9 9h5.2a1 1 0 0 1 0 2H9V9Z" fill="white"/>
+            </svg>
+          </span>
+          <span>patchlane</span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Primary navigation">
+          <a href="#features">Features</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#installation">Installation</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+
+        <a class="header-action" href="#installation">Get started</a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav">
+          <span class="sr-only">Open navigation</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <nav id="mobile-nav" class="mobile-nav shell" aria-label="Mobile navigation" hidden>
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#installation">Installation</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section id="top" class="hero section-shell" aria-labelledby="hero-heading">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Configuration checks for small development teams</p>
+          <h1 id="hero-heading">Catch missing configuration <span>before release.</span></h1>
+          <p class="hero-intro">Define the environment keys your project expects, then run a repeatable check from your terminal or CI job. Patchlane reports missing names without printing secret values.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#installation">See installation <span aria-hidden="true">→</span></a>
+            <a class="button button-secondary" href="#pricing">View pricing</a>
+          </div>
+          <p class="hero-note"><strong>Keep release checks readable.</strong> Define separate expected-key lists for development, staging and production.</p>
+        </div>
+
+        <div class="terminal-card" aria-label="Example Patchlane check output">
+          <div class="terminal-topbar">
+            <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span class="terminal-label">patchlane check</span>
+            <span class="terminal-status"><span class="status-dot" aria-hidden="true"></span>example</span>
+          </div>
+          <div class="terminal-body">
+            <p class="terminal-command"><span class="prompt" aria-hidden="true">$</span> npx patchlane check <span class="terminal-muted">--profile staging</span></p>
+            <pre><code>Profile: staging
+APP_ORIGIN  <span class="terminal-green">present</span>
+API_TOKEN   <span class="terminal-red">missing (required)</span>
+LOG_LEVEL   <span class="terminal-yellow">unset (optional)</span>
+<span class="terminal-red">1 required key missing · exit status 1</span>
+Values are not displayed.</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section-shell section-block" aria-labelledby="features-heading">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">A focused check</p>
+            <h2 id="features-heading">Everything you need to verify the names that matter.</h2>
+          </div>
+          <p>Patchlane keeps configuration expectations close to the project and the results easy to review.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-number">01</span>
+            <h3>One expected-key list</h3>
+            <p>Keep required and optional environment key names in a small project file that can be reviewed with your code.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">02</span>
+            <h3>Readable local results</h3>
+            <p>See which key names are present, missing or optional. Values stay out of the report.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">03</span>
+            <h3>CI-friendly exit status</h3>
+            <p>Use the same check in a pipeline. A missing required key produces a failing status so the team can investigate.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">04</span>
+            <h3>Profiles for each environment</h3>
+            <p>Define separate expected-key lists for development, staging and production without copying secret values into the configuration file.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">05</span>
+            <h3>Share a check summary</h3>
+            <p>Export a plain-text summary of key names and check results to include with a release note.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">06</span>
+            <h3>Team conventions</h3>
+            <p>Paid plans add shared check templates and workspace roles for teams that want a common starting point.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="workflow" class="section-shell section-block workflow-section" aria-labelledby="workflow-heading">
+        <div class="section-heading centered-heading">
+          <p class="eyebrow">A repeatable workflow</p>
+          <h2 id="workflow-heading">From expected names to a release-ready check.</h2>
+          <p>Keep secret values in your existing environment setup while Patchlane checks the shape of the configuration.</p>
+        </div>
+        <ol class="workflow-list">
+          <li class="workflow-step">
+            <span class="step-marker">01</span>
+            <div>
+              <h3>List expected keys</h3>
+              <p>Add the required and optional names to <code>patchlane.json</code>. Keep secret values in your existing environment setup.</p>
+            </div>
+          </li>
+          <li class="workflow-step">
+            <span class="step-marker">02</span>
+            <div>
+              <h3>Run a check</h3>
+              <p>Use the local command while preparing a change, or run it as a CI step.</p>
+            </div>
+          </li>
+          <li class="workflow-step">
+            <span class="step-marker">03</span>
+            <div>
+              <h3>Review missing names</h3>
+              <p>Read the report, update your environment and check again before releasing.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section id="installation" class="section-shell section-block installation-section" aria-labelledby="installation-heading">
+        <div class="section-heading split-heading installation-heading">
+          <div>
+            <p class="eyebrow">Installation</p>
+            <h2 id="installation-heading">Start with a local check</h2>
+          </div>
+          <p>Illustrative commands for a fictional package. Copying does not install or run anything. The report is a static example, not a live check.</p>
+        </div>
+
+        <aside class="fiction-note" aria-label="Fictional package notice">
+          <span class="note-icon" aria-hidden="true">i</span>
+          <p>Patchlane is a fictional developer tool. Commands, package names and plan terms are supplied marketing examples, not a claim that a real package or service exists.</p>
+        </aside>
+
+        <div class="installation-grid">
+          <div class="install-column">
+            <div class="code-label-row">
+              <span class="code-label">Install</span>
+              <button id="copy-install" class="copy-button" type="button" aria-describedby="copy-status">Copy install command</button>
+            </div>
+            <div class="code-block command-block">
+              <code id="install-command" data-command="npm install --save-dev @patchlane/cli">npm install --save-dev @patchlane/cli</code>
+            </div>
+            <div id="copy-status" class="copy-status" role="status" aria-live="polite" aria-atomic="true"></div>
+            <div id="manual-copy" class="manual-copy" hidden>
+              <label for="manual-command">Manual copy</label>
+              <input id="manual-command" type="text" readonly value="npm install --save-dev @patchlane/cli" aria-describedby="copy-status">
+            </div>
+
+            <div class="code-label-row run-label">
+              <span class="code-label">Run a profile check</span>
+            </div>
+            <div class="code-block">
+              <code>npx patchlane check --profile staging</code>
+            </div>
+          </div>
+
+          <div class="specimen-column">
+            <div class="code-label-row"><span class="code-label">patchlane.json</span><span class="code-caption">Configuration</span></div>
+            <pre class="code-block specimen"><code>{
+  "profiles": {
+    "staging": {
+      "required": ["APP_ORIGIN", "API_TOKEN"],
+      "optional": ["LOG_LEVEL"]
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="output-panel">
+          <div class="output-heading">
+            <div>
+              <span class="code-label">Example output</span>
+              <h3>Review names, never secret values.</h3>
+            </div>
+            <span class="output-chip">exit status 1</span>
+          </div>
+          <pre class="output-code"><code>Profile: staging
+APP_ORIGIN  present
+API_TOKEN   missing (required)
+LOG_LEVEL   unset (optional)
+1 required key missing · exit status 1
+Values are not displayed.</code></pre>
+        </div>
+      </section>
+
+      <section id="pricing" class="section-shell section-block pricing-section" aria-labelledby="pricing-heading">
+        <div class="section-heading centered-heading">
+          <p class="eyebrow">Pricing</p>
+          <h2 id="pricing-heading">Simple plans for a small workflow</h2>
+          <p>Illustrative prices in USD. Paid plans are billed monthly. There is no annual plan or discount in this packet. No checkout is connected.</p>
+        </div>
+        <div class="pricing-grid">
+          <article class="plan-card">
+            <div class="plan-topline"><h3>Local</h3><span class="plan-tag">Start here</span></div>
+            <p class="plan-audience">For individual projects</p>
+            <p class="price"><span class="price-amount">$0</span><span class="price-unit">USD / month</span></p>
+            <ul class="plan-features">
+              <li>Local and CI checks</li>
+              <li>Unlimited local projects</li>
+              <li>Plain-text reports</li>
+              <li>Self-serve example documentation</li>
+            </ul>
+            <button class="button button-plan" type="button" aria-expanded="false" aria-controls="preview-local" data-preview="preview-local" data-plan-name="Local">Preview Local</button>
+            <p id="preview-local" class="plan-preview" role="status" hidden>Local plan preview: $0. The example install command is available on this page. No account has been created and no software has been installed.</p>
+          </article>
+
+          <article class="plan-card plan-card-featured">
+            <div class="plan-ribbon">For a small team</div>
+            <div class="plan-topline"><h3>Team</h3><span class="plan-tag">Team plan</span></div>
+            <p class="plan-audience">For one small team</p>
+            <p class="price"><span class="price-amount">$12</span><span class="price-unit">USD / workspace / month</span></p>
+            <p class="scope-note">Up to 5 members</p>
+            <ul class="plan-features">
+              <li>Everything in Local</li>
+              <li>One shared workspace</li>
+              <li>Up to 5 members</li>
+              <li>Shared check templates</li>
+              <li>Email support during weekday office hours</li>
+            </ul>
+            <button class="button button-plan button-plan-accent" type="button" aria-expanded="false" aria-controls="preview-team" data-preview="preview-team" data-plan-name="Team">Preview Team</button>
+            <p id="preview-team" class="plan-preview" role="status" hidden>Team plan preview: $12 per workspace per month, up to 5 members. This is an illustrative selection; nothing has been purchased or activated.</p>
+          </article>
+
+          <article class="plan-card">
+            <div class="plan-topline"><h3>Studio</h3><span class="plan-tag">Scale out</span></div>
+            <p class="plan-audience">For teams managing several projects</p>
+            <p class="price"><span class="price-amount">$39</span><span class="price-unit">USD / month</span></p>
+            <p class="scope-note">Up to 3 shared workspaces · 20 members total</p>
+            <ul class="plan-features">
+              <li>Everything in Team</li>
+              <li>Up to 3 shared workspaces</li>
+              <li>Up to 20 members total</li>
+              <li>Workspace roles</li>
+              <li>Template change history</li>
+            </ul>
+            <button class="button button-plan" type="button" aria-expanded="false" aria-controls="preview-studio" data-preview="preview-studio" data-plan-name="Studio">Preview Studio</button>
+            <p id="preview-studio" class="plan-preview" role="status" hidden>Studio plan preview: $39 per month, up to 3 workspaces and 20 members total. This is an illustrative selection; nothing has been purchased or activated.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="faq" class="section-shell section-block faq-section" aria-labelledby="faq-heading">
+        <div class="faq-intro">
+          <p class="eyebrow">FAQ</p>
+          <h2 id="faq-heading">Questions before you add a check.</h2>
+          <p>The supplied product concept, in plain language.</p>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Is Patchlane a secret manager?</summary>
+            <p>No. In this fictional product brief, it checks whether expected key names are set. It does not store secrets, rotate credentials or replace your existing secret manager.</p>
+          </details>
+          <details>
+            <summary>Does a passing check prove my configuration is correct?</summary>
+            <p>No. It confirms that the expected names have values. It does not prove that a token is valid, a service is reachable or the application will work.</p>
+          </details>
+          <details>
+            <summary>Can I use the same check in CI?</summary>
+            <p>Yes, as described by the supplied product concept. A missing required key returns a failing exit status. The output shown on this page is only an example.</p>
+          </details>
+          <details>
+            <summary>Do I need a paid plan for local checks?</summary>
+            <p>No. Local includes local and CI checks. Paid plans add shared workspaces and team features.</p>
+          </details>
+          <details>
+            <summary>Is annual billing available?</summary>
+            <p>No annual option is included in this example. The paid prices shown are monthly USD prices.</p>
+          </details>
+          <details>
+            <summary>Can I buy or install it from this page?</summary>
+            <p>No. Patchlane is fictional. Plan buttons show local previews and the copy button only copies the example command. There is no checkout, account creation or package execution.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div>
+          <a class="brand footer-brand" href="#top" aria-label="Patchlane home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 5.5h9.5a4.5 4.5 0 0 1 0 9H9v4H5v-13Z" fill="currentColor"/>
+                <path d="M9 9h5.2a1 1 0 0 1 0 2H9V9Z" fill="white"/>
+              </svg>
+            </span>
+            <span>patchlane</span>
+          </a>
+          <p class="footer-copy">Patchlane · Fictional developer tool · Local product-page preview</p>
+        </div>
+        <div class="footer-column">
+          <p class="footer-label">Explore</p>
+          <a href="#features">Features</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#installation">Installation</a>
+        </div>
+        <div class="footer-column">
+          <p class="footer-label">Plans &amp; help</p>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+          <span class="contact-address">hello@patchlane.example</span>
+        </div>
+      </div>
+      <div class="shell footer-bottom">
+        <p>Patchlane is a fictional developer tool. Commands, package names and plan terms are supplied marketing examples, not a claim that a real package or service exists.</p>
+        <p>Fictional contact address; this page does not send messages or schedule demos.</p>
+      </div>
+    </footer>
+  </body>
+</html>
