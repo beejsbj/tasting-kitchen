@@ -285,7 +285,7 @@ function validateConfigurations(doc) {
   required(doc, ["schemaVersion", "configurations"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
   if (!array(doc.configurations, `${label}.configurations`, { min: 1 })) return new Map();
-  if (doc.configurations.length !== 6) fail(label, `expected 6 configurations, found ${doc.configurations.length}`);
+  if (doc.configurations.length !== 7) fail(label, `expected 7 configurations, found ${doc.configurations.length}`);
   const map = new Map();
   const tuples = [];
   const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
@@ -307,7 +307,16 @@ function validateConfigurations(doc) {
       onlyKeys(profile, EXECUTION_PROFILE_KEYS, `${item}.executionProfile`);
       required(profile, [...EXECUTION_PROFILE_KEYS], `${item}.executionProfile`);
       for (const key of EXECUTION_PROFILE_KEYS) string(profile[key], `${item}.executionProfile.${key}`);
-      const exact = {
+      const exact = variant.harness === "cursor-agent" ? {
+        id: "cursor-linux-host-unsandboxed-v1",
+        label: "via Cursor Agent · host-unsandboxed",
+        runtime: "linux-host",
+        sandbox: "disabled",
+        approvalPolicy: "force",
+        nativeWeb: "not-enforced",
+        networkPolicy: "not-enforced",
+        filesystemBoundary: "not-a-secrecy-boundary"
+      } : {
         id: "codex-linux-host-unsandboxed-v1",
         label: "via Codex CLI · host-unsandboxed fallback",
         runtime: "linux-host",
@@ -321,6 +330,9 @@ function validateConfigurations(doc) {
     }
     if (variant.harness === "codex-cli" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
       fail(item, "the probed Codex runner may currently promise exactly files and shell");
+    }
+    if (variant.harness === "cursor-agent" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
+      fail(item, "the probed Cursor runner may currently promise exactly files and shell");
     }
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
     tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));

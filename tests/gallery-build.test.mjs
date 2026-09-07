@@ -16,7 +16,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.match(html, /\/assets\//);
   assert.equal(registry.schemaVersion, 2);
   assert.equal(registry.cuisines.length, 9);
-  assert.equal(registry.configurations.length, 6);
+  assert.equal(registry.configurations.length, 7);
   assert.equal(registry.recipes.length, 10);
   assert.equal(registry.dishes.length, 10);
   assert.ok(registry.dishes.every((dish) => dish.status === "accepted"));

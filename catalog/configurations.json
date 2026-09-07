@@ -144,6 +144,30 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
       }
+    },
+    {
+      "id": "cursor-composer-2-5",
+      "label": "Composer 2.5 · Adaptive · Non-fast · via Cursor Agent",
+      "provider": "cursor",
+      "model": "composer-2.5[fast=false]",
+      "harness": "cursor-agent",
+      "reasoningEffort": "adaptive",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "cursor-linux-host-unsandboxed-v1",
+        "label": "via Cursor Agent · host-unsandboxed",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "force",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary"
+      }
     }
   ]
 }

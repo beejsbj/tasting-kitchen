@@ -37,6 +37,7 @@ export function artifactUrl(dish: Dish, path = dish.artifact.entry) {
 }
 export function shortHash(hash: string) { return hash.replace("sha256:", "").slice(0, 8); }
 export function modelFamily(model: string) {
+  if (/composer-?2\.5/i.test(model)) return "Composer";
   const named = model.match(/(?:^|-)(astra|sol|terra|luna|fable)(?:-|$)/i)?.[1];
   return named ? named[0].toUpperCase() + named.slice(1) : model;
 }
