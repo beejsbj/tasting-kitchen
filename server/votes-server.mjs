@@ -5,6 +5,7 @@ import path from 'node:path';
 const port = Number(process.env.VOTE_PORT ?? 3001);
 const defaultDataPath = process.env.VOTE_DATA_PATH ?? '/data/votes.json';
 const defaultAllowedOrigin = process.env.PUBLIC_ORIGIN ?? 'https://tasting-kitchen.burooj.dev';
+const defaultRegistryPath = process.env.REGISTRY_PATH ?? '/usr/share/nginx/html/data/registry.json';
 const emptyStore = () => ({ version: 1, votes: {} });
 let writeQueue = Promise.resolve();
 
@@ -49,10 +50,10 @@ async function saveStore(storePath, store) {
   await rename(temporary, storePath);
 }
 
-function mergeVotes(serverVotes, incomingVotes) {
+function mergeVotes(serverVotes, incomingVotes, dishIds) {
   const merged = { ...serverVotes };
   for (const [dishId, incoming] of Object.entries(incomingVotes ?? {})) {
-    if (!/^dish_[a-z0-9_-]+$/u.test(dishId) || !validVoteRecord(incoming)) continue;
+    if (!dishIds.has(dishId) || !validVoteRecord(incoming)) continue;
     const current = merged[dishId];
     if (!current || Date.parse(incoming.changedAt) >= Date.parse(current.changedAt)) merged[dishId] = incoming;
   }
@@ -70,7 +71,13 @@ async function body(request) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 }
 
-export function createVoteServer({ dataPath = defaultDataPath, allowedOrigin = defaultAllowedOrigin } = {}) {
+async function loadDishIds(registryPath) {
+  const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+  return new Set((registry.dishes ?? []).map(dish => dish.id).filter(id => typeof id === 'string'));
+}
+
+export function createVoteServer({ dataPath = defaultDataPath, allowedOrigin = defaultAllowedOrigin, registryPath = defaultRegistryPath, dishIds } = {}) {
+  const knownDishIds = dishIds ? Promise.resolve(dishIds) : loadDishIds(registryPath);
   return createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? '/', 'http://localhost');
@@ -84,7 +91,7 @@ export function createVoteServer({ dataPath = defaultDataPath, allowedOrigin = d
         let result;
         writeQueue = writeQueue.then(async () => {
           const store = await loadStore(dataPath);
-          store.votes = mergeVotes(store.votes, input.votes);
+          store.votes = mergeVotes(store.votes, input.votes, await knownDishIds);
           await saveStore(dataPath, store);
           result = store;
         });

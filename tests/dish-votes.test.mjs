@@ -38,7 +38,7 @@ test('trusted request classification accepts LAN and Tailscale but rejects Cloud
 test('vote server merges latest records and rejects public writes', async (t) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'tasting-votes-'));
   const dataPath = path.join(directory, 'votes.json');
-  const server = createVoteServer({ dataPath });
+  const server = createVoteServer({ dataPath, dishIds: new Set(['dish_valid']) });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => server.close());
   const origin = `http://127.0.0.1:${server.address().port}`;
