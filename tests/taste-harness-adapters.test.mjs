@@ -25,14 +25,32 @@ test("adapter boundary is allowlisted, copied, and planning visibly refuses inva
   assert.match(plan.unsupported[0].reasons.join("\n"), /Unsupported execution harness/);
 });
 
-test("Cursor auth preflight uses noninteractive status and never exposes its output", async (t) => {
+test("Cursor auth preflight rejects logged-out exit-zero status and discards account output", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-adapter-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const executable = path.join(root, "cursor");
-  await writeFile(executable, "#!/bin/sh\n[ \"$1\" = status ] && exit 0\nexit 99\n");
-  await chmod(executable, 0o755);
-  await getHarnessAdapter("cursor-agent").prepareAttempt({ executable, cwd: root });
-  await assert.rejects(getHarnessAdapter("cursor-agent").prepareAttempt({ executable: path.join(root, "missing"), cwd: root }), /authentication preflight/);
+  const preflight = (options = {}) => getHarnessAdapter("cursor-agent").prepareAttempt({ executable, cwd: root, ...options });
+  const fake = async (body) => {
+    await writeFile(executable, "#!" + process.execPath + "\n" +
+      'if (JSON.stringify(process.argv.slice(2)) !== JSON.stringify(["status", "--format", "json"])) process.exit(99);\n' + body);
+    await chmod(executable, 0o755);
+  };
+  await fake('console.log(JSON.stringify({status:"authenticated",isAuthenticated:true,userInfo:{email:"private@example.invalid"}}));');
+  await preflight();
+  for (const result of [
+    { status: "unauthenticated", isAuthenticated: false },
+    { status: "partially-authenticated", isAuthenticated: false },
+    { status: "authenticated", isAuthenticated: "true" },
+    { status: "unauthenticated", isAuthenticated: true },
+  ]) {
+    await fake('console.log(' + JSON.stringify(JSON.stringify({ ...result, userInfo: { email: "private@example.invalid" } })) + ');');
+    await assert.rejects(preflight(), (error) => /authentication preflight/.test(error.message) && !error.message.includes("private@example.invalid"));
+  }
+  await fake('console.log("private invalid JSON");');
+  await assert.rejects(preflight(), /authentication preflight/);
+  await fake('setInterval(() => {}, 1000);');
+  await assert.rejects(preflight({ preflightTimeoutMs: 50 }), /authentication preflight/);
+  await assert.rejects(preflight({ executable: path.join(root, "missing") }), /authentication preflight/);
 });
 
 test("adapters expose pure fresh and exact-resume turn plans", () => {

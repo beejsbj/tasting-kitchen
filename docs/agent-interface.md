@@ -78,3 +78,10 @@ the allowlisted adapter has been selected; production configuration cannot
 inject an executable or adapter. Publication-only recovery selects the adapter
 from the frozen request and reconstructs evidence without launching a model.
 Codex fast-to-priority recovery is a Codex-only historical alias path.
+
+Cursor authentication preflight uses `status --format json` with a ten-second
+timeout and bounded captured output. It requires the CLI’s explicit
+`authenticated` status and Boolean `isAuthenticated`; exit zero alone also
+occurs when logged out. Account fields are discarded. This checks existing
+credential presence; it does not certify remote authentication, which must
+still succeed during execution. Recovery never runs authentication preflight.
