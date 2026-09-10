@@ -317,6 +317,32 @@ test("frozen configuration recovery rejects scalar and recorded execution drift"
   }
 });
 
+test("legacy configuration recovery verifies current identity or complete manifest hash", async (t) => {
+  for (const removeCurrent of [false, true]) {
+    for (const drift of [false, true]) {
+      const f = await recoveryFixture();
+      t.after(() => rm(f.root, { recursive: true, force: true }));
+      const requestedFile = path.join(f.attemptDir, "requested.json");
+      const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+      const profile = f.selectedVariant.executionProfile;
+      requested.identity.capabilities = [...f.selectedVariant.capabilities];
+      requested.execution = {
+        ...requested.execution, runtime: profile.runtime, sandbox: profile.sandbox,
+        approvalPolicy: profile.approvalPolicy, nativeWeb: profile.nativeWeb,
+        networkEnforcement: "not-technically-enforced", hostFilesystem: profile.filesystemBoundary,
+      };
+      if (drift) requested.identity.model = "gpt-5.6-luna";
+      await json(requestedFile, requested);
+      if (removeCurrent) f.catalog.variants = [];
+      const recovery = recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+      if (drift) {
+        await assert.rejects(recovery, removeCurrent ? /requested configuration hash/ : /Frozen configuration model/);
+        assert.equal(await pathExists(path.join(f.attemptDir, "recovery.json")), false);
+      } else assert.equal((await recovery).status, "accepted");
+    }
+  }
+});
+
 test("Cursor publication recovery reconstructs stream identity without invoking a model", async (t) => {
   const f = await cursorRecoveryFixture({ equivalentSecondTurn: true });
   t.after(() => rm(f.root, { recursive: true, force: true }));
