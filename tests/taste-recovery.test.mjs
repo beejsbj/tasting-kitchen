@@ -292,6 +292,15 @@ test("Cursor recovery requires equivalent stream identity, exact argv, and exact
     { name: "different model", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
       { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 3" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
     ].map(JSON.stringify).join("\n")), pattern: /model mismatch/ },
+    { name: "duplicate matching init", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
+    { name: "duplicate contradictory init", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 3" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
+    { name: "duplicate result", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID }, { type: "result", subtype: "success", is_error: false, result: "Other", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
     { name: "missing argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); delete x.turns[0].argv; await json(f.executionFile, x); }, pattern: /recorded argv/ },
     { name: "wrong argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv = ["cursor-agent", "--model", "composer-2.5[fast=true]"]; await json(f.executionFile, x); }, pattern: /exactly one --model/ },
     { name: "conflicting argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv.push("-m", "composer-2.5[fast=false]"); await json(f.executionFile, x); }, pattern: /exactly one --model/ },

@@ -35,6 +35,16 @@ test("Cursor JSONL requires matching init and successful result evidence", () =>
   assert.equal(parsed.model, "Composer 2.5");
   assert.equal(parsed.finalMessage, "Done");
   assert.throws(() => parseCursorJsonl(JSON.stringify({ type: "result", subtype: "error", is_error: true, result: "No" })), /failure/);
+  assert.throws(() => parseCursorJsonl([
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 2.5" }),
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 3" }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Done", session_id: SESSION_ID }),
+  ].join("\n")), /exactly one/);
+  assert.throws(() => parseCursorJsonl([
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 2.5" }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Done", session_id: SESSION_ID }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Other", session_id: SESSION_ID }),
+  ].join("\n")), /exactly one/);
 });
 
 test("Cursor runs fixed turns in one session and verifies observed model identity", async (t) => {
@@ -74,6 +84,13 @@ console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false
   const mixed = structuredClone(result);
   mixed.turns[0].events.find((event) => event.type === "system").model = "Different Model";
   await assert.rejects(verifyCursorIdentity({ variant, result: mixed, cliVersion: mixed.cliVersion }), /model mismatch in turn make/);
+
+  const duplicateInit = structuredClone(result);
+  duplicateInit.turns[0].events.push({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 3" });
+  await assert.rejects(verifyCursorIdentity({ variant, result: duplicateInit, cliVersion: duplicateInit.cliVersion }), /exactly one/);
+  const wrongThread = structuredClone(result);
+  wrongThread.turns[0].events.find((event) => event.type === "result").session_id = "01901234-5678-7abc-8def-0123456789ab";
+  await assert.rejects(verifyCursorIdentity({ variant, result: wrongThread, cliVersion: wrongThread.cliVersion }), /did not match its init session/);
 
   const wrongFirst = await runCursorSession({ variant, recipe, workspace, privateDir: path.join(root, "wrong-first"), executable, env: { FAKE_LOG: log, FAKE_SESSION: SESSION_ID, FAKE_FIRST_MODEL: "Different Model" } });
   assert.match(wrongFirst.failure.message, /model mismatch/);
