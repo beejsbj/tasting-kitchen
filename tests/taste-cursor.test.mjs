@@ -92,6 +92,19 @@ console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false
   wrongThread.turns[0].events.find((event) => event.type === "result").session_id = "01901234-5678-7abc-8def-0123456789ab";
   await assert.rejects(verifyCursorIdentity({ variant, result: wrongThread, cliVersion: wrongThread.cliVersion }), /did not match its init session/);
 
+  const failedEvidence = structuredClone(result);
+  failedEvidence.turns[0].events.find((event) => event.type === "result").is_error = true;
+  await assert.rejects(verifyCursorIdentity({ variant, result: failedEvidence, cliVersion: failedEvidence.cliVersion }), /reported failure/);
+  const missingThread = structuredClone(result);
+  delete missingThread.threadId;
+  await assert.rejects(verifyCursorIdentity({ variant, result: missingThread, cliVersion: missingThread.cliVersion }), /valid result thread UUID/);
+  const alteredFinal = structuredClone(result);
+  alteredFinal.turns[0].finalMessage = "altered";
+  await assert.rejects(verifyCursorIdentity({ variant, result: alteredFinal, cliVersion: alteredFinal.cliVersion }), /final message does not match/);
+  const backwards = structuredClone(result);
+  backwards.turns[0].events.reverse();
+  await assert.rejects(verifyCursorIdentity({ variant, result: backwards, cliVersion: backwards.cliVersion }), /before its init/);
+
   const wrongFirst = await runCursorSession({ variant, recipe, workspace, privateDir: path.join(root, "wrong-first"), executable, env: { FAKE_LOG: log, FAKE_SESSION: SESSION_ID, FAKE_FIRST_MODEL: "Different Model" } });
   assert.match(wrongFirst.failure.message, /model mismatch/);
   assert.equal(wrongFirst.turns.length, 1, "stop before spending a second turn after wrong first model");
