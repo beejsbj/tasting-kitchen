@@ -8,6 +8,7 @@ import { computeConfigHash } from "../lib/taste/catalog.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
+import { freezeConfigurationRevision } from "../lib/taste/revisions.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -233,7 +234,8 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
 test("recovery uses the frozen configuration when the current configuration changes", async (t) => {
   const f = await recoveryFixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  f.catalog.variants[0] = { ...f.catalog.variants[0], model: "gpt-5.6-luna" };
+  await freezeConfigurationRevision(f.root, f.selectedVariant);
+  f.catalog.variants = [];
   const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
   assert.equal(result.status, "accepted");
   const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));

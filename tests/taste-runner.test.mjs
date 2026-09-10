@@ -189,6 +189,21 @@ test("Codex authentication failure happens before a session is launched", async 
   assert.match(result.error, /Codex auth source/);
 });
 
+test("direct execution refuses every planner-incompatible recipe before runtime side effects", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  for (const recipe of [
+    { ...f.recipe, harness: { ...f.recipe.harness, web: "enabled" } },
+    { ...f.recipe, presentation: { profile: "static-web-v1", semanticRuntime: { id: "changed", version: "1" } } },
+    { ...f.recipe, status: "draft" },
+  ]) {
+    let launches = 0;
+    await assert.rejects(executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe, variant: f.variant, nonce: `refuse-${recipe.status}-${recipe.harness.web}`, runSession: async () => { launches += 1; return fakeSession(); } }), /Unsupported recipe\/configuration/);
+    assert.equal(launches, 0);
+  }
+  await assert.rejects(stat(path.join(f.root, "private/runtime")), /ENOENT/);
+});
+
 test("frozen fixtures reject mutation unless that exact fixture is declared editable", async (t) => {
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
