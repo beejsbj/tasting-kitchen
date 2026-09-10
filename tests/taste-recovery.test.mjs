@@ -42,6 +42,15 @@ function variant({ fastAlias = false } = {}) {
   return { ...value, configHash: computeConfigHash(value) };
 }
 
+function cursorVariant() {
+  const value = {
+    id: "cursor-composer-2-5", label: "Cursor Composer", provider: "cursor", model: "composer-2.5[fast=false]",
+    harness: "cursor-agent", reasoningEffort: "adaptive", serviceTier: "default", personality: "default", capabilities: ["files", "shell"],
+    executionProfile: { id: "cursor-linux-host-unsandboxed-v1", label: "via Cursor Agent · host-unsandboxed", runtime: "linux-host", sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" },
+  };
+  return { ...value, configHash: computeConfigHash(value) };
+}
+
 async function recoveryFixture({ fastAlias = false, observedTier = "priority", observedModel } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-recovery-"));
   const attemptDir = path.join(root, "private/runtime/attempts", ATTEMPT_ID);
@@ -229,6 +238,32 @@ test("recovery uses the frozen configuration when the current configuration chan
   assert.equal(result.status, "accepted");
   const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.requestedModel, "gpt-5.6-sol");
+});
+
+test("Cursor publication recovery reconstructs stream identity without invoking a model", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const selected = cursorVariant();
+  f.catalog.variants = [selected];
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  requested.identity = { variantId: selected.id, provider: selected.provider, model: selected.model, harness: selected.harness, reasoningEffort: selected.reasoningEffort, serviceTier: selected.serviceTier, personality: selected.personality, configHash: selected.configHash };
+  requested.execution = { profileId: selected.executionProfile.id, label: selected.executionProfile.label };
+  await json(requestedFile, requested);
+  const eventsPath = path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl");
+  await writeFile(eventsPath, [
+    { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" },
+    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+  ].map(JSON.stringify).join("\n") + "\n");
+  const executionFile = path.join(f.attemptDir, "execution.json");
+  const execution = JSON.parse(await readFile(executionFile, "utf8"));
+  execution.cliVersion = "cursor-agent fake";
+  await json(executionFile, execution);
+  const publication = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+  assert.equal(publication.status, "accepted");
+  const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
+  assert.equal(observed.model, "Composer 2.5");
+  assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
 });
 
 test("recovery refuses unsafe IDs, non-publication failures, drift, incomplete turns, and existing dishes", async (t) => {

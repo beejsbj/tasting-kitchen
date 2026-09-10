@@ -3,6 +3,7 @@ import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { hashCanonical } from "../lib/taste/catalog.mjs";
+import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
@@ -328,6 +329,8 @@ function validateConfigurations(doc) {
       };
       for (const [key, value] of Object.entries(exact)) if (profile[key] !== value) fail(item, `executionProfile.${key} must be ${value}`);
     }
+    const adapterReason = adapterSupport(variant);
+    if (adapterReason) fail(item, adapterReason);
     if (variant.harness === "codex-cli" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
       fail(item, "the probed Codex runner may currently promise exactly files and shell");
     }

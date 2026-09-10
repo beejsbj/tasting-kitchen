@@ -175,6 +175,20 @@ test("a required check failure remains private and creates no dish", async (t) =
   await assert.rejects(readFile(path.join(f.root, "dishes", "dish_demo-session_codex-sol-high_20260814120000000_failed", "dish.json")), /ENOENT/);
 });
 
+test("Codex authentication failure happens before a session is launched", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  let launches = 0;
+  const result = await executeRecipe({
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant,
+    nonce: "no-auth", authPath: path.join(f.root, "missing-auth.json"),
+    runSession: async () => { launches += 1; return fakeSession(); }, verifyIdentity: observed,
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(launches, 0);
+  assert.match(result.error, /Codex auth source/);
+});
+
 test("frozen fixtures reject mutation unless that exact fixture is declared editable", async (t) => {
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));

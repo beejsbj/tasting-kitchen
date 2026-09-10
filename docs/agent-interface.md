@@ -60,3 +60,21 @@ const preview = await cook(repoRoot, {
 ```
 
 Do not select a default model implicitly in automation. Use a discovered configuration ID and inspect the exact revision hashes returned by the plan before requesting execution.
+
+## Internal runner adapters
+
+Cooking uses a fixed internal adapter allowlist: `codex-cli` and `cursor-agent`.
+An adapter validates and copies the declared configuration and exact execution
+profile, exposes only its actually declared capabilities, plans a turn without
+side effects, prepares authentication immediately before launch, runs fresh and
+exact-UUID-resumed turns, reconstructs saved stream evidence, and verifies
+observed identity. Catalog configuration is data, not a plugin mechanism: an
+unknown harness, profile, or capability combination is shown as unsupported by
+planning and is rejected again at execution.
+
+The shared runner retains workspace creation, revision freezing, private
+evidence, and publication. Test callers may inject a session or verifier after
+the allowlisted adapter has been selected; production configuration cannot
+inject an executable or adapter. Publication-only recovery selects the adapter
+from the frozen request and reconstructs evidence without launching a model.
+Codex fast-to-priority recovery is a Codex-only historical alias path.
