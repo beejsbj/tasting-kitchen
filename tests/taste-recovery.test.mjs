@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { computeConfigHash } from "../lib/taste/catalog.mjs";
+import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
@@ -133,6 +134,40 @@ async function recoveryFixture({ fastAlias = false, observedTier = "priority", o
   return { root, attemptDir, workspace, rawFinal, recipe, selectedVariant, catalog };
 }
 
+async function cursorRecoveryFixture({ equivalentSecondTurn = false } = {}) {
+  const f = await recoveryFixture();
+  const selected = cursorVariant();
+  f.catalog.variants = [selected];
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  requested.identity = { variantId: selected.id, provider: selected.provider, model: selected.model, harness: selected.harness, reasoningEffort: selected.reasoningEffort, serviceTier: selected.serviceTier, personality: selected.personality, configHash: selected.configHash };
+  requested.execution = { profileId: selected.executionProfile.id, label: selected.executionProfile.label };
+  await json(requestedFile, requested);
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+    { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" },
+    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+  ].map(JSON.stringify).join("\n") + "\n");
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), "Finished");
+  const executionFile = path.join(f.attemptDir, "execution.json");
+  const execution = JSON.parse(await readFile(executionFile, "utf8"));
+  execution.cliVersion = "cursor-agent fake";
+  execution.turns[0].argv = ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Build index.html." })];
+  if (equivalentSecondTurn) {
+    f.recipe.turns.push({ id: "correct", role: "correction", content: "Correct it." });
+    const turnDir = path.join(f.attemptDir, "raw/turns/002-correct");
+    await mkdir(turnDir, { recursive: true });
+    await writeFile(path.join(turnDir, "stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "composer-2.5" },
+      { type: "result", subtype: "success", is_error: false, result: "Corrected", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n") + "\n");
+    await writeFile(path.join(turnDir, "final.txt"), "Corrected");
+    await writeFile(path.join(turnDir, "stderr.txt"), "");
+    execution.turns.push({ turnId: "correct", argv: ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Correct it.", threadId: THREAD_ID })], eventsPath: "raw/turns/002-correct/stdout.jsonl", stderrPath: "raw/turns/002-correct/stderr.txt", finalPath: "raw/turns/002-correct/final.txt", usage: null });
+  }
+  await json(executionFile, execution);
+  return { ...f, selected, executionFile };
+}
+
 test("sanitizer rewrites only exact selected workspace files and fails closed otherwise", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-sanitize-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -243,29 +278,33 @@ test("recovery uses the frozen configuration when the current configuration chan
 });
 
 test("Cursor publication recovery reconstructs stream identity without invoking a model", async (t) => {
-  const f = await recoveryFixture();
+  const f = await cursorRecoveryFixture({ equivalentSecondTurn: true });
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  const selected = cursorVariant();
-  f.catalog.variants = [selected];
-  const requestedFile = path.join(f.attemptDir, "requested.json");
-  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
-  requested.identity = { variantId: selected.id, provider: selected.provider, model: selected.model, harness: selected.harness, reasoningEffort: selected.reasoningEffort, serviceTier: selected.serviceTier, personality: selected.personality, configHash: selected.configHash };
-  requested.execution = { profileId: selected.executionProfile.id, label: selected.executionProfile.label };
-  await json(requestedFile, requested);
-  const eventsPath = path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl");
-  await writeFile(eventsPath, [
-    { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" },
-    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
-  ].map(JSON.stringify).join("\n") + "\n");
-  const executionFile = path.join(f.attemptDir, "execution.json");
-  const execution = JSON.parse(await readFile(executionFile, "utf8"));
-  execution.cliVersion = "cursor-agent fake";
-  await json(executionFile, execution);
   const publication = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
   assert.equal(publication.status, "accepted");
   const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
-  assert.equal(observed.model, "Composer 2.5");
+  assert.equal(observed.model, "composer-2.5");
   assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
+});
+
+test("Cursor recovery requires equivalent stream identity, exact argv, and exact final evidence", async (t) => {
+  const cases = [
+    { name: "different model", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 3" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /model mismatch/ },
+    { name: "missing argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); delete x.turns[0].argv; await json(f.executionFile, x); }, pattern: /recorded argv/ },
+    { name: "wrong argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv = ["cursor-agent", "--model", "composer-2.5[fast=true]"]; await json(f.executionFile, x); }, pattern: /exactly one --model/ },
+    { name: "conflicting argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv.push("-m", "composer-2.5[fast=false]"); await json(f.executionFile, x); }, pattern: /exactly one --model/ },
+    { name: "drifted final", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), "not Finished"), pattern: /final message does not match/ },
+  ];
+  for (const item of cases) {
+    const f = await cursorRecoveryFixture();
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    await item.mutate(f);
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), item.pattern, item.name);
+    assert.equal(await pathExists(path.join(f.root, "dishes", ATTEMPT_ID.replace(/^attempt_/, "dish_"))), false);
+    assert.equal(await pathExists(path.join(f.attemptDir, "recovery.json")), false);
+  }
 });
 
 test("recovery refuses unsafe IDs, non-publication failures, drift, incomplete turns, and existing dishes", async (t) => {
