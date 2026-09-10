@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { cook, inspect, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
+import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 
@@ -97,6 +98,29 @@ test("executing a Menu pins every member before a fake runner sees only supporte
   for (const dish of registry.dishes) assert.ok(configurationHashes.has(dish.identity.configHash));
   const pinned = JSON.parse(await readFile(path.join(root, "catalog/revisions/menus", `fresh-visual-ui--${result.menuRevision.hash.slice("sha256:".length)}.json`), "utf8"));
   assert.deepEqual(pinned.recipes, result.menuRevision.recipes);
+});
+
+test("cook preserves an explicit allowed-status override through execution", async (t) => {
+  const root = await fixtureRepository(t);
+  const recipeId = "responsive-product-launch";
+  const recipePath = path.join(root, "catalog/recipes/ui-visual", recipeId, "recipe.json");
+  const recipe = JSON.parse(await readFile(recipePath, "utf8"));
+  recipe.status = "draft";
+  await writeFile(recipePath, JSON.stringify(recipe));
+  let checked = false;
+  await cook(root, {
+    configurationId: "codex-sol-high", recipeIds: [recipeId],
+    intent: "repeat", execute: true, allowStatuses: ["draft"],
+    env: { TASTE_ALLOW_MODEL_RUNS: "1" },
+    executePlan: async ({ plan, allowStatuses }) => {
+      assert.equal(plan.supported.length, 1);
+      assert.equal(compatibilityFor({ variant: plan.variant, recipe }).supported, false);
+      assert.equal(compatibilityFor({ variant: plan.variant, recipe, allowStatuses }).supported, true);
+      checked = true;
+      return { results: [], accepted: [], failed: [], unsupported: [] };
+    },
+  });
+  assert.equal(checked, true);
 });
 
 test("CLI rejects malformed, irrelevant, and ambiguous flags with JSON errors", () => {

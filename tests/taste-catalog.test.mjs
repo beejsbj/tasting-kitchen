@@ -68,13 +68,23 @@ async function makeRepository() {
     variants: [{
       id: "exact-variant",
       label: "Exact variant label",
-      provider: "test-provider",
+      provider: "openai",
       model: "model-1",
-      harness: "test-harness",
+      harness: "codex-cli",
       reasoningEffort: "high",
       serviceTier: "fast",
       personality: "none",
-      capabilities: ["shell", "files"]
+      capabilities: ["files", "shell"],
+      executionProfile: {
+        id: "codex-linux-host-unsandboxed-v1",
+        label: "via Codex CLI · host-unsandboxed fallback",
+        runtime: "linux-host",
+        sandbox: "danger-full-access",
+        approvalPolicy: "never",
+        nativeWeb: "disabled",
+        networkPolicy: "not-enforced",
+        filesystemBoundary: "not-a-secrecy-boundary",
+      }
     }]
   });
 
@@ -208,13 +218,23 @@ test("planSelection returns exact variant identity and explicit capability/statu
   assert.deepEqual(variant, {
     id: "exact-variant",
     label: "Exact variant label",
-    provider: "test-provider",
+    provider: "openai",
     model: "model-1",
-    harness: "test-harness",
+    harness: "codex-cli",
     reasoningEffort: "high",
     serviceTier: "fast",
     personality: "none",
-    capabilities: ["shell", "files"],
+    capabilities: ["files", "shell"],
+    executionProfile: {
+      id: "codex-linux-host-unsandboxed-v1",
+      label: "via Codex CLI · host-unsandboxed fallback",
+      runtime: "linux-host",
+      sandbox: "danger-full-access",
+      approvalPolicy: "never",
+      nativeWeb: "disabled",
+      networkPolicy: "not-enforced",
+      filesystemBoundary: "not-a-secrecy-boundary",
+    },
     configHash: computeConfigHash(variant)
   });
 
