@@ -145,12 +145,13 @@ async function cursorRecoveryFixture({ equivalentSecondTurn = false } = {}) {
   await json(requestedFile, requested);
   await writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
     { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" },
-    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID, usage: { inputTokens: 9, outputTokens: 4 } },
   ].map(JSON.stringify).join("\n") + "\n");
   await writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), "Finished");
   const executionFile = path.join(f.attemptDir, "execution.json");
   const execution = JSON.parse(await readFile(executionFile, "utf8"));
   execution.cliVersion = "cursor-agent fake";
+  execution.turns[0].usage = { inputTokens: 999, outputTokens: 999 };
   execution.turns[0].argv = ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Build index.html." })];
   if (equivalentSecondTurn) {
     f.recipe.turns.push({ id: "correct", role: "correction", content: "Correct it." });
@@ -162,7 +163,7 @@ async function cursorRecoveryFixture({ equivalentSecondTurn = false } = {}) {
     ].map(JSON.stringify).join("\n") + "\n");
     await writeFile(path.join(turnDir, "final.txt"), "Corrected");
     await writeFile(path.join(turnDir, "stderr.txt"), "");
-    execution.turns.push({ turnId: "correct", argv: ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Correct it.", threadId: THREAD_ID })], eventsPath: "raw/turns/002-correct/stdout.jsonl", stderrPath: "raw/turns/002-correct/stderr.txt", finalPath: "raw/turns/002-correct/final.txt", usage: null });
+    execution.turns.push({ turnId: "correct", argv: ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Correct it.", threadId: THREAD_ID })], eventsPath: "raw/turns/002-correct/stdout.jsonl", stderrPath: "raw/turns/002-correct/stderr.txt", finalPath: "raw/turns/002-correct/final.txt", usage: { inputTokens: 888, outputTokens: 888 } });
   }
   await json(executionFile, execution);
   return { ...f, selected, executionFile };
@@ -350,6 +351,9 @@ test("Cursor publication recovery reconstructs stream identity without invoking 
   assert.equal(publication.status, "accepted");
   const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
   assert.equal(observed.model, "composer-2.5");
+  const trace = JSON.parse(await readFile(path.join(publication.dishDirectory, "trace.json"), "utf8"));
+  assert.deepEqual(trace.turns[0].usage, { inputTokens: 9, outputTokens: 4 }, "stream usage overrides a stale receipt");
+  assert.equal(trace.turns[1].usage, null, "absent stream usage stays unknown rather than borrowing a stale receipt");
   assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
 });
 
