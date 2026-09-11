@@ -5,9 +5,11 @@ import path from "node:path";
 import test from "node:test";
 
 import { computeConfigHash } from "../lib/taste/catalog.mjs";
+import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
+import { freezeConfigurationRevision } from "../lib/taste/revisions.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -38,6 +40,15 @@ function variant({ fastAlias = false } = {}) {
       networkPolicy: "not-enforced",
       filesystemBoundary: "not-a-secrecy-boundary",
     },
+  };
+  return { ...value, configHash: computeConfigHash(value) };
+}
+
+function cursorVariant() {
+  const value = {
+    id: "cursor-composer-2-5", label: "Cursor Composer", provider: "cursor", model: "composer-2.5[fast=false]",
+    harness: "cursor-agent", reasoningEffort: "adaptive", serviceTier: "default", personality: "default", capabilities: ["files", "shell"],
+    executionProfile: { id: "cursor-linux-host-unsandboxed-v1", label: "via Cursor Agent · host-unsandboxed", runtime: "linux-host", sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" },
   };
   return { ...value, configHash: computeConfigHash(value) };
 }
@@ -121,6 +132,41 @@ async function recoveryFixture({ fastAlias = false, observedTier = "priority", o
     ? { status: "failed", stage: "execution", message: "Effective Codex identity mismatch: tier requested fast, observed priority" }
     : { status: "failed", stage: "publication", message: "Public artifact scan failed: trace.json (absolute path)" });
   return { root, attemptDir, workspace, rawFinal, recipe, selectedVariant, catalog };
+}
+
+async function cursorRecoveryFixture({ equivalentSecondTurn = false } = {}) {
+  const f = await recoveryFixture();
+  const selected = cursorVariant();
+  f.catalog.variants = [selected];
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  requested.identity = { variantId: selected.id, provider: selected.provider, model: selected.model, harness: selected.harness, reasoningEffort: selected.reasoningEffort, serviceTier: selected.serviceTier, personality: selected.personality, configHash: selected.configHash };
+  requested.execution = { profileId: selected.executionProfile.id, label: selected.executionProfile.label };
+  await json(requestedFile, requested);
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+    { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" },
+    { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID, usage: { inputTokens: 9, outputTokens: 4 } },
+  ].map(JSON.stringify).join("\n") + "\n");
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), "Finished");
+  const executionFile = path.join(f.attemptDir, "execution.json");
+  const execution = JSON.parse(await readFile(executionFile, "utf8"));
+  execution.cliVersion = "cursor-agent fake";
+  execution.turns[0].usage = { inputTokens: 999, outputTokens: 999 };
+  execution.turns[0].argv = ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Build index.html." })];
+  if (equivalentSecondTurn) {
+    f.recipe.turns.push({ id: "correct", role: "correction", content: "Correct it." });
+    const turnDir = path.join(f.attemptDir, "raw/turns/002-correct");
+    await mkdir(turnDir, { recursive: true });
+    await writeFile(path.join(turnDir, "stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "composer-2.5" },
+      { type: "result", subtype: "success", is_error: false, result: "Corrected", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n") + "\n");
+    await writeFile(path.join(turnDir, "final.txt"), "Corrected");
+    await writeFile(path.join(turnDir, "stderr.txt"), "");
+    execution.turns.push({ turnId: "correct", argv: ["cursor-agent", ...buildCursorTurnArgs({ variant: selected, workspace: f.workspace, prompt: "Correct it.", threadId: THREAD_ID })], eventsPath: "raw/turns/002-correct/stdout.jsonl", stderrPath: "raw/turns/002-correct/stderr.txt", finalPath: "raw/turns/002-correct/final.txt", usage: { inputTokens: 888, outputTokens: 888 } });
+  }
+  await json(executionFile, execution);
+  return { ...f, selected, executionFile };
 }
 
 test("sanitizer rewrites only exact selected workspace files and fails closed otherwise", async (t) => {
@@ -224,11 +270,120 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
 test("recovery uses the frozen configuration when the current configuration changes", async (t) => {
   const f = await recoveryFixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  f.catalog.variants[0] = { ...f.catalog.variants[0], model: "gpt-5.6-luna" };
+  await freezeConfigurationRevision(f.root, f.selectedVariant);
+  f.catalog.variants = [];
   const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
   assert.equal(result.status, "accepted");
   const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.requestedModel, "gpt-5.6-sol");
+});
+
+test("frozen configuration hash recovers across requested ID renames and current removal", async (t) => {
+  for (const removeCurrent of [false, true]) {
+    const f = await recoveryFixture();
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    await freezeConfigurationRevision(f.root, f.selectedVariant);
+    const requestedFile = path.join(f.attemptDir, "requested.json");
+    const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+    requested.identity.variantId = "codex-sol-high-renamed";
+    await json(requestedFile, requested);
+    f.catalog.variants = removeCurrent ? [] : [{ ...f.selectedVariant, id: "codex-sol-high-renamed" }];
+    const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+    const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+    assert.equal(dish.identity.variantId, "codex-sol-high-renamed");
+  }
+});
+
+test("frozen configuration recovery rejects scalar and recorded execution drift", async (t) => {
+  const cases = [
+    { name: "scalar", mutate: (requested) => { requested.identity.model = "gpt-5.6-luna"; }, pattern: /Frozen configuration model/ },
+    { name: "capabilities", mutate: (requested) => { requested.identity.capabilities = ["files"]; }, pattern: /capabilities/ },
+    { name: "profile", mutate: (requested) => { requested.execution.sandbox = "disabled"; }, pattern: /execution profile sandbox/ },
+  ];
+  for (const item of cases) {
+    const f = await recoveryFixture();
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    await freezeConfigurationRevision(f.root, f.selectedVariant);
+    const requestedFile = path.join(f.attemptDir, "requested.json");
+    const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+    requested.identity.capabilities = [...f.selectedVariant.capabilities];
+    requested.execution = {
+      ...requested.execution, sandbox: f.selectedVariant.executionProfile.sandbox, approvalPolicy: f.selectedVariant.executionProfile.approvalPolicy,
+      runtime: f.selectedVariant.executionProfile.runtime, nativeWeb: f.selectedVariant.executionProfile.nativeWeb,
+      networkEnforcement: "not-technically-enforced", hostFilesystem: f.selectedVariant.executionProfile.filesystemBoundary,
+    };
+    item.mutate(requested);
+    await json(requestedFile, requested);
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), item.pattern, item.name);
+  }
+});
+
+test("legacy configuration recovery verifies current identity or complete manifest hash", async (t) => {
+  for (const removeCurrent of [false, true]) {
+    for (const drift of [false, true]) {
+      const f = await recoveryFixture();
+      t.after(() => rm(f.root, { recursive: true, force: true }));
+      const requestedFile = path.join(f.attemptDir, "requested.json");
+      const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+      const profile = f.selectedVariant.executionProfile;
+      requested.identity.capabilities = [...f.selectedVariant.capabilities];
+      requested.execution = {
+        ...requested.execution, runtime: profile.runtime, sandbox: profile.sandbox,
+        approvalPolicy: profile.approvalPolicy, nativeWeb: profile.nativeWeb,
+        networkEnforcement: "not-technically-enforced", hostFilesystem: profile.filesystemBoundary,
+      };
+      if (drift) requested.identity.model = "gpt-5.6-luna";
+      await json(requestedFile, requested);
+      if (removeCurrent) f.catalog.variants = [];
+      const recovery = recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+      if (drift) {
+        await assert.rejects(recovery, removeCurrent ? /requested configuration hash/ : /Frozen configuration model/);
+        assert.equal(await pathExists(path.join(f.attemptDir, "recovery.json")), false);
+      } else assert.equal((await recovery).status, "accepted");
+    }
+  }
+});
+
+test("Cursor publication recovery reconstructs stream identity without invoking a model", async (t) => {
+  const f = await cursorRecoveryFixture({ equivalentSecondTurn: true });
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const publication = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+  assert.equal(publication.status, "accepted");
+  const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
+  assert.equal(observed.model, "composer-2.5");
+  const trace = JSON.parse(await readFile(path.join(publication.dishDirectory, "trace.json"), "utf8"));
+  assert.deepEqual(trace.turns[0].usage, { inputTokens: 9, outputTokens: 4 }, "stream usage overrides a stale receipt");
+  assert.equal(trace.turns[1].usage, null, "absent stream usage stays unknown rather than borrowing a stale receipt");
+  assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
+});
+
+test("Cursor recovery requires equivalent stream identity, exact argv, and exact final evidence", async (t) => {
+  const cases = [
+    { name: "different model", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 3" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /model mismatch/ },
+    { name: "duplicate matching init", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
+    { name: "duplicate contradictory init", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 3" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
+    { name: "duplicate result", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/stdout.jsonl"), [
+      { type: "system", subtype: "init", session_id: THREAD_ID, model: "Composer 2.5" }, { type: "result", subtype: "success", is_error: false, result: "Finished", session_id: THREAD_ID }, { type: "result", subtype: "success", is_error: false, result: "Other", session_id: THREAD_ID },
+    ].map(JSON.stringify).join("\n")), pattern: /exactly one/ },
+    { name: "missing argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); delete x.turns[0].argv; await json(f.executionFile, x); }, pattern: /recorded argv/ },
+    { name: "wrong argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv = ["cursor-agent", "--model", "composer-2.5[fast=true]"]; await json(f.executionFile, x); }, pattern: /exactly one --model/ },
+    { name: "conflicting argv", mutate: async (f) => { const x = JSON.parse(await readFile(f.executionFile, "utf8")); x.turns[0].argv.push("-m", "composer-2.5[fast=false]"); await json(f.executionFile, x); }, pattern: /exactly one --model/ },
+    { name: "drifted final", mutate: async (f) => writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), "not Finished"), pattern: /final message does not match/ },
+  ];
+  for (const item of cases) {
+    const f = await cursorRecoveryFixture();
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    await item.mutate(f);
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), item.pattern, item.name);
+    assert.equal(await pathExists(path.join(f.root, "dishes", ATTEMPT_ID.replace(/^attempt_/, "dish_"))), false);
+    assert.equal(await pathExists(path.join(f.attemptDir, "recovery.json")), false);
+  }
 });
 
 test("recovery refuses unsafe IDs, non-publication failures, drift, incomplete turns, and existing dishes", async (t) => {

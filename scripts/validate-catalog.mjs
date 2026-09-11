@@ -3,6 +3,7 @@ import { lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { hashCanonical } from "../lib/taste/catalog.mjs";
+import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
@@ -307,33 +308,9 @@ function validateConfigurations(doc) {
       onlyKeys(profile, EXECUTION_PROFILE_KEYS, `${item}.executionProfile`);
       required(profile, [...EXECUTION_PROFILE_KEYS], `${item}.executionProfile`);
       for (const key of EXECUTION_PROFILE_KEYS) string(profile[key], `${item}.executionProfile.${key}`);
-      const exact = variant.harness === "cursor-agent" ? {
-        id: "cursor-linux-host-unsandboxed-v1",
-        label: "via Cursor Agent · host-unsandboxed",
-        runtime: "linux-host",
-        sandbox: "disabled",
-        approvalPolicy: "force",
-        nativeWeb: "not-enforced",
-        networkPolicy: "not-enforced",
-        filesystemBoundary: "not-a-secrecy-boundary"
-      } : {
-        id: "codex-linux-host-unsandboxed-v1",
-        label: "via Codex CLI · host-unsandboxed fallback",
-        runtime: "linux-host",
-        sandbox: "danger-full-access",
-        approvalPolicy: "never",
-        nativeWeb: "disabled",
-        networkPolicy: "not-enforced",
-        filesystemBoundary: "not-a-secrecy-boundary"
-      };
-      for (const [key, value] of Object.entries(exact)) if (profile[key] !== value) fail(item, `executionProfile.${key} must be ${value}`);
     }
-    if (variant.harness === "codex-cli" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
-      fail(item, "the probed Codex runner may currently promise exactly files and shell");
-    }
-    if (variant.harness === "cursor-agent" && JSON.stringify(variant.capabilities) !== JSON.stringify(["files", "shell"])) {
-      fail(item, "the probed Cursor runner may currently promise exactly files and shell");
-    }
+    const adapterReason = adapterSupport(variant);
+    if (adapterReason) fail(item, adapterReason);
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
     tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }

@@ -5,3 +5,7 @@ work/
 outputs/
 node_modules/
 .git/
+
+# This declared-public recipe fixture is required while building the registry.
+!catalog/recipes/agentic-assistant/orchestrate-partial-workers/fixtures/work/
+!catalog/recipes/agentic-assistant/orchestrate-partial-workers/fixtures/work/**

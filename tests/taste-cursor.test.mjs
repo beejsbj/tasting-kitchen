@@ -35,6 +35,16 @@ test("Cursor JSONL requires matching init and successful result evidence", () =>
   assert.equal(parsed.model, "Composer 2.5");
   assert.equal(parsed.finalMessage, "Done");
   assert.throws(() => parseCursorJsonl(JSON.stringify({ type: "result", subtype: "error", is_error: true, result: "No" })), /failure/);
+  assert.throws(() => parseCursorJsonl([
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 2.5" }),
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 3" }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Done", session_id: SESSION_ID }),
+  ].join("\n")), /exactly one/);
+  assert.throws(() => parseCursorJsonl([
+    JSON.stringify({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 2.5" }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Done", session_id: SESSION_ID }),
+    JSON.stringify({ type: "result", subtype: "success", is_error: false, result: "Other", session_id: SESSION_ID }),
+  ].join("\n")), /exactly one/);
 });
 
 test("Cursor runs fixed turns in one session and verifies observed model identity", async (t) => {
@@ -52,7 +62,8 @@ if (args[0] === "--version") { console.log("2026.08.25-fake"); process.exit(0); 
 await appendFile(process.env.FAKE_LOG, JSON.stringify(args) + "\\n");
 const resume = args.indexOf("--resume");
 const session = resume >= 0 ? args[resume + 1] : process.env.FAKE_SESSION;
-console.log(JSON.stringify({ type: "system", subtype: "init", session_id: session, model: "Composer 2.5" }));
+const model = (resume >= 0 ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || "Composer 2.5";
+console.log(JSON.stringify({ type: "system", subtype: "init", session_id: session, model }));
 console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false, result: args.at(-1), session_id: session, usage: { inputTokens: 5, outputTokens: 2 } }));
 `, "utf8");
   await chmod(executable, 0o755);
@@ -69,4 +80,38 @@ console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false
   assert.equal(observed.model, "Composer 2.5");
   assert.equal(observed.reasoningEffort, "adaptive");
   assert.equal(observed.serviceTierEvidence, "pinned-fast-false-argv");
+
+  const mixed = structuredClone(result);
+  mixed.turns[0].events.find((event) => event.type === "system").model = "Different Model";
+  await assert.rejects(verifyCursorIdentity({ variant, result: mixed, cliVersion: mixed.cliVersion }), /model mismatch in turn make/);
+
+  const duplicateInit = structuredClone(result);
+  duplicateInit.turns[0].events.push({ type: "system", subtype: "init", session_id: SESSION_ID, model: "Composer 3" });
+  await assert.rejects(verifyCursorIdentity({ variant, result: duplicateInit, cliVersion: duplicateInit.cliVersion }), /exactly one/);
+  const wrongThread = structuredClone(result);
+  wrongThread.turns[0].events.find((event) => event.type === "result").session_id = "01901234-5678-7abc-8def-0123456789ab";
+  await assert.rejects(verifyCursorIdentity({ variant, result: wrongThread, cliVersion: wrongThread.cliVersion }), /did not match its init session/);
+
+  const failedEvidence = structuredClone(result);
+  failedEvidence.turns[0].events.find((event) => event.type === "result").is_error = true;
+  await assert.rejects(verifyCursorIdentity({ variant, result: failedEvidence, cliVersion: failedEvidence.cliVersion }), /reported failure/);
+  const missingThread = structuredClone(result);
+  delete missingThread.threadId;
+  await assert.rejects(verifyCursorIdentity({ variant, result: missingThread, cliVersion: missingThread.cliVersion }), /valid result thread UUID/);
+  const alteredFinal = structuredClone(result);
+  alteredFinal.turns[0].finalMessage = "altered";
+  await assert.rejects(verifyCursorIdentity({ variant, result: alteredFinal, cliVersion: alteredFinal.cliVersion }), /final message does not match/);
+  const backwards = structuredClone(result);
+  backwards.turns[0].events.reverse();
+  await assert.rejects(verifyCursorIdentity({ variant, result: backwards, cliVersion: backwards.cliVersion }), /before its init/);
+
+  const wrongFirst = await runCursorSession({ variant, recipe, workspace, privateDir: path.join(root, "wrong-first"), executable, env: { FAKE_LOG: log, FAKE_SESSION: SESSION_ID, FAKE_FIRST_MODEL: "Different Model" } });
+  assert.match(wrongFirst.failure.message, /model mismatch/);
+  assert.equal(wrongFirst.turns.length, 1, "stop before spending a second turn after wrong first model");
+  await assert.rejects(verifyCursorIdentity({ variant, result: wrongFirst, cliVersion: wrongFirst.cliVersion }), /failed turn/);
+
+  const wrongLast = await runCursorSession({ variant, recipe, workspace, privateDir: path.join(root, "wrong-last"), executable, env: { FAKE_LOG: log, FAKE_SESSION: SESSION_ID, FAKE_RESUMED_MODEL: "Different Model" } });
+  assert.match(wrongLast.failure.message, /model mismatch/);
+  assert.equal(wrongLast.turns.length, 2);
+  await assert.rejects(verifyCursorIdentity({ variant, result: wrongLast, cliVersion: wrongLast.cliVersion }), /failed turn/);
 });
