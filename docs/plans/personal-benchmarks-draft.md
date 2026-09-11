@@ -1,6 +1,6 @@
 # Personal benchmark directions
 
-Status: working draft for Burooj's review. This is not an approved Menu or an implementation brief.
+Status: working authoring record. The short journal fixture and two response contracts below are approved; other candidates remain proposals. Approval of a shape does not mean its implementation or cooking is complete.
 
 ## Settled direction
 
@@ -60,10 +60,39 @@ Mechanical acceptance can prove only that every model received the same approved
 
 ## Still to shape manually
 
-- What supportive reflection should hold constant, and how it differs from the broader journal-response benchmark.
+- Whether the accepted short response contracts need longer-source siblings, using one shared approved passage.
 - Whether editing rough prose produces editorial notes, a revised piece, or a staged combination of both.
 - Whether regrouping sentences is only a direct lossless control or also deserves a staged sibling.
-- Which journal source should be used first and whether its Dish belongs on the public site.
+- The exact public text for the longer journal fixture. The short fixture below is already approved.
+
+## Accepted short journal comparison
+
+Burooj approved the following exact public fixture and two response Recipes in this conversation. Preserve the word "through" as supplied.
+
+> Why does it feel like my coming of age story never finishes through. Is never done. I'm never there. When it does feel like I'm there it feels temporary. Just a bit till it's back
+
+The two one-turn contracts are:
+
+1. **Respond to a journal entry:** "Read the journal entry below and respond to it as a thoughtful conversation partner."
+2. **Respond supportively to a journal entry:** "Read the journal entry below and respond supportively. Attend to what feels difficult, leave room for uncertainty, and help the writer feel accompanied."
+
+Both use the same fixture and capture the complete response. Their purpose is to compare response style and interpretation with different requested stances. Lineage is Mother's, from Burooj's journal practice. Kitchen presents the source and exchange; acceptance establishes identical inputs and complete capture, while response quality remains human taste. No mandatory question or response template is part of these prompts. No new Cook has been run.
+
+The short entry remains useful alongside a longer journal comparison. A larger authentic source is being selected privately; approval of this short fixture does not extend to another entry or its annotations.
+
+## Proposed Recipe: analyze and extract a brain dump
+
+Burooj explicitly requested this additional task family. Proposed opening instruction:
+
+> Read this brain dump and help me make sense of it. Draw out what seems worth returning to and organize it usefully. Ground your reading in the text, distinguish your interpretation from what I actually said, and preserve uncertainty. Do not turn every thought into a task.
+
+Astra Low independently recommended this less prescriptive wording: the model chooses what matters and how to organize it. Exact quotation extraction would be a separate task; supporting quotations are useful here without requiring every extracted item to be verbatim.
+
+Use a substantial authentic passage with mixed material and unfinished thinking. Prior assistant annotations are excluded. Historical requests inside the passage are source material for analysis; this Recipe grants no authority to execute them or access external systems.
+
+The proposed first version is one turn, with a readable analysis and organized extraction as its deliverable. It would reveal selection, grouping, inference, useful structure, omissions, and overinterpretation. Mother's lineage comes from Burooj's actual brain dumps and Brain work. Mechanical acceptance can check source identity, complete output and exact quotations if used; it cannot certify semantic completeness or sound interpretation.
+
+The same approved long passage can also support open and supportive response Recipes, allowing a Menu to compare different tasks on common material. This fixture and the extraction contract still need their authoring checkpoint. Prose editing and lossless regrouping remain separate unresolved tasks.
 
 ## UX remains unauthored
 
