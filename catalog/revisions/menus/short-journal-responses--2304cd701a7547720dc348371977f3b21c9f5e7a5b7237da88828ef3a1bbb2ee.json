@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "menuId": "short-journal-responses",
+  "title": "Responses to one short journal entry",
+  "cuisines": [
+    "conversation-journaling"
+  ],
+  "recipes": [
+    {
+      "recipeId": "respond-to-short-journal",
+      "recipeHash": "sha256:955d233407ece303b97fc0e71b8ce9318079a1e382e06c0f8d74891a418fcb0b"
+    },
+    {
+      "recipeId": "support-short-journal",
+      "recipeHash": "sha256:1aa363947453fc11a1a940a5254473cdcaa7b23f3330a0b3186c4401effb44ba"
+    },
+    {
+      "recipeId": "challenge-short-journal",
+      "recipeHash": "sha256:3d5bd03e1f524f93cdc3ec8368afdb3cf7a3adf83ade0170b67b60f7f84d75d2"
+    }
+  ],
+  "hash": "sha256:2304cd701a7547720dc348371977f3b21c9f5e7a5b7237da88828ef3a1bbb2ee"
+}

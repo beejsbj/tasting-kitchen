@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "short-journal-responses",
+  "title": "Responses to one short journal entry",
+  "summary": "The same approved journal passage, with open, supportive and challenging response instructions.",
+  "cuisines": [
+    "conversation-journaling"
+  ],
+  "recipes": [
+    "respond-to-short-journal",
+    "support-short-journal",
+    "challenge-short-journal"
+  ]
+}
