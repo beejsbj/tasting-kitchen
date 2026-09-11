@@ -21,9 +21,14 @@ const configFor = (registry, dish) => registry.configurations.find(config => con
 try {
   const live = await browser.newPage();
   await live.goto(`${base}/`, { waitUntil: 'networkidle' });
-  assert.equal(await live.locator('.dish-card').count(), 20, 'the live gallery exposes both Dishes for every active Recipe');
+  assert.equal(await live.locator('.dish-card').count(), 27, 'the live gallery exposes twenty web Dishes and seven session Dishes');
+  const liveRegistry = await live.evaluate(async () => fetch('/data/registry.json').then(response => response.json()));
+  const liveWebDishes = liveRegistry.dishes.filter(dish => dish.artifact.kind === 'web');
+  const liveSessionDishes = liveRegistry.dishes.filter(dish => dish.artifact.kind === 'session');
+  assert.equal(liveWebDishes.length, 20);
+  assert.equal(liveSessionDishes.length, 7);
   assert.equal(await live.getByRole('heading', { name: 'No dishes yet.', exact: true }).count(), 0);
-  await live.locator('.dish-card .recipe-card__open').first().click();
+  await live.locator(`[data-dish-id="${liveWebDishes[0].id}"] .recipe-card__open`).click();
   const openedDish = new URL(live.url()).searchParams.get('dishes');
   assert.ok(openedDish, 'opening a Dish records its immutable ID in the URL');
   assert.equal(await live.getByRole('group', { name: 'Move between dishes for this recipe' }).count(), 1);
@@ -41,8 +46,26 @@ try {
   assert.equal(await live.getByRole('button', { name: 'Not a good dish', exact: true }).getAttribute('aria-pressed'), 'true', 'Dish votes persist after reload');
   await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
   await live.locator('.recipe-book-card').first().waitFor();
-  assert.equal(await live.locator('.recipe-book-card').count(), 10);
-  await save(live, 'active-recipe-book'); await live.close();
+  assert.equal(await live.locator('.recipe-book-card').count(), 17);
+  await save(live, 'active-recipe-book');
+  for (const width of [1280, 390]) {
+    await live.setViewportSize({ width, height: 900 });
+    for (const dish of liveSessionDishes) {
+      await live.goto(`${base}/?recipe=${dish.recipe.id}&dishes=${dish.id}`, { waitUntil: 'networkidle' });
+      await live.locator('.session-block p').first().waitFor();
+      const dock = await live.locator('.viewer-dock').boundingBox();
+      for (const paragraph of await live.locator('.session-block p').all()) {
+        const box = await paragraph.boundingBox();
+        assert.ok(box && dock && box.x + box.width < dock.x, `${dish.recipe.id} text stays clear of the dock at ${width}px`);
+      }
+      assert.ok(await live.locator('.artifact-pane--session').evaluate(pane => pane.scrollWidth <= pane.clientWidth), 'session content does not overflow horizontally');
+      await live.locator('.session-block p').last().scrollIntoViewIfNeeded();
+      const response = await live.locator('.session-block p').last().boundingBox();
+      assert.ok(response && dock && response.x + response.width < dock.x, 'scrolled response stays clear of the fixed dock');
+      if (dish.recipe.id === 'respond-to-short-journal') await save(live, `journal-${width}`);
+    }
+  }
+  await live.close();
   cleanupFixture = await galleryBrowserFixture(context);
   const page = await context.newPage(); await page.setViewportSize({ width: 1280, height: 900 }); recordErrors(page, "gallery");
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
@@ -150,7 +173,7 @@ try {
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "mobile Recipe card and viewer should not overflow horizontally");
   await save(page, "recipe-phone");
 
-  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 3, "the cooked catalog should expose all three complete Menus"); assert.match(await page.locator("body").innerText(), /3 public menus/); await save(page, "menus-desktop");
+  await page.setViewportSize({ width: 1280, height: 900 }); await page.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); assert.equal(await page.locator(".menu-card").count(), registry.menus.length, "menu card count should follow registry"); assert.equal(registry.menus.length, 5, "the cooked catalog should expose all five complete Menus"); assert.match(await page.locator("body").innerText(), /5 public menus/); await save(page, "menus-desktop");
 
   const menuRecipes = acceptedRecipes.filter(recipe => recipe.kind === "web").slice(0, 2);
   if (menuRecipes.length === 2) {
@@ -168,7 +191,7 @@ try {
   const book = await page.evaluate(async () => fetch("/data/recipe-book.json").then(response => response.json()));
   assert.equal(await page.locator(".recipe-book-card").count(), book.recipes.length, "Recipe Book includes all active definitions");
   const uncooked = book.recipes.filter(entry => !entry.dishCount);
-  assert.equal(uncooked.length, 0, "all ten active recipes should have a published Dish");
+  assert.equal(uncooked.length, 0, "all seventeen active recipes should have a published Dish");
   await page.getByRole("button", { name: "Not cooked", exact: true }).click();
   assert.equal(await page.locator(".recipe-book-card").count(), 0);
   await page.getByRole("button", { name: "Design systems", exact: true }).click();
