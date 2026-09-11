@@ -11,7 +11,8 @@ const root = path.resolve(import.meta.dirname, '..');
 test('published Dishes retain their exact executed recipe identities through revisions', async () => {
   const [dishes, revisions] = await Promise.all([loadDishes(root), loadRecipeRevisions(root)]);
   const ids = new Set(dishes.map(dish => dish.recipe.id));
-  assert.equal(ids.size, 13);
+  assert.equal(dishes.length, 42);
+  assert.equal(ids.size, 20);
   for (const id of ids) {
     const dish = dishes.find(item => item.recipe.id === id);
     const revision = revisions.find(item => item.hash === dish.recipe.hash && item.recipeId === id);
@@ -20,14 +21,19 @@ test('published Dishes retain their exact executed recipe identities through rev
   }
 });
 
-test('the ten active recipes are cooked and browseable while the old backlog is archived', async () => {
+test('the seventeen active recipes are cooked and browseable while the old backlog is archived', async () => {
   const book = await buildRecipeBook(root);
   const archive = JSON.parse(await readFile(path.join(root, 'catalog/archive.json'), 'utf8'));
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
   assert.equal(fresh.length, 4);
   assert.ok(fresh.every(entry => entry.dishCount === 2));
-  assert.equal(book.recipes.length, 10);
-  assert.ok(book.recipes.every(entry => entry.dishCount === 2));
+  assert.equal(book.recipes.length, 17);
+  const webRecipes = book.recipes.filter(entry => entry.recipe.kind === 'web');
+  const sessionRecipes = book.recipes.filter(entry => entry.recipe.kind === 'session');
+  assert.equal(webRecipes.length, 10);
+  assert.ok(webRecipes.every(entry => entry.dishCount === 2));
+  assert.equal(sessionRecipes.length, 7);
+  assert.ok(sessionRecipes.every(entry => entry.dishCount === 1));
   assert.equal(book.archivedCount, 54);
   assert.equal(archive.archivedRecipeIds.length, 54);
   for (const id of ['responsive-product-launch', 'shared-result-ritual', 'permission-ladder-publish']) {
