@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_challenge-long-journal_codex-luna-xhigh_20260911040908705_d3c28e28",
+  "recipe": {
+    "id": "challenge-long-journal",
+    "version": "1.0.0",
+    "hash": "sha256:373d40a81863979dfcd7153a79b953901be5918a500f9f24eb0a22c9142ddf21"
+  },
+  "executedAt": "2026-09-11T04:09:08.705Z",
+  "finalizedAt": "2026-09-11T04:09:43.584Z",
+  "identity": {
+    "variantId": "codex-luna-xhigh",
+    "provider": "openai",
+    "requestedModel": "gpt-5.6-luna",
+    "observedModel": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "harnessVersion": "codex-cli 0.151.0",
+    "reasoningEffort": "xhigh",
+    "serviceTier": "default",
+    "requestedServiceTier": "default",
+    "configHash": "sha256:57c4570fd8c70cf10cc6a4f70ef343e79f85697531c90dd6683f9f808b51a3bf",
+    "catalogHash": "sha256:5be5161ee7845258c9339a9827d74c8ce88f2aa1ccd840f4f12a739599240003"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "session",
+    "entry": "artifact/output/session.json",
+    "files": [
+      {
+        "path": "artifact/output/session.json",
+        "sha256": "26151cfeb643750fae073326e1b238c0cee971f71947d548b2f27098ad1d915e",
+        "bytes": 7746
+      }
+    ],
+    "treeHash": "sha256:14ae3080b45d38e9eb1814935de80865e7729194c468b11bbc9649f3ffb82ed3"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:c881366d3c8023d21991ea88ecde52ba8b6afbec5cce9bf8e7069bb24d47dc2c"
+}

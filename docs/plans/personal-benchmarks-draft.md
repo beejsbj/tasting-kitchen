@@ -1,6 +1,6 @@
 # Personal benchmark directions
 
-Status: working authoring record. The short journal fixture and two response contracts below are approved; other candidates remain proposals. Approval of a shape does not mean its implementation or cooking is complete.
+Status: working authoring record. Both journal fixtures and seven Recipes are approved and implemented; see `docs/journal-recipes.md` for current catalog scope. Other candidates remain proposals.
 
 ## Settled direction
 
@@ -60,10 +60,10 @@ Mechanical acceptance can prove only that every model received the same approved
 
 ## Still to shape manually
 
-- Whether the accepted short response contracts need longer-source siblings, using one shared approved passage.
+- Whether journal comparisons need staged siblings after the first one-turn tasting.
 - Whether editing rough prose produces editorial notes, a revised piece, or a staged combination of both.
 - Whether regrouping sentences is only a direct lossless control or also deserves a staged sibling.
-- The exact public text for the longer journal fixture. The short fixture below is already approved.
+- The next reflective or creative task after the approved journal comparisons.
 
 ## Accepted short journal comparison
 
@@ -76,11 +76,11 @@ The two one-turn contracts are:
 1. **Respond to a journal entry:** "Read the journal entry below and respond to it as a thoughtful conversation partner."
 2. **Respond supportively to a journal entry:** "Read the journal entry below and respond supportively. Attend to what feels difficult, leave room for uncertainty, and help the writer feel accompanied."
 
-Both use the same fixture and capture the complete response. Their purpose is to compare response style and interpretation with different requested stances. Lineage is Mother's, from Burooj's journal practice. Kitchen presents the source and exchange; acceptance establishes identical inputs and complete capture, while response quality remains human taste. No mandatory question or response template is part of these prompts. No new Cook has been run.
+Both use the same fixture and capture the complete response. Their purpose is to compare response style and interpretation with different requested stances. Lineage is Mother's, from Burooj's journal practice. Kitchen presents the source and exchange; acceptance establishes identical inputs and complete capture, while response quality remains human taste. No mandatory question or response template is part of these prompts. A third, challenging response Recipe was subsequently added; all three have accepted Luna Dishes.
 
-The short entry remains useful alongside a longer journal comparison. A larger authentic source is being selected privately; approval of this short fixture does not extend to another entry or its annotations.
+The short entry remains alongside a longer journal comparison. Burooj separately approved the exact larger passage for public use on September 11, 2026. Previous assistant annotations are excluded from both comparisons.
 
-## Proposed Recipe: analyze and extract a brain dump
+## Accepted Recipe: analyze and extract a brain dump
 
 Burooj explicitly requested this additional task family. Proposed opening instruction:
 
@@ -92,7 +92,7 @@ Use a substantial authentic passage with mixed material and unfinished thinking.
 
 The proposed first version is one turn, with a readable analysis and organized extraction as its deliverable. It would reveal selection, grouping, inference, useful structure, omissions, and overinterpretation. Mother's lineage comes from Burooj's actual brain dumps and Brain work. Mechanical acceptance can check source identity, complete output and exact quotations if used; it cannot certify semantic completeness or sound interpretation.
 
-The same approved long passage can also support open and supportive response Recipes, allowing a Menu to compare different tasks on common material. This fixture and the extraction contract still need their authoring checkpoint. Prose editing and lossless regrouping remain separate unresolved tasks.
+The same approved long passage supports open, supportive, challenging and extraction Recipes in the `long-journal-responses` Menu. Their authoring checkpoint is complete and all four definitions are in the catalog. Prose editing and lossless regrouping remain separate unresolved tasks.
 
 ## UX remains unauthored
 

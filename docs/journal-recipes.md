@@ -10,4 +10,11 @@ The Menu is `short-journal-responses`. The complete passage is embedded identica
 
 Required checks verify Recipe identity, the exact delivered prompt, one captured turn and a nonempty response. Tests exercise missing, duplicated, empty and mismatched captures. Interpretation, warmth, useful disagreement, and prose remain human judgments. The configured harness does not enforce tool denial; the conversational task requests no external actions.
 
-Four additional long-entry definitions are prepared in ignored private authoring storage: open response, support, challenge, and brain-dump analysis/extraction. Their exact larger passage awaits approval for public use. Previous AI annotations are excluded. These drafts have not been promoted to the catalog.
+The `long-journal-responses` Menu contains four further Recipes using one identical longer entry, approved for public use on September 11, 2026:
+
+- `respond-to-long-journal`: thoughtful conversational response.
+- `support-long-journal`: supportive response.
+- `challenge-long-journal`: question assumptions or framing.
+- `analyze-brain-dump`: identify what is worth returning to, organize it usefully, and distinguish interpretation from source statements.
+
+The approved longer passage is preserved without further edits. Previous AI annotations and orientation prompts are excluded. Historical requests within the entry are material for the task, not authorization to perform actions. The same capture checks apply to all seven Recipes; tests also verify identical source text within each Menu.

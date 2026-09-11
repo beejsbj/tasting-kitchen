@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "long-journal-responses",
+  "title": "Responses to one long journal entry",
+  "summary": "One approved brain dump across open, supportive, challenging and analysis/extraction instructions.",
+  "cuisines": [
+    "conversation-journaling",
+    "thinking-decisions",
+    "editing-presentation"
+  ],
+  "recipes": [
+    "respond-to-long-journal",
+    "support-long-journal",
+    "challenge-long-journal",
+    "analyze-brain-dump"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "complete-response",
+      "type": "command",
+      "required": true,
+      "description": "Verify the captured Recipe identity, exact prompt, one response and nonempty response text. Does not judge response quality.",
+      "passed": true,
+      "detail": "command exited 0"
+    }
+  ]
+}

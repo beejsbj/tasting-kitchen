@@ -5,11 +5,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { runChecks } from '../lib/taste/checks.mjs';
 
-const ids = ['respond-to-short-journal', 'support-short-journal', 'challenge-short-journal'];
-test('journal comparisons share exact material and reject incomplete or misbound responses', async () => {
+const groups = {
+  short: ['respond-to-short-journal', 'support-short-journal', 'challenge-short-journal'],
+  long: ['respond-to-long-journal', 'support-long-journal', 'challenge-long-journal', 'analyze-brain-dump'],
+};
+for (const [group, ids] of Object.entries(groups)) {
+test(`${group} journal comparisons share exact material and reject incomplete or misbound responses`, async () => {
   const entries = [];
   for (const id of ids) {
-    const recipe = JSON.parse(await readFile(new URL(`../catalog/recipes/conversation-journaling/${id}/recipe.json`, import.meta.url)));
+    const directory = id === 'analyze-brain-dump' ? 'thinking-decisions' : 'conversation-journaling';
+    const recipe = JSON.parse(await readFile(new URL(`../catalog/recipes/${directory}/${id}/recipe.json`, import.meta.url)));
     entries.push(recipe.turns[0].content.split('\n\n').slice(1).join('\n\n'));
     const workspace = await mkdtemp(path.join(os.tmpdir(), 'journal-contract-'));
     try {
@@ -32,6 +37,8 @@ test('journal comparisons share exact material and reject incomplete or misbound
       await rm(workspace, { recursive: true, force: true });
     }
   }
-  assert.ok(entries[0].includes('finishes through.'));
+  if (group === 'short') assert.ok(entries[0].includes('finishes through.'));
+  else assert.ok(entries[0].split(/\s+/).length > 700);
   assert.equal(new Set(entries).size, 1);
 });
+}

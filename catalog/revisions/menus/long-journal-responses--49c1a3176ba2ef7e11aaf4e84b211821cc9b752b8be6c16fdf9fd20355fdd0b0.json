@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "menuId": "long-journal-responses",
+  "title": "Responses to one long journal entry",
+  "cuisines": [
+    "conversation-journaling",
+    "thinking-decisions",
+    "editing-presentation"
+  ],
+  "recipes": [
+    {
+      "recipeId": "respond-to-long-journal",
+      "recipeHash": "sha256:ab6226909ac137c214306d1b0999dff9c3b5269a5529fe31095f6cdabeb9ab8c"
+    },
+    {
+      "recipeId": "support-long-journal",
+      "recipeHash": "sha256:e733e871dab2c78b3a1247ef3eed01b8b091b865524adb638233364bc4819365"
+    },
+    {
+      "recipeId": "challenge-long-journal",
+      "recipeHash": "sha256:373d40a81863979dfcd7153a79b953901be5918a500f9f24eb0a22c9142ddf21"
+    },
+    {
+      "recipeId": "analyze-brain-dump",
+      "recipeHash": "sha256:16220cbce7273b209c87d34ad2433f3e73210ed79898da718bbbeb775e07169f"
+    }
+  ],
+  "hash": "sha256:49c1a3176ba2ef7e11aaf4e84b211821cc9b752b8be6c16fdf9fd20355fdd0b0"
+}
