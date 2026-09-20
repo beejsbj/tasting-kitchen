@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "id": "short-journal-response",
+  "version": "1.0.0",
+  "status": "active",
+  "title": "Short journal response axes",
+  "purpose": "Inspect whether a response meets the supplied entry with attention, restraint, and room for the writer.",
+  "adapter": {
+    "shape": "journal",
+    "maxBytes": 16384
+  },
+  "contexts": [
+    {
+      "kind": "recipe",
+      "id": "respond-to-short-journal"
+    },
+    {
+      "kind": "menu",
+      "id": "short-journal-responses"
+    }
+  ],
+  "axes": [
+    {
+      "id": "groundedness",
+      "label": "Groundedness",
+      "question": "How grounded is the response in the writer's actual entry?",
+      "levels": [
+        {
+          "id": "detached",
+          "label": "Detached",
+          "description": "The response could be addressed to almost anyone and does not use the entry's particular tension."
+        },
+        {
+          "id": "partial",
+          "label": "Partly grounded",
+          "description": "The response recognizes the broad theme but only loosely engages the entry's particular tension."
+        },
+        {
+          "id": "specific",
+          "label": "Specifically grounded",
+          "description": "The response works directly with the entry's particular language or tension and makes that contact consequential."
+        }
+      ],
+      "consequentialDistance": 2
+    },
+    {
+      "id": "interpretive-restraint",
+      "label": "Interpretive restraint",
+      "question": "How carefully does the response distinguish a plausible reading from a verdict about the writer?",
+      "levels": [
+        {
+          "id": "overclaiming",
+          "label": "Overclaiming",
+          "description": "The response declares motives, causes, or identity as fact without support from the entry."
+        },
+        {
+          "id": "mixed",
+          "label": "Mixed restraint",
+          "description": "The response includes both tentative readings and at least one claim that outruns the entry."
+        },
+        {
+          "id": "calibrated",
+          "label": "Calibrated",
+          "description": "The response offers interpretations as possibilities and keeps their strength proportionate to the entry."
+        }
+      ],
+      "consequentialDistance": 2
+    },
+    {
+      "id": "agency",
+      "label": "Writer agency",
+      "question": "How well does the response leave the writer room to recognize, reject, or continue the line of thought?",
+      "levels": [
+        {
+          "id": "hijacked",
+          "label": "Hijacked",
+          "description": "The response replaces the writer's frame, prescribes an unrelated path, or closes down their own interpretation."
+        },
+        {
+          "id": "limited",
+          "label": "Limited room",
+          "description": "The response remains relevant but ends in a generic conclusion or a narrow prompt with little room to differ."
+        },
+        {
+          "id": "open",
+          "label": "Open room",
+          "description": "The response advances the conversation while clearly leaving the writer room to accept, reject, or reshape it."
+        }
+      ],
+      "consequentialDistance": 2
+    }
+  ],
+  "rubricHash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f"
+}

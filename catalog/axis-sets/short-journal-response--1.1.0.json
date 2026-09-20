@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "short-journal-response",
+  "version": "1.1.0",
+  "status": "candidate",
+  "title": "Short journal response axes",
+  "purpose": "Inspect whether a response meets the supplied entry with attention, restraint, and room for the writer.",
+  "adapter": {
+    "shape": "journal",
+    "maxBytes": 16384
+  },
+  "contexts": [
+    {
+      "kind": "recipe",
+      "id": "respond-to-short-journal"
+    },
+    {
+      "kind": "menu",
+      "id": "short-journal-responses"
+    }
+  ],
+  "axes": [
+    {
+      "id": "groundedness",
+      "label": "Groundedness",
+      "question": "How much does the response use a concrete phrase, contrast, or felt problem from the entry to shape what it says, excluding generic warmth or restatement by itself?",
+      "levels": [
+        {
+          "id": "detached",
+          "label": "Detached",
+          "description": "The response would retain the same meaning for an unrelated entry; warmth or paraphrase alone does not establish contact."
+        },
+        {
+          "id": "partial",
+          "label": "Partly grounded",
+          "description": "The response names the entry's topic or echoes a phrase, but its main interpretation or next move is still generic."
+        },
+        {
+          "id": "specific",
+          "label": "Specifically grounded",
+          "description": "A concrete phrase, contrast, or felt problem from the entry materially shapes the response's interpretation or next move."
+        }
+      ],
+      "consequentialDistance": 2
+    },
+    {
+      "id": "interpretive-restraint",
+      "label": "Interpretive restraint",
+      "question": "How carefully does the response distinguish a plausible reading from a verdict about the writer?",
+      "levels": [
+        {
+          "id": "overclaiming",
+          "label": "Overclaiming",
+          "description": "The response declares motives, causes, or identity as fact without support from the entry."
+        },
+        {
+          "id": "mixed",
+          "label": "Mixed restraint",
+          "description": "The response includes both tentative readings and at least one claim that outruns the entry."
+        },
+        {
+          "id": "calibrated",
+          "label": "Calibrated",
+          "description": "The response offers interpretations as possibilities and keeps their strength proportionate to the entry."
+        }
+      ],
+      "consequentialDistance": 2
+    },
+    {
+      "id": "agency",
+      "label": "Writer agency",
+      "question": "How well does the response leave the writer room to recognize, reject, or continue the line of thought?",
+      "levels": [
+        {
+          "id": "hijacked",
+          "label": "Hijacked",
+          "description": "The response replaces the writer's frame, prescribes an unrelated path, or closes down their own interpretation."
+        },
+        {
+          "id": "limited",
+          "label": "Limited room",
+          "description": "The response remains relevant but ends in a generic conclusion or a narrow prompt with little room to differ."
+        },
+        {
+          "id": "open",
+          "label": "Open room",
+          "description": "The response advances the conversation while clearly leaving the writer room to accept, reject, or reshape it."
+        }
+      ],
+      "consequentialDistance": 2
+    }
+  ],
+  "revisionNote": "Clarifies that groundedness requires a particular from the entry to change the response; generic warmth and topical restatement no longer count by themselves.",
+  "rubricHash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec"
+}

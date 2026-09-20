@@ -6,6 +6,7 @@ import { hashCanonical } from "../lib/taste/catalog.mjs";
 import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
+import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
@@ -794,6 +795,14 @@ for (const relative of reviewFiles.sort()) {
   reviewIds.add(review.id);
 }
 
+let axisSets = [];
+try {
+  axisSets = await loadAxisSets(root);
+  await loadObservations(root, { dishes: [...dishes.values()], axisSets });
+} catch (error) {
+  fail("observations", error.message);
+}
+
 await scanPublicCatalog();
 
 if (errors.length) {
@@ -802,4 +811,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${recipeRecords.size} provenance records.`);
