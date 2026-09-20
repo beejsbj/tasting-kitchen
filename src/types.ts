@@ -135,6 +135,52 @@ export type ArtifactReview = {
   probes: ArtifactReviewProbe[];
 };
 
+export type AxisLevel = { id: string; label: string; description: string };
+export type AxisDefinition = {
+  id: string;
+  label: string;
+  question: string;
+  levels: AxisLevel[];
+  consequentialDistance: number;
+};
+export type AxisSet = {
+  schemaVersion: 1;
+  id: string;
+  version: string;
+  status: "active" | "candidate" | "retired";
+  title: string;
+  purpose: string;
+  adapter: { shape: "conversation" | "agentic" | "journal"; maxBytes: number };
+  contexts: Array<{ kind: "recipe" | "menu"; id: string }>;
+  axes: AxisDefinition[];
+  revisionNote?: string;
+  rubricHash: string;
+};
+export type TasteObservation = {
+  schemaVersion: 1;
+  id: string;
+  dishId: string;
+  dishHash: string;
+  context: { kind: "recipe" | "menu"; id: string; revisionHash: string };
+  axisSet: { id: string; version: string; hash: string };
+  source: {
+    kind: "human" | "jev";
+    evaluator: { id: string; label?: string; provider?: string; model?: string; tool?: string; toolVersion?: string };
+  };
+  observedAt: string;
+  evidenceAdapter: { shape: "conversation" | "agentic" | "journal"; version: 1 };
+  axes: Array<{
+    axisId: string;
+    levelId: string;
+    position: number | null;
+    confidence: number | null;
+    distribution: Array<{ levelId: string; probability: number }> | null;
+    evidence: Array<{ path: string; sha256: string | null }>;
+    note?: string;
+  }>;
+  usage?: { inputTokens: number; outputTokens: number };
+};
+
 export type Registry = {
   schemaVersion: 2;
   generatedAt: string;
@@ -146,6 +192,8 @@ export type Registry = {
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
+  axisSets: AxisSet[];
+  observations: TasteObservation[];
   recipeRevisions: RecipeRevision[];
   menus: Menu[];
   menuRevisions: MenuRevision[];

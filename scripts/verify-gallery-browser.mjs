@@ -62,7 +62,17 @@ try {
       await live.locator('.session-block p').last().scrollIntoViewIfNeeded();
       const response = await live.locator('.session-block p').last().boundingBox();
       assert.ok(response && dock && response.x + response.width < dock.x, 'scrolled response stays clear of the fixed dock');
-      if (dish.recipe.id === 'respond-to-short-journal') await save(live, `journal-${width}`);
+      if (dish.recipe.id === 'respond-to-short-journal') {
+        await live.getByRole('button', { name: 'Taste observations' }).click();
+        const observationPanel = live.getByRole('dialog', { name: 'Taste observations' });
+        assert.equal(await observationPanel.getByRole('heading', { name: 'Taste observations' }).count(), 1);
+        assert.equal(await observationPanel.getByRole('option').count(), 2, 'both exact rubric versions are inspectable');
+        assert.equal(await observationPanel.getByText('Jev observation', { exact: true }).count(), 1, 'the live observation remains visibly machine-authored');
+        assert.equal(await observationPanel.getByLabel('Groundedness level distribution').count(), 1, 'the full level distribution is inspectable');
+        assert.ok(await observationPanel.evaluate(panel => panel.scrollWidth <= panel.clientWidth), `observation panel does not overflow at ${width}px`);
+        await save(live, `journal-observation-${width}`);
+        await live.keyboard.press('Escape');
+      }
     }
   }
   await live.close();
