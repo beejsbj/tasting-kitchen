@@ -63,15 +63,29 @@ try {
       const response = await live.locator('.session-block p').last().boundingBox();
       assert.ok(response && dock && response.x + response.width < dock.x, 'scrolled response stays clear of the fixed dock');
       if (dish.recipe.id === 'respond-to-short-journal') {
-        await live.getByRole('button', { name: 'Taste observations' }).click();
+        const summary = live.getByRole('complementary', { name: 'Observation summary' });
+        assert.equal(await summary.getByText('Specifically grounded', { exact: true }).count(), 1, 'observations are visible before opening details');
+        await save(live, `journal-summary-${width}`);
+        await summary.getByRole('button', { name: 'Open observation details' }).click();
         const observationPanel = live.getByRole('dialog', { name: 'Taste observations' });
         assert.equal(await observationPanel.getByRole('heading', { name: 'Taste observations' }).count(), 1);
-        assert.equal(await observationPanel.getByRole('option').count(), 2, 'both exact rubric versions are inspectable');
+        assert.equal(await observationPanel.getByRole('group', { name: 'Rubric version' }).getByRole('button').count(), 2, 'both exact rubric versions are inspectable');
         assert.equal(await observationPanel.getByText('Jev observation', { exact: true }).count(), 1, 'the live observation remains visibly machine-authored');
         assert.equal(await observationPanel.getByLabel('Groundedness level distribution').count(), 1, 'the full level distribution is inspectable');
         assert.ok(await observationPanel.evaluate(panel => panel.scrollWidth <= panel.clientWidth), `observation panel does not overflow at ${width}px`);
         await save(live, `journal-observation-${width}`);
+        await observationPanel.getByRole('button', { name: 'v1.1.0 Candidate' }).click();
+        assert.equal(await observationPanel.getByText('No observations with this rubric yet.', { exact: true }).count(), 1, 'candidate selection does not misattribute older observations');
+        await observationPanel.getByRole('button', { name: 'v1.0.0', exact: true }).click();
+        await observationPanel.getByText('Evaluator & evidence', { exact: true }).click();
+        assert.equal(await observationPanel.getByText('typesafe/jev-1.13-20260917', { exact: true }).isVisible(), true);
         await live.keyboard.press('Escape');
+        assert.equal(await live.getByRole('dialog', { name: 'Taste observations' }).count(), 0);
+        await live.getByRole('button', { name: 'Hide observation summary' }).click();
+        assert.equal(await live.getByRole('complementary', { name: 'Observation summary' }).count(), 0);
+        await live.getByRole('button', { name: 'Taste observations' }).click();
+        assert.equal(await live.getByRole('dialog', { name: 'Taste observations' }).count(), 1, 'details remain reachable after hiding summary');
+        await live.getByRole('button', { name: 'Close observations' }).click();
       }
     }
   }
