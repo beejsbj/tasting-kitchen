@@ -56,3 +56,13 @@ The ignored `private/provenance` prerequisite was copied locally from the canoni
 ## Required human handoff
 
 The system capability and fixture replay are complete, but empirical rubric refinement is not. Collect a small genuine human-labeled set with provenance, keep development and held-out partitions fixed, rerun both rubric versions on the same immutable Dishes, and review the held-out regression and consequential-error table before choosing whether to promote `1.1.0`. No code path promotes it automatically.
+
+## UI follow-up — September 21
+
+Implementation commit: `cd2757a` — Simplify observation details and add floating summary.
+
+- Replaced the crowded toolbar popover with a dismissible floating summary showing the latest observation's axis names and selected levels. Axes come from the observation's exact rubric, not a shared hard-coded list.
+- Clicking the summary or toolbar opens a wider, simplified detail dialog. Neutral distribution bars remain visible; evaluator metadata, evidence paths, and rubric definitions are collapsed until requested.
+- Replaced the overflowing selector with wrapping rubric-version buttons. Selecting a candidate with no observations shows an empty state rather than results from another version. Human/Jev labels and disagreements remain explicit.
+- Verified typecheck, production build, lint, and all 24 gallery tests. Extended browser assertions cover the summary, detail opening, rubric switching, evidence disclosure, dismissal, and toolbar reopening at desktop and phone widths. Inspected screenshots at 1280 px and 390 px.
+- Preview remains available on port 5177. Shared preview automation was unavailable; repository Playwright supplied the screenshots in `/tmp/kitchen-observation-preview`. No deployment, publication, or canonical README changes.
