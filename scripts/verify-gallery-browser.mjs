@@ -63,8 +63,12 @@ try {
       const response = await live.locator('.session-block p').last().boundingBox();
       assert.ok(response && dock && response.x + response.width < dock.x, 'scrolled response stays clear of the fixed dock');
       if (dish.recipe.id === 'respond-to-short-journal') {
+        assert.equal(await live.getByRole('complementary', { name: 'Observation summary' }).count(), 0, 'the floating summary is opt-in; tasting starts without it');
+        await live.getByRole('button', { name: 'Taste observations' }).click();
+        await live.getByRole('dialog', { name: 'Taste observations' }).getByRole('button', { name: 'Show summary on Dishes' }).click();
+        await live.getByRole('button', { name: 'Close observations' }).click();
         const summary = live.getByRole('complementary', { name: 'Observation summary' });
-        assert.equal(await summary.getByText('Specifically grounded', { exact: true }).count(), 1, 'observations are visible before opening details');
+        assert.equal(await summary.getByText('Specifically grounded', { exact: true }).count(), 1, 'observations are visible once the summary is pinned');
         await save(live, `journal-summary-${width}`);
         await summary.getByRole('button', { name: 'Open observation details' }).click();
         const observationPanel = live.getByRole('dialog', { name: 'Taste observations' });

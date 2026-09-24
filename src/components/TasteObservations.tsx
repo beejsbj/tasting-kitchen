@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUpRight, ScanSearch, X } from "lucide-react";
+import { ArrowUpRight, Pin, PinOff, ScanSearch, X } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -7,6 +7,15 @@ import { axisSetsForDish, observationDisagreements, observationsForDish, shortHa
 import type { AxisSet, Dish, Registry, TasteObservation } from "../types";
 import { IconButton } from "./ui/ViewerControls";
 import "../styles/observations.css";
+
+// The floating summary is opt-in: tasting comes first, Jev's reading second.
+const SUMMARY_KEY = "kitchen.observationSummary";
+function summaryPreference(): boolean {
+  try { return window.localStorage.getItem(SUMMARY_KEY) === "shown"; } catch { return false; }
+}
+function rememberSummary(shown: boolean) {
+  try { window.localStorage.setItem(SUMMARY_KEY, shown ? "shown" : "hidden"); } catch { /* Preference stays for this view only. */ }
+}
 
 function sourceLabel(observation: TasteObservation) {
   return observation.source.kind === "human" ? "Human observation" : "Jev observation";
@@ -35,7 +44,8 @@ export function TasteObservations({ registry, dish }: { registry: Registry; dish
   const latest = [...observations].sort((a, b) => b.observedAt.localeCompare(a.observedAt) || b.id.localeCompare(a.id))[0];
   const [selectedHash, setSelectedHash] = useState(latest?.axisSet.hash ?? selectable[0]?.rubricHash ?? "");
   const [open, setOpen] = useState(false);
-  const [summaryVisible, setSummaryVisible] = useState(true);
+  const [summaryVisible, setSummaryVisibleState] = useState(summaryPreference);
+  const setSummaryVisible = (shown: boolean) => { rememberSummary(shown); setSummaryVisibleState(shown); };
   const selected = selectable.find((set) => set.rubricHash === selectedHash) ?? selectable[0];
   const shown = observations.filter((item) => item.axisSet.hash === selected?.rubricHash);
   const disagreements = observationDisagreements(observations);
@@ -58,7 +68,10 @@ export function TasteObservations({ registry, dish }: { registry: Registry; dish
       <Dialog.Content className="observation-panel" onEscapeKeyDown={(event) => event.stopPropagation()}>
         <header className="observation-panel__header">
           <div><Dialog.Title>Taste observations</Dialog.Title><Dialog.Description>{selected?.title ?? "Observations for this Dish"}</Dialog.Description></div>
-          <Dialog.Close asChild><button className="observation-close" type="button" aria-label="Close observations"><X size={18} /></button></Dialog.Close>
+          <div className="observation-panel__actions">
+            {latest && <button className="observation-pin" type="button" aria-pressed={summaryVisible} aria-label={summaryVisible ? "Hide summary on Dishes" : "Show summary on Dishes"} title={summaryVisible ? "Hide summary on Dishes" : "Show summary on Dishes"} onClick={() => setSummaryVisible(!summaryVisible)}>{summaryVisible ? <PinOff size={16} /> : <Pin size={16} />}</button>}
+            <Dialog.Close asChild><button className="observation-close" type="button" aria-label="Close observations"><X size={18} /></button></Dialog.Close>
+          </div>
         </header>
         <div className="observation-panel__body">
           {selectable.length > 0 && <div className="observation-versions" role="group" aria-label="Rubric version">{selectable.map((set) => <button type="button" key={set.rubricHash} aria-pressed={set.rubricHash === selected?.rubricHash} onClick={() => setSelectedHash(set.rubricHash)}>
