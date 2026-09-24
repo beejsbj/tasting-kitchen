@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { comparisonConfigurations, dishesFor, recipeAtRevision } from '../src/lib/registry.ts';
+import { axisSetsForDish, comparisonConfigurations, dishesFor, observationDisagreements, observationsForDish, recipeAtRevision } from '../src/lib/registry.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, exact revision and selected Dishes', () => {
@@ -46,6 +46,16 @@ test('historical configurations stay selectable after a current configuration ch
   assert.equal(configs[1].configHash, 'sha256:old');
   assert.equal(configs[1].historical, true);
   assert.notEqual(configs[0].id, configs[1].id);
+});
+
+test('human and Jev observations remain distinct and disagreements are preserved', () => {
+  const dish = { id: 'dish-one', dishHash: 'sha256:dish', recipe: { id: 'recipe-one' } };
+  const axisSet = { rubricHash: 'sha256:rubric', contexts: [{ kind: 'recipe', id: 'recipe-one' }] };
+  const observation = (kind, levelId) => ({ dishId: dish.id, dishHash: dish.dishHash, axisSet: { hash: axisSet.rubricHash }, source: { kind }, axes: [{ axisId: 'care', levelId }] });
+  const observations = [observation('human', 'specific'), observation('jev', 'partial')];
+  assert.equal(observationsForDish(observations, dish).length, 2);
+  assert.equal(axisSetsForDish([axisSet], dish).length, 1);
+  assert.deepEqual(observationDisagreements(observations), [{ axisId: 'care', human: 'specific', jev: 'partial', rubricHash: 'sha256:rubric' }]);
 });
 
 const selectionRecipe = { id: 'r', recipeHash: 'current' };

@@ -10,6 +10,7 @@ import { KitchenHero } from "./components/KitchenHero";
 import { Mark } from "./components/Mark";
 import { RecipeBrief } from "./components/RecipeBrief";
 import { ModelChoices } from "./components/ModelChoices";
+import { TasteObservations } from "./components/TasteObservations";
 import { latestDish, resolveRecipeSelection, selectionForDish } from "./lib/selection";
 import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, dishesFor, loadRegistry, modelFamily, recipeAtRevision, reviewsForDish, shortHash } from "./lib/registry";
@@ -162,6 +163,7 @@ export default function App() {
           <h2 className="mb-3 text-base font-semibold">Configuration receipts</h2>
           {slots.map(({ dish, config }, index) => <section key={index} className="receipt border-b border-slate-100 last:border-0"><h3 className="text-sm font-semibold">{modelFamily(config.model)} · {config.reasoningEffort}</h3>{dish ? <><dl><dt>Requested</dt><dd>{dish.identity.requestedModel}</dd><dt>Observed</dt><dd>{dish.identity.observedModel}</dd><dt>Harness</dt><dd>{dish.identity.harness} {dish.identity.harnessVersion}</dd><dt>Tier requested / observed</dt><dd>{dish.identity.requestedServiceTier ?? dish.identity.serviceTier} / {dish.identity.observedServiceTier ?? 'not recorded'}</dd><dt>Recipe revision</dt><dd>{shortHash(dish.recipe.hash)}</dd><dt>Executed</dt><dd>{new Date(dish.executedAt).toLocaleString()}</dd></dl><a href={artifactUrl(dish, 'dish.json')} target="_blank" rel="noreferrer">Immutable manifest ↗</a>{reviewsForDish(registry.reviews, dish).flatMap((review) => review.probes.map((probe) => <p key={`${review.id}-${probe.id}`} className="mt-3 text-xs">{review.reviewerKind} review · {probe.verdict}: {probe.finding}</p>))}<a className="mt-3 block" href={artifactUrl(dish)} target="_blank" rel="noreferrer">Open artifact ↗</a></> : <p>No dish for these settings.</p>}</section>)}
         </ControlPopover>
+        {focusedDish && <TasteObservations key={focusedDish.id} registry={registry} dish={focusedDish} />}
         {slots.length === 1 && slots[0].dish && <a aria-label="Open artifact in new tab" title="Open artifact in new tab" className="inline-flex size-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100" href={artifactUrl(slots[0].dish)} target="_blank" rel="noreferrer"><ExternalLink size={18} /></a>}
         {slots.length === 1 && slots[0].repeats.length > 1 && <div className="flex flex-col gap-1 border-t border-slate-200 pt-1" role="group" aria-label="Dishes for configuration 1">{slots[0].repeats.map((repeat, i) => <IconButton key={repeat.id} aria-label={`Repeat ${i + 1} for configuration 1`} aria-pressed={slots[0].dish?.id === repeat.id} onClick={() => chooseRepeat(0, repeat.id)}>{i + 1}</IconButton>)}</div>}
       </nav>

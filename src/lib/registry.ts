@@ -1,4 +1,4 @@
-import type { Configuration, Dish, Recipe, RecipeRevision, Registry, Variant } from "../types";
+import type { AxisSet, Configuration, Dish, Recipe, RecipeRevision, Registry, TasteObservation, Variant } from "../types";
 
 export async function loadRegistry(): Promise<Registry> {
   const response = await fetch(`${import.meta.env.BASE_URL}data/registry.json`, { cache: "no-cache" });
@@ -31,6 +31,26 @@ export function recipeAtRevision(recipe: Recipe, revision?: RecipeRevision): Rec
 }
 export function reviewsForDish(reviews: Registry["reviews"], dish?: Dish) {
   return dish ? reviews.filter((review) => review.dishId === dish.id && review.dishHash === dish.dishHash) : [];
+}
+export function observationsForDish(observations: TasteObservation[], dish?: Dish) {
+  return dish ? observations.filter((observation) => observation.dishId === dish.id && observation.dishHash === dish.dishHash) : [];
+}
+export function axisSetsForDish(axisSets: AxisSet[], dish?: Dish) {
+  return dish ? axisSets.filter((axisSet) => axisSet.contexts.some((context) => context.kind === "recipe" && context.id === dish.recipe.id)) : [];
+}
+export function observationDisagreements(observations: TasteObservation[]) {
+  const disagreements: Array<{ axisId: string; human: string; jev: string; rubricHash: string }> = [];
+  const byRubric = new Map<string, TasteObservation[]>();
+  for (const observation of observations) byRubric.set(observation.axisSet.hash, [...(byRubric.get(observation.axisSet.hash) ?? []), observation]);
+  for (const [rubricHash, group] of byRubric) {
+    const humans = group.filter((observation) => observation.source.kind === "human");
+    const jev = group.filter((observation) => observation.source.kind === "jev");
+    for (const human of humans) for (const machine of jev) for (const humanAxis of human.axes) {
+      const machineAxis = machine.axes.find((axis) => axis.axisId === humanAxis.axisId);
+      if (machineAxis && machineAxis.levelId !== humanAxis.levelId) disagreements.push({ axisId: humanAxis.axisId, human: humanAxis.levelId, jev: machineAxis.levelId, rubricHash });
+    }
+  }
+  return disagreements;
 }
 export function artifactUrl(dish: Dish, path = dish.artifact.entry) {
   return `${dish.artifactBase.replace(/\/$/, "")}/${path.split("/").map(encodeURIComponent).join("/")}`;

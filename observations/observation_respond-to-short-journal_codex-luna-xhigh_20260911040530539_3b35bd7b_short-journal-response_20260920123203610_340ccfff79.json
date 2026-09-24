@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_respond-to-short-journal_codex-luna-xhigh_20260911040530539_3b35bd7b_short-journal-response_20260920123203610_340ccfff79",
+  "dishId": "dish_respond-to-short-journal_codex-luna-xhigh_20260911040530539_3b35bd7b",
+  "dishHash": "sha256:5c22dd468085268048c66c447e5accb44be20a7b3feaf913e8620524b299efd5",
+  "context": {
+    "kind": "recipe",
+    "id": "respond-to-short-journal",
+    "revisionHash": "sha256:955d233407ece303b97fc0e71b8ce9318079a1e382e06c0f8d74891a418fcb0b"
+  },
+  "axisSet": {
+    "id": "short-journal-response",
+    "version": "1.0.0",
+    "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f"
+  },
+  "source": {
+    "kind": "jev",
+    "evaluator": {
+      "id": "kitchen-jev-smoke",
+      "provider": "openrouter",
+      "tool": "jevon",
+      "toolVersion": "0.8.0",
+      "model": "typesafe/jev-1.13-20260917"
+    }
+  },
+  "observedAt": "2026-09-20T12:32:03.610Z",
+  "evidenceAdapter": {
+    "shape": "journal",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "groundedness",
+      "levelId": "specific",
+      "position": 1.98,
+      "confidence": 0.97,
+      "distribution": [
+        {
+          "levelId": "detached",
+          "probability": 0
+        },
+        {
+          "levelId": "partial",
+          "probability": 0.02
+        },
+        {
+          "levelId": "specific",
+          "probability": 0.98
+        }
+      ],
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:23202496319025302aafa47913c89895a1102f99e55c4cc7b52c26b983ebd17e"
+        }
+      ]
+    },
+    {
+      "axisId": "interpretive-restraint",
+      "levelId": "calibrated",
+      "position": 1.88,
+      "confidence": 0.82,
+      "distribution": [
+        {
+          "levelId": "overclaiming",
+          "probability": 0
+        },
+        {
+          "levelId": "mixed",
+          "probability": 0.12
+        },
+        {
+          "levelId": "calibrated",
+          "probability": 0.88
+        }
+      ],
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:23202496319025302aafa47913c89895a1102f99e55c4cc7b52c26b983ebd17e"
+        }
+      ]
+    },
+    {
+      "axisId": "agency",
+      "levelId": "open",
+      "position": 2,
+      "confidence": 0.99,
+      "distribution": [
+        {
+          "levelId": "hijacked",
+          "probability": 0
+        },
+        {
+          "levelId": "limited",
+          "probability": 0
+        },
+        {
+          "levelId": "open",
+          "probability": 1
+        }
+      ],
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:23202496319025302aafa47913c89895a1102f99e55c4cc7b52c26b983ebd17e"
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "inputTokens": 1002,
+    "outputTokens": 51
+  }
+}

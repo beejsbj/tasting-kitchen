@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "id": "short-journal-groundedness-fixture",
+  "baselineAxisSetFile": "../../catalog/axis-sets/short-journal-response--1.0.0.json",
+  "candidateAxisSetFile": "../../catalog/axis-sets/short-journal-response--1.1.0.json",
+  "revision": {
+    "axisId": "groundedness",
+    "ambiguity": "The old wording can let topical warmth or paraphrase count as contact even when no particular from the entry changes the response.",
+    "developmentLabelIds": ["fixture-label-a", "fixture-label-b"]
+  },
+  "reviewPolicy": {
+    "minConfidence": 0.65
+  },
+  "humanLabels": [
+    {
+      "id": "fixture-label-a",
+      "dishId": "dish_fixture_a",
+      "dishHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "split": "development",
+      "provenance": { "kind": "synthetic-human-fixture", "description": "Hand-authored acceptance fixture; it is not a tasting performed by Burooj or another person." },
+      "axes": { "groundedness": "specific", "interpretive-restraint": "calibrated", "agency": "open" }
+    },
+    {
+      "id": "fixture-label-b",
+      "dishId": "dish_fixture_b",
+      "dishHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "split": "development",
+      "provenance": { "kind": "synthetic-human-fixture", "description": "Hand-authored acceptance fixture; it is not a tasting performed by Burooj or another person." },
+      "axes": { "groundedness": "detached", "interpretive-restraint": "overclaiming", "agency": "hijacked" }
+    },
+    {
+      "id": "fixture-label-c",
+      "dishId": "dish_fixture_c",
+      "dishHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "split": "held-out",
+      "provenance": { "kind": "synthetic-human-fixture", "description": "Hand-authored held-out fixture; it is not a tasting performed by Burooj or another person." },
+      "axes": { "groundedness": "specific", "interpretive-restraint": "calibrated", "agency": "open" }
+    },
+    {
+      "id": "fixture-label-d",
+      "dishId": "dish_fixture_d",
+      "dishHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "split": "held-out",
+      "provenance": { "kind": "synthetic-human-fixture", "description": "Hand-authored held-out fixture; it is not a tasting performed by Burooj or another person." },
+      "axes": { "groundedness": "partial", "interpretive-restraint": "calibrated", "agency": "limited" }
+    }
+  ],
+  "baselineObservations": [
+    {
+      "id": "observation_fixture_baseline_a",
+      "dishId": "dish_fixture_a",
+      "dishHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.0.0", "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "partial", "confidence": 0.72, "distribution": [{ "levelId": "detached", "probability": 0.08 }, { "levelId": "partial", "probability": 0.72 }, { "levelId": "specific", "probability": 0.20 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.82, "distribution": [{ "levelId": "overclaiming", "probability": 0.03 }, { "levelId": "mixed", "probability": 0.15 }, { "levelId": "calibrated", "probability": 0.82 }] },
+        { "axisId": "agency", "levelId": "open", "confidence": 0.78, "distribution": [{ "levelId": "hijacked", "probability": 0.04 }, { "levelId": "limited", "probability": 0.18 }, { "levelId": "open", "probability": 0.78 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_baseline_b",
+      "dishId": "dish_fixture_b",
+      "dishHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.0.0", "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "detached", "confidence": 0.86, "distribution": [{ "levelId": "detached", "probability": 0.86 }, { "levelId": "partial", "probability": 0.11 }, { "levelId": "specific", "probability": 0.03 }] },
+        { "axisId": "interpretive-restraint", "levelId": "overclaiming", "confidence": 0.81, "distribution": [{ "levelId": "overclaiming", "probability": 0.81 }, { "levelId": "mixed", "probability": 0.15 }, { "levelId": "calibrated", "probability": 0.04 }] },
+        { "axisId": "agency", "levelId": "hijacked", "confidence": 0.77, "distribution": [{ "levelId": "hijacked", "probability": 0.77 }, { "levelId": "limited", "probability": 0.19 }, { "levelId": "open", "probability": 0.04 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_baseline_c",
+      "dishId": "dish_fixture_c",
+      "dishHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.0.0", "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "detached", "confidence": 0.54, "distribution": [{ "levelId": "detached", "probability": 0.54 }, { "levelId": "partial", "probability": 0.30 }, { "levelId": "specific", "probability": 0.16 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.73, "distribution": [{ "levelId": "overclaiming", "probability": 0.05 }, { "levelId": "mixed", "probability": 0.22 }, { "levelId": "calibrated", "probability": 0.73 }] },
+        { "axisId": "agency", "levelId": "open", "confidence": 0.76, "distribution": [{ "levelId": "hijacked", "probability": 0.04 }, { "levelId": "limited", "probability": 0.20 }, { "levelId": "open", "probability": 0.76 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_baseline_d",
+      "dishId": "dish_fixture_d",
+      "dishHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.0.0", "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "partial", "confidence": 0.75, "distribution": [{ "levelId": "detached", "probability": 0.10 }, { "levelId": "partial", "probability": 0.75 }, { "levelId": "specific", "probability": 0.15 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.72, "distribution": [{ "levelId": "overclaiming", "probability": 0.06 }, { "levelId": "mixed", "probability": 0.22 }, { "levelId": "calibrated", "probability": 0.72 }] },
+        { "axisId": "agency", "levelId": "limited", "confidence": 0.70, "distribution": [{ "levelId": "hijacked", "probability": 0.12 }, { "levelId": "limited", "probability": 0.70 }, { "levelId": "open", "probability": 0.18 }] }
+      ]
+    }
+  ],
+  "candidateObservations": [
+    {
+      "id": "observation_fixture_candidate_a",
+      "dishId": "dish_fixture_a",
+      "dishHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.1.0", "hash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "specific", "confidence": 0.76, "distribution": [{ "levelId": "detached", "probability": 0.06 }, { "levelId": "partial", "probability": 0.18 }, { "levelId": "specific", "probability": 0.76 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.82, "distribution": [{ "levelId": "overclaiming", "probability": 0.03 }, { "levelId": "mixed", "probability": 0.15 }, { "levelId": "calibrated", "probability": 0.82 }] },
+        { "axisId": "agency", "levelId": "open", "confidence": 0.78, "distribution": [{ "levelId": "hijacked", "probability": 0.04 }, { "levelId": "limited", "probability": 0.18 }, { "levelId": "open", "probability": 0.78 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_candidate_b",
+      "dishId": "dish_fixture_b",
+      "dishHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.1.0", "hash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "detached", "confidence": 0.89, "distribution": [{ "levelId": "detached", "probability": 0.89 }, { "levelId": "partial", "probability": 0.08 }, { "levelId": "specific", "probability": 0.03 }] },
+        { "axisId": "interpretive-restraint", "levelId": "overclaiming", "confidence": 0.81, "distribution": [{ "levelId": "overclaiming", "probability": 0.81 }, { "levelId": "mixed", "probability": 0.15 }, { "levelId": "calibrated", "probability": 0.04 }] },
+        { "axisId": "agency", "levelId": "hijacked", "confidence": 0.77, "distribution": [{ "levelId": "hijacked", "probability": 0.77 }, { "levelId": "limited", "probability": 0.19 }, { "levelId": "open", "probability": 0.04 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_candidate_c",
+      "dishId": "dish_fixture_c",
+      "dishHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.1.0", "hash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "specific", "confidence": 0.71, "distribution": [{ "levelId": "detached", "probability": 0.08 }, { "levelId": "partial", "probability": 0.21 }, { "levelId": "specific", "probability": 0.71 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.73, "distribution": [{ "levelId": "overclaiming", "probability": 0.05 }, { "levelId": "mixed", "probability": 0.22 }, { "levelId": "calibrated", "probability": 0.73 }] },
+        { "axisId": "agency", "levelId": "open", "confidence": 0.76, "distribution": [{ "levelId": "hijacked", "probability": 0.04 }, { "levelId": "limited", "probability": 0.20 }, { "levelId": "open", "probability": 0.76 }] }
+      ]
+    },
+    {
+      "id": "observation_fixture_candidate_d",
+      "dishId": "dish_fixture_d",
+      "dishHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "source": { "kind": "jev" },
+      "axisSet": { "id": "short-journal-response", "version": "1.1.0", "hash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec" },
+      "axes": [
+        { "axisId": "groundedness", "levelId": "detached", "confidence": 0.68, "distribution": [{ "levelId": "detached", "probability": 0.68 }, { "levelId": "partial", "probability": 0.25 }, { "levelId": "specific", "probability": 0.07 }] },
+        { "axisId": "interpretive-restraint", "levelId": "calibrated", "confidence": 0.72, "distribution": [{ "levelId": "overclaiming", "probability": 0.06 }, { "levelId": "mixed", "probability": 0.22 }, { "levelId": "calibrated", "probability": 0.72 }] },
+        { "axisId": "agency", "levelId": "limited", "confidence": 0.70, "distribution": [{ "levelId": "hijacked", "probability": 0.12 }, { "levelId": "limited", "probability": 0.70 }, { "levelId": "open", "probability": 0.18 }] }
+      ]
+    }
+  ]
+}

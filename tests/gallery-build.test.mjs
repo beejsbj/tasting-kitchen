@@ -30,6 +30,9 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.ok(registry.dishes.filter((dish) => dish.identity.variantId === "cursor-composer-2-5").every((dish) => dish.identity.reasoningEffort === "adaptive" && dish.identity.requestedModel === "composer-2.5[fast=false]" && dish.identity.observedModel === "Composer 2.5"));
   assert.ok(registry.dishes.every((dish) => dish.identity.serviceTier === "default"));
   assert.deepEqual(registry.reviews, []);
+  assert.equal(registry.axisSets.length, 2);
+  assert.equal(registry.observations.length, 1);
+  assert.equal(registry.observations[0].source.kind, "jev");
   assert.equal(registry.recipeRevisions.length, 17);
   assert.equal(registry.menus.length, 5);
   assert.equal(registry.menuRevisions.length, 5);
@@ -52,6 +55,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   )).join("\n");
   assert.match(productionJavaScript, /Agent review/);
   assert.match(productionJavaScript, /Artifact review/);
+  for (const label of ["Human observation", "Jev observation", "Disagreement preserved"]) assert.match(productionJavaScript, new RegExp(label));
   for (const label of ["Session artifact", "Prompt", "Model response", "Tool & action evidence", "Raw session JSON"]) assert.match(productionJavaScript, new RegExp(label.replace("&", "&(?:amp;)?")));
   assert.doesNotMatch(productionJavaScript, /viewer__label/);
   assert.doesNotMatch(productionCss, /viewer__label/);
