@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "hand-drawn-paper-boat",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Draw a paper boat voyage",
+  "summary": "Tell the same small paper-boat story through hand-drawn-canvas-animation; compare staging, motion and artistic choices across models.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original fictional paper-boat brief developed during a requested comparison of two public animation skills. The task was tried informally; this benchmark shape awaits owner acceptance.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Verify fixtures/skill.tar.gz against fixtures/skill-lock.json, extract it into the workspace and read skill/SKILL.md. Work from that immutable source snapshot. Provide Node, Python, FFmpeg and a pinned browser/render environment identically to every model before cooking. Dependency setup is allowed; film inputs are local. This draft needs owner acceptance and a render-environment smoke before becoming Ready.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "skill-archive",
+        "path": "fixtures/skill.tar.gz",
+        "mountAs": "fixtures/skill.tar.gz",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/gzip"
+      },
+      {
+        "id": "skill-lock",
+        "path": "fixtures/skill-lock.json",
+        "mountAs": "fixtures/skill-lock.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "make-film",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and the supplied skill. Create A Little Voyage through that workflow and deliver the specified film, live drawing player, source and contact sheet. Make routine artistic choices yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check the shared player, nonempty deliverables, PNG signature, H.264/AAC, 1080 by 1920, 24fps, 576 frames and 24-second duration.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Watch with sound; inspect story clarity, expressive poses, physical contacts, timing, lettering, continuity and artistic character. Review source for original code-authored visuals and synthesized audio."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

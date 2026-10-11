@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "animation-skills",
+  "title": "Animation Skills",
+  "summary": "Draft pair: the same paper-boat story authored with two pinned animation workflows. Each recipe compares models; comparing the pair explores skills.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "recipes": [
+    "hand-drawn-paper-boat",
+    "procedural-paper-boat"
+  ]
+}

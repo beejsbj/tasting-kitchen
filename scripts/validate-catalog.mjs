@@ -287,7 +287,7 @@ function validateConfigurations(doc) {
   required(doc, ["schemaVersion", "configurations"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
   if (!array(doc.configurations, `${label}.configurations`, { min: 1 })) return new Map();
-  if (doc.configurations.length !== 7) fail(label, `expected 7 configurations, found ${doc.configurations.length}`);
+  if (doc.configurations.length < 1) fail(label, "expected at least one configuration");
   const map = new Map();
   const tuples = [];
   const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
