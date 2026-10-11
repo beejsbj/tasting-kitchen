@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "animation-styles",
+  "title": "Animation styles and motion craft",
+  "summary": "Eight draft animation tasks testing weight, acting, transformation, print texture, pixel motion, mechanisms, typography and technical truth. Compare models within each fixed recipe.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "recipes": [
+    "heavy-little-suitcase",
+    "the-last-seat",
+    "paper-garden",
+    "riso-night-market",
+    "pixel-rooftop-rescue",
+    "blueprint-marble-sorter",
+    "words-with-weight",
+    "queue-under-pressure"
+  ]
+}

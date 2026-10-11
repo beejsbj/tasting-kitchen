@@ -1,0 +1,10 @@
+{
+  "id": "riso-film",
+  "repository": "https://github.com/sevenevesai/riso-windowseat",
+  "commit": "1275fdaf81eb1817b729ee69cbf7b6b6fe535a4e",
+  "license": "MIT; exceptions in THIRD_PARTY_NOTICES.md",
+  "entry": "skill/.claude/skills/riso-film/SKILL.md",
+  "archiveSha256": "9b35a524b8653dd7d8302ca28d79f5f26370c755af42f6eaf43c2170dfaf628c",
+  "fileCount": 99,
+  "notice": "Complete tracked repository, including upstream examples and third-party notices. Examples are reference only; the new film must use original geometric art and synthesized sound."
+}

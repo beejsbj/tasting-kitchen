@@ -82,3 +82,11 @@ node bin/taste.mjs plan --config codex-gpt-6-astra-high --menu animation-skills 
 ```
 
 Planning must report both Recipes unavailable because they are drafts.
+
+## Further styles
+
+[Eight additional draft recipes](animation-style-recipes.md) cover character
+weight, two-person acting, paper transformation, risograph parallax, pixel
+action, a sorting mechanism, kinetic type and queue backpressure. They form
+the separate `animation-styles` Menu. The original two paper-boat recipes
+and their fixture bytes remain unchanged.

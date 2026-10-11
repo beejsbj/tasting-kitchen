@@ -1,0 +1,39 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 24,
+  "duration": 24,
+  "frames": 576,
+  "beats": [
+    {
+      "id": "establish-machine",
+      "start": 1,
+      "end": 3
+    },
+    {
+      "id": "sort-a",
+      "start": 5,
+      "end": 7
+    },
+    {
+      "id": "sort-b",
+      "start": 9,
+      "end": 11
+    },
+    {
+      "id": "sort-c",
+      "start": 13,
+      "end": 15
+    },
+    {
+      "id": "sort-d",
+      "start": 17,
+      "end": 19
+    },
+    {
+      "id": "final-counts",
+      "start": 21,
+      "end": 23.5
+    }
+  ]
+}

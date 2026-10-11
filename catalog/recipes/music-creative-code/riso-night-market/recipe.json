@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "riso-night-market",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Night market delivery",
+  "summary": "Compare tactile print craft, layered camera motion and staging through foreground occlusion.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original fictional task proposed for the requested cross-model animation comparison; this draft benchmark shape awaits owner acceptance.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Verify fixtures/skill.tar.gz against fixtures/skill-lock.json, extract it and read skill/.claude/skills/riso-film/SKILL.md. Use the immutable source snapshot. Before Ready, pin and smoke the Node (22 or later), Python, browser, FFmpeg, fonts and skill-specific dependencies identically for every model. This draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "skill-archive",
+        "path": "fixtures/skill.tar.gz",
+        "mountAs": "fixtures/skill.tar.gz",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/gzip"
+      },
+      {
+        "id": "skill-lock",
+        "path": "fixtures/skill-lock.json",
+        "mountAs": "fixtures/skill-lock.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "make-film",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and the pinned skill. Create Night market delivery using its workflow, and deliver the specified movie, live player, source, contact sheet and evidence. Make routine creative decisions yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1080, 30fps, 720 frames, 24 seconds and evidence structure.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Does it feel printed without grain flicker or distracting misregistration? Are the depth layers and courier readable during camera travel? Do wheel speed, braking and the parcel exchange hold together? Inspect actual playback, audio, authorship and correspondence between evidence times and visible events."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

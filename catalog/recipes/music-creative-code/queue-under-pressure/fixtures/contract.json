@@ -1,0 +1,30 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 24,
+  "frames": 720,
+  "beats": [
+    {
+      "id": "queue-fills",
+      "start": 6,
+      "end": 8
+    },
+    {
+      "id": "producer-blocked",
+      "start": 8,
+      "end": 11
+    },
+    {
+      "id": "producer-resumes",
+      "start": 12,
+      "end": 15
+    },
+    {
+      "id": "all-complete",
+      "start": 22,
+      "end": 23.5
+    }
+  ],
+  "stateFixture": "fixtures/states.json"
+}

@@ -1,0 +1,34 @@
+{
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "duration": 24,
+  "frames": 720,
+  "beats": [
+    {
+      "id": "depart",
+      "start": 2,
+      "end": 4
+    },
+    {
+      "id": "three-depths",
+      "start": 6,
+      "end": 9
+    },
+    {
+      "id": "banner-occlusion",
+      "start": 10,
+      "end": 13
+    },
+    {
+      "id": "brake",
+      "start": 15,
+      "end": 18
+    },
+    {
+      "id": "handover",
+      "start": 20,
+      "end": 23.5
+    }
+  ]
+}

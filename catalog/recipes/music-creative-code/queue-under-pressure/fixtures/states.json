@@ -1,0 +1,146 @@
+[
+  {
+    "t": 0,
+    "waiting": [],
+    "running": null,
+    "blocked": [],
+    "done": []
+  },
+  {
+    "t": 2,
+    "waiting": [],
+    "running": "A",
+    "blocked": [],
+    "done": []
+  },
+  {
+    "t": 4,
+    "waiting": [
+      "B"
+    ],
+    "running": "A",
+    "blocked": [],
+    "done": []
+  },
+  {
+    "t": 6,
+    "waiting": [
+      "B",
+      "C"
+    ],
+    "running": "A",
+    "blocked": [],
+    "done": []
+  },
+  {
+    "t": 8,
+    "waiting": [
+      "B",
+      "C",
+      "D"
+    ],
+    "running": "A",
+    "blocked": [
+      "E"
+    ],
+    "done": []
+  },
+  {
+    "t": 10,
+    "waiting": [
+      "B",
+      "C",
+      "D"
+    ],
+    "running": "A",
+    "blocked": [
+      "E",
+      "F"
+    ],
+    "done": []
+  },
+  {
+    "t": 12,
+    "waiting": [
+      "C",
+      "D",
+      "E"
+    ],
+    "running": "B",
+    "blocked": [
+      "F"
+    ],
+    "done": [
+      "A"
+    ]
+  },
+  {
+    "t": 14,
+    "waiting": [
+      "D",
+      "E",
+      "F"
+    ],
+    "running": "C",
+    "blocked": [],
+    "done": [
+      "A",
+      "B"
+    ]
+  },
+  {
+    "t": 16,
+    "waiting": [
+      "E",
+      "F"
+    ],
+    "running": "D",
+    "blocked": [],
+    "done": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  {
+    "t": 18,
+    "waiting": [
+      "F"
+    ],
+    "running": "E",
+    "blocked": [],
+    "done": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ]
+  },
+  {
+    "t": 20,
+    "waiting": [],
+    "running": "F",
+    "blocked": [],
+    "done": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
+  },
+  {
+    "t": 22,
+    "waiting": [],
+    "running": null,
+    "blocked": [],
+    "done": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F"
+    ]
+  }
+]
