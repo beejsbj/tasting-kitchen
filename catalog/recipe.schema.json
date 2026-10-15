@@ -27,6 +27,7 @@
     "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
     "status": { "enum": ["draft", "ready", "hidden"] },
+    "visibility": { "enum": ["public", "private"] },
     "title": { "type": "string", "minLength": 4, "maxLength": 100 },
     "summary": { "type": "string", "minLength": 12, "maxLength": 300 },
     "cuisines": {
@@ -75,7 +76,7 @@
               "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
               "path": { "$ref": "#/$defs/relativePath" },
               "mountAs": { "$ref": "#/$defs/relativePath" },
-              "public": { "const": true },
+              "public": { "type": "boolean" },
               "editable": { "type": "boolean" },
               "mediaType": { "type": "string", "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$" }
             }
@@ -180,6 +181,16 @@
             }
           ]
         }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mountAs", "optional", "layers"],
+      "properties": {
+        "mountAs": { "$ref": "#/$defs/relativePath" },
+        "optional": { "type": "boolean" },
+        "layers": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } }
       }
     },
     "variation": { "type": "string", "maxLength": 500 },

@@ -8,7 +8,7 @@ import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discov
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
 const booleanFlags = new Set(["json", "execute", "help"]);
 
 const commandFlags = {
@@ -17,8 +17,8 @@ const commandFlags = {
   discover: new Set(),
   inspect: new Set(["recipe", "menu", "revision"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
-  plan: new Set(["recipe", "menu", "config", "variant", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex"]),
+  plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
@@ -87,7 +87,7 @@ function selection(options) {
   const configurationId = options.config ?? options.variant;
   if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { configurationId, ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { configurationId, ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -122,8 +122,8 @@ Usage:
   taste discover [--json]
   taste inspect --recipe ID|--menu ID|--revision HASH [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
+  taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision HASH [--execute --provider ID]
@@ -132,6 +132,7 @@ Usage:
   taste build-registry [--output PATH]
   taste recover --attempt ID
 
+  --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;

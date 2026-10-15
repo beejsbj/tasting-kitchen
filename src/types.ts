@@ -28,6 +28,28 @@ export type Configuration = {
   };
 };
 
+export type Skill = {
+  id: string;
+  label: string;
+  summary: string;
+  entry: string;
+  source: { repository: string; commit: string; path: string; license: string };
+  skillHash: string;
+};
+
+export type SkillRevision = {
+  schemaVersion: 1;
+  skillId: string;
+  hash: string;
+  source: Skill["source"];
+  entry: string;
+  treeHash: string;
+  fileCount: number;
+  display: { label: string; summary: string };
+};
+
+export type RecipeSkills = { mountAs: string; optional: boolean; layers: string[] };
+
 export type RecipeTurn = {
   id: string;
   role: "prompt" | "follow-up" | "correction" | "mode-transition";
@@ -46,10 +68,12 @@ export type Recipe = {
   id: string;
   version: string;
   status: "draft" | "ready" | "hidden";
+  visibility?: "public" | "private";
   title: string;
   summary: string;
   cuisines: string[];
   recipeHash: string;
+  skills?: RecipeSkills;
   presentation?: { profile: string; semanticRuntime: null | { id: string; version: string } };
   origin: "textbook" | "mothers" | "hybrid";
   originNote: string;
@@ -62,7 +86,7 @@ export type Recipe = {
   };
   setup: {
     instructions: string;
-    fixtures: Array<{ id: string; path: string; mountAs: string; public: true; mediaType: string; url?: string; sha256?: string }>;
+    fixtures: Array<{ id: string; path: string; mountAs: string; public: boolean; mediaType: string; url?: string; sha256?: string }>;
   };
   turns: RecipeTurn[];
   output: { kind: Recipe["kind"]; entry: string; include: string[]; limits: { maxFiles: number; maxBytes: number } };
@@ -74,6 +98,7 @@ export type Dish = {
   schemaVersion: 1;
   id: string;
   recipe: { id: string; version: string; hash: string };
+  skill?: { id: string; hash: string };
   executedAt: string;
   finalizedAt: string;
   identity: {
@@ -189,6 +214,8 @@ export type Registry = {
   tags: string[];
   configurations: Configuration[];
   configurationRevisions?: Array<{ schemaVersion: 1; hash: string; configuration: Configuration }>;
+  skills?: Skill[];
+  skillRevisions?: SkillRevision[];
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
@@ -202,7 +229,7 @@ export type Registry = {
 export type Variant = Configuration;
 export type RecipeRevision = {
   recipeId: string; hash: string; version: string;
-  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation">;
+  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation" | "skills">;
   display: { title: string; summary: string; lineage: Recipe["origin"]; cuisines: string[] };
 };
 export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };

@@ -1,9 +1,0 @@
-{
-  "id": "code-animations",
-  "repository": "https://github.com/beriki770-ship-it/code-animations",
-  "commit": "91465d3fb4ac84c741e857609897db253574aa2f",
-  "license": "MIT",
-  "entry": "skill/SKILL.md",
-  "archiveSha256": "a12f5c200ca5f0d8c0de075b8579075076cacc4de31b3e839086e46674e6b041",
-  "fileCount": 36
-}

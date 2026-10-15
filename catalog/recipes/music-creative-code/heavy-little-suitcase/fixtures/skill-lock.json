@@ -1,9 +1,0 @@
-{
-  "id": "hand-drawn-canvas-animation",
-  "repository": "https://github.com/alesha-pro/tools",
-  "commit": "90e966201add3ff41dc4ebd1348165c0cb2d5eab",
-  "license": "MIT",
-  "entry": "skill/SKILL.md",
-  "archiveSha256": "0be416d8fe8eb90adf8b7f3b6e5b059d7f96fa28d06898a6e70b97083f32e25c",
-  "fileCount": 69
-}

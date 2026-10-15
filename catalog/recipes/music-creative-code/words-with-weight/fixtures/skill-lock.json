@@ -1,9 +1,0 @@
-{
-  "id": "motion-reel",
-  "repository": "https://github.com/alesha-pro/tools",
-  "commit": "90e966201add3ff41dc4ebd1348165c0cb2d5eab",
-  "license": "MIT",
-  "entry": "skill/SKILL.md",
-  "archiveSha256": "d424ed3f4fea8716dec965488057885be1156e4cf2494b7fedeca58209f204f9",
-  "fileCount": 20
-}

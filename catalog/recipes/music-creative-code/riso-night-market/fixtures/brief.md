@@ -6,7 +6,7 @@ A bicycle courier carries a small wrapped parcel through a night market and deli
 
 ## Visual and motion direction
 
-Use exactly three chosen ink colors plus paper; overprints may create derived colors. Print grain and registration offsets are attached to the artwork, not fresh random noise every frame. Build near hanging decorations, middle-distance action and far stalls with distinct parallax. The bicycle wheels must agree with travel; stopping must affect rider pose and camera speed. Read the companion music instructions and create entirely synthesized original sound. Upstream sampled music and measured animal geometry are reference material only.
+Use exactly three chosen ink colors plus paper; overprints may create derived colors. Print grain and registration offsets are attached to the artwork, not fresh random noise every frame. Build near hanging decorations, middle-distance action and far stalls with distinct parallax. The bicycle wheels must agree with travel; stopping must affect rider pose and camera speed. Create entirely synthesized original sound.
 
 ## Timing
 
@@ -20,7 +20,7 @@ Make exactly 24 seconds at 1080 × 1080, 30 fps (720 frames). Choose the detaile
 
 ## Working protocol
 
-Use the pinned riso-film skill in the supplied archive. Read `skill/.claude/skills/riso-film/SKILL.md` after extraction and use its planning, implementation and review process. All required facts and creative constraints are provided now. Work independently in one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a concept selection or delegate to another model. Use one render job and one browser at a time. Kitchen must supply an identical pinned toolchain and compute profile to every compared model. Local dependency installation is setup, not access to new film inputs.
+If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and follow its planning, implementation and review process; its examples teach technique and must not be submitted. If no skill is mounted, work from this brief and your own method. All required facts and creative constraints are provided now. Work independently in one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a concept selection or delegate to another model. Use one render job and one browser at a time. Kitchen must supply an identical pinned toolchain and compute profile to every compared model. Local dependency installation is setup, not access to new film inputs.
 
 Draw every visible element in code, and synthesize original sound. Do not use external images, generated stills, stock footage, sampled music, other model outputs or donor scene implementations. Pinned examples teach the technique; the submitted scene must be newly authored. No network calls at playback. Keep randomness seeded and make the live picture a pure function of time; expose `window.seek(t)` and a readiness promise `window.ready`. Include working play/pause and an explicit user gesture to start sound.
 

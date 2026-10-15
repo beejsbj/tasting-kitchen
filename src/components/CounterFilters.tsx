@@ -1,7 +1,7 @@
 import { effortLabel } from '../lib/effort-label';
 import * as Popover from '@radix-ui/react-popover';
 import { Check, Search, SlidersHorizontal, X } from 'lucide-react';
-import { modelFamily } from '../lib/registry';
+import { dishSkillKey, modelFamily, NO_SKILL } from '../lib/registry';
 import type { GalleryState } from '../lib/url-state';
 import type { Registry } from '../types';
 
@@ -10,6 +10,9 @@ export function CounterFilters({ registry, state, update }: { registry: Registry
   const cuisines = registry.cuisines.filter(cuisine => registry.recipes.some(recipe => recipe.cuisines.includes(cuisine.id)));
   const lineages = [{ id: 'all', label: 'All lineages' }, { id: 'textbook', label: 'Textbook' }, { id: 'mothers', label: 'Mother’s' }, { id: 'hybrid', label: 'Hybrid' }];
   const count = Number(state.cuisine !== 'all') + Number(state.origin !== 'all');
+  const skillsWithDishes = (registry.skills ?? []).filter(skill => registry.dishes.some(dish => dish.skill?.hash === skill.skillHash));
+  const hasUnskilled = registry.dishes.some(dish => dishSkillKey(dish) === NO_SKILL);
+  const showSkills = skillsWithDishes.length > 0;
   const segment = 'min-h-9 rounded-md border-0 bg-transparent px-2 text-sm font-medium text-slate-600 hover:bg-white aria-pressed:bg-white aria-pressed:text-blue-800 aria-pressed:shadow-sm';
   return <div className="counter-controls">
     <div className="flex flex-wrap items-center gap-3">
@@ -20,6 +23,7 @@ export function CounterFilters({ registry, state, update }: { registry: Registry
       </Popover.Content></Popover.Portal></Popover.Root>
     </div>
     {state.family !== 'all' && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label="Filter by thinking effort"><span className="mr-2 text-xs text-slate-500">Thinking</span><button className={segment} aria-pressed={state.effort === 'all'} onClick={() => update({ effort: 'all' })}>All efforts</button>{[...new Set(registry.configurations.filter(config => modelFamily(config.model) === state.family).map(config => config.reasoningEffort))].map(effort => <button key={effort} title={`${effort} reasoning effort`} aria-label={`${effort} reasoning effort`} className={segment} aria-pressed={state.effort === effort} onClick={() => update({ effort })}>{effortLabel(effort)}</button>)}</div>}
+    {showSkills && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label="Filter by skill layer"><span className="mr-2 text-xs text-slate-500">Skill</span><button className={segment} aria-pressed={state.skill === 'all'} onClick={() => update({ skill: 'all' })}>All layers</button>{hasUnskilled && <button className={segment} aria-pressed={state.skill === NO_SKILL} onClick={() => update({ skill: NO_SKILL })}>Without skill</button>}{skillsWithDishes.map(skill => <button key={skill.id} className={segment} title={skill.summary} aria-pressed={state.skill === skill.id} onClick={() => update({ skill: skill.id })}>{skill.label}</button>)}</div>}
     {(state.harness !== 'all' || state.tier !== 'all') && <button className="mt-3 min-h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600" onClick={() => update({ harness: 'all', tier: 'all' })}>Clear saved harness / tier filter ×</button>}
     {count > 0 && <div className="mt-3 flex flex-wrap gap-2" aria-label="Active filters">{(['cuisine', 'origin'] as const).filter(key => state[key] !== 'all').map(key => { const label = key === 'cuisine' ? cuisines.find(item => item.id === state[key])?.label ?? state[key] : lineages.find(item => item.id === state[key])?.label ?? state[key]; return <button key={key} aria-label={`Remove ${label} filter`} onClick={() => update({ [key]: 'all' })} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600">{label}<X size={12} /></button>; })}</div>}
   </div>;

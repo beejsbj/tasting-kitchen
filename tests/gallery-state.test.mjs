@@ -89,7 +89,7 @@ test('an explicit missing revision has no cross-revision fallback', () => {
 test('selectionForDish uses the exact preserved configuration snapshot', () => {
   const dish = selectionDish('preserved-dish', 'old', 'sha256:preserved', '2026-01-01T00:00:00Z');
   assert.deepEqual(selectionForDish(selectionRegistry([dish]), dish), {
-    recipe: 'r', revision: 'old', models: ['preserved-config'], dishes: ['preserved-dish'],
+    recipe: 'r', revision: 'old', models: ['preserved-config'], skills: ['none'], dishes: ['preserved-dish'],
   });
 });
 

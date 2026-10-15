@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "animation-styles",
-  "title": "Animation styles and motion craft",
-  "summary": "Eight draft animation tasks testing weight, acting, transformation, print texture, pixel motion, mechanisms, typography and technical truth. Compare models within each fixed recipe.",
+  "title": "Animation and motion craft",
+  "summary": "Nine draft film tasks testing story staging, weight, acting, transformation, print texture, pixel motion, mechanisms, typography and technical truth. Compare models within each recipe; view each through its skill layers.",
   "cuisines": [
     "music-creative-code",
     "ui-visual"
   ],
   "recipes": [
+    "paper-boat-voyage",
     "heavy-little-suitcase",
     "the-last-seat",
     "paper-garden",

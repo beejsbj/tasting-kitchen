@@ -6,7 +6,7 @@ Recipes are Burooj's personal benchmarks: tasks he genuinely wants to give sever
 
 Shape each public Recipe manually with Burooj. Historical analysis and `catalog/archive.json` are inspiration and provenance, not an approved menu or reusable prompt library. An archived Recipe earns a new public definition only when its underlying task still matters to him. Use a plain, recognizable task name and write the brief from the current understanding rather than polishing or lightly renaming the archived text.
 
-For canonical Kitchen vocabulary and comparison invariants, read `docs/product-model.md` before changing catalog or execution behavior.
+For canonical Kitchen vocabulary and comparison invariants, read `docs/product-model.md` before changing catalog or execution behavior. Skills are layers of a Recipe, not Recipes: write briefs skill-neutral, pin skill sources in `catalog/skills.json`, and never cook a Recipe only because a skill exists.
 
 ## One-shot and multi-turn benchmarks
 

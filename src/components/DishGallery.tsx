@@ -1,4 +1,4 @@
-import { artifactUrl, dishesFor, modelFamily, recipeAtRevision, shortHash } from '../lib/registry';
+import { artifactUrl, dishesFor, dishSkillKey, modelFamily, recipeAtRevision, shortHash, skillLabelFor } from '../lib/registry';
 import { effortLabel } from '../lib/effort-label';
 import type { Dish, Recipe, Registry } from '../types';
 
@@ -10,11 +10,12 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
         const config = registry.configurations.find(item => item.configHash === dish.identity.configHash);
         const model = modelFamily(config?.model ?? dish.identity.requestedModel);
         const effort = config?.reasoningEffort ?? dish.identity.reasoningEffort;
-        const iterations = dishesFor(registry.dishes, recipe.id, dish.recipe.hash, dish.identity.configHash);
+        const iterations = dishesFor(registry.dishes, recipe.id, dish.recipe.hash, dish.identity.configHash, dishSkillKey(dish));
+        const skillLabel = skillLabelFor(registry, dish);
         const iteration = iterations.findIndex(item => item.id === dish.id) + 1;
         const date = new Date(dish.executedAt).toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         return <article className="recipe-card dish-card" key={dish.id} data-dish-id={dish.id} data-recipe-id={recipe.id}>
-          <button className="recipe-card__open" onClick={() => onOpen(recipe, dish)} aria-label={`Open ${executedRecipe.title}, ${model}, ${effort} effort, iteration ${iteration}, ${date}`}>
+          <button className="recipe-card__open" onClick={() => onOpen(recipe, dish)} aria-label={`Open ${executedRecipe.title}, ${model}, ${effort} effort, ${skillLabel.toLowerCase()}, iteration ${iteration}, ${date}`}>
             <div className="recipe-card__preview" aria-hidden="true" inert>
               {dish.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading="lazy" /> : dish.artifact.kind === 'web'
                 ? <iframe src={artifactUrl(dish)} title={`${executedRecipe.title} preview`} tabIndex={-1} loading="lazy" sandbox="allow-scripts" />
@@ -25,7 +26,7 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
                 <span className="dish-card__recipe-tag"><span className="dish-card__recipe-tag-label">Recipe</span><span>{executedRecipe.title}</span></span>
               </span>
               <span className="recipe-card__title"><span>{model} <span className="dish-card__effort" title={`${effort} reasoning effort`}>{effortLabel(effort)}</span></span><span aria-hidden="true">↗</span></span>
-              <span className="dish-card__metadata"><span>Iteration {iteration}</span><time dateTime={dish.executedAt}>{date}</time></span>
+              <span className="dish-card__metadata"><span>Iteration {iteration}</span>{(dish.skill || executedRecipe.skills) && <span className="dish-card__skill" title={dish.skill ? `Skill layer ${dish.skill.id} · ${shortHash(dish.skill.hash)}` : 'No skill layer was mounted'}>{skillLabel}</span>}<time dateTime={dish.executedAt}>{date}</time></span>
               <span className="dish-card__revision" title={dish.recipe.hash}>Recipe v{dish.recipe.version} · {shortHash(dish.recipe.hash)}</span>
             </span>
           </button>

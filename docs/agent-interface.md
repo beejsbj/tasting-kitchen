@@ -6,14 +6,20 @@ Import `lib/taste/index.mjs` for cooking and Recipe Book authoring. The authorin
   Menus, immutable Recipe and configuration revisions, and accepted Dishes.
 - `inspect(repoRoot, { recipeId | menuId | revisionHash })` returns the complete
   current definition or exact immutable snapshot. Unknown IDs and hashes fail.
-- `plan(repoRoot, { configurationId, recipeIds | menuId, filter })` reports
+- `plan(repoRoot, { configurationId, skillId?, recipeIds | menuId, filter })` reports
   supported and unsupported Recipe/configuration cells without side effects.
+  `skillId` names a catalog skill layer; omitted or `"none"` cooks without one.
+  Recipes that do not list the layer are reported unsupported.
 - `cook(repoRoot, { configurationId, recipeIds | menuId, intent, execute })`
   requires `intent: "fill-missing" | "repeat"`. Dry runs report planned,
   skipped-covered, and unsupported cells. An executed Menu freezes all member
   Recipe Revisions and its Menu Revision before fanout.
-- `coverage(menuRevision, dishes, configurationHashes?)` keeps the complete
-  pinned Menu denominator and reports missing cells explicitly.
+- `coverage(menuRevision, dishes, configurationHashes?, skillHashes?)` keeps the complete
+  pinned Menu denominator and reports missing cells explicitly. Skill keys are
+  frozen skill hashes or `"none"`.
+- `loadSkills(repoRoot)` and `loadSkillRevisions(repoRoot)` expose the catalog
+  layers and their frozen identities; `loadPrivateDishes(repoRoot)` lists
+  accepted Dishes of private Recipes, which never reach the registry.
 - `buildRecipeBook(repoRoot)` returns the active public Recipes, their current
   public source text, Dish counts, and the archived count. Hidden Recipes are
   omitted.

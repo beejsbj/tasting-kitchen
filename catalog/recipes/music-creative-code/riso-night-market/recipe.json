@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original fictional task proposed for the requested cross-model animation comparison; this draft benchmark shape awaits owner acceptance.",
+  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe; the benchmark shape awaits owner acceptance.",
   "tags": [
     "motion",
     "audio",
@@ -28,7 +28,7 @@
     ]
   },
   "setup": {
-    "instructions": "Verify fixtures/skill.tar.gz against fixtures/skill-lock.json, extract it and read skill/.claude/skills/riso-film/SKILL.md. Use the immutable source snapshot. Before Ready, pin and smoke the Node (22 or later), Python, browser, FFmpeg, fonts and skill-specific dependencies identically for every model. This draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the same pinned toolchain (Node 22 or later, Python, a browser, FFmpeg and fonts) and compute profile to every compared model and layer. Before Ready, that toolchain must be pinned and smoked; this draft is not cookable.",
     "fixtures": [
       {
         "id": "brief",
@@ -37,22 +37,6 @@
         "public": true,
         "editable": false,
         "mediaType": "text/markdown"
-      },
-      {
-        "id": "skill-archive",
-        "path": "fixtures/skill.tar.gz",
-        "mountAs": "fixtures/skill.tar.gz",
-        "public": true,
-        "editable": false,
-        "mediaType": "application/gzip"
-      },
-      {
-        "id": "skill-lock",
-        "path": "fixtures/skill-lock.json",
-        "mountAs": "fixtures/skill-lock.json",
-        "public": true,
-        "editable": false,
-        "mediaType": "application/json"
       },
       {
         "id": "player",
@@ -80,11 +64,18 @@
       }
     ]
   },
+  "skills": {
+    "mountAs": "skill",
+    "optional": true,
+    "layers": [
+      "procedural"
+    ]
+  },
   "turns": [
     {
       "id": "make-film",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and the pinned skill. Create Night market delivery using its workflow, and deliver the specified movie, live player, source, contact sheet and evidence. Make routine creative decisions yourself and iterate from rendered evidence."
+      "content": "Read fixtures/brief.md and any mounted skill. Create Night market delivery and deliver the specified movie, live player, source, contact sheet and evidence. Make routine creative decisions yourself and iterate from rendered evidence."
     }
   ],
   "output": {
@@ -111,7 +102,7 @@
         "id": "film-contract",
         "type": "command",
         "required": true,
-        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1080, 30fps, 720 frames, 24 seconds and evidence structure.",
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1080, 30fps, 720 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence structure.",
         "argv": [
           "node",
           "validation/film.mjs"

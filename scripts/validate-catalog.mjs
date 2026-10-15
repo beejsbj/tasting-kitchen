@@ -8,6 +8,7 @@ import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
+import { loadSkillRevisions } from "../lib/taste/skills.mjs";
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
@@ -48,7 +49,11 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
+const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
+const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source"]);
+const SKILL_SOURCE_KEYS = new Set(["repository", "commit", "path", "license"]);
+const allowedVisibilities = new Set(["public", "private"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
 const SETUP_KEYS = new Set(["instructions", "fixtures"]);
 const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "editable", "mediaType"]);
@@ -60,7 +65,7 @@ const PRESENTATION_KEYS = new Set(["profile", "semanticRuntime"]);
 const SEMANTIC_RUNTIME_KEYS = new Set(["id", "version"]);
 const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "schema", "argv"]);
 
-const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
+const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "skill", "visibility", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
 const DISH_RECIPE_KEYS = new Set(["id", "version", "hash"]);
 const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "requestedServiceTier", "observedServiceTier", "configHash", "catalogHash"]);
 const ARTIFACT_KEYS = new Set(["kind", "entry", "preview", "treeHash", "files"]);
@@ -319,7 +324,45 @@ function validateConfigurations(doc) {
   return map;
 }
 
-async function validateRecipe(relative, cuisines, tags) {
+async function validateSkills(doc) {
+  const label = "catalog/skills.json";
+  const ids = new Map();
+  if (doc === null) return ids;
+  if (!object(doc, label)) return ids;
+  onlyKeys(doc, new Set(["schemaVersion", "skills"]), label);
+  required(doc, ["schemaVersion", "skills"], label);
+  if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
+  if (!array(doc.skills, `${label}.skills`)) return ids;
+  for (const [index, skill] of doc.skills.entries()) {
+    const item = `${label}.skills[${index}]`;
+    if (!object(skill, item)) continue;
+    onlyKeys(skill, SKILL_KEYS, item);
+    required(skill, [...SKILL_KEYS], item);
+    string(skill.id, `${item}.id`, { pattern: IDS });
+    if (skill.id === "none") fail(item, "none is reserved for the absent layer");
+    string(skill.label, `${item}.label`, { min: 3, max: 100 });
+    string(skill.summary, `${item}.summary`, { min: 12, max: 300 });
+    safeRelative(skill.entry, `${item}.entry`);
+    if (object(skill.source, `${item}.source`)) {
+      onlyKeys(skill.source, SKILL_SOURCE_KEYS, `${item}.source`);
+      required(skill.source, [...SKILL_SOURCE_KEYS], `${item}.source`);
+      string(skill.source.repository, `${item}.source.repository`, { pattern: /^https:\/\/[^\s]+$/ });
+      string(skill.source.commit, `${item}.source.commit`, { pattern: /^[a-f0-9]{40}$/ });
+      string(skill.source.path, `${item}.source.path`);
+      string(skill.source.license, `${item}.source.license`);
+    }
+    if (ids.has(skill.id)) fail(item, `duplicate skill id ${skill.id}`);
+    const filesDirectory = `catalog/skills/${skill.id}/files`;
+    const mounted = await walk(filesDirectory, { allFiles: true });
+    if (!mounted.length) fail(item, `${filesDirectory} must contain the mounted skill source`);
+    else if (typeof skill.entry === "string" && !mounted.includes(path.join(filesDirectory, skill.entry))) fail(item, `entry ${skill.entry} is not among the mounted files`);
+    ids.set(skill.id, skill);
+  }
+  publicSafety(doc, label);
+  return ids;
+}
+
+async function validateRecipe(relative, cuisines, tags, skills) {
   const recipe = await json(relative);
   if (!recipe || !object(recipe, relative)) return null;
   onlyKeys(recipe, RECIPE_KEYS, relative);
@@ -328,6 +371,8 @@ async function validateRecipe(relative, cuisines, tags) {
   string(recipe.id, `${relative}.id`, { pattern: IDS });
   string(recipe.version, `${relative}.version`, { pattern: SEMVER });
   enumValue(recipe.status, allowedStatuses, `${relative}.status`);
+  if (recipe.visibility !== undefined) enumValue(recipe.visibility, allowedVisibilities, `${relative}.visibility`);
+  const privateRecipe = recipe.visibility === "private";
   string(recipe.title, `${relative}.title`, { min: 4, max: 100 });
   string(recipe.summary, `${relative}.summary`, { min: 12, max: 300 });
   if (array(recipe.cuisines, `${relative}.cuisines`, { min: 1 })) {
@@ -393,16 +438,41 @@ async function validateRecipe(relative, cuisines, tags) {
         string(fixture.id, `${item}.id`, { pattern: IDS });
         safeRelative(fixture.path, `${item}.path`);
         safeRelative(fixture.mountAs, `${item}.mountAs`);
-        if (fixture.public !== true) fail(item, "public catalog fixtures must set public to true");
+        boolean(fixture.public, `${item}.public`);
+        if (fixture.public === false && !privateRecipe) fail(item, "private fixtures belong only to recipes with visibility private");
         if (fixture.editable !== undefined) boolean(fixture.editable, `${item}.editable`);
         string(fixture.mediaType, `${item}.mediaType`, { pattern: MEDIA_TYPE });
         fixtureIds.push(fixture.id);
         mountPaths.push(fixture.mountAs);
+        if (fixture.public === false) {
+          // Private bytes live under the ignored private tree and may be absent on this machine.
+          const privateSource = resolveContained(path.join(root, "private", "fixtures", recipe.id), fixture.path, `${item}.path`);
+          if (privateSource) mountedFixtures.set(fixture.mountAs, privateSource);
+          continue;
+        }
         const source = resolveContained(recipeDirectory, fixture.path, `${item}.path`);
         if (source && await regularFile(source, `${item}.path`)) mountedFixtures.set(fixture.mountAs, source);
       }
       unique(fixtureIds, `${relative}.setup fixture ids`);
       unique(mountPaths, `${relative}.setup mount paths`);
+    }
+  }
+
+  if (recipe.skills !== undefined && object(recipe.skills, `${relative}.skills`)) {
+    onlyKeys(recipe.skills, SKILLS_CONTRACT_KEYS, `${relative}.skills`);
+    required(recipe.skills, ["mountAs", "optional", "layers"], `${relative}.skills`);
+    if (safeRelative(recipe.skills.mountAs, `${relative}.skills.mountAs`)) {
+      for (const mountPath of mountedFixtures.keys()) {
+        if (mountPath === recipe.skills.mountAs || mountPath.startsWith(`${recipe.skills.mountAs}/`)) fail(`${relative}.skills.mountAs`, `collides with fixture mount ${mountPath}`);
+      }
+    }
+    boolean(recipe.skills.optional, `${relative}.skills.optional`);
+    if (array(recipe.skills.layers, `${relative}.skills.layers`, { min: 1 })) {
+      unique(recipe.skills.layers, `${relative}.skills.layers`);
+      for (const layer of recipe.skills.layers) {
+        string(layer, `${relative}.skills.layers`, { pattern: IDS });
+        if (!skills.has(layer)) fail(`${relative}.skills.layers`, `unknown skill ${layer}`);
+      }
     }
   }
 
@@ -539,7 +609,7 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, revisions, configurationRevisions) {
+async function validateDish(relative, recipeRecords, revisions, configurationRevisions, skillRevisions, skillTrees) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -552,6 +622,20 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
   string(dish.finalizedAt, `${relative}.finalizedAt`);
   if (typeof dish.finalizedAt === "string" && (Number.isNaN(Date.parse(dish.finalizedAt)) || !dish.finalizedAt.includes("T"))) fail(relative, "finalizedAt must be an ISO date-time");
   if (dish.status !== "accepted") fail(relative, "public dish status must be accepted");
+  if ("visibility" in dish) fail(relative, "private dishes must not be published under dishes/");
+  if ("skill" in dish && object(dish.skill, `${relative}.skill`)) {
+    onlyKeys(dish.skill, new Set(["id", "hash"]), `${relative}.skill`);
+    required(dish.skill, ["id", "hash"], `${relative}.skill`);
+    string(dish.skill.id, `${relative}.skill.id`, { pattern: IDS });
+    string(dish.skill.hash, `${relative}.skill.hash`, { pattern: SHA256 });
+    const revision = skillRevisions.get(dish.skill.hash);
+    if (!revision) fail(`${relative}.skill.hash`, "does not resolve to an immutable skill revision");
+    else {
+      if (revision.skillId !== dish.skill.id) fail(relative, `skill.id does not match skill revision ${revision.skillId}`);
+      const tree = skillTrees.get(revision.skillId);
+      if (tree && tree !== revision.treeHash) fail(relative, `catalog/skills/${revision.skillId}/files drifted from the frozen layer this dish used`);
+    }
+  }
   string(dish.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
   const dishDirectory = path.dirname(path.join(root, relative));
 
@@ -713,13 +797,22 @@ async function validateReview(relative, dishes) {
   return review;
 }
 
+// Mounted skill sources are third-party public code. They are scanned for
+// leaked credentials and private machine paths, not for prose conventions.
+const skillSourcePatterns = new Set(["private Unix home path", "private Windows home path", "private key", "provider credential variable", "API-key-like value", "private evidence ID"]);
+
 async function scanPublicCatalog() {
   const files = await walk("catalog", { allFiles: true });
   for (const relative of files) {
     const absolute = path.join(root, relative);
     const contents = await readFile(absolute);
     if (contents.includes(0)) continue;
-    scanText(contents.toString("utf8"), relative);
+    const text = contents.toString("utf8");
+    if (/^catalog\/skills\/[^/]+\/files\//.test(relative.split(path.sep).join("/"))) {
+      for (const { name, pattern } of publicLeakPatterns) if (skillSourcePatterns.has(name) && pattern.test(text)) fail(relative, `public-safety scan matched ${name}`);
+      continue;
+    }
+    scanText(text, relative);
   }
 }
 
@@ -745,11 +838,18 @@ const variantsDoc = await json("catalog/configurations.json");
 const cuisines = validateCuisines(cuisinesDoc);
 const tags = validateTags(tagsDoc);
 const variants = validateConfigurations(variantsDoc);
+const skillsDoc = (await walk("catalog", { basename: "skills.json" })).length ? await json("catalog/skills.json") : null;
+const skills = await validateSkills(skillsDoc);
+const skillTrees = new Map();
+for (const skillId of skills.keys()) {
+  try { skillTrees.set(skillId, (await describeTree(path.join(root, "catalog", "skills", skillId, "files"))).treeHash); }
+  catch (error) { fail(`catalog/skills/${skillId}`, `could not hash mounted files: ${error.message}`); }
+}
 
 const recipeFiles = await walk("catalog/recipes", { basename: "recipe.json" });
 const recipeRecords = new Map();
 for (const relative of recipeFiles.sort()) {
-  const record = await validateRecipe(relative, cuisines, tags);
+  const record = await validateRecipe(relative, cuisines, tags, skills);
   if (!record) continue;
   if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
   recipeRecords.set(record.recipe.id, record);
@@ -773,10 +873,19 @@ try {
   fail("catalog/revisions", `could not load immutable configuration revisions: ${error.message}`);
 }
 
+let skillRevisions = new Map();
+try {
+  const loaded = await loadSkillRevisions(root);
+  skillRevisions = new Map(loaded.map((revision) => [revision.hash, revision]));
+  for (const revision of loaded) if (!skills.has(revision.skillId)) fail("catalog/revisions/skills", `frozen skill ${revision.skillId} is no longer in catalog/skills.json`);
+} catch (error) {
+  fail("catalog/revisions", `could not load immutable skill revisions: ${error.message}`);
+}
+
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, revisions, configurationRevisions);
+  const dish = await validateDish(relative, recipeRecords, revisions, configurationRevisions, skillRevisions, skillTrees);
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);
@@ -811,4 +920,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${recipeRecords.size} provenance records.`);

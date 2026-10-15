@@ -1,0 +1,8 @@
+---
+description: code-animations workflow and Definition of done (rules live in AGENTS.md)
+globs:
+alwaysApply: true
+---
+
+This repo's rules live in one place: @AGENTS.md. Read it, then read `SKILL.md` fully before writing any code.
+Its workflow and its Definition of done are binding. Do not restate or relax them here; change AGENTS.md instead.

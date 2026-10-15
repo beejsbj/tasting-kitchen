@@ -20,8 +20,24 @@ export function comparisonConfigurations(registry: Pick<Registry, "configuration
 export function recipeSupported(recipe: Recipe, variant: Variant) {
   return recipe.harness.capabilities.every((capability) => variant.capabilities.includes(capability));
 }
-export function dishesFor(dishes: Dish[], recipeId: string, recipeHash?: string, configHash?: string) {
-  return dishes.filter((dish) => dish.recipe.id === recipeId && (!recipeHash || dish.recipe.hash === recipeHash) && (!configHash || dish.identity.configHash === configHash))
+/** The skill layer a Dish was cooked with: a skill hash, or "none" when no layer was mounted. */
+export const NO_SKILL = "none";
+export function dishSkillKey(dish: Pick<Dish, "skill">) {
+  return dish.skill?.hash ?? NO_SKILL;
+}
+export function skillForDish(registry: Pick<Registry, "skills" | "skillRevisions">, dish: Pick<Dish, "skill">) {
+  if (!dish.skill) return undefined;
+  const current = registry.skills?.find((skill) => skill.skillHash === dish.skill?.hash);
+  if (current) return { id: current.id, label: current.label, hash: current.skillHash, historical: false };
+  const frozen = registry.skillRevisions?.find((revision) => revision.hash === dish.skill?.hash);
+  return { id: frozen?.skillId ?? dish.skill.id, label: frozen?.display.label ?? dish.skill.id, hash: dish.skill.hash, historical: true };
+}
+export function skillLabelFor(registry: Pick<Registry, "skills" | "skillRevisions">, dish: Pick<Dish, "skill">) {
+  return dish.skill ? skillForDish(registry, dish)?.label ?? dish.skill.id : "Without skill";
+}
+/** Dishes for a recipe, optionally pinned to a revision, configuration, and skill layer key ("none" or a skill hash). */
+export function dishesFor(dishes: Dish[], recipeId: string, recipeHash?: string, configHash?: string, skillKey?: string) {
+  return dishes.filter((dish) => dish.recipe.id === recipeId && (!recipeHash || dish.recipe.hash === recipeHash) && (!configHash || dish.identity.configHash === configHash) && (!skillKey || dishSkillKey(dish) === skillKey))
     .sort((a, b) => a.executedAt.localeCompare(b.executedAt) || a.id.localeCompare(b.id));
 }
 export function recipeAtRevision(recipe: Recipe, revision?: RecipeRevision): Recipe {

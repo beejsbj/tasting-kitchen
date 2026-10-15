@@ -14,7 +14,7 @@
     "build": "node bin/taste.mjs build-registry && vite build",
     "preview": "vite preview",
     "test": "npm run validate:catalog && npm run test:taste && npm run test:recipes && npm run typecheck && npm run build && npm run test:gallery",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes --ignore-pattern catalog/skills",
     "typecheck": "tsc --noEmit",
     "test:browser": "node scripts/verify-gallery-browser.mjs",
     "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs"

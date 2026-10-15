@@ -1,9 +1,0 @@
-{
-  "id": "procedural-film",
-  "repository": "https://github.com/kuhnhomeuk-cell/procedural-film",
-  "commit": "f59413999ae24f6e1f9165b73a0eaa97a0b1c407",
-  "license": "MIT",
-  "entry": "skill/SKILL.md",
-  "archiveSha256": "7b4f76da05a41b885d6ce5847b81af7f26f90f8deeafc0f907f0a5fa93b70dc9",
-  "fileCount": 116
-}

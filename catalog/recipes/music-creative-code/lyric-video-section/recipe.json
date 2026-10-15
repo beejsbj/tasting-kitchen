@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "lyric-video-section",
+  "version": "0.1.0",
+  "status": "draft",
+  "visibility": "private",
+  "title": "Lyric video section",
+  "summary": "One complete 35-second lyric-video section of a supplied song excerpt: invent the world, land every word on its onset, with and without the lyric-video skill.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "mothers",
+  "originNote": "Burooj's own song material and measured alignment from the Animation Lab pilot. The recording is private; this recipe and its Dishes stay private. Benchmark shape awaits owner acceptance.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the pinned lyric engine at engine/ (patched pdoom-video, Three.js and Canvas), Node, Bun, a browser and FFmpeg identically to every model and layer. Before Ready, that engine and toolchain must be pinned and smoked inside Kitchen; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "excerpt",
+        "path": "excerpt.wav",
+        "mountAs": "inputs/excerpt.wav",
+        "public": false,
+        "editable": false,
+        "mediaType": "audio/wav"
+      },
+      {
+        "id": "lyrics",
+        "path": "lyrics.json",
+        "mountAs": "inputs/lyrics.json",
+        "public": false,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "skills": {
+    "mountAs": "skill",
+    "optional": true,
+    "layers": [
+      "lyric-music-video"
+    ]
+  },
+  "turns": [
+    {
+      "id": "make-section",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md, the supplied inputs and any mounted skill. Create the complete 35-second section and deliver the film, live preview, source, contact sheet and evidence. Invent the visual world yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "section-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1280 by 720, 30fps, 1050 frames, 35 seconds, complete decode, true peak at or below -0.1 dBTP, and one evidence entry per supplied word with recorded revisions.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "section-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Is there one governing idea that survives the climax? Do words land on the voice when you listen, and read at phone size? Does density follow the performance? Which weaknesses did the model name itself?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

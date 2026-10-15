@@ -1,0 +1,280 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>browser-10s</title>
+<style>html,body{margin:0;background:#0b1020;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script>
+'use strict';
+// ---------- contract ----------
+const Q = new URLSearchParams(location.search);
+const W = +(Q.get('w') || 1920), H = +(Q.get('h') || 1080);
+const DURATION = 10, FPS = 30;
+const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+const g = cv.getContext('2d');
+
+// ---------- one timeline (picture AND sound read from here) ----------
+const URL_TEXT = 'https://example.com';
+const TL = {
+  s1: [0, 3.4], s2: [3.4, 6.8], s3: [6.8, 10], xf: 0.5,
+  typeStart: 0.5, typeEnd: 1.9, enter: 2.2,
+  nodes: [3.8, 4.3, 4.8, 5.3, 5.8, 6.2],
+  boxes: [7.1, 7.5, 7.9, 8.3, 8.7],
+  grid: [8.9, 9.5], tagline: 9.3,
+};
+const charTimes = [...URL_TEXT].map((_, i) => TL.typeStart + (TL.typeEnd - TL.typeStart) * i / (URL_TEXT.length - 1));
+
+// ---------- pure helpers ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eOutCubic = x => 1 - Math.pow(1 - x, 3);
+const eInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eOutBack = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const pop = (t, at, d = 0.35) => eOutBack(prog(t, at, at + d));
+function rngFor(key) { // seeded mulberry32 keyed by string; never Math.random in render paths
+  let h = 1779033703 ^ key.length; for (let i = 0; i < key.length; i++) { h = Math.imul(h ^ key.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  let a = h >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+
+// ---------- layout per aspect (not a crop) ----------
+const portrait = H > W;
+const S = Math.min(W, H) / 1080;              // type/shape scale
+const M = Math.round(0.06 * Math.min(W, H));  // safe margin
+const FONT = '"DejaVu Sans", "Carlito", sans-serif';
+const C = { bg: '#0b1020', ink: '#e8ecf8', dim: '#7d88a8', amber: '#ffb547', blue: '#4ea8ff', green: '#5ee6a8', pink: '#ff6b9a', panel: '#141b33' };
+
+function text(str, x, y, size, color, align = 'center', weight = '600', maxW = W - 2 * M) {
+  let s = size; g.font = `${weight} ${s}px ${FONT}`;
+  while (g.measureText(str).width > maxW && s > 10) { s -= 2; g.font = `${weight} ${s}px ${FONT}`; } // never cut at the edge
+  g.fillStyle = color; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(str, x, y); return s;
+}
+function rrect(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+
+// ---------- editable elements: review/film-fix.html moves/scales these and rewrites only the TUNE line ----------
+const FMT = { '1920x1080': '16x9', '1080x1920': '9x16', '1080x1350': '4x5', '1080x1080': '1x1' }[`${W}x${H}`] || `${W}x${H}`;
+const TUNE = /*TUNE*/{}/*END-TUNE*/;               // {format: {id: {dx, dy, s}}}, canvas px; per format because layouts differ
+const ELEMENTS = [];                                // [{id, box:[x,y,w,h]}] in canvas px, rebuilt by every seek
+function E(id, [x, y, w, h], draw) {
+  const k = (TUNE[FMT] || {})[id], dx = (k && k.dx) || 0, dy = (k && k.dy) || 0, s = (k && k.s) || 1;
+  const tuned = dx !== 0 || dy !== 0 || s !== 1;   // untuned: no transform at all, so frames stay byte-identical
+  if (tuned) {                                      // move/scale in canvas px around the box centre, on top of any camera
+    const m0 = g.getTransform(), c = m0.transformPoint(new DOMPoint(x + w / 2, y + h / 2));
+    g.save(); g.setTransform(new DOMMatrix().translate(dx + c.x, dy + c.y).scale(s).translate(-c.x, -c.y).multiply(m0));
+  }
+  const m = g.getTransform(), pts = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([px, py]) => m.transformPoint(new DOMPoint(px, py)));
+  const xs = pts.map(q => q.x), ys = pts.map(q => q.y), x0 = Math.min(...xs), y0 = Math.min(...ys);
+  ELEMENTS.push({ id, box: [x0, y0, Math.max(...xs) - x0, Math.max(...ys) - y0] });
+  draw();
+  if (tuned) g.restore();
+}
+// box of one centred text line (text() sets its own font again before drawing)
+const tbox = (str, x, y, size, weight = '700') => { g.font = `${weight} ${size}px ${FONT}`; const w = g.measureText(str).width; return [x - w / 2, y - size * 0.6, w, size * 1.2]; };
+
+// ---------- background: seeded drifting dots, function of t only ----------
+const DOTS = (() => { const r = rngFor('bg-dots'); return Array.from({ length: 90 }, () => ({ x: r(), y: r(), s: 0.5 + r() * 2, v: 0.004 + r() * 0.02, a: 0.08 + r() * 0.25 })); })();
+function background(t) {
+  g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+  const gr = g.createRadialGradient(W * .5, H * .45, 0, W * .5, H * .45, Math.max(W, H) * .7);
+  gr.addColorStop(0, 'rgba(78,168,255,0.10)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (const d of DOTS) {
+    const x = ((d.x + d.v * t) % 1) * W, y = (d.y + 0.01 * Math.sin(t * 0.8 + d.x * 10)) * H;
+    g.globalAlpha = d.a; g.fillStyle = C.blue; g.beginPath(); g.arc(x, y, d.s * S * 2, 0, 7); g.fill();
+  }
+  g.globalAlpha = 1;
+}
+
+// ---------- scene 1: address bar ----------
+function scene1(t) {
+  const lt = t;
+  const titleIn = eOutCubic(prog(lt, -0.3, 0.3));   // first frame already readable (thumbnail)
+  g.globalAlpha *= 1; const ga = g.globalAlpha;
+  g.globalAlpha = ga * titleIn;
+  const ty = portrait ? H * 0.34 : H * 0.30;
+  const tsz = (portrait ? 96 : 84) * S, tf = portrait ? 1.2 : 1, b1 = tbox('How a browser', W / 2, ty - 62 * S * tf, tsz), b2 = tbox('draws a page', W / 2, ty + 40 * S * tf, tsz);
+  E('title', [Math.min(b1[0], b2[0]), b1[1], Math.max(b1[2], b2[2]), b2[1] + b2[3] - b1[1]], () => {
+  text('How a browser', W / 2, ty - 62 * S * (portrait ? 1.2 : 1), (portrait ? 96 : 84) * S, C.ink, 'center', '700');
+  text('draws a page', W / 2, ty + 40 * S * (portrait ? 1.2 : 1), (portrait ? 96 : 84) * S, C.amber, 'center', '700');
+  });
+  g.globalAlpha = ga * eOutCubic(prog(lt, 0.2, 0.7));
+  const bw = Math.min(W - 2 * M, 1100 * S), bh = 110 * S, bx = (W - bw) / 2, by = portrait ? H * 0.52 : H * 0.55;
+  E('addressBar', [bx, by, bw, bh + 100 * S], () => {   // bar + loading line under it
+  const flash = lt > TL.enter ? Math.exp(-(lt - TL.enter) * 5) : 0;
+  const zoom = 1 + 0.04 * eOutCubic(prog(lt, 0, 3.4));                 // slow push-in: no dead frames
+  g.save(); g.translate(W / 2, by + bh / 2); g.scale(zoom + flash * 0.05, zoom + flash * 0.05); g.translate(-W / 2, -(by + bh / 2));
+  rrect(bx, by, bw, bh, bh / 2); g.fillStyle = C.panel; g.fill();
+  g.lineWidth = 4 * S; g.strokeStyle = `rgba(255,181,71,${0.35 + 0.65 * flash})`; g.stroke();
+  const n = charTimes.filter(c => c <= lt).length;
+  const shown = URL_TEXT.slice(0, n);
+  g.font = `500 ${52 * S}px ${FONT}`; const tw = g.measureText(shown).width;
+  { const lx = bx + 60 * S, ly = by + bh / 2, u = 12 * S; g.strokeStyle = C.green; g.lineWidth = 4 * S; g.beginPath(); g.arc(lx, ly - u * 0.6, u * 0.9, Math.PI, 0); g.stroke(); g.fillStyle = C.green; rrect(lx - u * 1.3, ly - u * 0.5, u * 2.6, u * 2, 4 * S); g.fill(); }
+  text(shown, bx + 110 * S, by + bh / 2, 52 * S, C.ink, 'left', '500');
+  if (lt < TL.enter && Math.floor(lt * 2.5) % 2 === 0) { g.fillStyle = C.amber; g.fillRect(bx + 118 * S + tw, by + bh * 0.25, 4 * S, bh * 0.5); }
+  g.restore();
+  // loading bar after Enter
+  const lp = eInOut(prog(lt, TL.enter, TL.enter + 1.0));
+  if (lp > 0) { g.fillStyle = C.amber; g.fillRect(bx, by + bh + 26 * S, bw * lp, 8 * S); text(lp < 1 ? 'Loading…' : 'HTML received', W / 2, by + bh + 80 * S, 40 * S, C.dim, 'center', '500'); }
+  });
+  g.globalAlpha = ga;
+}
+
+// ---------- scene 2: DOM tree ----------
+const TREE = [ // id, label, parent, depth, col (0..1 across its row)
+  ['html', '<html>', null], ['head', '<head>', 'html'], ['body', '<body>', 'html'],
+  ['h1', '<h1>', 'body'], ['p', '<p>', 'body'], ['img', '<img>', 'body'],
+];
+function treePos() {
+  const top = portrait ? H * 0.33 : H * 0.30, gap = (portrait ? 300 : 210) * S, cx = W / 2;
+  if (portrait) return { html: [cx, top], head: [cx - W * 0.25, top + gap], body: [cx + W * 0.18, top + gap],
+    h1: [cx - W * 0.29, top + 2 * gap], p: [cx, top + 2 * gap], img: [cx + W * 0.29, top + 2 * gap] };
+  const spread = 380 * S, cx2 = cx - spread * 0.3;
+  return { html: [cx2, top], head: [cx2 - spread, top + gap], body: [cx2 + spread * 0.6, top + gap],
+    h1: [cx2 + spread * 0.6 - spread * 0.75, top + 2 * gap], p: [cx2 + spread * 0.6, top + 2 * gap], img: [cx2 + spread * 0.6 + spread * 0.75, top + 2 * gap] };
+}
+function scene2(t) {
+  const lt = t;
+  E('heading2', tbox('1. Parse HTML → DOM tree', W / 2, portrait ? H * 0.15 : H * 0.12, (portrait ? 70 : 64) * S), () =>
+  text('1. Parse HTML → DOM tree', W / 2, portrait ? H * 0.15 : H * 0.12, (portrait ? 70 : 64) * S, C.ink, 'center', '700'));
+  const P = treePos(); const nw = (portrait ? 240 : 220) * S, nh = 92 * S;
+  const PX = Object.values(P).map(q => q[0]), PY = Object.values(P).map(q => q[1]);
+  E('tree', [Math.min(...PX) - nw / 2, Math.min(...PY) - nh / 2, Math.max(...PX) - Math.min(...PX) + nw, Math.max(...PY) - Math.min(...PY) + nh], () => {
+  TREE.forEach(([id, , parent], i) => {         // edges first
+    if (!parent) return; const e = eInOut(prog(lt, TL.nodes[i] - 0.15, TL.nodes[i] + 0.2)); if (e <= 0) return;
+    const [x0, y0] = P[parent], [x1, y1] = P[id];
+    g.strokeStyle = C.dim; g.lineWidth = 4 * S; g.beginPath(); g.moveTo(x0, y0 + nh / 2); g.lineTo(x0 + (x1 - x0) * e, y0 + nh / 2 + (y1 - y0 - nh) * e); g.stroke();
+  });
+  TREE.forEach(([id, label], i) => {
+    const k = pop(lt, TL.nodes[i]); if (k <= 0) return;
+    const [x, y] = P[id]; const glow = Math.exp(-Math.max(0, lt - TL.nodes[i]) * 3);
+    g.save(); g.translate(x, y); g.scale(k, k);
+    rrect(-nw / 2, -nh / 2, nw, nh, 18 * S); g.fillStyle = C.panel; g.fill();
+    g.lineWidth = (3 + 5 * glow) * S; g.strokeStyle = i === 0 ? C.amber : C.blue; g.stroke();
+    text(label, 0, 0, 46 * S, C.ink, 'center', '600', nw - 20 * S);
+    g.restore();
+  });
+  });
+}
+
+// ---------- scene 3: pipeline + pixels ----------
+const STAGES = [['Parse', C.blue], ['Style', C.green], ['Layout', C.amber], ['Paint', C.pink], ['Composite', '#b28cff']];
+function scene3(t) {
+  const lt = t;
+  E('heading3', tbox('2. The render pipeline', W / 2, portrait ? H * 0.12 : H * 0.12, (portrait ? 70 : 64) * S), () =>
+  text('2. The render pipeline', W / 2, portrait ? H * 0.12 : H * 0.12, (portrait ? 70 : 64) * S, C.ink, 'center', '700'));
+  const n = STAGES.length; let pos;
+  if (portrait) { const bw = W - 2 * M - 220 * S, bh = 150 * S, gap = 48 * S, top = H * 0.2; pos = STAGES.map((_, i) => [W / 2, top + i * (bh + gap) + bh / 2, bw, bh]); }
+  else { const gap = 44 * S, bw = (W - 2 * M - 60 * S - gap * (n - 1)) / n, bh = 150 * S, y = H * 0.36; pos = STAGES.map((_, i) => [M + 30 * S + bw / 2 + i * (bw + gap), y, bw, bh]); }
+  const active = TL.boxes.filter(b => b <= lt).length - 1;
+  const PL = Math.min(...pos.map(q => q[0] - q[2] / 2)), PT = Math.min(...pos.map(q => q[1] - q[3] / 2));
+  E('pipeline', [PL, PT, Math.max(...pos.map(q => q[0] + q[2] / 2)) - PL, Math.max(...pos.map(q => q[1] + q[3] / 2)) - PT], () => {
+  STAGES.forEach(([name, col], i) => {
+    const k = pop(lt, TL.boxes[i]); if (k <= 0) return;
+    const [x, y, bw, bh] = pos[i]; const hot = i === active && lt < TL.grid[0] + 0.2;
+    g.save(); g.translate(x, y); g.scale(k * (hot ? 1.04 : 1), k * (hot ? 1.04 : 1));
+    rrect(-bw / 2, -bh / 2, bw, bh, 20 * S); g.fillStyle = hot ? col : C.panel; g.fill(); g.lineWidth = 4 * S; g.strokeStyle = col; g.stroke();
+    text(name, 0, 0, (portrait ? 58 : 44) * S, hot ? C.bg : C.ink, 'center', '700', bw - 24 * S);
+    g.restore();
+    if (i > 0 && !portrait) { const [px, , pbw] = pos[i - 1]; g.globalAlpha *= k; text('›', (px + pbw / 2 + x - bw / 2) / 2, y, 44 * S, C.dim); g.globalAlpha = 1; }
+  });
+  });
+  // pixel grid fill
+  const gp = prog(lt, TL.grid[0], TL.grid[1]);
+  const gs = portrait ? Math.min(W - 2 * M, 620 * S) : 520 * S;
+  const gx = W / 2 - gs / 2, gy = portrait ? H * 0.2 + 5 * (150 + 48) * S + 30 * S : H * 0.52;
+  const cells = 12, cs = gs / cells; const r = rngFor('grid');
+  const order = Array.from({ length: cells * cells }, (_, i) => [i, r()]).sort((a, b) => a[1] - b[1]).map(a => a[0]);
+  const on = Math.floor(gp * cells * cells);
+  const gh = portrait ? Math.min(gs * 0.55, H - gy - 190 * S) : Math.min(gs * 0.5, H - gy - 170 * S);
+  const rows = Math.max(1, Math.floor(gh / cs));
+  E('pixels', [gx, gy, gs, rows * cs], () => {
+  if (gp > 0) for (let k = 0; k < on; k++) {
+    const idx = order[k], cx = idx % cells, cy = Math.floor(idx / cells); if (cy >= rows) continue;
+    const hue = (cx * 18 + cy * 9 + lt * 40) % 360;
+    g.fillStyle = `hsl(${hue},70%,${55 + 10 * Math.sin(lt * 3 + idx)}%)`; g.fillRect(gx + cx * cs + 1, gy + cy * cs + 1, cs - 2, cs - 2);
+  }
+  });
+  // tagline (holds with live motion; no fade to black)
+  const tg = eOutCubic(prog(lt, TL.tagline, TL.tagline + 0.5));
+  if (tg > 0) { const ga = g.globalAlpha; g.globalAlpha = ga * tg; E('tagline', tbox('Code in, pixels out.', W / 2, H - M - 50 * S, (portrait ? 72 : 60) * S), () => text('Code in, pixels out.', W / 2, H - M - 50 * S + (1 - tg) * 30 * S, (portrait ? 72 : 60) * S, C.amber, 'center', '700')); g.globalAlpha = ga; }
+}
+
+// ---------- compositor: scenes + transitions, pure in t ----------
+const SCENES = [[TL.s1, scene1], [TL.s2, scene2], [TL.s3, scene3]];
+function seek(t) {
+  t = clamp(t, 0, DURATION - 1e-6);
+  ELEMENTS.length = 0;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
+  background(t);
+  SCENES.forEach(([[a, b], fn], i) => {       // push transition: outgoing slides left as incoming slides in (no empty frame)
+    const inE = i === 0 ? 1 : eInOut(prog(t, a - TL.xf / 2, a + TL.xf / 2));
+    const outE = i === SCENES.length - 1 ? 0 : eInOut(prog(t, b - TL.xf / 2, b + TL.xf / 2));
+    if (inE <= 0 || outE >= 1) return;
+    const dx = (1 - inE) * W - outE * W;
+    g.save(); g.translate(dx, 0); fn(t); g.restore();
+  });
+  g.globalAlpha = 1;
+}
+
+// ---------- procedural score: OfflineAudioContext, same timeline ----------
+async function renderAudio() {
+  const SR = 48000, ctx = new OfflineAudioContext(2, SR * DURATION, SR);
+  const master = ctx.createGain(); master.gain.value = 1.5; // tuned to about -16 LUFS integrated, peak under -1 dBTP
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+  master.connect(comp).connect(ctx.destination);
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  // pad: one chord per scene, slow swell, overlapped at the cuts
+  const chords = [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64, 67]];
+  SCENES.forEach(([[a, b]], i) => {
+    chords[i].forEach((m, j) => {
+      for (const det of [-4, 4]) {
+        const o = ctx.createOscillator(); o.type = j === 0 ? 'triangle' : 'sine'; o.frequency.value = hz(m); o.detune.value = det;
+        const v = ctx.createGain(); const s = Math.max(0, a - 0.3), e = Math.min(DURATION, b + 0.3);
+        v.gain.setValueAtTime(0, s); v.gain.linearRampToValueAtTime(0.028, s + 0.8);
+        v.gain.setValueAtTime(0.028, Math.max(s + 0.8, e - 0.6)); v.gain.linearRampToValueAtTime(i === 2 ? 0.02 : 0, e);
+        const pan = ctx.createStereoPanner(); pan.pan.value = det < 0 ? -0.3 : 0.3;
+        o.connect(v).connect(pan).connect(master); o.start(s); o.stop(e + 0.05);
+      }
+    });
+  });
+  // key clicks: seeded noise bursts per typed char
+  const r = rngFor('noise'); const nb = ctx.createBuffer(1, SR * 0.03, SR); const d = nb.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (r() * 2 - 1) * Math.exp(-i / (SR * 0.006));
+  charTimes.forEach((ct, i) => { const s = ctx.createBufferSource(); s.buffer = nb; const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1800 + 400 * (i % 3); const v = ctx.createGain(); v.gain.value = 0.35; s.connect(f).connect(v).connect(master); s.start(ct); });
+  // enter thump
+  { const o = ctx.createOscillator(); o.frequency.setValueAtTime(140, TL.enter); o.frequency.exponentialRampToValueAtTime(45, TL.enter + 0.25); const v = ctx.createGain(); v.gain.setValueAtTime(0.6, TL.enter); v.gain.exponentialRampToValueAtTime(0.001, TL.enter + 0.4); o.connect(v).connect(master); o.start(TL.enter); o.stop(TL.enter + 0.45); }
+  // plucks on every visible pop (sample-accurate to the picture)
+  const pluck = (at, m, gain = 0.22) => {
+    for (const [mul, gg] of [[1, 1], [2, 0.35], [3, 0.12]]) {
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = hz(m) * mul; const v = ctx.createGain();
+      v.gain.setValueAtTime(0, at); v.gain.linearRampToValueAtTime(gain * gg, at + 0.005); v.gain.exponentialRampToValueAtTime(0.0008, at + 0.9);
+      o.connect(v).connect(master); o.start(at); o.stop(at + 0.95);
+    }
+  };
+  const penta = [69, 72, 74, 76, 79, 81, 84];
+  TL.nodes.forEach((at, i) => pluck(at, penta[i]));
+  TL.boxes.forEach((at, i) => pluck(at, penta[i] - 5 + (i > 2 ? 2 : 0)));
+  [65, 69, 72, 76, 79].forEach((m, i) => pluck(TL.grid[0] + i * 0.06, m, 0.12));   // bloom
+  const buf = await ctx.startRendering();
+  return wavB64(buf);
+}
+function wavB64(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, sr = buf.sampleRate, bytes = 44 + len * ch * 2;
+  const dv = new DataView(new ArrayBuffer(bytes)); let p = 0;
+  const S4 = s => { for (const c of s) dv.setUint8(p++, c.charCodeAt(0)); }, U32 = v => { dv.setUint32(p, v, true); p += 4; }, U16 = v => { dv.setUint16(p, v, true); p += 2; };
+  S4('RIFF'); U32(bytes - 8); S4('WAVE'); S4('fmt '); U32(16); U16(1); U16(ch); U32(sr); U32(sr * ch * 2); U16(ch * 2); U16(16); S4('data'); U32(len * ch * 2);
+  const data = [...Array(ch)].map((_, c) => buf.getChannelData(c));
+  for (let i = 0; i < len; i++) for (let c = 0; c < ch; c++) { const s = clamp(data[c][i], -1, 1); dv.setInt16(p, s < 0 ? s * 0x8000 : s * 0x7fff, true); p += 2; }
+  const u8 = new Uint8Array(dv.buffer); let bin = ''; for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+window.__anim = {
+  duration: DURATION, fps: FPS, width: W, height: H, canvas: cv, ready: false, seek, renderAudio,
+  marks: [TL.enter, ...TL.nodes, ...TL.boxes, TL.grid[0]],
+  shots: SCENES.map(([[a, b]], i) => ({ id: 's' + (i + 1), start: a, end: b })),
+  elements: ELEMENTS, format: FMT,
+  get tune() { return TUNE; },
+  set tune(v) { for (const k of Object.keys(TUNE)) delete TUNE[k]; Object.assign(TUNE, JSON.parse(JSON.stringify(v || {}))); },
+};
+// fonts must be loaded before ready, or first frames render in a fallback font
+document.fonts.load(`700 40px ${FONT}`).then(() => document.fonts.load(`500 40px ${FONT}`)).then(() => { seek(0); window.__anim.ready = true; });
+// interactive preview when opened in a normal browser: press space to play
+let playing = false, t0 = 0; addEventListener('keydown', e => { if (e.code === 'Space') { playing = !playing; t0 = performance.now(); requestAnimationFrame(function loop(n) { if (!playing) return; seek(((n - t0) / 1000) % DURATION); requestAnimationFrame(loop); }); } });
+</script></body></html>

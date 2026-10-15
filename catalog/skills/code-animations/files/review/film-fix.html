@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>film-fix — review a code-animations film</title>
+<style>
+/* ============ BASE: tokens, type ============ */
+/* Warm near-black, one accent. The accent is reserved for pins and "you are here" states so it always means the same thing. */
+:root {
+  --bg: #141311; --panel: #1b1a17; --raise: #25231f; --line: #35322c;
+  --text: #ebe7df; --muted: #9d978c; --accent: #ff6b3d;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+button, .btn, select {
+  font: inherit; color: var(--text); background: var(--raise); border: 1px solid var(--line);
+  border-radius: 4px; padding: 5px 10px; cursor: pointer; white-space: nowrap;
+}
+button:hover, .btn:hover { border-color: #57524a; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, .btn:focus-within, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+.primary { background: var(--text); color: #141311; border-color: var(--text); }
+.spacer { flex: 1; }
+
+/* ============ APP: film column + notes column ============ */
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+
+/* ============ TRACK + STAGE ============ */
+/* The track is tall (height set in JS from the film's duration); the stage sticks to the top while
+   the page scrolls through it, so scroll position is the playhead. No scroll-snap and no vh: both jump. */
+.track { position: relative; height: 100dvh; }
+.stage { position: sticky; top: 0; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+
+/* ============ TOOLBAR ============ */
+.bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.brand { font-weight: 650; letter-spacing: .01em; margin-right: 6px; }
+.film-name { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
+
+/* ============ SCREEN: frame, empty state, note editor ============ */
+.body { display: grid; grid-template-columns: minmax(0, 1fr) 76px; min-height: 0; }
+.screen { position: relative; display: flex; align-items: center; justify-content: center; background: #0d0c0b; min-height: 0; overflow: hidden; }
+#view { display: block; cursor: crosshair; }
+.empty { max-width: 32em; color: var(--muted); text-align: center; padding: 16px; }
+.empty p { margin: .3em 0; }
+.empty strong { color: var(--text); font-weight: 600; }
+.screen.drop { box-shadow: inset 0 0 0 2px var(--text); }
+.editor {
+  position: absolute; left: 12px; right: 12px; bottom: 12px; max-width: 540px; margin: 0 auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px;
+}
+.editor.top { top: 12px; bottom: auto; }   /* pin in the lower half: keep it visible */
+.editor[hidden] { display: none; }
+.ed-head { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.ed-head b { color: var(--accent); font-weight: 600; }
+.editor textarea {
+  width: 100%; resize: vertical; min-height: 64px; font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 4px; padding: 8px; overscroll-behavior: contain;
+}
+.ed-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+/* ============ EDIT BAR: move / scale values ============ */
+.editbar { padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+.editbar[hidden] { display: none; }
+.editbar label { display: inline-flex; gap: 4px; align-items: center; color: var(--muted); font-size: 12px; }
+.editbar input { width: 6.5em; font: 13px var(--mono); color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 3px 5px; }
+#ebTarget { color: var(--accent); }
+#ebHint { font-size: 12px; }
+#btnEdit[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+/* edit mode: the frame is a drag surface, so touch must not scroll it */
+body.editing #view { cursor: move; touch-action: none; }
+
+/* ============ RAIL: shot markers beside the frame ============ */
+.rail { position: relative; border-left: 1px solid var(--line); }
+.rail ol { list-style: none; margin: 0; padding: 0; height: 100%; display: flex; flex-direction: column; }
+.rail li { flex: 1 1 0; min-height: 0; overflow: hidden; border-bottom: 1px solid var(--line); padding: 2px 6px; font: 11px var(--mono); color: var(--muted); }
+.rail li.on { color: var(--text); background: var(--raise); box-shadow: inset 2px 0 var(--accent); }
+.rail-head { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--accent); pointer-events: none; }
+
+/* ============ TRANSPORT: play, time, timeline ============ */
+.transport { border-top: 1px solid var(--line); padding: 8px 12px 10px; display: grid; gap: 6px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+#tc { font-size: 18px; }
+#shotNow { color: var(--accent); }
+.timeline { position: relative; height: 34px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; cursor: ew-resize; touch-action: none; overflow: hidden; }
+.tl-shot { position: absolute; top: 0; bottom: 10px; border-right: 1px solid var(--line); font: 10px var(--mono); color: var(--muted); padding: 3px 4px; overflow: hidden; white-space: nowrap; }
+.tl-shot.on { color: var(--text); background: var(--raise); }
+.tl-mark { position: absolute; bottom: 0; width: 1px; height: 7px; background: var(--muted); }
+.playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); pointer-events: none; }
+.status { margin: 0; min-height: 1.4em; color: var(--text); }
+.keys { margin: 0; font-size: 12px; color: var(--muted); }
+
+/* ============ NOTES ============ */
+.notes { position: sticky; top: 0; height: 100dvh; overflow: auto; border-left: 1px solid var(--line); background: var(--panel); padding: 12px; }
+.notes h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.notes ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.notes li { display: grid; grid-template-columns: 1fr auto; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); }
+.notes li.on { border-color: var(--accent); }
+.note-main { text-align: left; border: 0; background: none; padding: 8px; white-space: normal; }
+.note-meta { display: flex; gap: 8px; font-size: 12px; color: var(--muted); }
+.note-meta b { color: var(--text); }
+.note-text { margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.note-edit { border: 0; border-left: 1px solid var(--line); border-radius: 0; background: none; color: var(--muted); }
+#noteEmpty { color: var(--muted); margin: 0; }
+
+/* The film document lives off-screen; we only read its canvas. */
+.film-frame { position: fixed; left: -10000px; top: 0; width: 64px; height: 64px; border: 0; visibility: hidden; }
+
+/* ============ NARROW: notes go under the track ============ */
+/* Inside the track the page scroll would never reach them. */
+@media (max-width: 760px) {
+  .app { display: block; }
+  .notes { position: static; height: auto; border-left: 0; border-top: 1px solid var(--line); }
+  .body { grid-template-columns: minmax(0, 1fr) 46px; }
+  .rail li { padding: 2px 4px; font-size: 10px; }
+  .film-name { max-width: 16ch; }
+}
+</style>
+</head>
+<body>
+<!-- Two columns: the film (scroll track) and the notes. Below 760 px the notes drop under the track. -->
+<main class="app" data-sid="app" data-title="Review tool">
+  <!-- Its height is set in JS (120 px per film second, at least 3 screens); the page scroll inside it is the playhead. -->
+  <section id="track" class="track" data-sid="track" data-title="Scroll track: scrolling the page moves through the film">
+    <div id="stage" class="stage" data-sid="stage" data-title="Sticky stage that stays in view while scrolling">
+      <header class="bar" data-sid="toolbar" data-title="Top bar: open a film, format, audio file, export">
+        <strong class="brand">film-fix</strong>
+        <span id="filmName" class="film-name">No film open</span>
+        <span class="spacer"></span>
+        <button id="btnFolder" type="button">Open film folder</button>
+        <label class="btn">Open index.html<input id="inFile" type="file" accept=".html,.htm,text/html" hidden></label>
+        <select id="selFormat" aria-label="Format">
+          <option value="">Film default</option>
+          <option value="16x9">16:9</option>
+          <option value="9x16">9:16</option>
+          <option value="4x5">4:5</option>
+        </select>
+        <label class="btn">Audio file…<input id="inAudio" type="file" accept=".wav,.mp3,.m4a,audio/wav,audio/mpeg,audio/mp4" hidden></label>
+        <button id="btnEdit" type="button" aria-pressed="false" disabled>Edit</button>
+        <button id="btnExport" type="button" class="primary" disabled>Export fix pack</button>
+      </header>
+      <div class="body">
+        <div id="screen" class="screen" data-sid="screen" data-title="Film frame with pins and the note editor">
+          <!-- A copy of the film's own canvas, redrawn after every seek, with pins drawn on top. -->
+          <canvas id="view" hidden></canvas>
+          <div id="empty" class="empty">
+            <p><strong>Open a film's folder or its index.html</strong>, or drop the file here.</p>
+            <p>Scroll to move through the film. Click the frame where something is wrong and say what should happen instead.</p>
+          </div>
+          <!-- The editor lives on the stage, not in the notes panel, so it stays on screen at phone width too. -->
+          <form id="editor" class="editor" hidden>
+            <div id="edHead" class="ed-head mono"></div>
+            <textarea id="edText" rows="3" placeholder="What should happen here instead?" aria-label="Note"></textarea>
+            <div class="ed-actions">
+              <button id="edDelete" type="button">Delete</button>
+              <span class="spacer"></span>
+              <button id="edCancel" type="button">Cancel</button>
+              <button type="submit" class="primary">Save note</button>
+            </div>
+          </form>
+        </div>
+        <!-- Shot markers sized by shot length; the accent line tracks the scroll. -->
+        <nav class="rail" data-sid="rail" data-title="Shot rail: which shot the scroll is in" aria-label="Shots">
+          <ol id="railShots"></ol>
+          <div id="railHead" class="rail-head" hidden></div>
+        </nav>
+      </div>
+      <div class="transport" data-sid="transport" data-title="Transport: play, mute, time readout, timeline">
+        <div class="row">
+          <button id="btnPlay" type="button" disabled>Play</button>
+          <button id="btnMute" type="button">Mute</button>
+          <span id="tc" class="mono">0:00.00</span>
+          <span id="fr" class="mono muted">f 0</span>
+          <span id="shotNow" class="mono"></span>
+        </div>
+        <!-- Only in edit mode. Films with TUNE: values of the selected element. Other films: the boxed region (Nudge). -->
+        <div id="editBar" class="row editbar" hidden data-sid="editbar" data-title="Edit mode: move and scale an element or a boxed region">
+          <span id="ebTarget" class="mono"></span>
+          <label>dx <input id="ebDx" type="number" step="1"></label>
+          <label>dy <input id="ebDy" type="number" step="1"></label>
+          <label>scale <input id="ebS" type="number" step="0.01" min="0.05"></label>
+          <button id="ebReset" type="button">Reset</button>
+          <button id="ebResetAll" type="button">Reset all</button>
+          <button id="ebSave" type="button" class="primary">Save to index.html</button>
+          <button id="ebNote" type="button" class="primary">Make note (Enter)</button>
+          <span id="ebHint" class="muted"></span>
+        </div>
+        <!-- Shots as labelled segments, marks as ticks; drag to scrub. -->
+        <div id="timeline" class="timeline" aria-label="Timeline">
+          <div id="tlShots"></div><div id="tlMarks"></div><div id="playhead" class="playhead" hidden></div>
+        </div>
+        <p id="status" class="status" role="status"></p>
+        <p class="keys">Scroll or ← → = 1 frame · Shift = 1 s · Space play · M mute · E edit (drag to move, corners to scale, arrows nudge, + − scale) · click the frame to add a note</p>
+      </div>
+    </div>
+  </section>
+  <!-- Sorted by time; the number is the fix number the export uses. -->
+  <aside class="notes" data-sid="notes" data-title="Notes list">
+    <h2>Notes <span id="noteCount"></span></h2>
+    <ol id="noteList"></ol>
+    <p id="noteEmpty">No notes yet. Click the frame to add one.</p>
+  </aside>
+</main>
+
+<!-- The film itself is loaded later into an off-screen iframe (see LOAD FILM). -->
+<script>
+'use strict';
+/* ============ STATE ============ */
+const $ = id => document.getElementById(id);
+const PX_PER_SEC = 120;                                   // scroll distance per film second
+const FORMATS = { '16x9': [1920, 1080], '9x16': [1080, 1920], '4x5': [1080, 1350] };
+const ACCENT = '#ff6b3d';
+const film = { name: '', label: '', size: 0, bytes: null, dir: null, format: '' };
+let A = null;             // the film's window.__anim
+let frameEl = null;       // the iframe holding the film document
+let loadToken = 0;        // bumps on every load so a slow earlier load cannot win
+let t = 0, dirty = false; // current time (snapped to frames); dirty = seek + redraw on next rAF
+let span = 0;             // scrollable pixels that map to 0..duration
+let expectScrollY = null; // the y we scrolled to ourselves, so its scroll event is not read as user input
+let notes = [];           // [{t, x, y, text}] sorted by t, x/y in film pixels
+let editing = null;       // {note, isNew}
+let playing = false, playT0 = 0, playClock0 = 0, playOnAudio = false;
+let editMode = false;
+let tune = {}, tuneSaved = {};  // tool copies of the film's TUNE: live (previewed) and as last written to index.html
+let sel = null, hover = null;   // element ids (films with TUNE)
+let nudge = null;               // {t, rect:[x,y,w,h], dx, dy, s, img} (films without TUNE)
+let drag = null;                // {kind:'move'|'scale'|'box', p, v, c, q} while a pointer is down on the frame
+
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const snap = s => clamp(Math.round(s * A.fps) / A.fps, 0, A.duration);
+const frameOf = s => Math.round(s * A.fps);
+const pad2 = n => String(n).padStart(2, '0');
+const tc = s => { const cs = Math.round(s * 100), m = Math.floor(cs / 6000), r = cs - m * 6000; return `${m}:${pad2(Math.floor(r / 100))}.${pad2(r % 100)}`; };
+const shotAt = s => {
+  const sh = A.shots || [];
+  // shots are [start, end); the very last frame belongs to the last shot
+  return sh.find(x => s >= x.start && s < x.end) || (sh.length && s >= sh[sh.length - 1].start ? sh[sh.length - 1] : null);
+};
+const status = msg => { $('status').textContent = msg; };
+const nearNote = n => Math.abs(frameOf(n.t) - frameOf(t)) <= 2;
+
+/* ============ LOAD FILM ============ */
+async function openFile(file, dir) {
+  if (!/\.html?$/i.test(file.name)) return status('That is not an .html file. Pick the film\'s index.html.');
+  film.name = file.name; film.size = file.size; film.dir = dir || null;
+  film.label = dir ? `${dir.name}/${file.name}` : file.name;
+  film.bytes = await file.arrayBuffer();
+  film.tuneOrig = undefined; film.backup = '';   // per opened file: what TUNE was on disk, and the one backup we made
+  await loadFilm();
+}
+
+// document.open/write into a blank iframe keeps it same-origin with this page even from file://,
+// and unlike srcdoc it lets us set ?w=&h= with replaceState, which is how films pick their format.
+async function loadFilm() {
+  const token = ++loadToken;
+  stopPlay(); closeEditor(); resetAudio();
+  if (editMode) toggleEdit();
+  A = null; $('btnExport').disabled = true; $('btnPlay').disabled = true; $('btnEdit').disabled = true;
+  status(`Loading ${film.label}…`);
+  if (frameEl) frameEl.remove();
+  frameEl = document.createElement('iframe');
+  frameEl.className = 'film-frame'; frameEl.tabIndex = -1; frameEl.title = 'film'; frameEl.setAttribute('aria-hidden', 'true');
+  document.body.append(frameEl);
+  const w = frameEl.contentWindow, doc = frameEl.contentDocument;
+  let firstError = '';
+  doc.open();
+  w.addEventListener('error', e => { firstError = firstError || e.message; });
+  const f = FORMATS[film.format];
+  w.history.replaceState(null, '', location.pathname + (f ? `?w=${f[0]}&h=${f[1]}` : ''));
+  doc.write(new TextDecoder().decode(film.bytes));
+  doc.close();
+
+  const started = performance.now();
+  while (!(w.__anim && w.__anim.ready)) {
+    if (token !== loadToken) return;
+    if (performance.now() - started > 60000) {
+      return status(`The film never set __anim.ready within 60 s${firstError ? ` (error: ${firstError})` : ''}. Does it follow the code-animations contract?`);
+    }
+    await new Promise(r => setTimeout(r, 50));
+  }
+  if (token !== loadToken) return;
+  A = w.__anim;
+  $('filmName').textContent = `${film.label} · ${A.width}×${A.height} · ${A.duration}s @ ${A.fps}`;
+  $('empty').hidden = true; $('view').hidden = false; $('playhead').hidden = false; $('railHead').hidden = false;
+  $('btnPlay').disabled = false; $('btnEdit').disabled = false;
+  tune = hooks() ? clone(A.tune) : {}; tuneSaved = clone(tune);
+  if (film.tuneOrig === undefined) film.tuneOrig = clone(tune);
+  sel = hover = nudge = drag = null;
+  loadNotes(); renderList(); buildTimeline(); fitView(); layoutTrack(); setT(0);
+  status(firstError ? `Loaded, but the film logged an error: ${firstError}` : 'Loaded.');
+  loadFilmAudio(token);
+}
+
+/* ============ TRACK: scroll ↔ time ============ */
+const trackTop = () => $('track').offsetTop;
+function layoutTrack() {
+  const stageH = $('stage').offsetHeight;
+  span = A ? Math.max(A.duration * PX_PER_SEC, 3 * stageH) : 0;
+  $('track').style.height = A ? `${span + stageH}px` : '';
+}
+
+// Every way of moving (keys, timeline, notes, play) goes through here and moves the page scroll too,
+// so scroll position and time never disagree.
+function setT(s, syncScroll = true) {
+  if (!A) return;
+  t = snap(s); dirty = true;
+  if (syncScroll) {
+    expectScrollY = Math.round(trackTop() + (t / A.duration) * span);
+    window.scrollTo(0, expectScrollY);
+  }
+}
+
+function onScroll() {
+  resumeAudio();
+  if (!A) return;
+  const y = window.scrollY;
+  if (expectScrollY !== null && Math.abs(y - expectScrollY) < 1.5) { expectScrollY = null; return; }
+  expectScrollY = null;
+  if (playing) stopPlay();          // the hand on the wheel wins over playback
+  setT(((y - trackTop()) / span) * A.duration, false);
+}
+
+/* ============ RENDER LOOP ============ */
+// One seek per animation frame no matter how many scroll events arrived.
+function tick(now) {
+  if (A) {
+    if (playing) {
+      const s = playT0 + (playOnAudio ? au.ctx.currentTime - playClock0 : (now - playClock0) / 1000);
+      if (s >= A.duration) { setT(A.duration); stopPlay(); } else setT(s);
+    }
+    if (dirty) { dirty = false; A.seek(t); draw(); updateReadouts(); }
+    audioTick(now);
+  }
+  requestAnimationFrame(tick);
+}
+
+function draw() {
+  const v = $('view'), g = v.getContext('2d');
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(A.canvas, 0, 0, v.width, v.height);
+  const k = v.width / A.width, r = 13 * (devicePixelRatio || 1);
+  notes.forEach((n, i) => { if (nearNote(n)) drawPin(g, n.x * k, n.y * k, i + 1, r); });
+  if (editing && editing.isNew) drawPin(g, editing.note.x * k, editing.note.y * k, newNumber(editing.note), r);
+  if (editMode) drawEdit(g, k);
+}
+
+// Ring + numbered tag. White/black halo under the accent so it reads on any film background,
+// and a black tag with a white number so it cannot be mistaken for the film's own badges.
+function drawPin(g, x, y, n, r) {
+  const W = g.canvas.width;
+  g.save();
+  g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
+  g.lineWidth = r * 0.62; g.strokeStyle = '#fff'; g.stroke();
+  g.lineWidth = r * 0.44; g.strokeStyle = '#000'; g.stroke();
+  g.lineWidth = r * 0.22; g.strokeStyle = ACCENT; g.stroke();
+  g.beginPath(); g.arc(x, y, r * 0.16, 0, Math.PI * 2); g.fillStyle = ACCENT; g.fill();
+  g.lineWidth = r * 0.08; g.strokeStyle = '#000'; g.stroke();
+  // tag goes up-right, flipped when it would leave the frame
+  const tr = r * 0.85, tx = x + (x + r * 2.2 > W ? -1 : 1) * r * 1.45, ty = y + (y - r * 2.2 < 0 ? 1 : -1) * r * 1.45;
+  g.beginPath(); g.arc(tx, ty, tr, 0, Math.PI * 2); g.fillStyle = '#000'; g.fill();
+  g.lineWidth = r * 0.18; g.strokeStyle = ACCENT; g.stroke();
+  g.fillStyle = '#fff'; g.font = `700 ${Math.round(tr * 1.1)}px system-ui, "Segoe UI", sans-serif`;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(n), tx, ty + tr * 0.06);
+  g.restore();
+}
+
+// Fit the film into the screen box, letterboxed; backing store at device pixels so it stays sharp.
+function fitView() {
+  if (!A) return;
+  const box = $('screen').getBoundingClientRect(), v = $('view');
+  const s = Math.min(box.width / A.width, box.height / A.height);
+  const cw = Math.max(1, Math.floor(A.width * s)), ch = Math.max(1, Math.floor(A.height * s)), dpr = devicePixelRatio || 1;
+  v.style.width = `${cw}px`; v.style.height = `${ch}px`;
+  v.width = Math.round(cw * dpr); v.height = Math.round(ch * dpr);
+  dirty = true;
+}
+
+/* ============ TIMELINE + RAIL ============ */
+function buildTimeline() {
+  const d = A.duration, shots = A.shots || [], marks = A.marks || [];
+  const mk = (tag, cls, props) => Object.assign(document.createElement(tag), { className: cls }, props);
+  $('tlShots').replaceChildren(...shots.map(s => {
+    const el = mk('div', 'tl-shot', { textContent: s.id, title: `${s.id} · ${s.start.toFixed(2)}–${s.end.toFixed(2)} s` });
+    el.style.left = `${(s.start / d) * 100}%`; el.style.width = `${((s.end - s.start) / d) * 100}%`; el.dataset.shot = s.id;
+    return el;
+  }));
+  $('tlMarks').replaceChildren(...marks.map(m => { const el = mk('div', 'tl-mark'); el.style.left = `${(m / d) * 100}%`; return el; }));
+  $('railShots').replaceChildren(...shots.map(s => {
+    const el = mk('li', '', { textContent: s.id, title: `${s.id} · ${s.start.toFixed(2)}–${s.end.toFixed(2)} s` });
+    el.style.flexGrow = s.end - s.start; el.dataset.shot = s.id;
+    return el;
+  }));
+}
+
+function updateReadouts() {
+  const sh = shotAt(t), pct = (t / A.duration) * 100;
+  $('tc').textContent = tc(t);
+  $('fr').textContent = `f ${frameOf(t)}`;
+  $('shotNow').textContent = sh ? `shot ${sh.id}` : '';
+  $('playhead').style.left = `${pct}%`;
+  $('railHead').style.top = `calc(${pct}% - 1px)`;
+  for (const el of document.querySelectorAll('[data-shot]')) el.classList.toggle('on', !!sh && el.dataset.shot === sh.id);
+  [...$('noteList').children].forEach((li, i) => li.classList.toggle('on', !!notes[i] && nearNote(notes[i])));
+}
+
+/* ============ NOTES: editor, list, storage ============ */
+const newNumber = note => notes.filter(n => n.t <= note.t).length + 1;
+function openEditor(note, isNew) {
+  editing = { note, isNew };
+  const num = isNew ? newNumber(note) : notes.indexOf(note) + 1, sh = shotAt(note.t);
+  $('edHead').innerHTML = `<b>Fix ${pad2(num)}</b> · ${tc(note.t)} · f ${frameOf(note.t)}${sh ? ` · shot ${sh.id}` : ''}`;
+  $('edText').value = note.text;
+  $('edDelete').hidden = isNew;
+  $('editor').classList.toggle('top', note.y > A.height / 2);
+  $('editor').hidden = false;
+  $('edText').focus();
+  dirty = true;
+}
+function closeEditor() { editing = null; $('editor').hidden = true; if (A) dirty = true; }
+
+function commitNotes() { notes.sort((a, b) => a.t - b.t); saveNotes(); renderList(); dirty = true; }
+
+function renderList() {
+  $('noteList').replaceChildren(...notes.map((n, i) => {
+    const li = document.createElement('li'), sh = A && shotAt(n.t);
+    const main = Object.assign(document.createElement('button'), { type: 'button', className: 'note-main' });
+    main.innerHTML = `<span class="note-meta mono"><b>${pad2(i + 1)}</b><span>${tc(n.t)}</span><span>${sh ? sh.id : ''}</span></span><span class="note-text"></span>`;
+    main.querySelector('.note-text').textContent = n.text;   // user text never goes through innerHTML
+    main.onclick = () => { stopPlay(); closeEditor(); setT(n.t); };
+    const edit = Object.assign(document.createElement('button'), { type: 'button', className: 'note-edit', textContent: 'Edit' });
+    edit.onclick = () => { stopPlay(); setT(n.t); openEditor(n, false); };
+    li.append(main, edit);
+    return li;
+  }));
+  $('noteCount').textContent = notes.length ? `(${notes.length})` : '';
+  $('noteEmpty').hidden = notes.length > 0;
+  $('btnExport').disabled = !A || !notes.length;
+}
+
+// localStorage can be missing or throw (private mode, file:// policies); the tool still works without it.
+const storeKey = () => `film-fix:${film.name}:${film.size}:${film.format || 'default'}`;
+function saveNotes() { try { localStorage.setItem(storeKey(), JSON.stringify(notes)); } catch (e) { /* notes live in memory only */ } }
+function loadNotes() {
+  try { notes = JSON.parse(localStorage.getItem(storeKey()) || '[]'); } catch (e) { notes = []; }
+  if (!Array.isArray(notes)) notes = [];
+}
+
+/* ============ AUDIO: decode, scrub, play ============ */
+// Scrubbing works like a DAW: while t moves, a buffer source plays from t at the scroll speed
+// (a reversed copy for backwards). It only restarts when it drifts, so steady scrolling sounds continuous.
+const au = { ctx: null, master: null, buf: null, rev: null, src: null, gain: null, dir: 0, pos: 0, ctxT: 0, lastT: 0, lastChange: 0, vel: 0, muted: false };
+const auState = window.__filmFixAudioState = { decoded: false, bufferDuration: 0, source: 'none', mode: 'idle', running: false, rate: 0, direction: 0, ctxState: 'none', muted: false };
+
+function ensureCtx() {
+  if (au.ctx) return;
+  au.ctx = new AudioContext();
+  au.master = au.ctx.createGain(); au.master.connect(au.ctx.destination);
+}
+// Browsers keep an AudioContext suspended until a user gesture; any scroll, click or key tries again.
+function resumeAudio() { if (au.ctx && au.ctx.state === 'suspended') au.ctx.resume().catch(() => {}); }
+
+function resetAudio() {
+  stopSource(); au.buf = au.rev = null;
+  Object.assign(auState, { decoded: false, bufferDuration: 0, source: 'none' });
+}
+
+async function loadFilmAudio(token) {
+  if (typeof A.renderAudio !== 'function') return status('No sound: this film has no renderAudio(). Everything else works.');
+  const t0 = performance.now();
+  const timer = setInterval(() => status(`Rendering the soundtrack… ${((performance.now() - t0) / 1000).toFixed(1)} s`), 200);
+  try {
+    const b64 = await A.renderAudio();
+    if (token !== loadToken) return;
+    status('Decoding the soundtrack…');
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    await setBuffer(u8.buffer, 'film');
+    status(`Sound ready (${auState.bufferDuration.toFixed(2)} s). Scroll to hear it; M mutes.`);
+  } catch (e) {
+    if (token === loadToken) status(`No sound: renderAudio() failed (${e && e.message || e}). Everything else works.`);
+  } finally { clearInterval(timer); }
+}
+
+async function setBuffer(arrayBuffer, source) {
+  ensureCtx();
+  const buf = await au.ctx.decodeAudioData(arrayBuffer);
+  const rev = au.ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+  for (let c = 0; c < buf.numberOfChannels; c++) {
+    const src = buf.getChannelData(c), dst = rev.getChannelData(c), n = src.length;
+    for (let i = 0; i < n; i++) dst[i] = src[n - 1 - i];
+  }
+  stopSource();
+  au.buf = buf; au.rev = rev;
+  Object.assign(auState, { decoded: true, bufferDuration: buf.duration, source });
+}
+
+// Every start and stop is a short gain ramp; a hard cut clicks.
+function startSource(dir, offset, rate) {
+  stopSource();
+  const c = au.ctx, s = c.createBufferSource(), g = c.createGain(), now = c.currentTime;
+  s.buffer = dir > 0 ? au.buf : au.rev;
+  s.playbackRate.value = rate;
+  s.connect(g).connect(au.master);
+  g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(1, now + 0.015);
+  s.start(now, clamp(offset, 0, s.buffer.duration));
+  s.onended = () => { if (au.src === s) { au.src = null; auState.running = false; } };
+  Object.assign(au, { src: s, gain: g, dir, pos: offset, ctxT: now });
+  Object.assign(auState, { running: true, rate, direction: dir });
+}
+function stopSource() {
+  if (!au.src) return;
+  const now = au.ctx.currentTime, g = au.gain.gain;
+  g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(0, now + 0.04);
+  au.src.onended = null; au.src.stop(now + 0.05);
+  au.src = au.gain = null;
+  Object.assign(auState, { running: false, mode: 'idle', rate: 0 });
+}
+
+function audioTick(now) {
+  auState.ctxState = au.ctx ? au.ctx.state : 'none';
+  if (playing || !au.buf || au.ctx.state !== 'running') { au.lastT = t; return; }
+  if (au.src) { const ct = au.ctx.currentTime; au.pos += (ct - au.ctxT) * au.src.playbackRate.value; au.ctxT = ct; }
+  if (t !== au.lastT) {
+    // velocity in film-seconds per real second; after a pause assume one display frame elapsed
+    const idle = now - au.lastChange > 150, dt = idle ? 1 / 60 : Math.max(1, now - au.lastChange) / 1000;
+    const v = (t - au.lastT) / dt, dir = Math.sign(v);
+    au.vel = !idle && dir === Math.sign(au.vel) ? au.vel * 0.5 + v * 0.5 : v;
+    au.lastT = t; au.lastChange = now;
+    const rate = clamp(Math.abs(au.vel), 0.25, 4), target = dir > 0 ? t : au.rev.duration - t;
+    if (!au.src || au.dir !== dir || Math.abs(au.pos - target) > 0.08) startSource(dir, target, rate);
+    else { au.src.playbackRate.setTargetAtTime(rate, au.ctx.currentTime, 0.02); auState.rate = rate; }
+    auState.mode = 'scrub';
+  } else if (au.src && now - au.lastChange > 120) stopSource();
+}
+
+function toggleMute() {
+  au.muted = auState.muted = !au.muted;
+  $('btnMute').textContent = au.muted ? 'Unmute' : 'Mute';
+  if (au.master) { const now = au.ctx.currentTime; au.master.gain.setTargetAtTime(au.muted ? 0 : 1, now, 0.01); }
+}
+
+/* ============ PLAY ============ */
+// With sound, the picture follows the audio clock so both stay locked; without it, performance.now().
+async function play() {
+  if (!A || playing) return;
+  if (t >= A.duration - 1e-6) setT(0);
+  playing = true; $('btnPlay').textContent = 'Pause';
+  if (au.buf) { try { await au.ctx.resume(); } catch (e) { /* stays silent */ } }
+  if (!playing) return;
+  playT0 = t;
+  playOnAudio = !!au.buf && au.ctx.state === 'running';
+  if (playOnAudio) { startSource(1, t, 1); auState.mode = 'play'; playClock0 = au.ctx.currentTime; }
+  else playClock0 = performance.now();
+}
+function stopPlay() {
+  if (!playing) return;
+  playing = false; $('btnPlay').textContent = 'Play';
+  stopSource();
+  au.lastT = t;
+}
+
+/* ============ EDIT: move / scale (TUNE elements, or Nudge) ============ */
+// Films with E()/TUNE: the tool writes values the film itself reads, so a render picks them up with no AI in the loop.
+// Films without: "Nudge" boxes a region and turns the drag into exact numbers inside a normal note.
+const clone = o => JSON.parse(JSON.stringify(o || {}));
+const hooks = () => !!A && Array.isArray(A.elements) && 'tune' in A && !!A.format;
+const corners = ([x, y, w, h]) => [[x, y], [x + w, y], [x, y + h], [x + w, y + h]];
+const inBox = ([x, y], [bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+const onNudgeFrame = () => !!nudge && frameOf(nudge.t) === frameOf(t);
+function toFilm(e) {
+  const r = $('view').getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width * A.width, (e.clientY - r.top) / r.height * A.height];
+}
+function nudgeBox() {
+  const [x, y, w, h] = nudge.rect, cx = x + w / 2 + nudge.dx, cy = y + h / 2 + nudge.dy;
+  return [cx - w * nudge.s / 2, cy - h * nudge.s / 2, w * nudge.s, h * nudge.s];
+}
+// the box being edited right now, in film px (elements report theirs after every seek)
+function selBox() {
+  if (nudge) return onNudgeFrame() ? nudgeBox() : null;
+  const el = sel && A.elements.find(e => e.id === sel);
+  return el ? el.box : null;
+}
+function elementAt(p) {   // topmost = drawn last
+  for (let i = A.elements.length - 1; i >= 0; i--) if (inBox(p, A.elements[i].box)) return A.elements[i];
+  return null;
+}
+function onHandle(p, box) {   // 10 screen px tolerance, whatever the zoom
+  const tol = 10 * A.width / $('view').getBoundingClientRect().width;
+  return !!box && corners(box).some(([x, y]) => Math.abs(p[0] - x) <= tol && Math.abs(p[1] - y) <= tol);
+}
+
+// Current values of what is being edited; null when nothing is selected.
+function cur() {
+  if (nudge) return { dx: nudge.dx, dy: nudge.dy, s: nudge.s };
+  if (!sel) return null;
+  return { dx: 0, dy: 0, s: 1, ...((tune[A.format] || {})[sel]) };
+}
+function setCur(v) {
+  v = { dx: Math.round(v.dx), dy: Math.round(v.dy), s: Math.max(0.05, Math.round(v.s * 1000) / 1000) };
+  if (nudge) Object.assign(nudge, v);
+  else if (sel) {
+    const f = tune[A.format] || (tune[A.format] = {});
+    if (v.dx || v.dy || v.s !== 1) f[sel] = v; else delete f[sel];   // identity entries stay out of the file
+    if (!Object.keys(f).length) delete tune[A.format];
+    A.tune = tune;   // live preview: the film re-reads TUNE on the next seek
+  }
+  dirty = true; updateEditBar();
+}
+
+function toggleEdit() {
+  editMode = !editMode;
+  stopPlay(); closeEditor();
+  drag = hover = null;
+  document.body.classList.toggle('editing', editMode);
+  $('btnEdit').setAttribute('aria-pressed', String(editMode));
+  $('btnEdit').textContent = editMode ? 'Done editing' : 'Edit';
+  if (A) dirty = true;
+  updateEditBar();
+}
+
+function updateEditBar() {
+  $('editBar').hidden = !editMode;
+  if (!editMode || !A) return;
+  const c = cur(), hk = hooks();
+  $('ebTarget').textContent = nudge ? `box ${nudge.rect[0]},${nudge.rect[1]},${nudge.rect[2]}×${nudge.rect[3]}` : sel || '';
+  for (const [id, key] of [['ebDx', 'dx'], ['ebDy', 'dy'], ['ebS', 's']]) {
+    const el = $(id); el.disabled = !c;
+    if (document.activeElement !== el) el.value = c ? c[key] : '';   // never overwrite what is being typed
+  }
+  $('ebReset').disabled = !c;
+  $('ebResetAll').hidden = $('ebSave').hidden = !hk;
+  $('ebResetAll').disabled = !Object.keys(tune).length;
+  $('ebSave').disabled = JSON.stringify(tune) === JSON.stringify(tuneSaved);
+  $('ebNote').hidden = hk; $('ebNote').disabled = !onNudgeFrame();
+  $('ebHint').textContent = hk
+    ? (sel ? `applies to this element for the whole film in ${A.format}` : 'Hover to see the elements, click one to select it.')
+    : (nudge ? 'Drag the copy or its corners, then Enter turns it into a note.' : 'No editable elements in this film: drag a box around what should move.');
+}
+
+// Diagonal hatch over a region: "this is where it was".
+function hatch(g, x, y, w, h, step) {
+  g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+  g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x, y, w, h);
+  g.strokeStyle = 'rgba(255,255,255,.28)'; g.lineWidth = step / 6; g.beginPath();
+  for (let d = -h; d < w; d += step) { g.moveTo(x + d, y + h); g.lineTo(x + d + h, y); }
+  g.stroke(); g.restore();
+}
+
+function drawEdit(g, k) {
+  const dpr = devicePixelRatio || 1;
+  const outline = (b, color, width, dashed) => {
+    g.save(); g.setLineDash(dashed ? [6 * dpr, 4 * dpr] : []); g.lineWidth = width * dpr; g.strokeStyle = color;
+    g.strokeRect(b[0] * k, b[1] * k, b[2] * k, b[3] * k); g.restore();
+  };
+  const handles = b => {
+    for (const [x, y] of corners(b)) {
+      g.fillStyle = '#fff'; g.fillRect(x * k - 5 * dpr, y * k - 5 * dpr, 10 * dpr, 10 * dpr);
+      g.lineWidth = dpr; g.strokeStyle = '#000'; g.strokeRect(x * k - 5 * dpr, y * k - 5 * dpr, 10 * dpr, 10 * dpr);
+    }
+  };
+  if (onNudgeFrame()) {
+    const [x, y, w, h] = nudge.rect, b = nudgeBox();
+    hatch(g, x * k, y * k, w * k, h * k, 10 * dpr);
+    g.drawImage(nudge.img, b[0] * k, b[1] * k, b[2] * k, b[3] * k);
+    outline(b, ACCENT, 2, true); handles(b);
+  }
+  if (drag && drag.kind === 'box' && drag.q) {
+    const [p, q] = [drag.p, drag.q];
+    outline([Math.min(p[0], q[0]), Math.min(p[1], q[1]), Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1])], ACCENT, 1.5, true);
+  }
+  if (!hooks()) return;
+  const hv = A.elements.find(e => e.id === hover);
+  if (hv && hover !== sel) outline(hv.box, 'rgba(255,255,255,.85)', 1, true);
+  const se = A.elements.find(e => e.id === sel);
+  if (se) {
+    outline(se.box, ACCENT, 2, false); handles(se.box);
+    g.font = `600 ${12 * dpr}px ui-monospace, Consolas, monospace`; g.textBaseline = 'bottom';
+    const lx = se.box[0] * k, ly = Math.max(16 * dpr, se.box[1] * k - 4 * dpr), tw = g.measureText(se.id).width;
+    g.fillStyle = '#000'; g.fillRect(lx, ly - 15 * dpr, tw + 8 * dpr, 16 * dpr);
+    g.fillStyle = ACCENT; g.fillText(se.id, lx + 4 * dpr, ly);
+  }
+}
+
+function startNudge([x0, y0], [x1, y1]) {
+  const x = Math.round(Math.min(x0, x1)), y = Math.round(Math.min(y0, y1)), w = Math.round(Math.abs(x1 - x0)), h = Math.round(Math.abs(y1 - y0));
+  if (w < 4 || h < 4) return;
+  A.seek(t);   // copy the pixels of exactly this frame
+  const img = Object.assign(document.createElement('canvas'), { width: w, height: h });
+  img.getContext('2d').drawImage(A.canvas, x, y, w, h, 0, 0, w, h);
+  nudge = { t, rect: [x, y, w, h], dx: 0, dy: 0, s: 1, img };
+  updateEditBar();
+}
+
+function nudgeNote() {
+  if (!onNudgeFrame()) return;
+  const { rect: [x, y, w, h], dx, dy, s } = nudge, sh = shotAt(nudge.t);
+  const where = sh ? `shot ${sh.id}, ${sh.start.toFixed(2)}–${sh.end.toFixed(2)} s` : `at ${tc(nudge.t)}`;
+  const note = {
+    t: nudge.t, x: Math.round(x + w / 2), y: Math.round(y + h / 2), nudge: { rect: [x, y, w, h], dx, dy, s },
+    text: `Move what is inside box ${x},${y},${w}×${h} by ${dx},${dy} px and scale ×${s} (${where}). `,
+  };
+  nudge = null; updateEditBar();
+  openEditor(note, true);   // the reviewer can add words before saving
+  const ta = $('edText'); ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+// Rewrites only the /*TUNE*/…/*END-TUNE*/ block. First save into a folder also writes one dated backup.
+async function saveTune() {
+  const html = new TextDecoder().decode(film.bytes), re = /\/\*TUNE\*\/[\s\S]*?\/\*END-TUNE\*\//;
+  if (!re.test(html)) return status('This film has no /*TUNE*/ … /*END-TUNE*/ block to write into.');
+  const bytes = new TextEncoder().encode(html.replace(re, () => `/*TUNE*/${JSON.stringify(tune)}/*END-TUNE*/`));
+  try {
+    const dir = film.dir;
+    if (dir) {
+      if ((await dir.queryPermission({ mode: 'readwrite' })) !== 'granted' && (await dir.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+        throw new Error('no write permission for the film folder');
+      }
+      const put = async (name, data) => { const w = await (await dir.getFileHandle(name, { create: true })).createWritable(); await w.write(data); await w.close(); };
+      if (!film.backup) {
+        const d = new Date(), stamp = `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+        film.backup = `index.backup-${stamp}.html`;
+        await put(film.backup, film.bytes);
+      }
+      await put(film.name, bytes);
+      status(`Saved ${dir.name}/${film.name} (only the TUNE line changed; original kept as ${film.backup}). Render again to get it in the video.`);
+    } else {
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'text/html' }));
+      const a = Object.assign(document.createElement('a'), { href: url, download: film.name });
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      status(`Downloaded the edited ${film.name}. Replace the film's file with it (use "Open film folder" to save in place).`);
+    }
+    film.bytes = bytes.buffer; film.size = bytes.length;
+    saveNotes();   // the notes key includes the file size, so carry the notes over to the new size
+    tuneSaved = clone(tune); updateEditBar();
+  } catch (e) { status(`Save failed: ${e && e.message || e}`); }
+}
+
+// TUNE entries changed since this file was opened and already written to it.
+function appliedTune() {
+  const out = [], a = film.tuneOrig || {}, b = tuneSaved;
+  for (const fmt of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    for (const id of new Set([...Object.keys(a[fmt] || {}), ...Object.keys(b[fmt] || {})])) {
+      const from = (a[fmt] || {})[id] || { dx: 0, dy: 0, s: 1 }, to = (b[fmt] || {})[id] || { dx: 0, dy: 0, s: 1 };
+      if (JSON.stringify(from) !== JSON.stringify(to)) out.push({ format: fmt, id, from, to });
+    }
+  }
+  return out;
+}
+
+/* ============ EXPORT: fix pack ============ */
+async function exportPack() {
+  if (!A || !notes.length) return;
+  stopPlay();
+  $('btnExport').disabled = true;
+  status('Building the fix pack…');
+  try {
+    const files = [], size = `${A.width}×${A.height}`;
+    const pinR = 0.03 * Math.min(A.width, A.height);
+    const tmp = Object.assign(document.createElement('canvas'), { width: A.width, height: A.height }), g = tmp.getContext('2d');
+    const fixes = notes.map((n, i) => {
+      const id = `fix-${pad2(i + 1)}`, sh = shotAt(n.t);
+      A.seek(n.t);
+      files.push({ path: `frames/${id}-clean.png`, data: pngBytes(A.canvas) });
+      g.drawImage(A.canvas, 0, 0);
+      if (n.nudge) { g.save(); g.setLineDash([12, 8]); g.lineWidth = 3; g.strokeStyle = ACCENT; g.strokeRect(...n.nudge.rect); g.restore(); }
+      drawPin(g, n.x, n.y, i + 1, pinR);
+      files.push({ path: `frames/${id}.png`, data: pngBytes(tmp) });
+      let nudgeOut = null;
+      if (n.nudge) {   // target mockup: clean frame, old spot hatched, the boxed pixels moved/scaled
+        const { rect: [x, y, w, h], dx, dy, s } = n.nudge;
+        g.drawImage(A.canvas, 0, 0); hatch(g, x, y, w, h, 14);
+        g.drawImage(A.canvas, x, y, w, h, x + w / 2 + dx - w * s / 2, y + h / 2 + dy - h * s / 2, w * s, h * s);
+        files.push({ path: `frames/${id}-after.png`, data: pngBytes(tmp) });
+        nudgeOut = { box: [x, y, w, h], dx, dy, s, after: `frames/${id}-after.png` };
+      }
+      const range = sh ? { from: sh.start, to: sh.end } : { from: Math.max(0, n.t - 1), to: Math.min(A.duration, n.t + 1) };
+      return {
+        n: i + 1, id, t: n.t, timecode: tc(n.t), frame: frameOf(n.t), shot: sh ? { id: sh.id, start: sh.start, end: sh.end } : null,
+        x: n.x, y: n.y, xPct: +(n.x / A.width * 100).toFixed(1), yPct: +(n.y / A.height * 100).toFixed(1),
+        note: n.text, rerender: range, image: `frames/${id}.png`, clean: `frames/${id}-clean.png`, nudge: nudgeOut,
+      };
+    });
+    dirty = true;   // the film canvas now shows the last fix; redraw the current frame
+    const data = {
+      schema: 'film-fix-v1',
+      film: { file: film.name, label: film.label, sha256: await sha256(film.bytes), duration: A.duration, fps: A.fps,
+              width: A.width, height: A.height, format: film.format || null },
+      created: new Date().toISOString(), applied: appliedTune(), fixes,
+    };
+    const enc = new TextEncoder();
+    files.unshift({ path: 'FIXES.md', data: enc.encode(fixesMd(data, size)) }, { path: 'fixes.json', data: enc.encode(JSON.stringify(data, null, 2)) });
+    if (film.dir) await writeToFolder(files, fixes.length);
+    else downloadZip(files, fixes.length);
+  } catch (e) {
+    status(`Export failed: ${e && e.message || e}`);
+  } finally { $('btnExport').disabled = !notes.length; }
+}
+
+function pngBytes(canvas) {
+  const bin = atob(canvas.toDataURL('image/png').split(',')[1]), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+}
+async function sha256(buf) {
+  if (!(window.crypto && crypto.subtle)) return 'unavailable';
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Written for an AI that has never heard of this tool or skill: it gets this file and index.html, nothing else.
+function fixesMd(d, size) {
+  const f = d.film, fmt = f.format ? ` --format ${f.format}` : '';
+  const L = [
+    `# Fix list for ${f.label}`, '',
+    '| | |', '|---|---|',
+    `| Film file | \`${f.file}\` |`,
+    `| sha256 of index.html | \`${f.sha256}\` |`,
+    `| Duration | ${f.duration} s at ${f.fps} fps (${Math.round(f.duration * f.fps)} frames) |`,
+    `| Size reviewed | ${size}${f.format ? ` (\`?w=${f.width}&h=${f.height}\`)` : ' (the film\'s default)'} |`,
+    `| Date | ${d.created.slice(0, 16).replace('T', ' ')} UTC |`,
+    `| Fixes | ${d.fixes.length} |`, '',
+    '## How to apply', '',
+    'The film is one self-contained `index.html` that draws every frame with code on a `<canvas>`. It follows the "code-animations" contract:', '',
+    '- It exposes `window.__anim = { duration, fps, width, height, canvas, ready, seek(t), renderAudio(), marks, shots }`.',
+    '- `seek(t)` draws the frame at time `t` (seconds) synchronously and is a pure function of `t`: everything on screen is computed from `t`. No state is carried between frames, there is no `Math.random()` (only seeded generators such as `rngFor(\'key\')`) and no `Date` or clock reads. Keep it that way.',
+    '- `shots` is a list of `{id, start, end}` in seconds. Scene times usually live in one timeline object (often `TL`) that both the picture and the sound read, so moving an event means changing the number there, not adding a delay.',
+    '- The size comes from `?w=&h=` in the URL. The positions below are film pixels at the reviewed size, measured from the top-left corner.', '',
+    'Rules:', '',
+    '1. Edit `index.html` surgically: change only what each fix asks for. No refactoring, restyling or re-timing of anything else. Every shot not named below stays exactly as it is.',
+    '2. Each fix has `frames/fix-NN.png` (the frame with the spot ringed and numbered) and `frames/fix-NN-clean.png` (the same frame without the mark). Look at both before editing.',
+    `3. After editing, check each fix by rendering only its range, from the folder that holds \`harness/\`: \`node harness/render.mjs index.html${fmt} --from <a> --to <b> --silent\` (adjust the path to index.html). Then run the full render.`,
+    '4. Report back per fix: what you changed and the line ranges in `index.html`. If a fix is unclear or conflicts with another one, say so instead of guessing.',
+    '5. A fix with a box ("Move what is inside box x,y,w×h by dx,dy px and scale ×s") is exact: move the drawing inside that box by dx/dy film pixels and scale it by s around the box centre. `fix-NN-after.png` is a rough mockup of the target (the old spot is hatched); match the numbers, not the mockup.', '',
+  ];
+  if (d.applied.length) {
+    L.push('## Already applied in index.html', '',
+      'These edits were made in the review tool and are already written into the `/*TUNE*/…/*END-TUNE*/` block of index.html. Do not apply them again. `TUNE[format][id] = {dx, dy, s}` moves an element by dx/dy canvas pixels and scales it by s around its centre, through the `E(id, box, draw)` wrapper.', '',
+      ...d.applied.map(a => `- \`${a.format} / ${a.id}\`: dx ${a.to.dx}, dy ${a.to.dy}, scale ${a.to.s} (was dx ${a.from.dx}, dy ${a.from.dy}, scale ${a.from.s})`), '');
+  }
+  for (const x of d.fixes) {
+    const shot = x.shot ? ` · shot ${x.shot.id} (${x.shot.start.toFixed(2)}–${x.shot.end.toFixed(2)} s)` : ' · no shot';
+    L.push(`## Fix ${pad2(x.n)} — ${x.timecode} · frame ${x.frame}${shot}`, '',
+      `- Time: ${x.t.toFixed(3)} s`,
+      `- Position: x=${x.x}, y=${x.y} of ${size} (${x.xPct.toFixed(1)}% from left, ${x.yPct.toFixed(1)}% from top)`,
+      `- Re-render to check: \`--from ${x.rerender.from.toFixed(2)} --to ${x.rerender.to.toFixed(2)}\``, '',
+      ...x.note.split('\n').map(l => `> ${l}`), '',
+      `![Fix ${pad2(x.n)} at ${x.timecode}](${x.image})`, '',
+      `Clean frame: [${x.clean}](${x.clean})`, '');
+    if (x.nudge) L.push(`Before: [${x.clean}](${x.clean}) · After (target mockup): ![Fix ${pad2(x.n)} after](${x.nudge.after})`, '');
+  }
+  return L.join('\n');
+}
+
+async function writeToFolder(files, count) {
+  const dir = film.dir;
+  if ((await dir.queryPermission({ mode: 'readwrite' })) !== 'granted' && (await dir.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+    throw new Error('no write permission for the film folder');
+  }
+  const out = await dir.getDirectoryHandle('fixes', { create: true });
+  // a pack with fewer fixes must not leave old fix-NN frames behind
+  try { await out.removeEntry('frames', { recursive: true }); } catch (e) { /* first export: nothing to remove */ }
+  for (const f of files) {
+    const parts = f.path.split('/'); let d = out;
+    for (const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p, { create: true });
+    const w = await (await d.getFileHandle(parts[parts.length - 1], { create: true })).createWritable();
+    await w.write(f.data); await w.close();
+  }
+  status(`Wrote ${files.length} files to ${dir.name}/fixes/: FIXES.md, fixes.json and ${count * 2} frames. Give that folder and index.html to any AI.`);
+}
+
+/* ============ ZIP: store-only writer ============ */
+// Uncompressed ZIP is ~40 lines and needs no library; PNGs barely compress anyway.
+const CRC_TABLE = (() => {
+  const tb = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; tb[n] = c >>> 0; }
+  return tb;
+})();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+
+function zipBlob(files) {
+  const enc = new TextEncoder(), parts = [], central = [], d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.path), crc = crc32(f.data), size = f.data.length;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);   // 0x0800 = UTF-8 names
+    h.setUint16(10, time, true); h.setUint16(12, date, true); h.setUint32(14, crc, true);
+    h.setUint32(18, size, true); h.setUint32(22, size, true); h.setUint16(26, name.length, true);
+    parts.push(h, name, f.data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true);
+    c.setUint32(20, size, true); c.setUint32(24, size, true); c.setUint16(28, name.length, true); c.setUint32(42, offset, true);
+    central.push(c, name);
+    offset += 30 + name.length + size;
+  }
+  const cdSize = central.reduce((s, p) => s + p.byteLength, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, cdSize, true); e.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, e], { type: 'application/zip' });
+}
+
+function downloadZip(files, count) {
+  const name = `fixes-${film.name.replace(/\.html?$/i, '')}.zip`;
+  // entries sit under fixes/ so unzipping next to index.html gives the same layout as a folder export
+  const url = URL.createObjectURL(zipBlob(files.map(f => ({ path: `fixes/${f.path}`, data: f.data }))));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  status(`Downloaded ${name}: FIXES.md, fixes.json and ${count * 2} frames. Unzip it next to index.html (use "Open film folder" to write there directly).`);
+}
+
+/* ============ INPUT: files, drop, keys, wheel, clicks ============ */
+if (!window.showDirectoryPicker) $('btnFolder').hidden = true;
+$('btnFolder').onclick = async () => {
+  try {
+    const dir = await showDirectoryPicker({ mode: 'readwrite', id: 'film-fix' });
+    await openFile(await (await dir.getFileHandle('index.html')).getFile(), dir);
+  } catch (e) {
+    if (e.name !== 'AbortError') status(e.name === 'NotFoundError' ? 'That folder has no index.html.' : `Could not open the folder: ${e.message}`);
+  }
+};
+$('inFile').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) openFile(f, null); };
+$('inAudio').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { status(`Decoding ${f.name}…`); await setBuffer(await f.arrayBuffer(), 'file'); status(`Sound: ${f.name} (${auState.bufferDuration.toFixed(2)} s).`); }
+  catch (err) { status(`Could not decode ${f.name}. Use WAV, MP3 or M4A.`); }
+};
+$('selFormat').onchange = e => { film.format = e.target.value; if (film.bytes) loadFilm(); };
+$('btnExport').onclick = exportPack;
+$('btnPlay').onclick = () => (playing ? stopPlay() : play());
+$('btnMute').onclick = toggleMute;
+
+const screen = $('screen');
+addEventListener('dragover', e => { e.preventDefault(); screen.classList.add('drop'); });
+addEventListener('dragleave', e => { if (!e.relatedTarget) screen.classList.remove('drop'); });
+addEventListener('drop', e => {
+  e.preventDefault(); screen.classList.remove('drop');
+  const f = e.dataTransfer.files[0]; if (f) openFile(f, null);
+});
+
+// Click on the frame: pause and drop a pin in film pixels.
+$('view').addEventListener('click', e => {
+  if (!A || editMode) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  const x = Math.round(clamp((e.clientX - r.left) / r.width, 0, 1) * A.width);
+  const y = Math.round(clamp((e.clientY - r.top) / r.height, 0, 1) * A.height);
+  stopPlay();
+  openEditor({ t, x, y, text: '' }, true);
+});
+
+$('editor').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = $('edText').value.trim();
+  if (!text) return $('edText').focus();
+  editing.note.text = text;
+  if (editing.isNew) notes.push(editing.note);
+  closeEditor(); commitNotes();
+});
+$('edCancel').onclick = closeEditor;
+
+// Edit mode on the frame. The grab offset is stored on pointerdown, so a press without a move changes nothing.
+$('view').addEventListener('pointerdown', e => {
+  if (!A || !editMode) return;
+  e.preventDefault(); stopPlay(); closeEditor(); resumeAudio();
+  const p = toFilm(e), box = selBox();
+  if (box && onHandle(p, box)) drag = { kind: 'scale', p, v: cur(), c: [box[0] + box[2] / 2, box[1] + box[3] / 2] };
+  else if (nudge && box && inBox(p, box)) drag = { kind: 'move', p, v: cur() };
+  else if (hooks()) {
+    const el = elementAt(p); sel = el ? el.id : null;
+    drag = el ? { kind: 'move', p, v: cur() } : null;
+    dirty = true; updateEditBar();
+  } else { nudge = null; drag = { kind: 'box', p }; updateEditBar(); }
+  if (drag) e.currentTarget.setPointerCapture(e.pointerId);
+});
+$('view').addEventListener('pointermove', e => {
+  if (!A || !editMode) return;
+  const p = toFilm(e);
+  if (!drag) {
+    const el = hooks() && elementAt(p), id = el ? el.id : null;
+    if (id !== hover) { hover = id; dirty = true; }
+    return;
+  }
+  if (drag.kind === 'move') setCur({ ...drag.v, dx: drag.v.dx + p[0] - drag.p[0], dy: drag.v.dy + p[1] - drag.p[1] });
+  else if (drag.kind === 'scale') {
+    const dist = q => Math.hypot(q[0] - drag.c[0], q[1] - drag.c[1]);
+    setCur({ ...drag.v, s: drag.v.s * dist(p) / Math.max(1, dist(drag.p)) });
+  } else { drag.q = p; dirty = true; }
+});
+$('view').addEventListener('pointerup', () => {
+  if (drag && drag.kind === 'box' && drag.q) startNudge(drag.p, drag.q);
+  drag = null; if (A) dirty = true;
+});
+$('btnEdit').onclick = toggleEdit;
+for (const [id, key] of [['ebDx', 'dx'], ['ebDy', 'dy'], ['ebS', 's']]) {
+  $(id).addEventListener('input', e => { const v = parseFloat(e.target.value); if (cur() && Number.isFinite(v)) setCur({ ...cur(), [key]: v }); });
+}
+$('ebReset').onclick = () => setCur({ dx: 0, dy: 0, s: 1 });
+$('ebResetAll').onclick = () => { tune = {}; A.tune = tune; dirty = true; updateEditBar(); };
+$('ebSave').onclick = saveTune;
+$('ebNote').onclick = nudgeNote;
+$('edDelete').onclick = () => { notes = notes.filter(n => n !== editing.note); closeEditor(); commitNotes(); };
+
+// Timeline drag scrubs; it moves the page scroll too, via setT.
+$('timeline').addEventListener('pointerdown', e => {
+  if (!A) return;
+  const el = e.currentTarget; el.setPointerCapture(e.pointerId); stopPlay(); resumeAudio();
+  const go = ev => { const r = el.getBoundingClientRect(); setT(clamp((ev.clientX - r.left) / r.width, 0, 1) * A.duration); };
+  go(e);
+  el.onpointermove = go;
+  el.onpointerup = el.onpointercancel = () => { el.onpointermove = el.onpointerup = el.onpointercancel = null; };
+});
+
+addEventListener('keydown', e => {
+  resumeAudio();
+  if (e.target.closest('textarea, input, select')) { if (e.key === 'Escape' && editing) closeEditor(); return; }
+  if (!A) return;
+  if (e.key === 'e' || e.key === 'E') return toggleEdit();
+  if (editMode && cur()) {   // with something selected, arrows / + − edit it instead of moving time
+    const step = e.shiftKey ? 10 : 1, c = cur(), move = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    if (move) { e.preventDefault(); return setCur({ ...c, dx: c.dx + move[0], dy: c.dy + move[1] }); }
+    if (e.key === '+' || e.key === '=') return setCur({ ...c, s: c.s + 0.01 });
+    if (e.key === '-' || e.key === '_') return setCur({ ...c, s: c.s - 0.01 });
+    if (e.key === 'Enter' && nudge) { e.preventDefault(); return nudgeNote(); }
+    if (e.key === 'Escape') { sel = nudge = null; dirty = true; return updateEditBar(); }
+  }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (e.target.closest('button')) e.target.blur();   // otherwise the focused button also "clicks" on keyup
+    playing ? stopPlay() : play();
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    e.preventDefault(); stopPlay();
+    const step = e.shiftKey ? 1 : 1 / A.fps;
+    setT(t + (e.key === 'ArrowRight' ? step : -step));
+  } else if (e.key === 'm' || e.key === 'M') toggleMute();
+  else if (e.key === 'Escape' && editing) closeEditor();
+});
+
+// While a note is being written, the wheel belongs to the textarea and must not scrub the film.
+addEventListener('wheel', e => {
+  resumeAudio();
+  const ta = $('edText');
+  if (document.activeElement !== ta) return;
+  e.preventDefault();
+  if (ta.contains(e.target)) ta.scrollTop += e.deltaY;
+}, { passive: false });
+addEventListener('pointerdown', resumeAudio);
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('resize', () => { if (A) { layoutTrack(); setT(t); } });
+new ResizeObserver(fitView).observe(screen);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

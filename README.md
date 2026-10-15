@@ -21,7 +21,8 @@ The historical `https://artifacts.burooj.dev/model-tasting/` proof route was ret
 - **Cook** — the action that requests execution.
 - **Run** — one private operational attempt to execute one Recipe Revision under an exact requested model configuration.
 - **Dish** — one immutable accepted artifact and public-safe receipt produced by a successful Run.
-- **Repeat** — the derived relationship between Dishes sharing the same Recipe Revision and exact requested configuration.
+- **Skill** — a pinned public workflow source that a Recipe can be cooked through; "without skill" is itself a layer. See [the product model](docs/product-model.md#skill-and-skill-revision).
+- **Repeat** — the derived relationship between Dishes sharing the same Recipe Revision, exact requested configuration and skill layer.
 - **Tasting** — the human activity and public surface for inspecting and comparing Dishes.
 
 **Domain**, **Flight**, and **Collection** are retired product terms. The catalog and gallery use Cuisines, exact Recipe/Menu Revisions, and derived Repeats. See the canonical [product model](docs/product-model.md) for the complete language, invariants, scenario checks, and v1 boundary.
@@ -69,6 +70,9 @@ node bin/taste.mjs plan --config codex-sol-high --menu visual-ui --json
 # Dry-run by default
 node bin/taste.mjs cook --config codex-sol-high --menu visual-ui --intent fill-missing --json
 
+# Cook the same recipe through a skill layer; each layer is its own coverage cell
+node bin/taste.mjs plan --config codex-sol-high --recipe heavy-little-suitcase --skill hand-drawn --json
+
 # A real model run requires both an explicit flag and environment opt-in
 TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
   --config codex-sol-high \
@@ -89,7 +93,7 @@ Motion is cross-cutting:
 
 - **UI & Visual** — expressive, SVG, scroll, and compositional motion;
 - **UX & Interaction** — gesture, causality, state feedback, recovery, and reduced-motion meaning;
-- **Music & Creative Code** — BPM-synchronized, audio-reactive, and voice-specific motion.
+- **Music & Creative Code** — BPM-synchronized, audio-reactive, and voice-specific motion, plus the [animation and lyric-video recipes](docs/animation-recipes.md) that can be viewed through skill layers.
 
 ## Safety and interpretation
 

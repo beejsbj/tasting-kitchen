@@ -15,9 +15,10 @@ It helps a person develop an impression of recurring tendencies or “fingerprin
 ```text
 Cuisine classifies Recipes
 Menu selects Recipe identities
-Cook(Menu, model configurations)
+Skill is an optional layer a Recipe can be cooked through
+Cook(Menu, model configurations, skill layer)
   -> Menu Revision pins exact Recipe Revisions
-  -> one Run per selected Recipe Revision × requested configuration
+  -> one Run per selected Recipe Revision × requested configuration × skill layer
   -> each successful accepted Run produces one immutable Dish
 Tasting presents matching Dishes through Recipe, Menu, Cuisine, and model views
 ```
@@ -109,8 +110,9 @@ Accepted Dishes are never overwritten or rebound to later Recipe Revisions. Revi
 
 A derived relationship, not a separate entity. Dishes are Repeats when they share:
 
-- the same Recipe Revision; and
-- the same exact requested model configuration.
+- the same Recipe Revision;
+- the same exact requested model configuration; and
+- the same skill layer, including the absence of one.
 
 Repeat groups are ordered deterministically by execution time and then Dish ID. They require no stored `repeatIndex`, group identifier, or mutable counter.
 
@@ -129,6 +131,20 @@ The public model view is faceted rather than hierarchical. A visitor may start w
 The exact requested configuration remains part of Dish identity and Repeat grouping. It includes every requested dimension capable of changing the result, such as provider, model, harness, reasoning effort, service tier, and execution profile. Requested and observed identity are recorded separately, and drift is disclosed.
 
 Multi-harness execution is post-v1. When it arrives, the same model used through two harnesses represents two configurations and does not form a Repeat.
+
+### Skill and Skill Revision
+
+A **Skill** is a pinned, public workflow source (a `SKILL.md` with its references, assets and scripts) that Kitchen can mount into a Run's workspace. It is guidance for the model, not the toolchain: engines, browsers, encoders and fonts are Kitchen-supplied and identical across layers. The catalog lists Skills in `catalog/skills.json` with their mounted files under `catalog/skills/<id>/files/`.
+
+A Recipe declares which Skills it can be cooked through and where they mount (`skills: { mountAs, optional, layers }`). The mount path and whether a Run may proceed without a layer are execution-affecting and part of the Recipe Revision; the list of offered layers is catalog metadata, so offering another layer later does not change what earlier models saw. The brief is written skill-neutral: it says what to do if a skill is mounted and what to do if not.
+
+A **Skill Revision** is the immutable identity of one layer: its source pin plus the hash of the exact mounted bytes. It is frozen before the first Run that uses it and recorded on the Dish as `skill: { id, hash }`. A Dish without `skill` was cooked **without skill**, which is a real layer and usually the most informative one. The catalog tree for a frozen Skill must keep matching its revision while any Dish references it; a changed upstream pin is a new Skill Revision.
+
+Skill is a third comparison axis beside Recipe Revision and configuration. Within one Recipe Revision, holding the model constant and changing the layer shows what the skill adds; holding the layer constant and changing the model shows the model. Kitchen never attributes a difference to the skill alone.
+
+### Visibility
+
+A Recipe is public by default. A Recipe with `visibility: "private"` may carry fixtures marked `public: false`, whose bytes live under the ignored `private/fixtures/<recipeId>/` tree and never enter a Recipe Revision; the revision records only their hashes. Its Dishes are accepted, immutable and validated like public Dishes but are written to `private/dishes/` and never staged for the gallery. Private Recipes exist for material Burooj cares about that cannot be published, such as a copyrighted recording. A private Recipe can be cooked and compared locally; it cannot appear on the public counter.
 
 ## Recipe lineage
 
@@ -234,6 +250,10 @@ The Recipe carries multiple Cuisine values. Cuisine remains filtering metadata; 
 ### A known preference in the initial brief
 
 The preference is part of the Recipe Revision sent identically to every requested configuration. Its lineage is Mother's or Hybrid depending on whether the Recipe is personal in origin or a personalized baseline.
+
+### The same Recipe through skill layers
+
+The same Recipe Revision and configuration are cooked once without a skill and once per offered layer. Each cell is its own Repeat group. The Recipe page lets a viewer hold the model and switch layers, or hold the layer and switch models. A cell with no Dish stays visibly empty.
 
 ### A correction turn retained to taste adaptation
 
