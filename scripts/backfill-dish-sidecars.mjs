@@ -48,7 +48,7 @@ for (const trees of ["dishes", path.join("private", "dishes")]) {
     await writeDishSidecars(directory, {
       recipe: { id: dish.recipe.id, recipeHash: dish.recipe.hash },
       fixtures,
-      receipt: { schemaVersion: 1, configuration: configuration.configuration, skill: null },
+      receipt: { schemaVersion: 1, configuration: { ...configuration.configuration, configHash: configuration.hash }, skill: null },
     });
     const problems = await verifyInputs(directory, await readJson(path.join(directory, INPUTS_MANIFEST)));
     if (problems.length) throw new Error(`${dish.id}: ${problems.join("; ")}`);
