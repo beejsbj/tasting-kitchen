@@ -37,17 +37,6 @@ export type Skill = {
   skillHash: string;
 };
 
-export type SkillRevision = {
-  schemaVersion: 1;
-  skillId: string;
-  hash: string;
-  source: Skill["source"];
-  entry: string;
-  treeHash: string;
-  fileCount: number;
-  display: { label: string; summary: string };
-};
-
 export type RecipeSkills = { mountAs: string; optional: boolean; layers: string[] };
 
 export type RecipeTurn = {
@@ -127,7 +116,13 @@ export type Dish = {
   publicTrace?: string;
   dishHash: string;
   artifactBase: string;
+  /** What the model received, from the Dish's own inputs.json. Absent for a Dish published before sidecars. */
+  inputs?: { fixtures: DishInput[] };
+  /** The full configuration and skill source the Dish ran as, from receipt.json. */
+  receipt?: { schemaVersion: 1; configuration: Configuration; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
 };
+
+export type DishInput = { id: string; path: string; mountAs: string; public: boolean; editable: boolean; mediaType?: string; sha256: string; bytes: number; url?: string };
 
 export type ReviewVerdict = "pass" | "issue" | "inconclusive";
 
@@ -207,30 +202,20 @@ export type TasteObservation = {
 };
 
 export type Registry = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   generatedAt: string;
   basePath: string;
   cuisines: Cuisine[];
   tags: string[];
   configurations: Configuration[];
-  configurationRevisions?: Array<{ schemaVersion: 1; hash: string; configuration: Configuration }>;
   skills?: Skill[];
-  skillRevisions?: SkillRevision[];
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
   axisSets: AxisSet[];
   observations: TasteObservation[];
-  recipeRevisions: RecipeRevision[];
   menus: Menu[];
-  menuRevisions: MenuRevision[];
 };
 
 export type Variant = Configuration;
-export type RecipeRevision = {
-  recipeId: string; hash: string; version: string;
-  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation" | "skills">;
-  display: { title: string; summary: string; lineage: Recipe["origin"]; cuisines: string[] };
-};
 export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };
-export type MenuRevision = { menuId: string; hash: string; title: string; cuisines: string[]; recipes: Array<{ recipeId: string; recipeHash: string }> };

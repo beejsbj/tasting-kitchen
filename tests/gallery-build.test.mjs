@@ -14,7 +14,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   ]);
   assert.match(html, /<title>Tasting Kitchen<\/title>/);
   assert.match(html, /\/assets\//);
-  assert.equal(registry.schemaVersion, 2);
+  assert.equal(registry.schemaVersion, 3);
   assert.equal(registry.cuisines.length, 9);
   assert.equal(registry.configurations.length, 9);
   assert.equal(registry.recipes.length, 17);
@@ -33,9 +33,9 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.equal(registry.axisSets.length, 2);
   assert.equal(registry.observations.length, 1);
   assert.equal(registry.observations[0].source.kind, "jev");
-  assert.equal(registry.recipeRevisions.length, 17);
+  for (const gone of ["recipeRevisions", "configurationRevisions", "skillRevisions", "menuRevisions"]) assert.equal(registry[gone], undefined, gone);
+  assert.ok(registry.dishes.every((dish) => dish.inputs && dish.receipt), "every published Dish carries its input and receipt sidecars");
   assert.equal(registry.menus.length, 5);
-  assert.equal(registry.menuRevisions.length, 5);
   assert.equal(recipeBook.recipes.length, 17);
   assert.equal(recipeBook.archivedCount, 54);
   const webRecipes = recipeBook.recipes.filter((entry) => entry.recipe.kind === "web");
@@ -68,7 +68,6 @@ test("the built site publishes only active Dishes and their selected public arti
   assert.equal(activeRecipeIds.size, 17);
   assert.equal(registry.dishes.length, 27);
   assert.ok(registry.dishes.every((dish) => activeRecipeIds.has(dish.recipe.id)));
-  assert.ok(registry.recipeRevisions.every((revision) => activeRecipeIds.has(revision.recipeId)));
-  assert.ok(registry.menuRevisions.every((menu) => menu.recipes.every((recipe) => activeRecipeIds.has(recipe.recipeId))));
+  assert.ok(registry.menus.every((menu) => menu.recipes.every((recipeId) => activeRecipeIds.has(recipeId))));
   assert.ok(registry.dishes.every((dish) => dish.artifact.files.every((file) => !/^(?:fixtures|private)\//u.test(file.path))));
 });
