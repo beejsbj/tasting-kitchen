@@ -33,11 +33,12 @@ export type Skill = {
   label: string;
   summary: string;
   entry: string;
+  delivery?: "workspace" | "prompt";
   source: { repository: string; commit: string; path: string; license: string };
   skillHash: string;
 };
 
-export type RecipeSkills = { mountAs: string; optional: boolean; layers: string[] };
+export type RecipeSkills = { mountAs?: string; optional: boolean; layers: string[] };
 
 export type RecipeTurn = {
   id: string;

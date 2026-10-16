@@ -186,7 +186,7 @@
     "skills": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mountAs", "optional", "layers"],
+      "required": ["optional", "layers"],
       "properties": {
         "mountAs": { "$ref": "#/$defs/relativePath" },
         "optional": { "type": "boolean" },

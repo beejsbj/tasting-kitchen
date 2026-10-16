@@ -50,7 +50,8 @@ const publicLeakPatterns = [
 
 const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
 const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
-const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source"]);
+const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source", "delivery"]);
+const allowedSkillDeliveries = new Set(["workspace", "prompt"]);
 const SKILL_SOURCE_KEYS = new Set(["repository", "commit", "path", "license"]);
 const allowedVisibilities = new Set(["public", "private"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
@@ -336,7 +337,8 @@ async function validateSkills(doc) {
     const item = `${label}.skills[${index}]`;
     if (!object(skill, item)) continue;
     onlyKeys(skill, SKILL_KEYS, item);
-    required(skill, [...SKILL_KEYS], item);
+    required(skill, ["id", "label", "summary", "entry", "source"], item);
+    if (skill.delivery !== undefined) enumValue(skill.delivery, allowedSkillDeliveries, `${item}.delivery`);
     string(skill.id, `${item}.id`, { pattern: IDS });
     if (skill.id === "none") fail(item, "none is reserved for the absent layer");
     string(skill.label, `${item}.label`, { min: 3, max: 100 });
@@ -459,8 +461,8 @@ async function validateRecipe(relative, cuisines, tags, skills) {
 
   if (recipe.skills !== undefined && object(recipe.skills, `${relative}.skills`)) {
     onlyKeys(recipe.skills, SKILLS_CONTRACT_KEYS, `${relative}.skills`);
-    required(recipe.skills, ["mountAs", "optional", "layers"], `${relative}.skills`);
-    if (safeRelative(recipe.skills.mountAs, `${relative}.skills.mountAs`)) {
+    required(recipe.skills, ["optional", "layers"], `${relative}.skills`);
+    if (recipe.skills.mountAs !== undefined && safeRelative(recipe.skills.mountAs, `${relative}.skills.mountAs`)) {
       for (const mountPath of mountedFixtures.keys()) {
         if (mountPath === recipe.skills.mountAs || mountPath.startsWith(`${recipe.skills.mountAs}/`)) fail(`${relative}.skills.mountAs`, `collides with fixture mount ${mountPath}`);
       }

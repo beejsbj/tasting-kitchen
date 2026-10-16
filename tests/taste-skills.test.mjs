@@ -42,7 +42,10 @@ async function fixture() {
   await json(path.join(root, "catalog/skills.json"), { schemaVersion: 1, skills: [
     { id: "hand-drawn", label: "Hand-drawn", summary: "Whole drawings and poses.", entry: "SKILL.md", source: { repository: "https://example.invalid/tools", commit: "a".repeat(40), path: "skills/hand-drawn", license: "MIT" } },
     { id: "procedural", label: "Procedural", summary: "Beat grids and props.", entry: "SKILL.md", source: { repository: "https://example.invalid/procedural", commit: "b".repeat(40), path: ".", license: "MIT" } },
+    { id: "quiet-soul", label: "Quiet soul", summary: "A shared public soul delivered in the prompt.", entry: "SOUL.md", delivery: "prompt", source: { repository: "https://example.invalid/souls", commit: "c".repeat(40), path: "quiet", license: "CC0" } },
   ] });
+  await mkdir(path.join(root, "catalog/skills/quiet-soul/files"), { recursive: true });
+  await writeFile(path.join(root, "catalog/skills/quiet-soul/files/SOUL.md"), "# Quiet soul\nSay less. Ask one thing.\n");
   await mkdir(path.join(root, "catalog/skills/hand-drawn/files/assets"), { recursive: true });
   await writeFile(path.join(root, "catalog/skills/hand-drawn/files/SKILL.md"), "# Hand-drawn\nDraw whole cels.\n");
   await writeFile(path.join(root, "catalog/skills/hand-drawn/files/assets/core.js"), "export const cel = 1;\n");
@@ -50,6 +53,7 @@ async function fixture() {
   await writeFile(path.join(root, "catalog/skills/procedural/files/SKILL.md"), "# Procedural\n");
   const layered = recipeDefinition("layered-film", { skills: { mountAs: "skill", optional: true, layers: ["hand-drawn"] } });
   const plain = recipeDefinition("plain-film");
+  const talk = recipeDefinition("quiet-talk", { harness: { workspace: "read", web: "disabled", capabilities: [] }, skills: { optional: true, layers: ["quiet-soul"] } });
   const privateRecipe = recipeDefinition("private-song", {
     visibility: "private",
     skills: { mountAs: "skill", optional: true, layers: ["hand-drawn"] },
@@ -58,7 +62,7 @@ async function fixture() {
       { id: "excerpt", path: "excerpt.txt", mountAs: "inputs/excerpt.txt", public: false, mediaType: "text/plain" },
     ] },
   });
-  for (const recipe of [layered, plain, privateRecipe]) {
+  for (const recipe of [layered, plain, talk, privateRecipe]) {
     await json(path.join(root, "catalog/recipes/talk", recipe.id, "recipe.json"), recipe);
     await mkdir(path.join(root, "catalog/recipes/talk", recipe.id, "fixtures"), { recursive: true });
     await writeFile(path.join(root, "catalog/recipes/talk", recipe.id, "fixtures/brief.md"), `# ${recipe.id}\n`);
@@ -87,7 +91,9 @@ test("skills load from the catalog with a stable hash over source and mounted by
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const skills = await loadSkills(f.root);
-  assert.deepEqual(skills.map((skill) => skill.id), ["hand-drawn", "procedural"]);
+  assert.deepEqual(skills.map((skill) => skill.id), ["hand-drawn", "procedural", "quiet-soul"]);
+  assert.equal(skills[2].delivery, "prompt");
+  assert.match(skills[2].promptText, /Say less/);
   assert.match(skills[0].skillHash, /^sha256:[a-f0-9]{64}$/);
   assert.equal(skills[0].files.length, 2);
   const again = await loadSkills(f.root);
@@ -95,7 +101,7 @@ test("skills load from the catalog with a stable hash over source and mounted by
   await writeFile(path.join(f.root, "catalog/skills/hand-drawn/files/SKILL.md"), "# Hand-drawn\nChanged.\n");
   assert.notEqual((await loadSkills(f.root))[0].skillHash, skills[0].skillHash);
   const catalog = await loadCatalog(f.root);
-  assert.equal(catalog.skills.length, 2);
+  assert.equal(catalog.skills.length, 3);
   assert.match(catalog.catalogHash, /^sha256:/);
 });
 
@@ -123,6 +129,15 @@ test("planning refuses layers a recipe does not offer and keeps the brief hash i
     return loadCatalog(f.root);
   });
   assert.equal(widened.recipes.find((item) => item.id === "layered-film").recipeHash, recipe.recipeHash);
+  // Declaring layers on a recipe that had none is also not a brief change.
+  const plain = catalog.recipes.find((item) => item.id === "plain-film");
+  const declared = await (async () => {
+    const definition = JSON.parse(await readFile(path.join(f.root, "catalog/recipes/talk/plain-film/recipe.json"), "utf8"));
+    definition.skills = { optional: true, layers: ["hand-drawn"] };
+    await json(path.join(f.root, "catalog/recipes/talk/plain-film/recipe.json"), definition);
+    return loadCatalog(f.root);
+  })();
+  assert.equal(declared.recipes.find((item) => item.id === "plain-film").recipeHash, plain.recipeHash);
 });
 
 test("a layered run mounts the exact skill bytes and records the layer on the dish and in its receipt", async (t) => {
@@ -175,7 +190,7 @@ test("a layered run mounts the exact skill bytes and records the layer on the di
   assert.notEqual(plainDish.dishHash, dish.dishHash);
 
   const registry = (await buildRegistry({ repoRoot: f.root })).registry;
-  assert.equal(registry.skills.length, 2);
+  assert.equal(registry.skills.length, 3);
   assert.equal(registry.skillRevisions, undefined);
   assert.equal(registry.dishes.length, 2);
   const layered = registry.dishes.find((item) => item.skill);
@@ -265,4 +280,38 @@ test("a private recipe keeps its bytes and dishes outside the public tree", asyn
   assert.deepEqual(missing.missingPrivateFixtures, ["excerpt"]);
   const plan = planSelection(absent, { configurationId: "codex-sol-high", recipeIds: ["private-song"] });
   assert.match(plan.unsupported[0].reasons.join(" "), /private fixtures are absent/);
+});
+
+test("a prompt-delivered skill rides inside the first turn, mounts nothing, and is recorded like any layer", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const catalog = await loadCatalog(f.root);
+  const soul = catalog.skills.find((skill) => skill.id === "quiet-soul");
+  let seenTurn;
+  const result = await executeRecipe(runOptions(f, catalog, "quiet-talk", {
+    skill: soul, nonce: "soul",
+    runSession: async ({ recipe, workspace }) => {
+      seenTurn = recipe.turns[0].content;
+      await assert.rejects(readdir(path.join(workspace, "skill")), /ENOENT/);
+      await json(path.join(workspace, "output/session.json"), { ok: true });
+      return session();
+    },
+  }));
+  assert.equal(result.status, "accepted", result.error);
+  assert.match(seenTurn, /^A skill layer is supplied with this task/);
+  assert.match(seenTurn, /Say less\. Ask one thing\./);
+  assert.match(seenTurn, /Make the film\.$/);
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.deepEqual(dish.skill, { id: "quiet-soul", hash: soul.skillHash });
+  assert.equal(dish.recipe.hash, catalog.recipes.find((recipe) => recipe.id === "quiet-talk").recipeHash);
+  const trace = JSON.parse(await readFile(path.join(result.dishDirectory, "trace.json"), "utf8"));
+  assert.match(trace.turns[0].prompt, /Say less/);
+  const requested = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "requested.json"), "utf8"));
+  assert.equal(requested.skill.delivery, "prompt");
+  assert.equal("mountAs" in requested.skill, false);
+  const bare = await executeRecipe(runOptions(f, catalog, "quiet-talk", {
+    nonce: "bare",
+    runSession: async ({ recipe, workspace }) => { assert.equal(recipe.turns[0].content, "Make the film."); await json(path.join(workspace, "output/session.json"), { ok: true }); return session(); },
+  }));
+  assert.equal(bare.status, "accepted", bare.error);
 });
