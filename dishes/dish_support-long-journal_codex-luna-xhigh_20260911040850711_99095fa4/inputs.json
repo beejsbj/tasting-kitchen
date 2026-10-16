@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "support-long-journal",
+    "hash": "sha256:e733e871dab2c78b3a1247ef3eed01b8b091b865524adb638233364bc4819365"
+  },
+  "fixtures": []
+}

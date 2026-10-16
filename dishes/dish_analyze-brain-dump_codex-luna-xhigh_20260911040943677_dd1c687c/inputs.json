@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "analyze-brain-dump",
+    "hash": "sha256:16220cbce7273b209c87d34ad2433f3e73210ed79898da718bbbeb775e07169f"
+  },
+  "fixtures": []
+}

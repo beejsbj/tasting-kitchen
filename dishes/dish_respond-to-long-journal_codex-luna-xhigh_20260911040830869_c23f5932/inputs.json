@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "respond-to-long-journal",
+    "hash": "sha256:ab6226909ac137c214306d1b0999dff9c3b5269a5529fe31095f6cdabeb9ab8c"
+  },
+  "fixtures": []
+}

@@ -1,0 +1,54 @@
+{
+  "product": "Conduit Market",
+  "sourceSnapshot": {
+    "repository": "https://github.com/beejsbj/conduit-market-client",
+    "branch": "portfolio/showcase-2025",
+    "commit": "6c3de0c9b493b5b00e231e08c4d95a753183d268"
+  },
+  "contexts": [
+    {
+      "id": "listing",
+      "need": "Present a market listing with its sats price, seller and a compact provenance cue."
+    },
+    {
+      "id": "saved",
+      "need": "Show the same listing when a buyer has saved it, with a quiet action."
+    },
+    {
+      "id": "inspection",
+      "need": "Let a buyer inspect three local provenance samples and read their state in text."
+    }
+  ],
+  "listing": {
+    "title": "Hand-thrown violet cup",
+    "seller": "Juniper Works",
+    "priceSats": 21000,
+    "samples": [
+      {
+        "id": "signed",
+        "label": "Signed listing",
+        "detail": "Signed by Juniper Works · local sample",
+        "state": "verified"
+      },
+      {
+        "id": "relayed",
+        "label": "Relayed listing",
+        "detail": "Received from a selected relay · local sample",
+        "state": "current"
+      },
+      {
+        "id": "cached",
+        "label": "Cached listing",
+        "detail": "Saved browser sample · review before purchase",
+        "state": "review"
+      }
+    ]
+  },
+  "extensionBrief": {
+    "feature": "Listing provenance inspector",
+    "behavior": "Provide a keyboard-operable selector for the three supplied samples. Selecting a sample must update visible label, detail and a text state. This is local sample state only: do not make relay, account, inventory or payment requests.",
+    "placement": "Render the live feature in the inspection context and show its states and public API alongside the adapted primitives in the styleguide.",
+    "boundary": "The evidence establishes Conduit's token roles, voice scale, tabs, button variants and compact Badge treatment. It does not establish that a new shared provenance primitive is warranted. Keep the feature local unless the cook can give concrete evidence for promotion; do not manufacture a prune or promotion decision."
+  },
+  "adaptationBoundary": "fixtures/upstream/ is an immutable React/TypeScript and Tailwind reference snapshot. static-web-v1 has no React, Wouter, Tailwind build or upstream dependency runtime. Port the supplied language into plain browser JavaScript and CSS under src/; do not claim the snapshot itself executes."
+}

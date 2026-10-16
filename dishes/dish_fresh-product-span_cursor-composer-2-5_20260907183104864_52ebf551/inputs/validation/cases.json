@@ -1,0 +1,5606 @@
+[
+  {
+    "label": "estimate vector 1",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 14800,
+      "shippingCents": 1800,
+      "totalCents": 16600
+    }
+  },
+  {
+    "label": "estimate vector 2",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 17200,
+      "shippingCents": 1800,
+      "totalCents": 19000
+    }
+  },
+  {
+    "label": "estimate vector 3",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 2,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 29600,
+      "shippingCents": 0,
+      "totalCents": 29600
+    }
+  },
+  {
+    "label": "estimate vector 4",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 2,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 34400,
+      "shippingCents": 0,
+      "totalCents": 34400
+    }
+  },
+  {
+    "label": "estimate vector 5",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 3,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "insufficient-stock",
+      "merchandiseCents": 44400,
+      "shippingCents": 0,
+      "totalCents": 44400
+    }
+  },
+  {
+    "label": "estimate vector 6",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 3,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "insufficient-stock",
+      "merchandiseCents": 51600,
+      "shippingCents": 0,
+      "totalCents": 51600
+    }
+  },
+  {
+    "label": "estimate vector 7",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 14800,
+      "shippingCents": 1800,
+      "totalCents": 16600
+    }
+  },
+  {
+    "label": "estimate vector 8",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 1,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 17200,
+      "shippingCents": 1800,
+      "totalCents": 19000
+    }
+  },
+  {
+    "label": "estimate vector 9",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 2,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 29600,
+      "shippingCents": 0,
+      "totalCents": 29600
+    }
+  },
+  {
+    "label": "estimate vector 10",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 2,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 34400,
+      "shippingCents": 0,
+      "totalCents": 34400
+    }
+  },
+  {
+    "label": "estimate vector 11",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 3,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 44400,
+      "shippingCents": 0,
+      "totalCents": 44400
+    }
+  },
+  {
+    "label": "estimate vector 12",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "oxide",
+        "quantity": 3,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "sold-out",
+      "merchandiseCents": 51600,
+      "shippingCents": 0,
+      "totalCents": 51600
+    }
+  },
+  {
+    "label": "estimate vector 13",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 18400,
+      "shippingCents": 0,
+      "totalCents": 18400
+    }
+  },
+  {
+    "label": "estimate vector 14",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 20800,
+      "shippingCents": 0,
+      "totalCents": 20800
+    }
+  },
+  {
+    "label": "estimate vector 15",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 2,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 36800,
+      "shippingCents": 0,
+      "totalCents": 36800
+    }
+  },
+  {
+    "label": "estimate vector 16",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 2,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 41600,
+      "shippingCents": 0,
+      "totalCents": 41600
+    }
+  },
+  {
+    "label": "estimate vector 17",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 3,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 55200,
+      "shippingCents": 0,
+      "totalCents": 55200
+    }
+  },
+  {
+    "label": "estimate vector 18",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "chalk",
+        "quantity": 3,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 62400,
+      "shippingCents": 0,
+      "totalCents": 62400
+    }
+  },
+  {
+    "label": "estimate vector 19",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 18400,
+      "shippingCents": 0,
+      "totalCents": 18400
+    }
+  },
+  {
+    "label": "estimate vector 20",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 1,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 20800,
+      "shippingCents": 0,
+      "totalCents": 20800
+    }
+  },
+  {
+    "label": "estimate vector 21",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 2,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 36800,
+      "shippingCents": 0,
+      "totalCents": 36800
+    }
+  },
+  {
+    "label": "estimate vector 22",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 2,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 41600,
+      "shippingCents": 0,
+      "totalCents": 41600
+    }
+  },
+  {
+    "label": "estimate vector 23",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 3,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 55200,
+      "shippingCents": 0,
+      "totalCents": 55200
+    }
+  },
+  {
+    "label": "estimate vector 24",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "wide",
+        "finish": "oxide",
+        "quantity": 3,
+        "mesh": true
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 62400,
+      "shippingCents": 0,
+      "totalCents": 62400
+    }
+  },
+  {
+    "label": "exceed live argument stock",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 2,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 18000,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 1,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": false,
+      "reason": "insufficient-stock",
+      "merchandiseCents": 36000,
+      "shippingCents": 0,
+      "totalCents": 36000
+    }
+  },
+  {
+    "label": "free shipping exact boundary",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 18000,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 1,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "available": true,
+      "reason": null,
+      "merchandiseCents": 18000,
+      "shippingCents": 0,
+      "totalCents": 18000
+    }
+  },
+  {
+    "label": "invalid size: huge",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "huge",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid finish: green",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "green",
+        "quantity": 1,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid quantity: 0",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 0,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid quantity: 4",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 4,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid quantity: 1.5",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 1.5,
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid quantity: 2",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": "2",
+        "mesh": false
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "invalid mesh: 1",
+    "fn": "estimate",
+    "args": [
+      {
+        "size": "narrow",
+        "finish": "chalk",
+        "quantity": 1,
+        "mesh": 1
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "unavailable variant can ask fit",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "  Will this fit under my shelf?  ",
+        "size": "narrow",
+        "finish": "oxide"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": true,
+      "preview": {
+        "topic": "fit",
+        "question": "Will this fit under my shelf?",
+        "size": "narrow",
+        "finish": "oxide",
+        "notice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    }
+  },
+  {
+    "label": "unavailable variant can ask repair",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "repair",
+        "question": "  Will this fit under my shelf?  ",
+        "size": "narrow",
+        "finish": "oxide"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": true,
+      "preview": {
+        "topic": "repair",
+        "question": "Will this fit under my shelf?",
+        "size": "narrow",
+        "finish": "oxide",
+        "notice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    }
+  },
+  {
+    "label": "unavailable variant can ask availability",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "availability",
+        "question": "  Will this fit under my shelf?  ",
+        "size": "narrow",
+        "finish": "oxide"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": true,
+      "preview": {
+        "topic": "availability",
+        "question": "Will this fit under my shelf?",
+        "size": "narrow",
+        "finish": "oxide",
+        "notice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    }
+  },
+  {
+    "label": "question boundary",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "xxxxxxxxxx",
+        "size": "wide",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": true,
+      "preview": {
+        "topic": "fit",
+        "question": "xxxxxxxxxx",
+        "size": "wide",
+        "finish": "chalk",
+        "notice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    }
+  },
+  {
+    "label": "question boundary",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "size": "wide",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": true,
+      "preview": {
+        "topic": "fit",
+        "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "size": "wide",
+        "finish": "chalk",
+        "notice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    }
+  },
+  {
+    "label": "invalid question",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "",
+        "size": "narrow",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": false,
+      "errors": [
+        "question"
+      ]
+    }
+  },
+  {
+    "label": "invalid question",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": null,
+        "size": "narrow",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": false,
+      "errors": [
+        "question"
+      ]
+    }
+  },
+  {
+    "label": "invalid question",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "xxxxxxxxx",
+        "size": "narrow",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": false,
+      "errors": [
+        "question"
+      ]
+    }
+  },
+  {
+    "label": "invalid question",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "fit",
+        "question": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "size": "narrow",
+        "finish": "chalk"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": false,
+      "errors": [
+        "question"
+      ]
+    }
+  },
+  {
+    "label": "ordered field errors",
+    "fn": "prepareInquiry",
+    "args": [
+      {
+        "topic": "other",
+        "question": "short",
+        "size": "x",
+        "finish": "x"
+      },
+      {
+        "brand": "Span Works",
+        "name": "Span folding drying rack",
+        "snapshot": "Fictional product brief, 2026-09-01",
+        "currency": "CAD",
+        "intro": "Room for the wet things. Room back when they are dry.",
+        "description": "A freestanding laundry rack with two independently folding wings and replaceable beech rails. Made for households that air-dry part of each load and put the rack away between washes.",
+        "sizes": [
+          {
+            "id": "narrow",
+            "label": "Narrow",
+            "priceCents": 14800,
+            "openCm": [
+              94,
+              52,
+              102
+            ],
+            "foldedCm": [
+              102,
+              52,
+              9
+            ],
+            "lineMetres": 12,
+            "loadKg": 12,
+            "weightKg": 4.8
+          },
+          {
+            "id": "wide",
+            "label": "Wide",
+            "priceCents": 18400,
+            "openCm": [
+              128,
+              62,
+              102
+            ],
+            "foldedCm": [
+              102,
+              62,
+              9
+            ],
+            "lineMetres": 18,
+            "loadKg": 16,
+            "weightKg": 6.1
+          }
+        ],
+        "finishes": [
+          {
+            "id": "chalk",
+            "label": "Chalk",
+            "description": "Warm white powder-coated steel"
+          },
+          {
+            "id": "oxide",
+            "label": "Oxide",
+            "description": "Muted red powder-coated steel"
+          }
+        ],
+        "stock": {
+          "narrow:chalk": 2,
+          "narrow:oxide": 0,
+          "wide:chalk": 4,
+          "wide:oxide": 3
+        },
+        "accessory": {
+          "id": "mesh",
+          "name": "Flat-dry mesh",
+          "priceCents": 2400,
+          "description": "One removable mesh shelf for a sweater; fits either size. Its load counts toward the rack limit."
+        },
+        "delivery": {
+          "region": "Canada only",
+          "flatCents": 1800,
+          "freeAtCents": 18000,
+          "dispatch": "In-stock orders dispatch in 3–5 business days. Delivery time varies by address."
+        },
+        "care": [
+          "Wipe steel with a damp cloth and dry it.",
+          "Allow beech rails to dry before folding.",
+          "Use indoors on a level floor; neither a seat nor a climbing frame."
+        ],
+        "included": [
+          "Assembled rack",
+          "Two spare rail end caps",
+          "Care and repair card"
+        ],
+        "repair": "Individual rails and end caps can be requested through the local inquiry preview. Replacement part prices are not supplied; do not invent them.",
+        "policies": {
+          "returns": "30 days after delivery, unused, in original packaging. Return postage paid by buyer.",
+          "warranty": "Two-year manufacturing-defect warranty; ordinary wear and misuse excluded.",
+          "tax": "Prices and estimates exclude applicable tax; this demo does not calculate tax."
+        },
+        "faq": [
+          {
+            "q": "Will it hold a full wash?",
+            "a": "Line length and load limits describe capacity. A machine-load claim would depend on garment size and fabric, so we do not make one."
+          },
+          {
+            "q": "Can I leave one wing down?",
+            "a": "Yes. Either wing can fold independently. Spread wet items evenly and stay within the total load limit."
+          },
+          {
+            "q": "Can it go outdoors?",
+            "a": "It is intended for indoor use. Unfinished beech should not be left in rain."
+          }
+        ],
+        "inquiryTopics": [
+          "fit",
+          "repair",
+          "availability"
+        ],
+        "inquiryNotice": "Local preview only. Nothing has been sent, reserved, or purchased."
+      }
+    ],
+    "expected": {
+      "ok": false,
+      "errors": [
+        "topic",
+        "question",
+        "size",
+        "finish"
+      ]
+    }
+  }
+]

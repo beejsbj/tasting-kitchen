@@ -1,0 +1,26 @@
+html {
+  --standard: 1140px;
+  --tight: 800px;
+  --wide: 1400px;
+
+  --black: #111111;
+  --white: hsla(0, 0%, 100%, 1);
+
+  --neutral-stuffs: hsla(0, 0%, 46%, 1);
+
+  --h: 215;
+  --s: 100%;
+  --l: 50%;
+  --color: hsla(0, 88%, 50%, 1);
+  --highlight: hsla(0, 88%, 70%, 1);
+  --highlight2: hsla(0, 90%, 35%, 1);
+  --shade: hsla(0, 88%, 30%, 1);
+  --shade2: hsla(0, 88%, 30%, 1);
+
+  --shadow: rgba(0, 0, 0, 0.8);
+
+  --corners: 10px; /* or whatevers */
+
+  --paper: var(--shade);
+  --ink: var(--black);
+}

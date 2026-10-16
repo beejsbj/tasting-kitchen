@@ -1,0 +1,108 @@
+/* Solfege color system now handled by unified color system */
+
+@font-face {
+  font-family: "Lets Jazz";
+  src: url("@/assets/fonts/lets-jazz-regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  size-adjust: 75%;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Color System - CSS Variables for theming */
+  --color-primary: #1a1a1a;
+  --color-secondary: #2d2d2d;
+  --color-accent: #f59e0b;
+  --color-background: #0f0f0f;
+  --color-surface: #1a1a1a;
+  --color-text: #ffffff;
+  --color-text-muted: #a1a1aa;
+
+  /* Typography */
+  --font-family-primary: "Lets Jazz", sans-serif;
+  /* Base font size adjustment */
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "salt" 1, "smcp" 1, "onum" 1;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-weight: 600;
+}
+
+#app {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Custom utility classes */
+.gradient-background {
+  background: linear-gradient(
+    135deg,
+    var(--color-background) 0%,
+    var(--color-surface) 50%,
+    var(--color-background) 100%
+  );
+}
+
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-primary)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animation utilities */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Touch-friendly button styles */
+.btn-solfege {
+  min-height: 4rem;
+  min-width: 4rem;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.clip-path-note {
+  /* clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%); */
+}

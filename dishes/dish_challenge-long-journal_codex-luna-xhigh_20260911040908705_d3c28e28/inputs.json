@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "challenge-long-journal",
+    "hash": "sha256:373d40a81863979dfcd7153a79b953901be5918a500f9f24eb0a22c9142ddf21"
+  },
+  "fixtures": []
+}

@@ -1,0 +1,20 @@
+{
+  "product": "Latchlight",
+  "category": "repairable clip-on task light",
+  "headlineFact": "A small light that moves with the work.",
+  "body": "Latchlight clips to a shelf or locks onto a steel surface, then turns toward the page, bench, or keyboard in front of you.",
+  "mounts": [
+    {"name": "Soft clip", "fits": "edges 8–38 mm thick", "limit": "not for rounded glass edges"},
+    {"name": "Magnetic foot", "fits": "flat ferrous surfaces", "limit": "does not hold on aluminium"}
+  ],
+  "facts": [
+    "14 hours at reading brightness; 4 hours at full output",
+    "USB-C charging; cable included",
+    "Replaceable battery and standard screws",
+    "Warm and neutral light modes",
+    "Designed for indoor use"
+  ],
+  "primaryAction": "Choose a mount — $48",
+  "secondaryAction": "See repair parts",
+  "note": "No testimonials, reviews, discounts, awards, or environmental claims are supplied. Do not invent them."
+}

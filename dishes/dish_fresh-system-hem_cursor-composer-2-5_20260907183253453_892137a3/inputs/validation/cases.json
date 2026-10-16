@@ -1,0 +1,885 @@
+[
+  {
+    "label": "quote vector 1",
+    "fn": "quote",
+    "args": [
+      [],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [],
+      "totalCents": 0
+    }
+  },
+  {
+    "label": "quote vector 2",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 1,
+          "unitCents": 900,
+          "totalCents": 900
+        }
+      ],
+      "totalCents": 900
+    }
+  },
+  {
+    "label": "quote vector 3",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 16
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 16,
+          "unitCents": 900,
+          "totalCents": 14400
+        }
+      ],
+      "totalCents": 14400
+    }
+  },
+  {
+    "label": "quote vector 4",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 10
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 10,
+          "unitCents": 350,
+          "totalCents": 3500
+        }
+      ],
+      "totalCents": 3500
+    }
+  },
+  {
+    "label": "quote vector 5",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 3
+        },
+        {
+          "kind": "material",
+          "id": "zip",
+          "quantity": 1
+        },
+        {
+          "kind": "material",
+          "id": "thread",
+          "quantity": 1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 3,
+          "unitCents": 900,
+          "totalCents": 2700
+        },
+        {
+          "kind": "material",
+          "id": "zip",
+          "quantity": 1,
+          "unitCents": 1200,
+          "totalCents": 1200
+        },
+        {
+          "kind": "material",
+          "id": "thread",
+          "quantity": 1,
+          "unitCents": 200,
+          "totalCents": 200
+        }
+      ],
+      "totalCents": 4100
+    }
+  },
+  {
+    "label": "quote vector 6",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 1
+        },
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 2
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 1,
+          "unitCents": 350,
+          "totalCents": 350
+        },
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 2,
+          "unitCents": 350,
+          "totalCents": 700
+        }
+      ],
+      "totalCents": 1050
+    }
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 0
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 17
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": 11
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "patch",
+          "quantity": -1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "zip",
+          "quantity": 1.5
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "zip",
+          "quantity": "2"
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "other",
+          "id": "bench",
+          "quantity": 1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "material",
+          "id": "missing",
+          "quantity": 1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "reject invalid estimate line",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "zip",
+          "quantity": 1
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 900
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "throws": "RangeError"
+  },
+  {
+    "label": "use catalog argument costs",
+    "fn": "quote",
+    "args": [
+      [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 2
+        }
+      ],
+      {
+        "currency": "CAD",
+        "notice": "Workshop estimate only; tax excluded. Local approval records no payment or customer message.",
+        "labour": [
+          {
+            "id": "bench",
+            "label": "Bench work",
+            "unit": "15 minutes",
+            "unitCents": 1100
+          }
+        ],
+        "materials": [
+          {
+            "id": "patch",
+            "label": "Cotton patch",
+            "unit": "piece",
+            "unitCents": 350,
+            "note": "Unbleached cotton, cut to fit."
+          },
+          {
+            "id": "zip",
+            "label": "Concealed zip",
+            "unit": "piece",
+            "unitCents": 1200,
+            "note": "Standard stocked length; confirm fit on the bench."
+          },
+          {
+            "id": "thread",
+            "label": "Thread allowance",
+            "unit": "job",
+            "unitCents": 200,
+            "note": "One allowance covers a single job."
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lines": [
+        {
+          "kind": "labour",
+          "id": "bench",
+          "quantity": 2,
+          "unitCents": 1100,
+          "totalCents": 2200
+        }
+      ],
+      "totalCents": 2200
+    }
+  }
+]

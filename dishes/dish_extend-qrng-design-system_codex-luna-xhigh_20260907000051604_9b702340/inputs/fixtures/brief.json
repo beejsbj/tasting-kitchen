@@ -1,0 +1,35 @@
+{
+  "product": "P5 Lottery demo",
+  "contexts": [
+    {"id": "overview", "need": "Show the live-pot slip, wallet state, and recent winners without hiding the board language."},
+    {"id": "setup", "need": "Pick exactly five numbers, roll the fixed sample, change ticket count, and enter an approval state."},
+    {"id": "inspection", "need": "Show an inspectable local receipt with TicketEntered status and the selected numbers."}
+  ],
+  "repeatedNeed": "Compact transaction and lottery state labels appear in the overview, setup, and inspection contexts.",
+  "systemNotes": [
+    "The inherited visual grammar is black ink on off-white paper with a saturated red field, yellow attention marks, hard borders, stamped headings, and slightly rotated slips.",
+    "A state needs words and an icon, marker, or shape in addition to color.",
+    "The ticket counter and receipt should preserve the upstream labels such as counter, live pot, wallet approval, TicketEntered, and receipt ready where useful.",
+    "The 50-number board owns selecting, rolling, exactly-five enforcement, keyboard operation, and its deterministic sample; it is not a general form control."
+  ],
+  "usageEvidence": {
+    "Surface": "The paper card frame is used by overview, ticket setup, and receipt inspection with a stable title and body boundary.",
+    "ActionButton": "Primary and quiet actions appear in ticket setup and wallet approval; the board controls are feature-specific controls.",
+    "shared-prune": "The selected upstream source has reusable CSS selectors but no undersupported shared JavaScript component export to remove. Do not invent one merely to make a prune ledger entry.",
+    "statusMarkup": "Overview, wallet approval, board status, and receipt each currently create compact state text separately.",
+    "LotteryBoard": "Only setup needs the 50 inputs, exactly-five constraint, roll sequence, selected-number meaning, and event coordination."
+  },
+  "sample": {
+    "numbers": [3, 12, 19, 27, 44],
+    "tickets": 2,
+    "potEth": "553",
+    "wallet": "0x71c2...94e8",
+    "contract": "0x690B...2Eee"
+  },
+  "starterGaps": [
+    "The mounted browser adaptation has no ticket-count control yet; the upstream TicketCard reference supplies its actual 1–10 behavior and labels.",
+    "Inspection is a fixed historic receipt sample. Approval currently calls an event callback but does not wire its values into a new receipt; the extension must make that local transition visible.",
+    "The local approval panel has no wallet, network, contract, QRNG, sound, image, or persistence dependency."
+  ],
+  "extensionBrief": "Build a responsive styleguide from the authentic upstream reference packet and the editable browser modules in src/. It must visibly render overview, setup, and inspection with the same imported source modules. In setup, ROLL selects exactly 3, 12, 19, 27, and 44; number inputs work by pointer and keyboard; the ticket counter stays between 1 and 10; SUBMIT is unavailable until exactly five numbers are selected; and approval/rejection creates a visible deterministic local state. Approval shows TicketEntered and a receipt with the chosen values. Do not connect a wallet, fetch a network, use a contract, or claim QRNG execution. Preserve the upstream's deliberately rough paper-slip language without copying its React JSX into non-runnable markup. For promote and prune, record a named source symbol only when the evidence supports it; otherwise record the documented no-candidate form. Do not invent a source abstraction to make a ledger entry. Keep any behavior-heavy feature local when its ownership is still specific."
+}

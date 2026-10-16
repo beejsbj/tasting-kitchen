@@ -1,0 +1,66 @@
+{
+  "required": [
+    "index.html",
+    "styles.css",
+    "app.mjs",
+    "logic.mjs",
+    "data/jobs.json",
+    "data/rates.json",
+    "CHANGES.md",
+    "source/tokens.css",
+    "source/primitives.css",
+    "source/primitives.mjs",
+    "source/contexts.mjs",
+    "source/estimate-view.mjs"
+  ],
+  "edges": [
+    [
+      "index.html",
+      "styles.css"
+    ],
+    [
+      "index.html",
+      "app.mjs"
+    ],
+    [
+      "app.mjs",
+      "source/contexts.mjs"
+    ],
+    [
+      "app.mjs",
+      "source/estimate-view.mjs"
+    ],
+    [
+      "source/contexts.mjs",
+      "source/primitives.mjs"
+    ],
+    [
+      "source/estimate-view.mjs",
+      "source/primitives.mjs"
+    ],
+    [
+      "source/estimate-view.mjs",
+      "logic.mjs"
+    ],
+    [
+      "styles.css",
+      "source/tokens.css"
+    ],
+    [
+      "styles.css",
+      "source/primitives.css"
+    ],
+    [
+      "app.mjs",
+      "data/jobs.json"
+    ],
+    [
+      "app.mjs",
+      "data/rates.json"
+    ]
+  ],
+  "immutable": {
+    "data/jobs.json": "1ae3e61ed9e04df118083ab46c455d72012a8af4f7a6d0390931c55d909f7cb5",
+    "data/rates.json": "cf31901d9c930ce426fc275cf9be50ad19dbc6e7104e583f9811e88d93006c0a"
+  }
+}

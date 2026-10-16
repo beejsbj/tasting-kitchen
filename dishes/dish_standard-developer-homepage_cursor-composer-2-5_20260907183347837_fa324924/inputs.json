@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "standard-developer-homepage",
+    "hash": "sha256:f0fd767c99d02a6d3a341d0f3bff41cd265c399231447bccefb9983af6ef281a"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/brief.md",
+      "mountAs": "fixtures/brief.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:903e36bded8749111b95c302afb2496880bf0100117a4afa652270438ce68115",
+      "bytes": 6033
+    },
+    {
+      "id": "content",
+      "path": "fixtures/content.json",
+      "mountAs": "data/content.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:58f036f0449ea36304f3310f05b219c0cfb061b90a43d61fb865b1428833e18f",
+      "bytes": 6385
+    },
+    {
+      "id": "output-validator",
+      "path": "validation/validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:b03225fe6461c89adb483a371a124858c14c71c8eea98fdd324dab6733d2a7c9",
+      "bytes": 4564
+    }
+  ]
+}

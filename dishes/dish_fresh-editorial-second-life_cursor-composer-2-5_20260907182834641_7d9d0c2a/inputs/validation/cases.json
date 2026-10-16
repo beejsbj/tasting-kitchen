@@ -1,0 +1,283 @@
+[
+  {
+    "label": "all totals",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 18,
+          "loanedKg": 620,
+          "returnedKg": 410
+        },
+        {
+          "month": "2026-04",
+          "season": "spring",
+          "loans": 24,
+          "loanedKg": 810,
+          "returnedKg": 730
+        },
+        {
+          "month": "2026-05",
+          "season": "spring",
+          "loans": 21,
+          "loanedKg": 760,
+          "returnedKg": 690
+        },
+        {
+          "month": "2026-06",
+          "season": "summer",
+          "loans": 32,
+          "loanedKg": 540,
+          "returnedKg": 880
+        },
+        {
+          "month": "2026-07",
+          "season": "summer",
+          "loans": 20,
+          "loanedKg": 1120,
+          "returnedKg": 620
+        },
+        {
+          "month": "2026-08",
+          "season": "summer",
+          "loans": 27,
+          "loanedKg": 930,
+          "returnedKg": 1080
+        }
+      ],
+      "all"
+    ],
+    "expected": {
+      "months": 6,
+      "loans": 142,
+      "loanedKg": 4780,
+      "returnedKg": 4410
+    }
+  },
+  {
+    "label": "spring totals",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 18,
+          "loanedKg": 620,
+          "returnedKg": 410
+        },
+        {
+          "month": "2026-04",
+          "season": "spring",
+          "loans": 24,
+          "loanedKg": 810,
+          "returnedKg": 730
+        },
+        {
+          "month": "2026-05",
+          "season": "spring",
+          "loans": 21,
+          "loanedKg": 760,
+          "returnedKg": 690
+        },
+        {
+          "month": "2026-06",
+          "season": "summer",
+          "loans": 32,
+          "loanedKg": 540,
+          "returnedKg": 880
+        },
+        {
+          "month": "2026-07",
+          "season": "summer",
+          "loans": 20,
+          "loanedKg": 1120,
+          "returnedKg": 620
+        },
+        {
+          "month": "2026-08",
+          "season": "summer",
+          "loans": 27,
+          "loanedKg": 930,
+          "returnedKg": 1080
+        }
+      ],
+      "spring"
+    ],
+    "expected": {
+      "months": 3,
+      "loans": 63,
+      "loanedKg": 2190,
+      "returnedKg": 1830
+    }
+  },
+  {
+    "label": "summer totals",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 18,
+          "loanedKg": 620,
+          "returnedKg": 410
+        },
+        {
+          "month": "2026-04",
+          "season": "spring",
+          "loans": 24,
+          "loanedKg": 810,
+          "returnedKg": 730
+        },
+        {
+          "month": "2026-05",
+          "season": "spring",
+          "loans": 21,
+          "loanedKg": 760,
+          "returnedKg": 690
+        },
+        {
+          "month": "2026-06",
+          "season": "summer",
+          "loans": 32,
+          "loanedKg": 540,
+          "returnedKg": 880
+        },
+        {
+          "month": "2026-07",
+          "season": "summer",
+          "loans": 20,
+          "loanedKg": 1120,
+          "returnedKg": 620
+        },
+        {
+          "month": "2026-08",
+          "season": "summer",
+          "loans": 27,
+          "loanedKg": 930,
+          "returnedKg": 1080
+        }
+      ],
+      "summer"
+    ],
+    "expected": {
+      "months": 3,
+      "loans": 79,
+      "loanedKg": 2590,
+      "returnedKg": 2580
+    }
+  },
+  {
+    "label": "empty ledger",
+    "fn": "summarize",
+    "args": [
+      [],
+      "all"
+    ],
+    "expected": {
+      "months": 0,
+      "loans": 0,
+      "loanedKg": 0,
+      "returnedKg": 0
+    }
+  },
+  {
+    "label": "empty season",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 18,
+          "loanedKg": 620,
+          "returnedKg": 410
+        }
+      ],
+      "summer"
+    ],
+    "expected": {
+      "months": 0,
+      "loans": 0,
+      "loanedKg": 0,
+      "returnedKg": 0
+    }
+  },
+  {
+    "label": "use input not snapshot totals",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 2,
+          "loanedKg": 7,
+          "returnedKg": 11
+        }
+      ],
+      "all"
+    ],
+    "expected": {
+      "months": 1,
+      "loans": 2,
+      "loanedKg": 7,
+      "returnedKg": 11
+    }
+  },
+  {
+    "label": "invalid period",
+    "fn": "summarize",
+    "args": [
+      [
+        {
+          "month": "2026-03",
+          "season": "spring",
+          "loans": 18,
+          "loanedKg": 620,
+          "returnedKg": 410
+        },
+        {
+          "month": "2026-04",
+          "season": "spring",
+          "loans": 24,
+          "loanedKg": 810,
+          "returnedKg": 730
+        },
+        {
+          "month": "2026-05",
+          "season": "spring",
+          "loans": 21,
+          "loanedKg": 760,
+          "returnedKg": 690
+        },
+        {
+          "month": "2026-06",
+          "season": "summer",
+          "loans": 32,
+          "loanedKg": 540,
+          "returnedKg": 880
+        },
+        {
+          "month": "2026-07",
+          "season": "summer",
+          "loans": 20,
+          "loanedKg": 1120,
+          "returnedKg": 620
+        },
+        {
+          "month": "2026-08",
+          "season": "summer",
+          "loans": 27,
+          "loanedKg": 930,
+          "returnedKg": 1080
+        }
+      ],
+      "autumn"
+    ],
+    "throws": "RangeError"
+  }
+]

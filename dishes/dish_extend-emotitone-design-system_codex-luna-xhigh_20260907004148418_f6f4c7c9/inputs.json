@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "extend-emotitone-design-system",
+    "hash": "sha256:db5933d04d863f7f01b7d11d545e5afc09ad9d84016779cc31712c3cb62c5b3d"
+  },
+  "fixtures": [
+    {
+      "id": "source-provenance",
+      "path": "fixtures/source-provenance.json",
+      "mountAs": "src/source-provenance.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:94c8fd6aa1c3c9c9090ad52fbd95a0556c0d19f361010f0c84a1c850a3ab4187",
+      "bytes": 1839
+    },
+    {
+      "id": "source-readme",
+      "path": "fixtures/README.md",
+      "mountAs": "src/reference/README.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:81c2ad470031616adb28a68eb32ad2fe9125262a300e892f29c408546bcec15b",
+      "bytes": 2246
+    },
+    {
+      "id": "reference-style",
+      "path": "fixtures/upstream/style.css",
+      "mountAs": "src/reference/style.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:e68c8640fdc55e92f44357a6a5f54bf8cd2ecbdc6ab7619bc3a88930933adddb",
+      "bytes": 2099
+    },
+    {
+      "id": "reference-app-header",
+      "path": "fixtures/upstream/AppHeader.vue",
+      "mountAs": "src/reference/AppHeader.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:03488ce91f397bd6ac5854c0ffddf91b8d2a934d0e14dc1a7965a98cabcdda05",
+      "bytes": 4232
+    },
+    {
+      "id": "reference-overlay-panel-shell",
+      "path": "fixtures/upstream/OverlayPanelShell.vue",
+      "mountAs": "src/reference/OverlayPanelShell.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:f8b1cc9f79e7f0b9c6e5789819ae166a370b3e1a92af25a2ac7acbfa0671a6b0",
+      "bytes": 2903
+    },
+    {
+      "id": "reference-icon-button",
+      "path": "fixtures/upstream/IconButton.vue",
+      "mountAs": "src/reference/IconButton.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:fd465a437cf992a67e6c484566725027d4359f754f850c9685feb2d2d801cd5f",
+      "bytes": 1593
+    },
+    {
+      "id": "reference-tabs",
+      "path": "fixtures/upstream/Tabs.vue",
+      "mountAs": "src/reference/Tabs.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:216d51dfaf7fe5619669dc6943e5996850525fbc436e9e7522809c1507668455",
+      "bytes": 1630
+    },
+    {
+      "id": "reference-tabs-list",
+      "path": "fixtures/upstream/TabsList.vue",
+      "mountAs": "src/reference/TabsList.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:488b9413922f30678b49410546a2d3dfc0493c0f35cf96b8bcb8ea8f87af4e65",
+      "bytes": 887
+    },
+    {
+      "id": "reference-tabs-trigger",
+      "path": "fixtures/upstream/TabsTrigger.vue",
+      "mountAs": "src/reference/TabsTrigger.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:254134eb355f54192ca3fdf936e582e15fe9b1c00760c2cc81e84e3f9ed9e418",
+      "bytes": 1368
+    },
+    {
+      "id": "reference-tabs-content",
+      "path": "fixtures/upstream/TabsContent.vue",
+      "mountAs": "src/reference/TabsContent.vue",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/x-vue",
+      "sha256": "sha256:0da396fce285e1f5a6665307ffe5c26e48925fbf90ad1c89eda1f23852b83ea0",
+      "bytes": 626
+    },
+    {
+      "id": "reference-solfege",
+      "path": "fixtures/upstream/solfege.ts",
+      "mountAs": "src/reference/solfege.ts",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/typescript",
+      "sha256": "sha256:298f64acec07b1b43782afc11ae3e353f8d8d89564da592a8cd3a42691ee59c3",
+      "bytes": 7957
+    },
+    {
+      "id": "static-tabs-adapter",
+      "path": "fixtures/static-tabs.js",
+      "mountAs": "src/static-tabs.js",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:b6eedff5697c230d04886865dd42d481dbceb1e76506b716ec1cd13e85aad110",
+      "bytes": 1650
+    },
+    {
+      "id": "mode-samples",
+      "path": "fixtures/mode-samples.js",
+      "mountAs": "src/mode-samples.js",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:e1e70e10957a981714542e888fc44d9c6acf30cb7060c6365376a444cd1f188c",
+      "bytes": 1959
+    },
+    {
+      "id": "output-validator",
+      "path": "validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:53fd9b87e8c747014481f45805ddb4ac0be38872ebbeedd36795438ebae42523",
+      "bytes": 4384
+    }
+  ]
+}

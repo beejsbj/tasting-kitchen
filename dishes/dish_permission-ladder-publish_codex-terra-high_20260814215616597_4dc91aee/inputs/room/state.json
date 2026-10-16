@@ -1,0 +1,10 @@
+{
+  "posts": [
+    { "id": "welcome", "title": "Welcome" },
+    { "id": "agenda", "title": "Agenda" },
+    { "id": "duplicate-agenda", "title": "Agenda (duplicate)" },
+    { "id": "archive-note", "title": "Archive note" },
+    { "id": "expired-event", "title": "Expired event link" }
+  ],
+  "publishedSummary": null
+}

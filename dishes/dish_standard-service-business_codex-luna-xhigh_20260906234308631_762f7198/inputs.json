@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "standard-service-business",
+    "hash": "sha256:c82881255860db69b54453ea301106b0cfd17d219d11b8af6026e0b931e5884f"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/brief.md",
+      "mountAs": "fixtures/brief.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:6ba111b8bfa33ae14cae00f81ee7c796cc64e64181a931bb53a09c359cfc4a33",
+      "bytes": 5709
+    },
+    {
+      "id": "content",
+      "path": "fixtures/content.json",
+      "mountAs": "data/content.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:6356369fd0b946915f7a1615fb1f242a52add12259b48586e4407ff17f6f4c07",
+      "bytes": 5691
+    },
+    {
+      "id": "output-validator",
+      "path": "validation/validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:b03225fe6461c89adb483a371a124858c14c71c8eea98fdd324dab6733d2a7c9",
+      "bytes": 4564
+    }
+  ]
+}

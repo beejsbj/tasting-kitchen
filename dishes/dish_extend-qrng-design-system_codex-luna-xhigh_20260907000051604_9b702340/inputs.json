@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "extend-qrng-design-system",
+    "hash": "sha256:9804e3e736a282ee6424d696d87df63033685f47d0e06e2cd704de83502cb6ca"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/brief.json",
+      "mountAs": "fixtures/brief.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:6217c13302f3575ea134c0d727ae51b362af2cc2cd38a5ef35b2364fab86f134",
+      "bytes": 3643
+    },
+    {
+      "id": "source-notes",
+      "path": "fixtures/README.md",
+      "mountAs": "fixtures/README.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:fc309b84c0c46057ef0ecfadfd015aec5facdabfbbb94990cf700c9d1644b119",
+      "bytes": 1242
+    },
+    {
+      "id": "source-provenance",
+      "path": "fixtures/source-provenance.json",
+      "mountAs": "fixtures/source-provenance.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:6146ace4869c5577717348d0cf964fd792aa9fbb72921222ee500bb911f27a04",
+      "bytes": 2090
+    },
+    {
+      "id": "source-components",
+      "path": "fixtures/components.js",
+      "mountAs": "src/components.js",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:ad7c0afca5167253181ae7cabdb5316ba46ac4350d53215d8114a4cf14a94730",
+      "bytes": 751
+    },
+    {
+      "id": "source-board",
+      "path": "fixtures/lottery-board.js",
+      "mountAs": "src/lottery-board.js",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:d6e29a156246c9376a0203db802ef44607f796073e1cc984fd239d06e0f14caa",
+      "bytes": 2469
+    },
+    {
+      "id": "source-contexts",
+      "path": "fixtures/contexts.js",
+      "mountAs": "src/contexts.js",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:1de99cc18158b7aed0919b72037e1eefb0c216bfc1b5606f185dd85b7dca2791",
+      "bytes": 2456
+    },
+    {
+      "id": "source-tokens",
+      "path": "fixtures/tokens.css",
+      "mountAs": "src/tokens.css",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/css",
+      "sha256": "sha256:fbec0475aa3928f13a4caa0a076d99e56b3a6e9ea17814c5b1461bad617ffdde",
+      "bytes": 1988
+    },
+    {
+      "id": "upstream-settings",
+      "path": "fixtures/upstream/frontend/src/styles/settings.css",
+      "mountAs": "reference/upstream/frontend/src/styles/settings.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:cf55f49400de9302ce689dbfd67c319dacf0e2ae595650eb31b86848106b5088",
+      "bytes": 497
+    },
+    {
+      "id": "upstream-components",
+      "path": "fixtures/upstream/frontend/src/styles/components.css",
+      "mountAs": "reference/upstream/frontend/src/styles/components.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:538f65051a6f4c70f4fb99ec3fe82fda0f998eb6bf4010a1610bc3a48bdc1cf8",
+      "bytes": 4189
+    },
+    {
+      "id": "upstream-lottery-css",
+      "path": "fixtures/upstream/frontend/src/styles/lottery.css",
+      "mountAs": "reference/upstream/frontend/src/styles/lottery.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:9ae30294825e91814ab2869308e2e0ff1326f3a9e54a292072c4afdb830ca6c9",
+      "bytes": 15024
+    },
+    {
+      "id": "upstream-lottery",
+      "path": "fixtures/upstream/frontend/src/components/LotteryApp/Lottery.jsx",
+      "mountAs": "reference/upstream/frontend/src/components/LotteryApp/Lottery.jsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:b140e77e1b3db780879d53a18a75c979c82c68a6ad6c109fbd538ab8f57d0079",
+      "bytes": 6929
+    },
+    {
+      "id": "upstream-wallet",
+      "path": "fixtures/upstream/frontend/src/components/LotteryApp/DemoWalletPanel.jsx",
+      "mountAs": "reference/upstream/frontend/src/components/LotteryApp/DemoWalletPanel.jsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:4bb745500f305ff3e51cbed2b59542297c07bce67bc051795cf72bb90b4de21e",
+      "bytes": 4731
+    },
+    {
+      "id": "upstream-ticket",
+      "path": "fixtures/upstream/frontend/src/components/LotteryApp/TicketCard.jsx",
+      "mountAs": "reference/upstream/frontend/src/components/LotteryApp/TicketCard.jsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:45c2b3d7ec2cb6ce444b4f302fa867aaa971ba70fab8a89ca1bc0e6ff2641019",
+      "bytes": 1340
+    },
+    {
+      "id": "upstream-winners",
+      "path": "fixtures/upstream/frontend/src/components/LotteryApp/PastWinners.jsx",
+      "mountAs": "reference/upstream/frontend/src/components/LotteryApp/PastWinners.jsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:92de7b02acfa80b02fbb7c0201fc3ad1ee206ca43c6e1754f0b7346a2bfe5dff",
+      "bytes": 1495
+    },
+    {
+      "id": "upstream-stars",
+      "path": "fixtures/upstream/frontend/src/assets/stars.svg",
+      "mountAs": "reference/upstream/frontend/src/assets/stars.svg",
+      "public": true,
+      "editable": false,
+      "mediaType": "image/svg+xml",
+      "sha256": "sha256:5833285b9fa2da63cb6f6c1c11eb44ab584d3438aec32d8b8b928aa412d86769",
+      "bytes": 2730
+    },
+    {
+      "id": "upstream-flow-spec",
+      "path": "fixtures/upstream/docs/FAKE_WEB3_FLOW_SPEC.md",
+      "mountAs": "reference/upstream/docs/FAKE_WEB3_FLOW_SPEC.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:fcf53e04d59d95c9935ecc26023e6421f2ea36bf5d6e569fc4f58e962bf65005",
+      "bytes": 12536
+    },
+    {
+      "id": "output-validator",
+      "path": "validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:087a452ec3284244ea4d1781ef6ea4b4dd3c67b6650a74a6184886ff3fb5c78f",
+      "bytes": 3188
+    }
+  ]
+}
