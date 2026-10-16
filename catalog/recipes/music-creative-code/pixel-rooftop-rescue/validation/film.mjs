@@ -44,6 +44,6 @@ if(contract.stateFixture){
  const {stateAt}=await import(pathToFileURL(resolve('source/state.mjs')));
  assert.equal(typeof stateAt,'function','Export stateAt(t)');
  const times=[0,...states.flatMap(s=>[s.t,Math.min(s.t+0.001,contract.duration-0.001)]),...states.slice(1).map(s=>s.t-0.001),contract.duration-0.001].reverse();
- for(const t of times){const {t:_,...expected}=states.findLast(s=>s.t<=t);assert.deepEqual(stateAt(t),expected,'Queue state at '+t);}
+ for(const t of times){const expected={...states.findLast(s=>s.t<=t)};delete expected.t;assert.deepEqual(stateAt(t),expected,'Queue state at '+t);}
 }
 console.log('PASS: delivery, encoding, complete decode, true peak '+peak+' dBTP, integrated loudness '+integrated+' LUFS, beat-report shape and any supplied state contract. Beat times and check claims are self-reports; visual accuracy, motion, listening, originality and connection of state to the visible film require independent review.');
