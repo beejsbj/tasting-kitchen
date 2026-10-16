@@ -41,8 +41,7 @@ for (const trees of ["dishes", path.join("private", "dishes")]) {
       if (fixture.public === false) return { ...fixture, size: undefined };
       const bytes = Buffer.from(fixture.contentBase64, "base64");
       if (sha256(bytes) !== fixture.sha256) throw new Error(`${dish.id}: fixture ${fixture.id} bytes do not match their hash`);
-      const { contentBase64, ...declaration } = fixture;
-      return { ...declaration, bytes };
+      return { ...fixture, contentBase64: undefined, bytes };
     });
     if (fixtures.some((fixture) => fixture.public === false)) throw new Error(`${dish.id}: private fixture sizes are unknown to a frozen revision`);
     await writeDishSidecars(directory, {

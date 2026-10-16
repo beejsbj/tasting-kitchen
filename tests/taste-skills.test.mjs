@@ -7,8 +7,9 @@ import test from "node:test";
 import { loadCatalog, planSelection } from "../lib/taste/catalog.mjs";
 import { cook } from "../lib/taste/index.mjs";
 import { buildRegistry, loadDishes, loadPrivateDishes } from "../lib/taste/registry.mjs";
+import { readDishSidecars, verifyInputs } from "../lib/taste/receipts.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
-import { loadSkillRevisions, loadSkills, skillCompatibility } from "../lib/taste/skills.mjs";
+import { loadSkills, skillCompatibility } from "../lib/taste/skills.mjs";
 
 async function json(filename, value) {
   await mkdir(path.dirname(filename), { recursive: true });
@@ -114,7 +115,7 @@ test("planning refuses layers a recipe does not offer and keeps the brief hash i
   assert.throws(() => planSelection(catalog, { configurationId: "codex-sol-high", recipeIds: ["layered-film"], skillId: "missing" }), /Unknown skill id/);
   const recipe = catalog.recipes.find((item) => item.id === "layered-film");
   assert.deepEqual(skillCompatibility({ ...recipe, skills: { ...recipe.skills, optional: false } }, null), ["recipe requires a skill layer; none was requested"]);
-  // Offering another layer later must not change the Recipe Revision models already saw.
+  // Offering another layer later must not change the recipe hash models already saw.
   const widened = await loadCatalog(f.root).then(async () => {
     const definition = JSON.parse(await readFile(path.join(f.root, "catalog/recipes/talk/layered-film/recipe.json"), "utf8"));
     definition.skills.layers.push("procedural");
@@ -124,7 +125,7 @@ test("planning refuses layers a recipe does not offer and keeps the brief hash i
   assert.equal(widened.recipes.find((item) => item.id === "layered-film").recipeHash, recipe.recipeHash);
 });
 
-test("a layered run mounts the exact skill bytes, freezes them, and records the layer on the dish", async (t) => {
+test("a layered run mounts the exact skill bytes and records the layer on the dish and in its receipt", async (t) => {
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const catalog = await loadCatalog(f.root);
@@ -148,11 +149,17 @@ test("a layered run mounts the exact skill bytes, freezes them, and records the 
   const requested = JSON.parse(await readFile(path.join(path.dirname(seenWorkspace), "requested.json"), "utf8"));
   assert.equal(requested.skill.hash, skill.skillHash);
   assert.equal(requested.skill.mountAs, "skill");
-  const frozen = await loadSkillRevisions(f.root);
-  assert.equal(frozen.length, 1);
-  assert.equal(frozen[0].hash, skill.skillHash);
-  assert.equal(frozen[0].files.length, 2);
-  assert.equal("contentBase64" in frozen[0].files[0], false);
+  const { inputs, receipt } = await readDishSidecars(result.dishDirectory);
+  assert.deepEqual(receipt.skill, { id: "hand-drawn", hash: skill.skillHash, source: skill.source, entry: "SKILL.md", treeHash: skill.treeHash });
+  assert.equal(receipt.configuration.configHash, dish.identity.configHash);
+  assert.equal(receipt.configuration.model, "gpt-5.6-sol");
+  assert.equal(inputs.recipe.hash, dish.recipe.hash);
+  assert.deepEqual(inputs.fixtures.map((fixture) => [fixture.id, fixture.mountAs, fixture.bytes]), [["brief", "fixtures/brief.md", "# layered-film\n".length]]);
+  assert.equal(await readFile(path.join(result.dishDirectory, "inputs/fixtures/brief.md"), "utf8"), "# layered-film\n");
+  assert.deepEqual(await verifyInputs(result.dishDirectory, inputs), []);
+  // Receipts sit beside the manifest, not inside it, and nothing is frozen into the catalog.
+  assert.equal("receipt" in dish || "inputs" in dish, false);
+  await assert.rejects(readdir(path.join(f.root, "catalog/revisions")), /ENOENT/);
 
   const unlayered = await executeRecipe(runOptions(f, catalog, "layered-film", {
     nonce: "plain",
@@ -169,9 +176,12 @@ test("a layered run mounts the exact skill bytes, freezes them, and records the 
 
   const registry = (await buildRegistry({ repoRoot: f.root })).registry;
   assert.equal(registry.skills.length, 2);
-  assert.deepEqual(registry.skillRevisions.map((revision) => revision.skillId), ["hand-drawn"]);
-  assert.equal(registry.skillRevisions[0].fileCount, 2);
+  assert.equal(registry.skillRevisions, undefined);
   assert.equal(registry.dishes.length, 2);
+  const layered = registry.dishes.find((item) => item.skill);
+  assert.equal(layered.receipt.skill.hash, skill.skillHash);
+  assert.equal(layered.inputs.fixtures[0].url, `/dishes/${layered.id}/inputs/fixtures/brief.md`);
+  assert.deepEqual(registry.dishes.find((item) => !item.skill).receipt.skill, null);
 });
 
 test("a run that edits the mounted skill fails validation and leaves no dish", async (t) => {
@@ -232,13 +242,15 @@ test("a private recipe keeps its bytes and dishes outside the public tree", asyn
   assert.equal(privateDishes.length, 1);
   assert.equal(privateDishes[0].visibility, "private");
   assert.equal(privateDishes[0].skill.id, "hand-drawn");
-  const revisions = await readdir(path.join(f.root, "catalog/revisions/recipes"));
-  const revision = JSON.parse(await readFile(path.join(f.root, "catalog/revisions/recipes", revisions.find((name) => name.startsWith("private-song--"))), "utf8"));
-  const excerpt = revision.fixtures.find((item) => item.id === "excerpt");
+  // Private fixtures appear by hash only: no bytes anywhere in the Dish directory.
+  const { inputs } = await readDishSidecars(result.dishDirectory);
+  const excerpt = inputs.fixtures.find((item) => item.id === "excerpt");
   assert.equal(excerpt.public, false);
   assert.match(excerpt.sha256, /^sha256:/);
-  assert.equal("contentBase64" in excerpt, false);
-  assert.ok(!JSON.stringify(revision).includes("secret song bytes"));
+  assert.equal(excerpt.bytes, "secret song bytes\n".length);
+  await assert.rejects(readFile(path.join(result.dishDirectory, "inputs/inputs/excerpt.txt")), /ENOENT/);
+  assert.ok(!JSON.stringify(inputs).includes("secret song bytes"));
+  assert.deepEqual(await verifyInputs(result.dishDirectory, inputs), []);
   const registry = (await buildRegistry({ repoRoot: f.root })).registry;
   assert.deepEqual(registry.recipes.map((item) => item.id), []);
   assert.deepEqual(registry.dishes, []);

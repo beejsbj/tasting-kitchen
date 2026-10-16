@@ -1,14 +1,13 @@
 import { createHash } from "node:crypto";
-import { lstat, readFile, readdir } from "node:fs/promises";
+import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { hashCanonical } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, hashCanonical } from "../lib/taste/catalog.mjs";
 import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
-import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
-import { loadSkillRevisions } from "../lib/taste/skills.mjs";
+import { INPUTS_MANIFEST, RECEIPT_MANIFEST, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
@@ -609,7 +608,51 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, revisions, configurationRevisions, skillRevisions, skillTrees) {
+const exists = (target) => access(target).then(() => true, () => false);
+
+// A Dish's receipts are sidecars outside dishHash. They are optional so an
+// older Dish still validates, but when present they must be internally honest.
+async function validateSidecars(relative, dish, dishDirectory) {
+  const inputsPath = path.join(dishDirectory, INPUTS_MANIFEST);
+  const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
+  const inputsRelative = path.relative(root, inputsPath);
+  const receiptRelative = path.relative(root, receiptPath);
+  if (await exists(inputsPath)) {
+    const inputs = await json(inputsRelative);
+    if (inputs && object(inputs, inputsRelative)) {
+      onlyKeys(inputs, new Set(["schemaVersion", "recipe", "fixtures"]), inputsRelative);
+      if (inputs.recipe?.id !== dish.recipe.id || inputs.recipe?.hash !== dish.recipe.hash) fail(inputsRelative, "recipe does not match the Dish");
+      if (array(inputs.fixtures, `${inputsRelative}.fixtures`)) {
+        for (const problem of await verifyInputs(dishDirectory, inputs)) fail(inputsRelative, problem);
+      }
+    }
+  }
+  if (await exists(receiptPath)) {
+    const receipt = await json(receiptRelative);
+    const configuration = receipt?.configuration;
+    if (receipt && object(configuration, `${receiptRelative}.configuration`)) {
+      if (computeConfigHash(configuration) !== dish.identity.configHash) fail(receiptRelative, "configuration does not reproduce identity.configHash");
+      if (configuration.id !== dish.identity.variantId) fail(receiptRelative, "configuration id does not match identity.variantId");
+      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
+      for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== configuration[variantKey]) fail(receiptRelative, `identity.${dishKey} does not match the recorded configuration`);
+      const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
+      const observedTierRecorded = dish.identity.observedServiceTier !== undefined;
+      const observedTier = observedTierRecorded ? dish.identity.observedServiceTier : dish.identity.serviceTier;
+      if (requestedTier !== configuration.serviceTier) fail(receiptRelative, "identity requested service tier does not match the recorded configuration");
+      if (observedTierRecorded) {
+        if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
+        if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, "identity service tier does not match the requested tier");
+      } else if (dish.identity.requestedServiceTier !== undefined && dish.identity.serviceTier !== requestedTier) {
+        fail(relative, "identity.serviceTier must preserve the requested tier when the observed tier was not recorded");
+      } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
+        fail(relative, "identity service tier does not match the requested tier");
+      }
+    }
+    if (receipt && (dish.skill ? receipt.skill?.hash !== dish.skill.hash : receipt.skill != null)) fail(receiptRelative, "skill does not match the Dish");
+  }
+}
+
+async function validateDish(relative, recipeRecords) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -628,13 +671,6 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     required(dish.skill, ["id", "hash"], `${relative}.skill`);
     string(dish.skill.id, `${relative}.skill.id`, { pattern: IDS });
     string(dish.skill.hash, `${relative}.skill.hash`, { pattern: SHA256 });
-    const revision = skillRevisions.get(dish.skill.hash);
-    if (!revision) fail(`${relative}.skill.hash`, "does not resolve to an immutable skill revision");
-    else {
-      if (revision.skillId !== dish.skill.id) fail(relative, `skill.id does not match skill revision ${revision.skillId}`);
-      const tree = skillTrees.get(revision.skillId);
-      if (tree && tree !== revision.treeHash) fail(relative, `catalog/skills/${revision.skillId}/files drifted from the frozen layer this dish used`);
-    }
   }
   string(dish.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
   const dishDirectory = path.dirname(path.join(root, relative));
@@ -648,10 +684,6 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
-    const revision = revisions.get(`${dish.recipe.id}:${dish.recipe.hash}`);
-    if (!revision) fail(`${relative}.recipe.hash`, "does not resolve to an immutable recipe revision");
-    else if (revision.version !== dish.recipe.version) fail(`${relative}.recipe.version`, "does not match the immutable recipe revision");
-    recipeRecord = revision ? { recipe: { kind: revision.execution.kind } } : recipeRecord;
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
@@ -663,26 +695,7 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     }
     string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
     if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
-    const revision = configurationRevisions.get(dish.identity.configHash);
-    const variant = revision?.configuration;
-    if (!variant) fail(`${relative}.identity.configHash`, "does not resolve to an immutable configuration revision");
-    else {
-      if (dish.identity.variantId !== variant.id) fail(relative, `identity.variantId does not match configuration revision ${variant.id}`);
-      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
-      for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
-      const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
-      const observedTierRecorded = dish.identity.observedServiceTier !== undefined;
-      const observedTier = observedTierRecorded ? dish.identity.observedServiceTier : dish.identity.serviceTier;
-      if (requestedTier !== variant.serviceTier) fail(relative, `identity requested service tier does not match variant ${variant.id}`);
-      if (observedTierRecorded) {
-        if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
-        if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
-      } else if (dish.identity.requestedServiceTier !== undefined && dish.identity.serviceTier !== requestedTier) {
-        fail(relative, "identity.serviceTier must preserve the requested tier when the observed tier was not recorded");
-      } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
-        fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
-      }
-    }
+    await validateSidecars(relative, dish, dishDirectory);
   }
 
   if (object(dish.artifact, `${relative}.artifact`)) {
@@ -840,11 +853,6 @@ const tags = validateTags(tagsDoc);
 const variants = validateConfigurations(variantsDoc);
 const skillsDoc = (await walk("catalog", { basename: "skills.json" })).length ? await json("catalog/skills.json") : null;
 const skills = await validateSkills(skillsDoc);
-const skillTrees = new Map();
-for (const skillId of skills.keys()) {
-  try { skillTrees.set(skillId, (await describeTree(path.join(root, "catalog", "skills", skillId, "files"))).treeHash); }
-  catch (error) { fail(`catalog/skills/${skillId}`, `could not hash mounted files: ${error.message}`); }
-}
 
 const recipeFiles = await walk("catalog/recipes", { basename: "recipe.json" });
 const recipeRecords = new Map();
@@ -857,35 +865,10 @@ for (const relative of recipeFiles.sort()) {
 
 await validateProvenance(recipeRecords);
 
-let revisions = new Map();
-try {
-  const loaded = await loadRecipeRevisions(root);
-  revisions = new Map(loaded.map((revision) => [`${revision.recipeId}:${revision.hash}`, revision]));
-} catch (error) {
-  fail("catalog/revisions", `could not load immutable recipe revisions: ${error.message}`);
-}
-
-let configurationRevisions = new Map();
-try {
-  const loaded = await loadConfigurationRevisions(root);
-  configurationRevisions = new Map(loaded.map((revision) => [revision.hash, revision]));
-} catch (error) {
-  fail("catalog/revisions", `could not load immutable configuration revisions: ${error.message}`);
-}
-
-let skillRevisions = new Map();
-try {
-  const loaded = await loadSkillRevisions(root);
-  skillRevisions = new Map(loaded.map((revision) => [revision.hash, revision]));
-  for (const revision of loaded) if (!skills.has(revision.skillId)) fail("catalog/revisions/skills", `frozen skill ${revision.skillId} is no longer in catalog/skills.json`);
-} catch (error) {
-  fail("catalog/revisions", `could not load immutable skill revisions: ${error.message}`);
-}
-
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, revisions, configurationRevisions, skillRevisions, skillTrees);
+  const dish = await validateDish(relative, recipeRecords);
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);

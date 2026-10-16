@@ -15,7 +15,7 @@ const commandFlags = {
   help: new Set(),
   validate: new Set(),
   discover: new Set(),
-  inspect: new Set(["recipe", "menu", "revision"]),
+  inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
   plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
   cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex"]),
@@ -95,9 +95,8 @@ function inspectSelection(options) {
   const selectors = [
     options.recipe?.length ? { recipeId: options.recipe[0] } : null,
     options.menu ? { menuId: options.menu } : null,
-    options.revision ? { revisionHash: options.revision } : null,
   ].filter(Boolean);
-  if (selectors.length !== 1) throw new UsageError("inspect requires exactly one of --recipe, --menu, or --revision");
+  if (selectors.length !== 1) throw new UsageError("inspect requires exactly one of --recipe or --menu");
   return selectors[0];
 }
 
@@ -107,7 +106,7 @@ function contextSelection(options, { revision = false } = {}) {
   const kind = options.recipe?.length ? "recipe" : options.menu ? "menu" : null;
   const id = options.recipe?.[0] ?? options.menu;
   if (!kind || !id) throw new UsageError("One of --recipe or --menu is required");
-  if (revision && !options.revision) throw new UsageError("--revision is required to pin the comparison context");
+  if (revision && !options.revision) throw new UsageError("--revision (the recipe hash the Dish was cooked from) is required to pin the comparison context");
   return { kind, id, ...(revision ? { revisionHash: options.revision } : {}) };
 }
 
@@ -116,17 +115,17 @@ function print(value, json = false) {
 }
 
 function help() {
-  return `taste — inspect and cook immutable Recipe revisions
+  return `taste — inspect and cook Recipes
 
 Usage:
   taste discover [--json]
-  taste inspect --recipe ID|--menu ID|--revision HASH [--json]
+  taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
   taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
   taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
-  taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision HASH [--execute --provider ID]
+  taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
   taste compare-rubrics --experiment PATH [--output PATH] [--json]
   taste validate
   taste build-registry [--output PATH]

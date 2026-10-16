@@ -9,7 +9,6 @@ import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
-import { freezeConfigurationRevision } from "../lib/taste/revisions.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -267,34 +266,7 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(await pathExists(`${poison}.invoked`), false);
 });
 
-test("recovery uses the frozen configuration when the current configuration changes", async (t) => {
-  const f = await recoveryFixture();
-  t.after(() => rm(f.root, { recursive: true, force: true }));
-  await freezeConfigurationRevision(f.root, f.selectedVariant);
-  f.catalog.variants = [];
-  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
-  assert.equal(result.status, "accepted");
-  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
-  assert.equal(dish.identity.requestedModel, "gpt-5.6-sol");
-});
-
-test("frozen configuration hash recovers across requested ID renames and current removal", async (t) => {
-  for (const removeCurrent of [false, true]) {
-    const f = await recoveryFixture();
-    t.after(() => rm(f.root, { recursive: true, force: true }));
-    await freezeConfigurationRevision(f.root, f.selectedVariant);
-    const requestedFile = path.join(f.attemptDir, "requested.json");
-    const requested = JSON.parse(await readFile(requestedFile, "utf8"));
-    requested.identity.variantId = "codex-sol-high-renamed";
-    await json(requestedFile, requested);
-    f.catalog.variants = removeCurrent ? [] : [{ ...f.selectedVariant, id: "codex-sol-high-renamed" }];
-    const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
-    const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
-    assert.equal(dish.identity.variantId, "codex-sol-high-renamed");
-  }
-});
-
-test("frozen configuration recovery rejects scalar and recorded execution drift", async (t) => {
+test("requested configuration recovery rejects scalar and recorded execution drift", async (t) => {
   const cases = [
     { name: "scalar", mutate: (requested) => { requested.identity.model = "gpt-5.6-luna"; }, pattern: /Frozen configuration model/ },
     { name: "capabilities", mutate: (requested) => { requested.identity.capabilities = ["files"]; }, pattern: /capabilities/ },
@@ -303,7 +275,6 @@ test("frozen configuration recovery rejects scalar and recorded execution drift"
   for (const item of cases) {
     const f = await recoveryFixture();
     t.after(() => rm(f.root, { recursive: true, force: true }));
-    await freezeConfigurationRevision(f.root, f.selectedVariant);
     const requestedFile = path.join(f.attemptDir, "requested.json");
     const requested = JSON.parse(await readFile(requestedFile, "utf8"));
     requested.identity.capabilities = [...f.selectedVariant.capabilities];

@@ -38,11 +38,6 @@ test("official catalog validation rejects tampered publication hashes", async (t
 
   const cases = [
     {
-      name: "recipe hash",
-      mutate: (dish) => { dish.recipe.hash = `sha256:${"0".repeat(64)}`; },
-      expected: /recipe\.hash: does not resolve to an immutable recipe revision/,
-    },
-    {
       name: "artifact tree hash",
       mutate: (dish) => { dish.artifact.treeHash = `sha256:${"1".repeat(64)}`; },
       expected: /artifact\.treeHash: does not match the published artifact tree/,
@@ -90,7 +85,7 @@ test("official catalog validation requires an honest artifact reviewer kind", as
   }
 });
 
-test("official catalog validation resolves historical Dish identity through its configuration revision", async (t) => {
+test("a Dish whose configuration or brief changed since it was cooked still validates", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));
   const [dishId] = (await readdir(path.join(root, "dishes"))).sort();
@@ -102,4 +97,27 @@ test("official catalog validation resolves historical Dish identity through its 
   await writeFile(configurationsPath, `${JSON.stringify(configurations, null, 2)}\n`);
   const result = validate(root);
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("official catalog validation checks Dish sidecars against the Dish", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const dishId = "dish_fresh-interaction-paper-echo_codex-luna-xhigh_20260906231527851_67821e90";
+  const directory = path.join(root, "dishes", dishId);
+  const inputs = JSON.parse(await readFile(path.join(directory, "inputs.json"), "utf8"));
+  const receipt = JSON.parse(await readFile(path.join(directory, "receipt.json"), "utf8"));
+  const publicInput = inputs.fixtures.find((fixture) => fixture.public);
+  const inputFile = path.join(directory, "inputs", publicInput.mountAs);
+  const originalBytes = await readFile(inputFile);
+
+  await writeFile(inputFile, `${originalBytes}tampered`);
+  let result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /bytes do not match recorded hash/);
+  await writeFile(inputFile, originalBytes);
+
+  await writeFile(path.join(directory, "receipt.json"), `${JSON.stringify({ ...receipt, configuration: { ...receipt.configuration, model: "someone-else" } })}\n`);
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /configuration does not reproduce identity\.configHash/);
 });

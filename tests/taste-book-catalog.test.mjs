@@ -3,21 +3,24 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import { loadDishes } from '../lib/taste/registry.mjs';
-import { loadRecipeRevisions } from '../lib/taste/revisions.mjs';
+import { loadCatalog } from '../lib/taste/catalog.mjs';
+import { readDishSidecars, verifyInputs } from '../lib/taste/receipts.mjs';
 import { buildRecipeBook } from '../lib/taste/recipe-book.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 
-test('published Dishes retain their exact executed recipe identities through revisions', async () => {
-  const [dishes, revisions] = await Promise.all([loadDishes(root), loadRecipeRevisions(root)]);
+test('published Dishes keep their recipe identity and carry verified input and receipt sidecars', async () => {
+  const [dishes, catalog] = await Promise.all([loadDishes(root), loadCatalog(root)]);
   const ids = new Set(dishes.map(dish => dish.recipe.id));
   assert.equal(dishes.length, 42);
   assert.equal(ids.size, 20);
-  for (const id of ids) {
-    const dish = dishes.find(item => item.recipe.id === id);
-    const revision = revisions.find(item => item.hash === dish.recipe.hash && item.recipeId === id);
-    assert.ok(revision.display.title.length > 0);
-    assert.equal(revision.hash, dish.recipe.hash);
+  for (const dish of dishes) {
+    assert.ok(catalog.recipes.some(recipe => recipe.id === dish.recipe.id), `${dish.recipe.id} is still in the catalog`);
+    const directory = path.join(root, 'dishes', dish.id);
+    const { inputs, receipt } = await readDishSidecars(directory);
+    assert.equal(inputs.recipe.hash, dish.recipe.hash);
+    assert.deepEqual(await verifyInputs(directory, inputs), []);
+    assert.equal(receipt.configuration.configHash, dish.identity.configHash);
   }
 });
 

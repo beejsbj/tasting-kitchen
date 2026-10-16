@@ -105,7 +105,6 @@ test("repeated Jev evaluations append observations without changing Dish identit
   const manifest = dish();
   const rubric = axisSet();
   await mkdir(path.join(root, "catalog/axis-sets"), { recursive: true });
-  await mkdir(path.join(root, "catalog/revisions/menus"), { recursive: true });
   await mkdir(path.join(root, "dishes", manifest.id, "artifact/output"), { recursive: true });
   const artifact = { turns: [{ id: "one", prompt: "A bounded prompt", response: "A particular response", actions: [] }] };
   await Promise.all([
