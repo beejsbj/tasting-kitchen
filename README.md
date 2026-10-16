@@ -15,17 +15,16 @@ The historical `https://artifacts.burooj.dev/model-tasting/` proof route was ret
 - **Kitchen** — the catalog, CLI orchestration, validation, immutable storage, gallery, and presentation runtimes.
 - **Cuisine** — one of one-or-more controlled Recipe classifications used for filtering; there is no primary Cuisine.
 - **Recipe** — an editable prompt, brief, or prompt chain with its supporting execution and output contract.
-- **Recipe Revision** — one immutable executed state of a Recipe.
-- **Menu** — an editable, deliberately selected set of Recipe identities used to explore one or more Cuisines.
-- **Menu Revision** — an immutable executed Menu snapshot that pins exact Recipe Revisions and acts as a reusable comparison lens.
+- **Recipe hash** — the hash of a Recipe's execution contract and fixture bytes. A Dish records the hash it was cooked from; the Recipe is whatever the catalog says now.
+- **Menu** — an editable, deliberately selected list of Recipes used to explore one or more Cuisines. Coverage is measured against the current list and current recipe hashes.
 - **Cook** — the action that requests execution.
-- **Run** — one private operational attempt to execute one Recipe Revision under an exact requested model configuration.
-- **Dish** — one immutable accepted artifact and public-safe receipt produced by a successful Run.
-- **Skill** — a pinned public workflow source that a Recipe can be cooked through; "without skill" is itself a layer. See [the product model](docs/product-model.md#skill-and-skill-revision).
-- **Repeat** — the derived relationship between Dishes sharing the same Recipe Revision, exact requested configuration and skill layer.
+- **Run** — one private operational attempt to execute one Recipe at its current recipe hash under an exact requested model configuration.
+- **Dish** — one immutable accepted artifact and public-safe receipt produced by a successful Run. It carries its recipe hash, configuration hash and skill hash, plus `inputs/` (what the model received) and `receipt.json` (what it ran as) beside `dish.json`.
+- **Skill** — a pinned public workflow source that a Recipe can be cooked through; "without skill" is itself a layer. See [the product model](docs/product-model.md#skill-and-skill-hash).
+- **Repeat** — the derived relationship between Dishes sharing the same recipe hash, exact requested configuration and skill layer.
 - **Tasting** — the human activity and public surface for inspecting and comparing Dishes.
 
-**Domain**, **Flight**, and **Collection** are retired product terms. The catalog and gallery use Cuisines, exact Recipe/Menu Revisions, and derived Repeats. See the canonical [product model](docs/product-model.md) for the complete language, invariants, scenario checks, and v1 boundary.
+**Domain**, **Flight**, and **Collection** are retired product terms. The catalog and gallery use Cuisines, recipe hashes, and derived Repeats. See the canonical [product model](docs/product-model.md) for the complete language, invariants, scenario checks, and v1 boundary.
 
 Recipes are labeled **Textbook**, **Mother's**, or **Hybrid**:
 
@@ -39,7 +38,7 @@ Planning and workflow live in Linear: [Tasting Kitchen project](https://linear.a
 
 ## What is here
 
-- `catalog/` — Cuisines, exact configurations, editable Recipes and Menus, immutable executed revisions, fixtures, and schemas.
+- `catalog/` — Cuisines, exact configurations, editable Recipes and Menus, fixtures, and schemas.
 - `bin/taste.mjs` + `lib/taste/` — validation, dry planning, isolated execution, identity verification, sanitization, recovery, immutable publication, and registry building.
 - `dishes/` — canonical accepted artifacts and public-safe receipts.
 - `reviews/` — artifact reviews bound to an exact immutable dish hash, explicitly identified as human or agent observations.

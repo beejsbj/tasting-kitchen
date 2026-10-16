@@ -30,7 +30,7 @@ The root path is canonical. `TASTE_BASE_PATH=/model-tasting/ npm run build` prep
 
 Remote runtime resources are outside the static web profile. Content Security Policy permits local content and inline artifact scripts/styles, while the publication scanner separately checks for remote dependencies and private material. Fixture URLs preserve file types for input previews. Missing artifact, fixture and asset files return 404 rather than the application shell.
 
-The registry and HTML revalidate; hashed application assets can be cached indefinitely. Dish IDs and revision hashes identify immutable content. A recipe edit requires a fresh cook to appear as a new public revision.
+The registry and HTML revalidate; hashed application assets can be cached indefinitely. Dish IDs identify immutable content. A recipe edit changes its recipe hash; earlier Dishes stay, marked “brief changed since this Dish”, until a fresh cook covers the new hash.
 
 ## Canonical deployment
 
@@ -42,7 +42,7 @@ For each promotion, prove the new origin and `/healthz`, canonical HTTPS without
 
 ## Maintenance state
 
-Add a Recipe or model configuration when it answers a useful question. Dry-plan, inspect, cook with explicit intent, run validation, rebuild and promote a new image. Preserve old accepted Dishes and their executed revisions. Keep failed attempts private and add human/agent observations as hash-bound reviews.
+Add a Recipe or model configuration when it answers a useful question. Dry-plan, inspect, cook with explicit intent, run validation, rebuild and promote a new image. Preserve old accepted Dishes with their `inputs/` and `receipt.json`. Keep failed attempts private and add human/agent observations as hash-bound reviews.
 
 The owner Cook UI, authentication/job service and additional harnesses are separate later releases. They are not prerequisites for operating this static gallery with the local CLI/API.
 

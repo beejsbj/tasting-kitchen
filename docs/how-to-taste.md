@@ -6,9 +6,9 @@ Start with a task you care about. There is no schedule and no need to run every 
 
 Open a Recipe to compare up to three exact configurations. Read the recipe to inspect the instructions and supplied input bytes. Interact with the artifacts, or open one in its own tab for more room. Configuration receipts distinguish what was requested from what the harness actually reported.
 
-The revision selector holds the task constant. Choose the same configuration in two slots, then select different Dishes to compare Repeats. When a Recipe offers skill layers, each pane also chooses a layer: hold the model and switch layers to see what a skill adds, or hold the layer and switch models. A single output can be a fluke; revisit a result or try a neighboring Recipe before treating an impression as a stable fingerprint.
+Repeats hold the task constant. Choose the same configuration in two slots, then select different Dishes to compare Repeats. When a Recipe offers skill layers, each pane also chooses a layer: hold the model and switch layers to see what a skill adds, or hold the layer and switch models. A single output can be a fluke; revisit a result or try a neighboring Recipe before treating an impression as a stable fingerprint.
 
-The Models shelf filters by family, reasoning effort, harness and service tier. A family can contain several configurations. Menus pin a specific revision of every member Recipe and show coverage against that full set; missing cells remain visible. A Menu appears publicly only after every member has an accepted Dish somewhere.
+The Models shelf filters by family, reasoning effort, harness and service tier. A family can contain several configurations. Menus list their member Recipes and show coverage against that full list at each member's current brief; missing cells remain visible. A Menu appears publicly only after every member has an accepted Dish somewhere.
 
 ## Cook locally
 
@@ -28,7 +28,7 @@ TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
   --menu visual-ui --config codex-sol-high --intent fill-missing --execute --json
 ```
 
-`fill-missing` reuses accepted results for the exact Recipe Revision, requested configuration and skill layer. `repeat` creates a new attempt even when that cell already has a Dish. `--skill ID` mounts one catalog skill into the workspace; omit it to cook without a skill, which is a layer of its own. Cooking is dry by default; the execution flag and environment opt-in are both required for paid model runs.
+`fill-missing` reuses accepted results for the current recipe hash, requested configuration and skill layer. `repeat` creates a new attempt even when that cell already has a Dish. `--skill ID` mounts one catalog skill into the workspace; omit it to cook without a skill, which is a layer of its own. Cooking is dry by default; the execution flag and environment opt-in are both required for paid model runs.
 
 Each Recipe gets a fresh workspace and model session. A multi-turn Recipe resumes only its own session. Known constraints belong in the initial brief; staged feedback belongs only where adaptation itself is the subject. Accepted Dishes are immutable. Failed attempts and raw traces stay private.
 

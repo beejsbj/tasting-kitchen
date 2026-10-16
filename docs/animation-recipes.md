@@ -80,8 +80,8 @@ still to be written.
 2. For the lyric recipe, the patched lyric engine supplied by Kitchen at
    `engine/` and pinned; the skill's `engine.patch` must match it.
 3. A Claude Code harness configuration if Opus is in the comparison. Opus in
-   Claude Code and Sol in Codex are different configurations: same Recipe
-   Revision, browsed together, not a like-for-like pair.
+   Claude Code and Sol in Codex are different configurations: same
+   brief, browsed together, not a like-for-like pair.
 4. Burooj's acceptance of each benchmark shape at the authoring checkpoint.
 
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody

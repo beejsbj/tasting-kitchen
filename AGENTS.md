@@ -12,7 +12,7 @@ For canonical Kitchen vocabulary and comparison invariants, read `docs/product-m
 
 Multi-turn collaboration is a first-class benchmark, not merely a correction mechanism. A staged Recipe may gather context, propose directions, let the user select, revise an artifact, or respond to genuinely new information.
 
-To compare one-shot and multi-turn work, author sibling Recipes that hold the subject, supplied facts, deliverable, output limits, presentation, and acceptance checks constant while varying the collaboration protocol. Treat them as a paired Menu comparison, not as Repeats or the same Recipe Revision: their prompt contracts differ.
+To compare one-shot and multi-turn work, author sibling Recipes that hold the subject, supplied facts, deliverable, output limits, presentation, and acceptance checks constant while varying the collaboration protocol. Treat them as a paired Menu comparison, not as Repeats or the same recipe hash: their prompt contracts differ.
 
 Every staged turn must have a real job. Put known requirements in the opening context. Use later corrections only for new information, a real selection or authority change, or adaptation that is deliberately being tasted. Preserve the intermediate responses or artifacts when the evolution itself matters.
 
