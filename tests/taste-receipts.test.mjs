@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { sha256 } from "../lib/taste/catalog.mjs";
+import { describeTree } from "../lib/taste/files.mjs";
 import { buildRegistry } from "../lib/taste/registry.mjs";
 import { readDishSidecars, validateSkillReceipt } from "../lib/taste/receipts.mjs";
 import { computeSkillHash } from "../lib/taste/skills.mjs";
@@ -19,7 +20,7 @@ async function temporary(t) {
   return root;
 }
 
-for (const change of ["tamper", "delete"]) {
+for (const change of ["tamper", "delete", "undeclared", "private", "manifest-missing", "bad-receipt"]) {
   test(`reader and registry reject ${change} of public input bytes`, async (t) => {
     const root = await temporary(t);
     // A synthetic catalog keeps this regression independent of accepted Dishes.
@@ -40,10 +41,10 @@ for (const change of ["tamper", "delete"]) {
       artifact: { kind: "session", entry: "artifact/output/session.json", files: [] },
     });
     await json(root, "dishes/dish_once/artifact/output/session.json", { turns: [] });
-    const original = Buffer.from("original fixture");
+    const original = Buffer.from('import "../../source.js"; // verbatim approved fixture\n');
     await json(root, "dishes/dish_once/inputs.json", { fixtures: [
       { id: "source", public: true, mountAs: "source.txt", sha256: sha256(original), bytes: original.length },
-      { id: "private", public: false, sha256: sha256(original), bytes: original.length },
+      { id: "private", public: false, mountAs: "private-source.txt", sha256: sha256(original), bytes: original.length },
     ] });
     await mkdir(path.join(directory, "inputs"));
     const input = path.join(directory, "inputs/source.txt");
@@ -52,13 +53,28 @@ for (const change of ["tamper", "delete"]) {
     const output = path.join(root, "public/data/registry.json");
     await buildRegistry({ repoRoot: root });
     const published = await readFile(output, "utf8");
-    if (change === "tamper") await writeFile(input, "modified fixture");
-    else await rm(input);
-    const error = change === "tamper" ? /source: bytes do not match recorded hash/ : /source: file missing/;
+    const publicRoot = path.join(root, "public");
+    const publishedTree = await describeTree(publicRoot);
+    const publicInput = path.join(publicRoot, "dishes/dish_once/inputs/source.txt");
+    assert.deepEqual(await readFile(publicInput), original, "declared public input stays verbatim");
+    let error;
+    if (change === "tamper") { await writeFile(input, "modified fixture"); error = /source: bytes do not match recorded hash/; }
+    if (change === "delete") { await rm(input); error = /source: file missing/; }
+    if (change === "undeclared" || change === "private") {
+      const filename = change === "private" ? "private-source.txt" : "undeclared.txt";
+      await writeFile(path.join(directory, "inputs", filename), "/home/synthetic/private/notes.txt");
+      error = /undeclared public input file/;
+    }
+    if (change === "manifest-missing") { await rm(path.join(directory, "inputs.json")); error = /undeclared public input file/; }
+    if (change === "bad-receipt") { await writeFile(path.join(directory, "receipt.json"), "{"); error = /JSON|Unexpected|Expected/; }
     await assert.rejects(readDishSidecars(directory), error);
     await assert.rejects(buildRegistry({ repoRoot: root }), error);
     assert.equal(await readFile(output, "utf8"), published, "failed build must not publish a new registry");
-    await rm(path.join(directory, "inputs.json"));
+    assert.deepEqual(await describeTree(publicRoot), publishedTree, "rejected build preserves every published file byte-for-byte");
+    assert.deepEqual(await readFile(publicInput), original, "rejected build preserves published input bytes");
+    await rm(path.join(directory, "inputs.json"), { force: true });
+    await rm(path.join(directory, "receipt.json"), { force: true });
+    await rm(path.join(directory, "inputs"), { recursive: true, force: true });
     assert.deepEqual(await readDishSidecars(directory), { inputs: null, receipt: null });
     const legacy = await buildRegistry({ repoRoot: root });
     assert.equal(legacy.registry.dishes[0].inputs, undefined);

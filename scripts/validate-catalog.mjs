@@ -653,6 +653,9 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
       }
     }
   }
+  if (!await exists(inputsPath)) {
+    for (const problem of await verifyInputs(dishDirectory, { fixtures: [] })) fail(inputsRelative, problem);
+  }
   if (await exists(receiptPath)) {
     const receipt = await json(receiptRelative);
     const configuration = receipt?.configuration;

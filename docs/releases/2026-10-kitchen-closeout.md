@@ -28,6 +28,8 @@ The PR review corrections preserve historical artifact kinds across Recipe edits
 
 Observation corrections bind evidence to the Dish manifest, scan public observation strings for leaks, reject invalid confidence in rubric experiments and scope disagreement notices to each rubric/context. The portable full run passed 158 Kitchen tests, 66 Recipe tests, 31 gallery tests, typecheck and production build (`rj-20261021-145235-eb788f`). That run found one unused test variable in lint, subsequently corrected; the lint rerun is recorded in the PR review receipt. Strict-mode regressions use synthetic provenance and private Dishes; no private evidence was exported.
 
+Astra's independent consultation then found two publication gaps: undeclared input files could bypass the scan exemption, and input failure could occur after public Dish files were replaced. The input tree now must match the public fixture allowlist, including when its manifest is absent. Public Dish loading verifies sidecars before staging; staging verifies its own copied snapshot and derives receipt metadata from that copy before replacing the public tree. Regressions cover undeclared and private bytes, orphaned input trees, malformed receipts, changed and deleted inputs, and preservation of every previously published file after rejection. The corrected full run passed 162 Kitchen tests, 66 Recipe tests, 31 gallery tests, typecheck, production build and lint in `rj-20261021-145958-16e51b`, with sandbox deletion verified.
+
 ## Remaining work
 
 - [Deploy the reviewed release](https://github.com/beejsbj/tasting-kitchen/issues/4).
