@@ -2,12 +2,12 @@ import { createHash } from "node:crypto";
 import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { computeConfigHash, hashCanonical } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
-import { INPUTS_MANIFEST, RECEIPT_MANIFEST, verifyInputs } from "../lib/taste/receipts.mjs";
+import { INPUTS_MANIFEST, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
 if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
@@ -471,9 +471,11 @@ async function validateRecipe(relative, cuisines, tags, skills) {
   if (recipe.skills !== undefined && object(recipe.skills, `${relative}.skills`)) {
     onlyKeys(recipe.skills, SKILLS_CONTRACT_KEYS, `${relative}.skills`);
     required(recipe.skills, ["optional", "layers"], `${relative}.skills`);
-    if (recipe.skills.mountAs !== undefined && safeRelative(recipe.skills.mountAs, `${relative}.skills.mountAs`)) {
+    const skillMount = recipe.skills.mountAs ?? "skill";
+    const hasWorkspaceLayer = Array.isArray(recipe.skills.layers) && recipe.skills.layers.some((id) => (skills.get(id)?.delivery ?? "workspace") === "workspace");
+    if (safeRelative(skillMount, `${relative}.skills.mountAs`) && hasWorkspaceLayer) {
       for (const mountPath of mountedFixtures.keys()) {
-        if (mountPath === recipe.skills.mountAs || mountPath.startsWith(`${recipe.skills.mountAs}/`)) fail(`${relative}.skills.mountAs`, `collides with fixture mount ${mountPath}`);
+        if (mountPath === skillMount || mountPath.startsWith(`${skillMount}/`) || skillMount.startsWith(`${mountPath}/`)) fail(`${relative}.skills.mountAs`, `collides with fixture mount ${mountPath}`);
       }
     }
     boolean(recipe.skills.optional, `${relative}.skills.optional`);
@@ -581,7 +583,20 @@ async function validateRecipe(relative, cuisines, tags, skills) {
   }
 
   publicSafety(recipe, relative);
-  return { recipe, relative };
+  // Hash the current contract from the same fixture bytes as loadCatalog.
+  // A private input may be absent on a public checkout; no current-hash claim
+  // can be made in that case, but old Dishes remain independently verifiable.
+  let recipeHash = null;
+  try {
+    const fixtureHashes = {};
+    for (const fixture of recipe.setup?.fixtures ?? []) {
+      const source = mountedFixtures.get(fixture.mountAs);
+      if (!source) throw new Error("fixture unavailable");
+      fixtureHashes[fixture.id] = sha256(await readFile(source));
+    }
+    recipeHash = computeRecipeHash(recipe, fixtureHashes);
+  } catch { /* Invalid public fixtures already have validation errors. */ }
+  return { recipe, relative, recipeHash };
 }
 
 async function validateProvenance(recipeRecords) {
@@ -623,7 +638,7 @@ const exists = (target) => access(target).then(() => true, () => false);
 
 // A Dish's receipts are sidecars outside dishHash. They are optional so an
 // older Dish still validates, but when present they must be internally honest.
-async function validateSidecars(relative, dish, dishDirectory) {
+async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   const inputsPath = path.join(dishDirectory, INPUTS_MANIFEST);
   const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
   const inputsRelative = path.relative(root, inputsPath);
@@ -659,11 +674,17 @@ async function validateSidecars(relative, dish, dishDirectory) {
         fail(relative, "identity service tier does not match the requested tier");
       }
     }
-    if (receipt && (dish.skill ? receipt.skill?.hash !== dish.skill.hash : receipt.skill != null)) fail(receiptRelative, "skill does not match the Dish");
+    if (receipt && (dish.skill || receipt.skill != null)) {
+      try {
+        const skill = validateSkillReceipt(receipt.skill, dish.skill);
+        if (recipeRecord?.recipeHash === dish.recipe?.hash && skill.delivery === "workspace" && skill.mountAs !== (recipeRecord.recipe.skills?.mountAs ?? "skill")) fail(receiptRelative, "skill mount does not match the current Recipe contract");
+      }
+      catch (error) { fail(receiptRelative, error.message); }
+    }
   }
 }
 
-async function validateDish(relative, recipeRecords) {
+async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -676,7 +697,9 @@ async function validateDish(relative, recipeRecords) {
   string(dish.finalizedAt, `${relative}.finalizedAt`);
   if (typeof dish.finalizedAt === "string" && (Number.isNaN(Date.parse(dish.finalizedAt)) || !dish.finalizedAt.includes("T"))) fail(relative, "finalizedAt must be an ISO date-time");
   if (dish.status !== "accepted") fail(relative, "public dish status must be accepted");
-  if ("visibility" in dish) fail(relative, "private dishes must not be published under dishes/");
+  if (privateDish) {
+    if (dish.visibility !== "private") fail(relative, "private Dish must declare visibility private");
+  } else if ("visibility" in dish) fail(relative, "private dishes must not be published under dishes/");
   if ("skill" in dish && object(dish.skill, `${relative}.skill`)) {
     onlyKeys(dish.skill, new Set(["id", "hash"]), `${relative}.skill`);
     required(dish.skill, ["id", "hash"], `${relative}.skill`);
@@ -695,6 +718,7 @@ async function validateDish(relative, recipeRecords) {
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
+    else if (privateDish !== (recipeRecord.recipe.visibility === "private")) fail(relative, "Dish storage does not match Recipe visibility");
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
@@ -706,14 +730,14 @@ async function validateDish(relative, recipeRecords) {
     }
     string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
     if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
-    await validateSidecars(relative, dish, dishDirectory);
+    await validateSidecars(relative, dish, dishDirectory, recipeRecord);
   }
 
   if (object(dish.artifact, `${relative}.artifact`)) {
     onlyKeys(dish.artifact, ARTIFACT_KEYS, `${relative}.artifact`);
     required(dish.artifact, ["kind", "entry", "files", "treeHash"], `${relative}.artifact`);
     enumValue(dish.artifact.kind, allowedKinds, `${relative}.artifact.kind`);
-    if (recipeRecord && dish.artifact.kind !== recipeRecord.recipe.kind) fail(relative, "dish artifact kind does not match recipe kind");
+    if (recipeRecord?.recipeHash === dish.recipe?.hash && dish.artifact.kind !== recipeRecord.recipe.kind) fail(relative, "dish artifact kind does not match recipe kind");
     safeRelative(dish.artifact.entry, `${relative}.artifact.entry`);
     if ("preview" in dish.artifact) safeRelative(dish.artifact.preview, `${relative}.artifact.preview`);
     string(dish.artifact.treeHash, `${relative}.artifact.treeHash`, { pattern: SHA256 });
@@ -761,7 +785,7 @@ async function validateDish(relative, recipeRecords) {
     if (trace) await regularFile(trace, `${relative}.publicTrace`);
   }
 
-  publicSafety(dish, relative);
+  if (!privateDish) publicSafety(dish, relative);
   const { dishHash, ...dishWithoutHash } = dish;
   if (dishHash !== hashCanonical(dishWithoutHash)) {
     fail(`${relative}.dishHash`, "does not match the canonical dish manifest");
@@ -883,6 +907,17 @@ for (const relative of dishFiles.sort()) {
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);
+}
+
+// Owner validation covers private accepted artifacts with the same immutable
+// manifest, bytes, receipt and tree checks. Public checkouts never read them.
+const privateDishFiles = publicCheckout ? [] : await walk("private/dishes", { basename: "dish.json" });
+const allDishIds = new Set(dishes.keys());
+for (const relative of privateDishFiles.sort()) {
+  const dish = await validateDish(relative, recipeRecords, { privateDish: true });
+  if (!dish) continue;
+  if (allDishIds.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
+  allDishIds.add(dish.id);
 }
 
 const reviewFiles = await walk("reviews", { allFiles: true });
