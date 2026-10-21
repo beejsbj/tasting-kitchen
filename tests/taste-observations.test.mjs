@@ -12,6 +12,7 @@ import {
   loadAxisSets,
   loadObservations,
   questionsForAxisSet,
+  validateObservation,
 } from "../lib/taste/observations.mjs";
 
 function axisSet(overrides = {}) {
@@ -165,4 +166,83 @@ test("oversized evidence is rejected rather than invisibly split", async (t) => 
     axisSetVersion: rubric.version,
     context: { kind: "recipe", id: "talk-once", revisionHash: manifest.recipe.hash },
   }), /exceeds axis-set maxBytes/);
+});
+
+function observationFixture() {
+  const manifest = dish();
+  const rubric = axisSet();
+  const observation = {
+    schemaVersion: 1,
+    id: "observation_safety_fixture",
+    dishId: manifest.id,
+    dishHash: manifest.dishHash,
+    context: { kind: "recipe", id: manifest.recipe.id, revisionHash: manifest.recipe.hash },
+    axisSet: { id: rubric.id, version: rubric.version, hash: rubric.rubricHash },
+    source: { kind: "human", evaluator: { id: "reader", label: "Reader" } },
+    observedAt: "2026-10-21T12:00:00.000Z",
+    evidenceAdapter: { shape: "conversation", version: 1 },
+    axes: [{ axisId: "attention", levelId: "specific", position: null, confidence: null, distribution: null,
+      evidence: [{ path: manifest.artifact.entry, sha256: `sha256:${manifest.artifact.files[0].sha256}` }],
+      note: "The score describes attention; confidence remains bounded." }],
+  };
+  return { observation, manifest, rubric, options: { dishes: [manifest], axisSets: [rubric] } };
+}
+
+test("observation evidence binds actual public Dish files and their manifest hashes", () => {
+  for (const prefixed of [false, true]) {
+    const { observation, manifest, options } = observationFixture();
+    if (prefixed) manifest.artifact.files[0].sha256 = `sha256:${manifest.artifact.files[0].sha256}`;
+    observation.axes[0].evidence.push({ path: manifest.publicTrace, sha256: null });
+    assert.equal(validateObservation(observation, options), observation);
+  }
+  for (const reference of [
+    { path: "artifact/output/unrelated.json", sha256: `sha256:${"3".repeat(64)}` },
+    { path: "validation.json", sha256: null },
+    { path: "receipt.json", sha256: null },
+    { path: "artifact/output/session.json", sha256: null },
+    { path: "artifact/output/session.json" },
+    { path: "artifact/output/session.json", sha256: false },
+    { path: "artifact/output/session.json", sha256: `sha256:${"9".repeat(64)}` },
+    { path: "trace.json", sha256: `sha256:${"3".repeat(64)}` },
+    { path: "trace.json" },
+  ]) {
+    const { observation, options } = observationFixture();
+    observation.axes[0].evidence = [reference];
+    assert.throws(() => validateObservation(observation, options), /evidence/);
+  }
+});
+
+test("all public observation strings reject credentials, paths, and private evidence", () => {
+  const leaks = [
+    "-----BEGIN PRIVATE KEY-----", "OPENAI_API_KEY", "AIzaabcdefghijklmnopqrstuvwxyz", "xoxb-abcdefghijklmnop",
+    "sk-abcdefghijklmnopqrstuvwx", "ghp_abcdefghijklmnopqrstuvwxyz", "/home/reader/private/journal.txt",
+    "/etc/secrets/token", "private/fixtures/journal.txt", "CJ123", "session_id=abcdef123",
+  ];
+  const placements = [
+    (o, text) => { o.axes[0].note = text; },
+    (o, text) => { o.source.evaluator.id = text; },
+    (o, text) => { o.source.evaluator.label = text; },
+    (o, text) => { o.axes[0].evidence[0].path = text; },
+    ...["id", "provider", "model", "tool", "toolVersion"].map((key) => (o, text) => {
+      o.source = { kind: "jev", evaluator: { id: "judge", provider: "fixture", model: "fixture/model", tool: "jevon", toolVersion: "1.0.0", [key]: text } };
+      Object.assign(o.axes[0], { position: 2, confidence: 0.8, distribution: [
+        { levelId: "detached", probability: 0.1 }, { levelId: "partial", probability: 0.1 }, { levelId: "specific", probability: 0.8 },
+      ] });
+    }),
+  ];
+  for (const leak of leaks) for (const place of placements) {
+    const { observation, options } = observationFixture();
+    place(observation, leak);
+    assert.throws(() => validateObservation(observation, options), /Public observation scan failed/);
+  }
+});
+
+test("unsafe observations are rejected when loading for public registry use", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-observation-safety-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const { observation, manifest, rubric } = observationFixture();
+  observation.axes[0].note = "Private source: CJ123";
+  await mkdir(path.join(root, "observations"));
+  await writeFile(path.join(root, "observations", `${observation.id}.json`), JSON.stringify(observation));
+  await assert.rejects(loadObservations(root, { dishes: [manifest], axisSets: [rubric] }), /Public observation scan failed/);
 });

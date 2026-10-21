@@ -9,7 +9,7 @@
     "validate:catalog": "node scripts/validate-catalog.mjs",
     "validate:catalog:public": "node scripts/validate-catalog.mjs --public-checkout",
     "taste": "node bin/taste.mjs",
-    "test:taste": "node --test tests/taste-*.test.mjs",
+    "test:taste": "node --experimental-strip-types --test tests/taste-*.test.mjs",
     "test:gallery": "node --experimental-strip-types --test tests/dish-votes.test.mjs tests/gallery-build.test.mjs tests/gallery-state.test.mjs tests/github-recipe-save.test.mjs",
     "dev": "node bin/taste.mjs build-registry && vite",
     "build": "node bin/taste.mjs build-registry && vite build",

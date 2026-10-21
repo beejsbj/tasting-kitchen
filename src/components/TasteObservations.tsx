@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 
 import { axisSetsForDish, observationDisagreements, observationsForDish, shortHash } from "../lib/registry";
+import { observationContextGroups, observationsInScope } from "../lib/observation-panel";
 import type { AxisSet, Dish, Registry, TasteObservation } from "../types";
 import { IconButton } from "./ui/ViewerControls";
 import "../styles/observations.css";
@@ -48,7 +49,9 @@ export function TasteObservations({ registry, dish }: { registry: Registry; dish
   const setSummaryVisible = (shown: boolean) => { rememberSummary(shown); setSummaryVisibleState(shown); };
   const selected = selectable.find((set) => set.rubricHash === selectedHash) ?? selectable[0];
   const shown = observations.filter((item) => item.axisSet.hash === selected?.rubricHash);
-  const disagreements = observationDisagreements(observations);
+  const disagreements = observationContextGroups(shown).flatMap(observationDisagreements);
+  const latestScope = latest ? observationsInScope(observations, latest) : [];
+  const latestDisagreements = observationDisagreements(latestScope);
   const latestSet = registry.axisSets.find((set) => set.rubricHash === latest?.axisSet.hash);
   return <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger asChild><IconButton aria-label="Taste observations" title="Taste observations"><ScanSearch size={19} /></IconButton></Dialog.Trigger>
@@ -60,7 +63,7 @@ export function TasteObservations({ registry, dish }: { registry: Registry; dish
           const axis = latestSet?.axes.find((item) => item.id === result.axisId);
           return <span className="observation-float__axis" key={result.axisId}><span>{axis?.label ?? result.axisId}</span><strong>{axis?.levels.find((level) => level.id === result.levelId)?.label ?? result.levelId}</strong></span>;
         })}</span>
-        <span className="observation-float__footer">{disagreements.length ? "Human & Jev disagree" : observations.length > 1 ? `${observations.length} observations · latest shown` : `Rubric v${latest.axisSet.version}`}<span>Details <ArrowUpRight size={12} /></span></span>
+        <span className="observation-float__footer">{latestDisagreements.length ? "Human & Jev disagree" : latestScope.length > 1 ? `${latestScope.length} observations · latest shown` : `Rubric v${latest.axisSet.version}`}<span>Details <ArrowUpRight size={12} /></span></span>
       </button>
     </aside>, document.body)}
     <Dialog.Portal>

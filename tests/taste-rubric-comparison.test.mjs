@@ -65,3 +65,25 @@ test("held-out judgments cannot be cited as rubric-development evidence", () => 
   input.revision.developmentLabelIds.push("label-c");
   assert.throws(() => compareRubrics(input), /non-development label label-c/);
 });
+
+for (const side of ["baselineObservations", "candidateObservations"]) {
+  for (const confidence of [undefined, null, "0.8", NaN, Infinity, -Infinity, -0.01, 1.01]) {
+    test(`${side} rejects invalid confidence ${String(confidence)} before reporting review burden`, () => {
+      const input = experiment();
+      input[side][0].axes[0].confidence = confidence;
+      if (confidence === undefined) delete input[side][0].axes[0].confidence;
+      assert.throws(() => compareRubrics(input), /axis groundedness has invalid confidence/);
+    });
+  }
+}
+
+test("confidence boundaries and the review threshold produce the expected burden", () => {
+  const input = experiment();
+  input.candidateObservations[0].axes[0].confidence = 0;
+  input.candidateObservations[1].axes[0].confidence = 1;
+  input.candidateObservations[2].axes[0].confidence = input.reviewPolicy.minConfidence;
+  const report = compareRubrics(input);
+  assert.equal(report.splits.development.candidate.reviewRequired, 1);
+  assert.equal(report.splits.development.candidate.reviewBurden, 0.5);
+  assert.equal(report.splits["held-out"].candidate.reviewRequired, 0);
+});
