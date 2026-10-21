@@ -4,11 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { computeConfigHash } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, hashCanonical } from "../lib/taste/catalog.mjs";
 import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
-import { pathExists } from "../lib/taste/files.mjs";
+import { copyTree, pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
+import { applySkillToRecipe, loadSkills } from "../lib/taste/skills.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -382,4 +383,70 @@ test("recovery refuses unsafe IDs, non-publication failures, drift, incomplete t
   t.after(() => rm(existing.root, { recursive: true, force: true }));
   await mkdir(path.join(existing.root, "dishes", ATTEMPT_ID.replace(/^attempt_/, "dish_")), { recursive: true });
   await assert.rejects(recoverAttempt({ repoRoot: existing.root, catalog: existing.catalog, attemptId: ATTEMPT_ID }), /Dish already exists/);
+});
+
+async function layeredRecoveryFixture(delivery, mountAs = "skill", harness = "codex") {
+  const f = harness === "cursor" ? await cursorRecoveryFixture() : await recoveryFixture();
+  const definition = { id: "drawing", entry: "SKILL.md", delivery, source: { repository: "https://example.invalid/drawing", commit: "a".repeat(40), path: "." } };
+  await json(path.join(f.root, "catalog/skills.json"), { schemaVersion: 1, skills: [definition] });
+  const source = path.join(f.root, "catalog/skills/drawing/files");
+  await mkdir(source, { recursive: true });
+  await writeFile(path.join(source, "SKILL.md"), "Draw one whole shape before adding detail.");
+  await writeFile(path.join(source, "OTHER.md"), "Alternate guidance.");
+  f.catalog.skills = await loadSkills(f.root);
+  const skill = f.catalog.skills[0];
+  f.recipe.skills = { mountAs, optional: true, layers: [skill.id] };
+  if (delivery === "workspace") await copyTree(source, path.join(f.workspace, mountAs));
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  requested.skill = { id: skill.id, hash: skill.skillHash, treeHash: skill.treeHash, delivery, ...(delivery === "workspace" ? { mountAs } : {}) };
+  await json(requestedFile, requested);
+  return { ...f, skill, source, requestedFile, requested };
+}
+
+test("recovery preserves workspace and prompt layers, mount receipts and exact prompt trace", async (t) => {
+  for (const [delivery, mountAs, harness] of [["workspace", "skill"], ["workspace", "guidance/drawing"], ["prompt", "skill"], ["prompt", "skill", "cursor"]]) {
+    const f = await layeredRecoveryFixture(delivery, mountAs, harness);
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID });
+    const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+    assert.deepEqual(dish.skill, { id: f.skill.id, hash: f.skill.skillHash });
+    const receipt = JSON.parse(await readFile(path.join(result.dishDirectory, "receipt.json"), "utf8"));
+    assert.equal(receipt.skill.delivery, delivery);
+    assert.equal(receipt.skill.mountAs, delivery === "workspace" ? mountAs : undefined);
+    const trace = JSON.parse(await readFile(path.join(result.dishDirectory, "trace.json"), "utf8"));
+    assert.equal(trace.turns[0].prompt, `${f.recipe.setup.instructions}\n\n${applySkillToRecipe(f.recipe, f.skill).turns[0].content}`);
+    assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
+  }
+});
+
+test("recovery fails closed for ambiguous layers, guidance drift and workspace tampering", async (t) => {
+  const cases = [
+    ["missing delivery", "workspace", async (f) => { delete f.requested.skill.delivery; }],
+    ["missing tree", "workspace", async (f) => { delete f.requested.skill.treeHash; }],
+    ["missing mount", "workspace", async (f) => { delete f.requested.skill.mountAs; }],
+    ["wrong mount", "workspace", async (f) => { f.requested.skill.mountAs = "elsewhere"; }],
+    ["unknown skill", "workspace", async (f) => { f.requested.skill.id = "missing"; }],
+    ["wrong hash", "workspace", async (f) => { f.requested.skill.hash = "sha256:wrong"; }],
+    ["delivery drift", "workspace", async (f) => { f.skill.delivery = "prompt"; }],
+    ["entry drift", "prompt", async (f) => { f.skill.entry = "OTHER.md"; }],
+    ["source drift", "prompt", async (f) => { f.skill.source.commit = "b".repeat(40); }],
+    ["legacy hash", "workspace", async (f) => { f.requested.skill.hash = f.skill.skillHash = hashCanonical({ id: f.skill.id, source: f.skill.source, treeHash: f.skill.treeHash }); }],
+    ["missing guidance", "workspace", async (f) => { await rm(f.source, { recursive: true }); }],
+    ["prompt bytes drift", "prompt", async (f) => { await writeFile(path.join(f.source, "SKILL.md"), "Changed guidance"); }],
+    ["workspace bytes drift", "workspace", async (f) => { await writeFile(path.join(f.workspace, "skill/SKILL.md"), "Tampered"); }],
+    ["workspace extra file", "workspace", async (f) => { await writeFile(path.join(f.workspace, "skill/extra.txt"), "Tampered"); }],
+    ["missing workspace skill", "workspace", async (f) => { await rm(path.join(f.workspace, "skill"), { recursive: true }); }],
+    ["prompt with mount", "prompt", async (f) => { f.requested.skill.mountAs = "skill"; }],
+  ];
+  for (const [name, delivery, mutate] of cases) {
+    const f = await layeredRecoveryFixture(delivery);
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    await mutate(f);
+    await json(f.requestedFile, f.requested);
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /skill|guidance|ENOENT/i, name);
+    assert.equal(await pathExists(path.join(f.root, "dishes", ATTEMPT_ID.replace(/^attempt_/, "dish_"))), false, name);
+    assert.equal(await pathExists(path.join(f.attemptDir, "observed.json")), false, name);
+    assert.equal(await pathExists(path.join(f.attemptDir, "recovery.json")), false, name);
+  }
 });

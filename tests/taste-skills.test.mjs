@@ -4,12 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { loadCatalog, planSelection } from "../lib/taste/catalog.mjs";
+import { computeRecipeHash, loadCatalog, planSelection } from "../lib/taste/catalog.mjs";
 import { cook } from "../lib/taste/index.mjs";
 import { buildRegistry, loadDishes, loadPrivateDishes } from "../lib/taste/registry.mjs";
 import { readDishSidecars, verifyInputs } from "../lib/taste/receipts.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
-import { loadSkills, skillCompatibility } from "../lib/taste/skills.mjs";
+import { computeSkillHash, loadSkills, skillCompatibility } from "../lib/taste/skills.mjs";
 
 async function json(filename, value) {
   await mkdir(path.dirname(filename), { recursive: true });
@@ -165,7 +165,7 @@ test("a layered run mounts the exact skill bytes and records the layer on the di
   assert.equal(requested.skill.hash, skill.skillHash);
   assert.equal(requested.skill.mountAs, "skill");
   const { inputs, receipt } = await readDishSidecars(result.dishDirectory);
-  assert.deepEqual(receipt.skill, { id: "hand-drawn", hash: skill.skillHash, source: skill.source, entry: "SKILL.md", treeHash: skill.treeHash });
+  assert.deepEqual(receipt.skill, { id: "hand-drawn", hash: skill.skillHash, source: skill.source, entry: "SKILL.md", treeHash: skill.treeHash, delivery: "workspace", mountAs: "skill" });
   assert.equal(receipt.configuration.configHash, dish.identity.configHash);
   assert.equal(receipt.configuration.model, "gpt-5.6-sol");
   assert.equal(inputs.recipe.hash, dish.recipe.hash);
@@ -314,4 +314,27 @@ test("a prompt-delivered skill rides inside the first turn, mounts nothing, and 
     runSession: async ({ recipe, workspace }) => { assert.equal(recipe.turns[0].content, "Make the film."); await json(path.join(workspace, "output/session.json"), { ok: true }); return session(); },
   }));
   assert.equal(bare.status, "accepted", bare.error);
+});
+
+test("skill identity binds delivery and entry while normalizing implicit workspace delivery", () => {
+  const skill = { id: "drawing", source: { repository: "example", commit: "pin", path: "." }, entry: "SKILL.md" };
+  const hash = computeSkillHash(skill, "tree");
+  assert.equal(computeSkillHash({ ...skill, delivery: "workspace", label: "New label" }, "tree"), hash);
+  assert.notEqual(computeSkillHash({ ...skill, delivery: "prompt" }, "tree"), hash);
+  assert.notEqual(computeSkillHash({ ...skill, entry: "OTHER.md" }, "tree"), hash);
+  assert.notEqual(computeSkillHash(skill, "other tree"), hash);
+});
+
+test("recipe identity preserves no-layer and default mounts but binds custom mounts", () => {
+  const recipe = recipeDefinition("mount-identity");
+  const fixtureHashes = { brief: `sha256:${"a".repeat(64)}` };
+  const hash = computeRecipeHash(recipe, fixtureHashes);
+  for (const skills of [
+    { layers: ["drawing"], optional: true },
+    { mountAs: "skill", layers: ["drawing", "other"], optional: false },
+  ]) assert.equal(computeRecipeHash({ ...recipe, skills }, fixtureHashes), hash);
+  const custom = { ...recipe, skills: { mountAs: "guidance/drawing", layers: ["drawing"], optional: true } };
+  assert.notEqual(computeRecipeHash(custom, fixtureHashes), hash);
+  assert.equal(computeRecipeHash({ ...custom, skills: { ...custom.skills, layers: ["other"], optional: false } }, fixtureHashes), computeRecipeHash(custom, fixtureHashes));
+  assert.notEqual(computeRecipeHash({ ...custom, skills: { ...custom.skills, mountAs: "guidance/other" } }, fixtureHashes), computeRecipeHash(custom, fixtureHashes));
 });

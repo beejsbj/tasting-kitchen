@@ -9,11 +9,11 @@ import { recoverAttempt } from "../lib/taste/recovery.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
-const booleanFlags = new Set(["json", "execute", "help"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout"]);
 
 const commandFlags = {
   help: new Set(),
-  validate: new Set(),
+  validate: new Set(["public-checkout"]),
   discover: new Set(),
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
@@ -127,18 +127,19 @@ Usage:
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
   taste compare-rubrics --experiment PATH [--output PATH] [--json]
-  taste validate
+  taste validate [--public-checkout] [--json]
   taste build-registry [--output PATH]
   taste recover --attempt ID
 
+  Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
 }
 
-async function validate({ json = false } = {}) {
-  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")], { cwd: repoRoot, stdio: json ? "pipe" : "inherit", shell: false });
+async function validate({ json = false, publicCheckout = false } = {}) {
+  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs"), ...(publicCheckout ? ["--public-checkout"] : [])], { cwd: repoRoot, stdio: json ? "pipe" : "inherit", shell: false });
   return new Promise((resolve) => {
     let stdout = "";
     let stderr = "";
@@ -154,7 +155,7 @@ async function main() {
   const { command, options } = commandAndOptions(parsed.positional, parsed.options);
   if (command === "help") return print(options.json ? { help: help() } : help(), options.json);
   if (command === "validate") {
-    const result = await validate({ json: options.json });
+    const result = await validate({ json: options.json, publicCheckout: options["public-checkout"] });
     process.exitCode = result.exitCode;
     if (options.json) print({ status: result.exitCode === 0 ? "valid" : "invalid", errors: result.stderr.trim() ? result.stderr.trim().split("\n") : [], output: result.stdout.trim() || undefined }, true);
     return;

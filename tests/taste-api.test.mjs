@@ -140,15 +140,52 @@ test("CLI rejects malformed, irrelevant, and ambiguous flags with JSON errors", 
   }
 });
 
-test("CLI help and catalog validation have structured JSON forms", () => {
+test("CLI help and catalog validation have structured JSON forms", async (t) => {
+  const root = await fixtureRepository(t);
+  const env = { ...process.env, TASTE_CATALOG_ROOT: root };
   const help = spawnSync(process.execPath, ["bin/taste.mjs", "cook", "--help", "--json"], { cwd: repoRoot, encoding: "utf8" });
   assert.equal(help.status, 0);
   assert.match(JSON.parse(help.stdout).help, /--menu ID/u);
 
-  const validation = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--json"], { cwd: repoRoot, encoding: "utf8" });
+  assert.match(JSON.parse(help.stdout).help, /taste validate \[--public-checkout\] \[--json\]/u);
+
+  const validation = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--public-checkout", "--json"], { cwd: repoRoot, encoding: "utf8", env });
   assert.equal(validation.status, 0, validation.stderr);
   const result = JSON.parse(validation.stdout);
   assert.equal(result.status, "valid");
   assert.deepEqual(result.errors, []);
   assert.match(result.output, /Catalog valid/u);
+  assert.match(result.output, /private provenance skipped \(--public-checkout\)/u);
+  assert.doesNotMatch(result.output, /provenance records checked/u);
+
+  const plain = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--public-checkout"], { cwd: repoRoot, encoding: "utf8", env });
+  assert.equal(plain.status, 0, plain.stderr);
+  assert.match(plain.stdout, /private provenance skipped \(--public-checkout\)/u);
+
+  const strict = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--json"], { cwd: repoRoot, encoding: "utf8", env });
+  assert.equal(strict.status, 1, strict.stderr);
+  const strictResult = JSON.parse(strict.stdout);
+  assert.equal(strictResult.status, "invalid");
+  assert.ok(strictResult.errors.some((error) => /missing private\/provenance\//u.test(error)));
+  assert.equal(strictResult.output, undefined);
+});
+
+
+test("CLI restricts public-checkout to validate and rejects malformed uses", () => {
+  const otherCommands = ["help", "discover", "inspect", "list", "plan", "cook", "axes", "observations", "observe", "compare-rubrics", "build-registry", "recover"];
+  const cases = [
+    ...otherCommands.map((command) => [command, "--public-checkout"]),
+    ["--public-checkout"],
+    ["validate", "--public-checkout=false"],
+    ["validate", "--public-checkout", "--public-checkout"],
+    ["validate", "--public-checkout", "false"],
+    ["validate", "--public-checkout", "--help"],
+    ["validate", "--catalog", "--public-checkout"],
+  ];
+  for (const argv of cases) {
+    const result = spawnSync(process.execPath, ["bin/taste.mjs", ...argv, "--json"], { cwd: repoRoot, encoding: "utf8" });
+    assert.equal(result.status, 1, argv.join(" "));
+    assert.equal(JSON.parse(result.stderr).error.code, "INVALID_ARGUMENT", argv.join(" "));
+    assert.equal(result.stdout, "", argv.join(" "));
+  }
 });

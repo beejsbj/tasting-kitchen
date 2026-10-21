@@ -36,6 +36,14 @@ extra positionals. `--execute` also requires `TASTE_ALLOW_MODEL_RUNS=1`.
 Failed executed cells make `taste cook` exit nonzero. With `--json`, failures
 use stderr envelopes `{ "error": { "code": "INVALID_ARGUMENT" | "TASTE_ERROR", "message": "..." } }`. Usage errors use `INVALID_ARGUMENT`; unexpected failures use `TASTE_ERROR`. Executed cell failures retain the structured cook report on stdout and set a nonzero exit status. `taste validate --json` returns `{ status, errors, output }`; `taste <command> --help --json` returns `{ help }`.
 
+`taste validate` requires full private provenance by default. For a clean public
+checkout, use `taste validate --public-checkout [--json]`. This explicitly skips
+all private provenance, even when present, while retaining public catalog, Dish,
+sidecar, and skill checks. Success output says `private provenance skipped
+(--public-checkout)`; JSON mode preserves that text in `output`. The option is
+valid only for `validate` and takes no value. Strict success reports the number
+of private provenance records checked.
+
 `TASTE_BASE_PATH` controls CLI registry URLs and defaults to `/`. Public
 fixture URLs preserve a safe file extension from the fixture path, so their
 media type can be served correctly. Registry staging replaces the fixture and
