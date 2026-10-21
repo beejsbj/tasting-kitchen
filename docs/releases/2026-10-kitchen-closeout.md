@@ -24,6 +24,10 @@ The full public-checkout suite passed on the portable queue: 109 Kitchen tests, 
 
 After the local-vote preview correction, all 31 gallery tests, typecheck, production build, lint and desktop/phone browser verification passed in job `rj-20261021-085018-30dd32`. This includes historical artifact playback and explicitly local vote persistence. Both queue jobs completed with sandbox deletion verified. Private provenance was not exported; strict validation behavior is covered using synthetic records. No new authoring acceptance is inferred from public validation.
 
+The PR review corrections preserve historical artifact kinds across Recipe edits while continuing to reject current-hash kind mismatches, changed artifact bytes/tree hashes and changed Dish manifests. Strict owner validation now checks private accepted Dishes too. Registry construction verifies saved public input bytes; skill receipts reproduce their immutable skill hash. Current-hash workspace mounts are checked against the current Recipe contract; historical mount paths are checked for containment but cannot be independently authenticated from the skill hash alone because mount paths belong to Recipe identity.
+
+Observation corrections bind evidence to the Dish manifest, scan public observation strings for leaks, reject invalid confidence in rubric experiments and scope disagreement notices to each rubric/context. The portable full run passed 158 Kitchen tests, 66 Recipe tests, 31 gallery tests, typecheck and production build (`rj-20261021-145235-eb788f`). That run found one unused test variable in lint, subsequently corrected; the lint rerun is recorded in the PR review receipt. Strict-mode regressions use synthetic provenance and private Dishes; no private evidence was exported.
+
 ## Remaining work
 
 - [Deploy the reviewed release](https://github.com/beejsbj/tasting-kitchen/issues/4).
