@@ -44,9 +44,9 @@ async function fixture({ failing = false } = {}) {
       ],
     },
     sourcePath: "catalog/recipes/conversation/demo/recipe.json",
-    recipeHash: `sha256:${"1".repeat(64)}`,
-    fixtureHashes: { context: `sha256:${"2".repeat(64)}` },
+    fixtureHashes: { context: sha256("public context\n") },
   };
+  recipe.recipeHash = computeRecipeHash(recipe, recipe.fixtureHashes);
   const variant = {
     id: "codex-sol-high",
     label: "Sol high",
@@ -112,7 +112,7 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
     verifyIdentity: observed,
   });
 
-  assert.equal(result.status, "accepted");
+  assert.equal(result.status, "accepted", result.error);
   assert.match(usedCodexHome, /attempts\/attempt_[^/]+\/codex-home$/);
   assert.deepEqual(await readdir(usedCodexHome), ["auth.json"]);
   assert.equal(await readlink(path.join(usedCodexHome, "auth.json")), f.authPath);

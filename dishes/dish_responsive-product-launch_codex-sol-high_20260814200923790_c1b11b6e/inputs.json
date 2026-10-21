@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "responsive-product-launch",
+    "hash": "sha256:ad008c538b6de99f1e8d24de4628929fb18a98fd58ae11e04862a46e67594a3b"
+  },
+  "fixtures": [
+    {
+      "id": "product-packet",
+      "path": "fixtures/product.json",
+      "mountAs": "fixtures/product.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:08b8f3c44172eaf2674bacb916e0665a3e2fc052d33a24992db54e418725dde1",
+      "bytes": 928
+    }
+  ]
+}

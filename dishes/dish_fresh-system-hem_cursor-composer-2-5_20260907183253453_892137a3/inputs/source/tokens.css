@@ -1,0 +1,26 @@
+/* Hem: garment labels, bench notes and a visible seam. Semantic roles are shared. */
+:root {
+  --hem-paper: #f7f2e8;
+  --hem-cloth: #fffdf7;
+  --hem-ink: #332a36;
+  --hem-muted: #685b66;
+  --hem-seam: #aa98a4;
+  --hem-action: #653c67;
+  --hem-on-action: #fffdf7;
+  --hem-focus: #076e80;
+  --hem-ready: #315b46;
+  --hem-ready-surface: #e4eee2;
+  --hem-working: #76501b;
+  --hem-working-surface: #fff0ce;
+  --hem-danger: #972f3e;
+  --hem-space-1: .25rem;
+  --hem-space-2: .5rem;
+  --hem-space-3: .75rem;
+  --hem-space-4: 1rem;
+  --hem-space-6: 1.5rem;
+  --hem-space-8: 2rem;
+  --hem-label: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --hem-body: system-ui, sans-serif;
+  --hem-display: Georgia, serif;
+  --hem-radius: 2px;
+}

@@ -18,6 +18,16 @@
         "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }
     },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "hash"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "visibility": { "const": "private" },
     "executedAt": { "type": "string", "format": "date-time" },
     "finalizedAt": { "type": "string", "format": "date-time" },
     "identity": {

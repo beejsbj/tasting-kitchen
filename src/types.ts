@@ -28,6 +28,18 @@ export type Configuration = {
   };
 };
 
+export type Skill = {
+  id: string;
+  label: string;
+  summary: string;
+  entry: string;
+  delivery?: "workspace" | "prompt";
+  source: { repository: string; commit: string; path: string; license: string };
+  skillHash: string;
+};
+
+export type RecipeSkills = { mountAs?: string; optional: boolean; layers: string[] };
+
 export type RecipeTurn = {
   id: string;
   role: "prompt" | "follow-up" | "correction" | "mode-transition";
@@ -46,10 +58,12 @@ export type Recipe = {
   id: string;
   version: string;
   status: "draft" | "ready" | "hidden";
+  visibility?: "public" | "private";
   title: string;
   summary: string;
   cuisines: string[];
   recipeHash: string;
+  skills?: RecipeSkills;
   presentation?: { profile: string; semanticRuntime: null | { id: string; version: string } };
   origin: "textbook" | "mothers" | "hybrid";
   originNote: string;
@@ -62,7 +76,7 @@ export type Recipe = {
   };
   setup: {
     instructions: string;
-    fixtures: Array<{ id: string; path: string; mountAs: string; public: true; mediaType: string; url?: string; sha256?: string }>;
+    fixtures: Array<{ id: string; path: string; mountAs: string; public: boolean; mediaType: string; url?: string; sha256?: string }>;
   };
   turns: RecipeTurn[];
   output: { kind: Recipe["kind"]; entry: string; include: string[]; limits: { maxFiles: number; maxBytes: number } };
@@ -74,6 +88,7 @@ export type Dish = {
   schemaVersion: 1;
   id: string;
   recipe: { id: string; version: string; hash: string };
+  skill?: { id: string; hash: string };
   executedAt: string;
   finalizedAt: string;
   identity: {
@@ -102,7 +117,13 @@ export type Dish = {
   publicTrace?: string;
   dishHash: string;
   artifactBase: string;
+  /** What the model received, from the Dish's own inputs.json. Absent for a Dish published before sidecars. */
+  inputs?: { fixtures: DishInput[] };
+  /** The full configuration and skill source the Dish ran as, from receipt.json. */
+  receipt?: { schemaVersion: 1; configuration: Configuration; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
 };
+
+export type DishInput = { id: string; path: string; mountAs: string; public: boolean; editable: boolean; mediaType?: string; sha256: string; bytes: number; url?: string };
 
 export type ReviewVerdict = "pass" | "issue" | "inconclusive";
 
@@ -135,27 +156,67 @@ export type ArtifactReview = {
   probes: ArtifactReviewProbe[];
 };
 
+export type AxisLevel = { id: string; label: string; description: string };
+export type AxisDefinition = {
+  id: string;
+  label: string;
+  question: string;
+  levels: AxisLevel[];
+  consequentialDistance: number;
+};
+export type AxisSet = {
+  schemaVersion: 1;
+  id: string;
+  version: string;
+  status: "active" | "candidate" | "retired";
+  title: string;
+  purpose: string;
+  adapter: { shape: "conversation" | "agentic" | "journal"; maxBytes: number };
+  contexts: Array<{ kind: "recipe" | "menu"; id: string }>;
+  axes: AxisDefinition[];
+  revisionNote?: string;
+  rubricHash: string;
+};
+export type TasteObservation = {
+  schemaVersion: 1;
+  id: string;
+  dishId: string;
+  dishHash: string;
+  context: { kind: "recipe" | "menu"; id: string; revisionHash: string };
+  axisSet: { id: string; version: string; hash: string };
+  source: {
+    kind: "human" | "jev";
+    evaluator: { id: string; label?: string; provider?: string; model?: string; tool?: string; toolVersion?: string };
+  };
+  observedAt: string;
+  evidenceAdapter: { shape: "conversation" | "agentic" | "journal"; version: 1 };
+  axes: Array<{
+    axisId: string;
+    levelId: string;
+    position: number | null;
+    confidence: number | null;
+    distribution: Array<{ levelId: string; probability: number }> | null;
+    evidence: Array<{ path: string; sha256: string | null }>;
+    note?: string;
+  }>;
+  usage?: { inputTokens: number; outputTokens: number };
+};
+
 export type Registry = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   generatedAt: string;
   basePath: string;
   cuisines: Cuisine[];
   tags: string[];
   configurations: Configuration[];
-  configurationRevisions?: Array<{ schemaVersion: 1; hash: string; configuration: Configuration }>;
+  skills?: Skill[];
   recipes: Recipe[];
   dishes: Dish[];
   reviews: ArtifactReview[];
-  recipeRevisions: RecipeRevision[];
+  axisSets: AxisSet[];
+  observations: TasteObservation[];
   menus: Menu[];
-  menuRevisions: MenuRevision[];
 };
 
 export type Variant = Configuration;
-export type RecipeRevision = {
-  recipeId: string; hash: string; version: string;
-  execution: Pick<Recipe, "kind" | "harness" | "setup" | "turns" | "output" | "validation" | "presentation">;
-  display: { title: string; summary: string; lineage: Recipe["origin"]; cuisines: string[] };
-};
 export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };
-export type MenuRevision = { menuId: string; hash: string; title: string; cuisines: string[]; recipes: Array<{ recipeId: string; recipeHash: string }> };

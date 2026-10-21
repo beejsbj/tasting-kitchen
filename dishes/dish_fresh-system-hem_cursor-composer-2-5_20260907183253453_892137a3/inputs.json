@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "fresh-system-hem",
+    "hash": "sha256:c9b54887e8e8a83e9008be4f79287a90c99cb5b6a7863e7f61d5c7b6006b6d7f"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/system-guide.md",
+      "mountAs": "fixtures/system-guide.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:9cbbb2464b305f8a1f302281aeab1030e8419aca11123f1b67d74c92f0de8b08",
+      "bytes": 4452
+    },
+    {
+      "id": "jobs",
+      "path": "fixtures/jobs.json",
+      "mountAs": "data/jobs.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:1ae3e61ed9e04df118083ab46c455d72012a8af4f7a6d0390931c55d909f7cb5",
+      "bytes": 794
+    },
+    {
+      "id": "rates",
+      "path": "fixtures/rates.json",
+      "mountAs": "data/rates.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:cf31901d9c930ce426fc275cf9be50ad19dbc6e7104e583f9811e88d93006c0a",
+      "bytes": 789
+    },
+    {
+      "id": "baseline-index-html",
+      "path": "fixtures/source/index.html",
+      "mountAs": "index.html",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/html",
+      "sha256": "sha256:c3194e04cca15070d354a1e44887ebec9090a6bb6b6db2c5d7ad1c90377ffa59",
+      "bytes": 870
+    },
+    {
+      "id": "baseline-styles-css",
+      "path": "fixtures/source/styles.css",
+      "mountAs": "styles.css",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/css",
+      "sha256": "sha256:fdda963466a52fe4c146e110a0a0f00ac3a66b84eb3d917e3b7bc12f64d0aca1",
+      "bytes": 596
+    },
+    {
+      "id": "baseline-app-mjs",
+      "path": "fixtures/source/app.mjs",
+      "mountAs": "app.mjs",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:cc35941d257aeaeb7d6862100d935a2a408d58cff2154d5772677f90f3eac0fb",
+      "bytes": 770
+    },
+    {
+      "id": "baseline-tokens-css",
+      "path": "fixtures/source/tokens.css",
+      "mountAs": "source/tokens.css",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/css",
+      "sha256": "sha256:7b97d84f0a36304ac8932bf85c4f48446837a07ef22a2ee81bb2f7ef25f9348e",
+      "bytes": 733
+    },
+    {
+      "id": "baseline-primitives-css",
+      "path": "fixtures/source/primitives.css",
+      "mountAs": "source/primitives.css",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/css",
+      "sha256": "sha256:0f88995cf4e9458f964afb16c30820f7464cf4a058f5a5d994f380b63c4f3295",
+      "bytes": 2333
+    },
+    {
+      "id": "baseline-primitives-mjs",
+      "path": "fixtures/source/primitives.mjs",
+      "mountAs": "source/primitives.mjs",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:50d11e23ff4be407540e94dac9b4e902306bd9212af6d26cbb0731e2e8c9d7bd",
+      "bytes": 1543
+    },
+    {
+      "id": "baseline-contexts-mjs",
+      "path": "fixtures/source/contexts.mjs",
+      "mountAs": "source/contexts.mjs",
+      "public": true,
+      "editable": true,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:8943eeec891ca5505e49db6195db4ccae7be1a4ad83ba998f1ddc4a53ff72ba5",
+      "bytes": 1850
+    },
+    {
+      "id": "validator-contract-json",
+      "path": "validation/contract.json",
+      "mountAs": "validation/contract.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:0f2bdba3e21fa7e4d30f1dfae8b7626acdad006bfdca315b0c49f795ada05830",
+      "bytes": 1180
+    },
+    {
+      "id": "validator-cases-json",
+      "path": "validation/cases.json",
+      "mountAs": "validation/cases.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:8f307934458d09a7609b6f3c1bb1d0de8cd6c0c917b39e53fc8edfba5fdd894c",
+      "bytes": 21609
+    },
+    {
+      "id": "validator-mechanics-mjs",
+      "path": "validation/mechanics.mjs",
+      "mountAs": "validation/mechanics.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:5fafa4db05a7ab5fc23049ea09c1b1a53e872bb56fc8625bb7fb4df0e9f5a182",
+      "bytes": 4594
+    },
+    {
+      "id": "validator-validate-output-mjs",
+      "path": "validation/validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:f3e1397ba1b71f91629fb49ef078be5c1f0ee4e6a4c755211bd1fc082d3c38fd",
+      "bytes": 374
+    }
+  ]
+}

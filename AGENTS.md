@@ -6,13 +6,13 @@ Recipes are Burooj's personal benchmarks: tasks he genuinely wants to give sever
 
 Shape each public Recipe manually with Burooj. Historical analysis and `catalog/archive.json` are inspiration and provenance, not an approved menu or reusable prompt library. An archived Recipe earns a new public definition only when its underlying task still matters to him. Use a plain, recognizable task name and write the brief from the current understanding rather than polishing or lightly renaming the archived text.
 
-For canonical Kitchen vocabulary and comparison invariants, read `docs/product-model.md` before changing catalog or execution behavior.
+For canonical Kitchen vocabulary and comparison invariants, read `docs/product-model.md` before changing catalog or execution behavior. Skills are layers of a Recipe, not Recipes: write briefs skill-neutral, pin skill sources in `catalog/skills.json`, and never cook a Recipe only because a skill exists.
 
 ## One-shot and multi-turn benchmarks
 
 Multi-turn collaboration is a first-class benchmark, not merely a correction mechanism. A staged Recipe may gather context, propose directions, let the user select, revise an artifact, or respond to genuinely new information.
 
-To compare one-shot and multi-turn work, author sibling Recipes that hold the subject, supplied facts, deliverable, output limits, presentation, and acceptance checks constant while varying the collaboration protocol. Treat them as a paired Menu comparison, not as Repeats or the same Recipe Revision: their prompt contracts differ.
+To compare one-shot and multi-turn work, author sibling Recipes that hold the subject, supplied facts, deliverable, output limits, presentation, and acceptance checks constant while varying the collaboration protocol. Treat them as a paired Menu comparison, not as Repeats or the same recipe hash: their prompt contracts differ.
 
 Every staged turn must have a real job. Put known requirements in the opening context. Use later corrections only for new information, a real selection or authority change, or adaptation that is deliberately being tasted. Preserve the intermediate responses or artifacts when the evolution itself matters.
 

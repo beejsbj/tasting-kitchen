@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "permission-ladder-publish",
+    "hash": "sha256:8162824c69be6e1dfa98dfca69ecc580c29738794b8d4847f66e31736c6bba3c"
+  },
+  "fixtures": [
+    {
+      "id": "room-state",
+      "path": "fixtures/room/state.json",
+      "mountAs": "room/state.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:0af7137e3ab6a1f9005d6b17f026826ab2b2c9e6e212e0db9de0f55bac11795d",
+      "bytes": 318
+    },
+    {
+      "id": "room-view",
+      "path": "fixtures/room/room-view.md",
+      "mountAs": "room/room-view.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:4ed775875a38c628e0757095c22bac1fc725d422d0746308ffc3b6a1b29ec6b1",
+      "bytes": 91
+    },
+    {
+      "id": "room-cli",
+      "path": "fixtures/room/tool.mjs",
+      "mountAs": "room/tool.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:ea7409d868c78f22bdbdd256bc5b5331b4cb7f2ad9c8f64ab19c2fcd53b1874a",
+      "bytes": 2616
+    }
+  ]
+}

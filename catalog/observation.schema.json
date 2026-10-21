@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifacts.burooj.dev/model-tasting/schemas/observation.v1.json",
+  "title": "Taste observation attached beside an immutable Dish",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "dishId", "dishHash", "context", "axisSet", "source", "observedAt", "evidenceAdapter", "axes"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^observation_[a-zA-Z0-9_-]+$" },
+    "dishId": { "type": "string", "pattern": "^dish_[a-zA-Z0-9_-]+$" },
+    "dishHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "revisionHash"],
+      "properties": {
+        "kind": { "enum": ["recipe", "menu"] },
+        "id": { "type": "string" },
+        "revisionHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "axisSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "hash"],
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" },
+        "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "evaluator"],
+      "properties": {
+        "kind": { "enum": ["human", "jev"] },
+        "evaluator": { "type": "object" }
+      }
+    },
+    "evidenceAdapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape", "version"],
+      "properties": {
+        "shape": { "enum": ["conversation", "agentic", "journal"] },
+        "version": { "const": 1 }
+      }
+    },
+    "axes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["axisId", "levelId", "position", "confidence", "distribution", "evidence"],
+        "properties": {
+          "axisId": { "type": "string" },
+          "levelId": { "type": "string" },
+          "position": { "type": ["number", "null"] },
+          "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "distribution": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["levelId", "probability"],
+              "properties": {
+                "levelId": { "type": "string" },
+                "probability": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "sha256"],
+              "properties": {
+                "path": { "type": "string" },
+                "sha256": { "type": ["string", "null"] }
+              }
+            }
+          },
+          "note": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputTokens", "outputTokens"],
+      "properties": {
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

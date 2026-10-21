@@ -1,0 +1,52 @@
+{
+  "fictionNotice": "Alder Street Plumbing, its people, places and business facts are fictional content supplied for this website exercise. Show a discreet fictional-business/local-preview notice in the footer.",
+  "business": {
+    "name": "Alder Street Plumbing",
+    "tagline": "Everyday plumbing, clearly explained.",
+    "hero": "Plumbing repairs and installations for homes in Northbridge.",
+    "introduction": "From a dripping tap to a replacement kitchen sink, we help with the plumbing jobs that keep a home working. Tell us what needs attention and we will discuss the next step during office hours.",
+    "primaryAction": "Request a visit",
+    "secondaryAction": "Explore our services",
+    "email": "hello@alderstreet.example",
+    "contactNote": "This fictional address is shown for context only. Use the local inquiry preview below; it does not send email or book a visit.",
+    "hours": "Monday–Friday, 8:00 am–5:00 pm, Northbridge local time. Closed weekends and public holidays.",
+    "availability": "Scheduled residential work only. We do not offer an emergency or overnight service.",
+    "location": "A mobile service based in the fictional town of Northbridge, Ontario. No public walk-in office.",
+    "serviceAreas": ["Northbridge Centre", "West Orchard", "Millbank", "Cedar Park"],
+    "outsideArea": "For a nearby neighbourhood outside this list, choose Other and include its name. Coverage must be discussed before a visit is arranged."
+  },
+  "services": [
+    {"id": "leaks", "title": "Leaks and small repairs", "description": "Assessment and repair of dripping taps, leaking exposed pipe joints and running toilets. We explain the proposed work before starting.", "scope": "Indoor household plumbing; concealed damage may need a separate assessment."},
+    {"id": "drains", "title": "Sink and drain clearing", "description": "Help with slow bathroom and kitchen sink drains and ordinary household blockages.", "scope": "Large sewer-line work and excavation are outside our service."},
+    {"id": "fixtures", "title": "Tap, sink and toilet installation", "description": "Replacement of household fixtures, with a check of the existing connections and available space.", "scope": "Customer-supplied fixtures are welcome; compatibility is checked before work is agreed."},
+    {"id": "maintenance", "title": "Plumbing maintenance visits", "description": "A scheduled look at visible connections, shut-off valves and frequently used fixtures, followed by a written list of findings.", "scope": "This is a practical maintenance visit, not a building inspection or certification."}
+  ],
+  "about": {
+    "heading": "A small team for the everyday jobs",
+    "paragraphs": ["Alder Street Plumbing began in 2018. Owner Sam Mercer handles repair visits alongside two other field staff, while Jo Mercer coordinates enquiries and scheduling.", "We focus on existing homes and small replacements. A visit starts with a conversation about the problem and finishes with an explanation of the work completed and any next steps."]
+  },
+  "trustFacts": ["Serving the four listed Northbridge neighbourhoods since 2018.", "A three-person field team with one office coordinator.", "A written estimate is provided before agreed work begins.", "Work areas are tidied and removed parts are discussed with the homeowner before disposal."],
+  "claimBoundary": "These supplied fictional facts are the full trust inventory. No licence numbers, certifications, insurance claims, awards, customer-review totals, customer logos, guarantees or testimonials are supplied. Do not invent them. No prices or response-time promise are supplied.",
+  "visitSteps": [
+    {"title": "Tell us about the job", "body": "Choose a service, your neighbourhood and a short description."},
+    {"title": "Discuss the visit", "body": "In a real enquiry, the office would confirm scope and scheduling during the published hours. This preview only shows your request locally."},
+    {"title": "Agree the work", "body": "The team assesses the job and provides a written estimate before agreed work starts."}
+  ],
+  "faq": [
+    {"question": "Do you take emergency calls?", "answer": "No. We schedule residential work during the listed weekday hours and do not provide overnight or emergency attendance."},
+    {"question": "Can I get a price from this form?", "answer": "No. The enquiry helps describe the job; it is not a quote. The team needs to understand the scope before providing a written estimate."},
+    {"question": "Can you install a tap I have already bought?", "answer": "Yes, subject to checking its compatibility with the existing connections and space. Include the fixture type in your message."},
+    {"question": "Do you work outside Northbridge?", "answer": "The four listed neighbourhoods are our normal area. For nearby locations, coverage needs to be discussed before a visit is arranged."},
+    {"question": "Will this form book a visit?", "answer": "No. This is a local website preview. It validates your entries and shows a request summary without sending or storing them."}
+  ],
+  "inquiry": {
+    "heading": "Tell us what needs attention",
+    "intro": "Preview an enquiry. No message is sent and no appointment is reserved.",
+    "fields": ["Name", "Email", "Service", "Neighbourhood", "Job description"],
+    "otherAreaLabel": "Other / nearby area",
+    "button": "Preview enquiry",
+    "success": "Enquiry preview ready. Nothing has been sent or booked.",
+    "privacy": "Your entries stay in this page's memory and disappear on reload. Please use example details; no account is needed."
+  },
+  "footer": "Alder Street Plumbing · Fictional business · Local website preview"
+}

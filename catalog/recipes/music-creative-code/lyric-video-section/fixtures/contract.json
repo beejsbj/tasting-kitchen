@@ -1,0 +1,12 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "duration": 35,
+  "frames": 1050,
+  "excerpt": {
+    "masterStart": 58.0,
+    "masterEnd": 93.0
+  },
+  "lyricsFixture": "inputs/lyrics.json"
+}

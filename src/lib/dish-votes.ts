@@ -61,6 +61,9 @@ export async function syncDishVotes(votes: DishVotes, fetcher: typeof fetch = fe
 export async function saveDishVotes(votes: DishVotes, fetcher: typeof fetch = fetch): Promise<VoteMode> {
   try {
     const response = await fetcher('/api/votes', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ votes }) });
-    return response.ok ? 'synced' : 'local';
+    if (!response.ok) return 'local';
+    const payload: unknown = await response.json();
+    return payload !== null && typeof payload === 'object' && !Array.isArray(payload)
+      && 'mode' in payload && payload.mode === 'synced' ? 'synced' : 'local';
   } catch { return 'local'; }
 }

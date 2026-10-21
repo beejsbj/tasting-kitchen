@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--hem-paper); color: var(--hem-ink); font: 1rem/1.55 var(--hem-body); }
+h1, h2, h3 { font-family: var(--hem-display); line-height: 1.2; font-weight: 500; }
+h1 { font-size: clamp(2rem, 5vw, 3.8rem); margin-block: var(--hem-space-4); }
+a { color: var(--hem-action); }
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 3px solid var(--hem-focus); outline-offset: 3px; }
+.hem-button { border: 1px solid var(--hem-action); border-radius: var(--hem-radius); padding: .6rem 1rem; background: var(--hem-action); color: var(--hem-on-action); cursor: pointer; }
+.hem-button[data-variant="quiet"] { background: transparent; color: var(--hem-action); }
+.hem-button:disabled { opacity: .5; cursor: default; }
+.hem-tag { display: inline-block; font: .8rem/1.5 var(--hem-label); border: 1px solid var(--hem-seam); padding: .1rem .45rem; color: var(--hem-muted); background: var(--hem-cloth); }
+.hem-tag[data-tone="ready"] { color: var(--hem-ready); background: var(--hem-ready-surface); }
+.hem-tag[data-tone="in-progress"] { color: var(--hem-working); background: var(--hem-working-surface); }
+.hem-ticket { background: var(--hem-cloth); border: 1px solid var(--hem-seam); padding: var(--hem-space-6); position: relative; }
+.hem-ticket + .hem-ticket { margin-top: var(--hem-space-4); }
+.hem-ticket__label { border-bottom: 1px dashed var(--hem-seam); padding-bottom: var(--hem-space-3); margin-bottom: var(--hem-space-4); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--hem-space-3); font-family: var(--hem-label); }
+.hem-field { display: grid; gap: var(--hem-space-1); margin-block: var(--hem-space-4); }
+.hem-field label { font-family: var(--hem-label); font-size: .9rem; }
+.hem-field input, .hem-field select, .hem-field textarea { width: 100%; min-width: 0; padding: .6rem; color: var(--hem-ink); background: var(--hem-cloth); border: 1px solid var(--hem-seam); border-radius: var(--hem-radius); }
+.hem-help { color: var(--hem-muted); font-size: .9rem; }
+.hem-error { color: var(--hem-danger); }
+.hem-kv { display: grid; grid-template-columns: minmax(6rem, 1fr) minmax(0, 2fr); gap: var(--hem-space-3); }
+.hem-kv dt { color: var(--hem-muted); font-family: var(--hem-label); }
+.hem-kv dd { margin: 0; overflow-wrap: anywhere; }

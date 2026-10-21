@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "short-journal-groundedness-fixture",
+  "status": "fixture-only-human-evidence-required",
+  "axisSetId": "short-journal-response",
+  "baseline": {
+    "version": "1.0.0",
+    "hash": "sha256:2fdfcf2efe4f00763fb7a4c659fded692fbc24820f53bd310b0564f3d84a0e3f"
+  },
+  "candidate": {
+    "version": "1.1.0",
+    "hash": "sha256:82818fc47253ee522a986a446e69895ebd90154dd3c9f69dff4156c72a8c27ec"
+  },
+  "revision": {
+    "axisId": "groundedness",
+    "ambiguity": "The old wording can let topical warmth or paraphrase count as contact even when no particular from the entry changes the response.",
+    "developmentLabelIds": [
+      "fixture-label-a",
+      "fixture-label-b"
+    ]
+  },
+  "evidence": {
+    "humanTastings": 0,
+    "syntheticHumanFixtures": 4,
+    "development": 2,
+    "heldOut": 2
+  },
+  "reviewPolicy": {
+    "minConfidence": 0.65
+  },
+  "splits": {
+    "development": {
+      "baseline": {
+        "labeled": 6,
+        "agreements": 5,
+        "agreementRate": 0.8333,
+        "unresolved": 0,
+        "reviewRequired": 0,
+        "reviewBurden": 0,
+        "consequentialErrors": [],
+        "disagreements": [
+          {
+            "labelId": "fixture-label-a",
+            "dishId": "dish_fixture_a",
+            "axisId": "groundedness",
+            "expected": "specific",
+            "observed": "partial",
+            "reason": "level-disagreement"
+          }
+        ],
+        "perAxis": {
+          "groundedness": {
+            "labeled": 2,
+            "agreements": 1,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 0.5,
+            "reviewBurden": 0
+          },
+          "interpretive-restraint": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          },
+          "agency": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          }
+        }
+      },
+      "candidate": {
+        "labeled": 6,
+        "agreements": 6,
+        "agreementRate": 1,
+        "unresolved": 0,
+        "reviewRequired": 0,
+        "reviewBurden": 0,
+        "consequentialErrors": [],
+        "disagreements": [],
+        "perAxis": {
+          "groundedness": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          },
+          "interpretive-restraint": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          },
+          "agency": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          }
+        }
+      },
+      "improvements": [
+        {
+          "labelId": "fixture-label-a",
+          "dishId": "dish_fixture_a",
+          "axisId": "groundedness"
+        }
+      ],
+      "regressions": []
+    },
+    "held-out": {
+      "baseline": {
+        "labeled": 6,
+        "agreements": 5,
+        "agreementRate": 0.8333,
+        "unresolved": 0,
+        "reviewRequired": 1,
+        "reviewBurden": 0.1667,
+        "consequentialErrors": [
+          {
+            "labelId": "fixture-label-c",
+            "dishId": "dish_fixture_c",
+            "axisId": "groundedness",
+            "expected": "specific",
+            "observed": "detached",
+            "distance": 2
+          }
+        ],
+        "disagreements": [
+          {
+            "labelId": "fixture-label-c",
+            "dishId": "dish_fixture_c",
+            "axisId": "groundedness",
+            "expected": "specific",
+            "observed": "detached",
+            "reason": "level-disagreement"
+          }
+        ],
+        "perAxis": {
+          "groundedness": {
+            "labeled": 2,
+            "agreements": 1,
+            "unresolved": 0,
+            "reviewRequired": 1,
+            "consequentialErrors": 1,
+            "agreementRate": 0.5,
+            "reviewBurden": 0.5
+          },
+          "interpretive-restraint": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          },
+          "agency": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          }
+        }
+      },
+      "candidate": {
+        "labeled": 6,
+        "agreements": 5,
+        "agreementRate": 0.8333,
+        "unresolved": 0,
+        "reviewRequired": 0,
+        "reviewBurden": 0,
+        "consequentialErrors": [],
+        "disagreements": [
+          {
+            "labelId": "fixture-label-d",
+            "dishId": "dish_fixture_d",
+            "axisId": "groundedness",
+            "expected": "partial",
+            "observed": "detached",
+            "reason": "level-disagreement"
+          }
+        ],
+        "perAxis": {
+          "groundedness": {
+            "labeled": 2,
+            "agreements": 1,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 0.5,
+            "reviewBurden": 0
+          },
+          "interpretive-restraint": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          },
+          "agency": {
+            "labeled": 2,
+            "agreements": 2,
+            "unresolved": 0,
+            "reviewRequired": 0,
+            "consequentialErrors": 0,
+            "agreementRate": 1,
+            "reviewBurden": 0
+          }
+        }
+      },
+      "improvements": [
+        {
+          "labelId": "fixture-label-c",
+          "dishId": "dish_fixture_c",
+          "axisId": "groundedness"
+        }
+      ],
+      "regressions": [
+        {
+          "labelId": "fixture-label-d",
+          "dishId": "dish_fixture_d",
+          "axisId": "groundedness"
+        }
+      ]
+    }
+  },
+  "promotion": {
+    "automatic": false,
+    "decision": "not-promoted",
+    "reason": "Rubric changes require human review; fixture labels cannot establish Burooj's taste."
+  },
+  "reportHash": "sha256:02e1c42204a3b9b41be80a688a6e574b90b2bf664c7af651b9439e179080452a"
+}

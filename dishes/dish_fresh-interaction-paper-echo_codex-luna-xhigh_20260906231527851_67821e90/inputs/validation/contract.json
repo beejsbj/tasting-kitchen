@@ -1,0 +1,30 @@
+{
+  "required": [
+    "index.html",
+    "styles.css",
+    "app.mjs",
+    "logic.mjs",
+    "data/patterns.json"
+  ],
+  "edges": [
+    [
+      "index.html",
+      "styles.css"
+    ],
+    [
+      "index.html",
+      "app.mjs"
+    ],
+    [
+      "app.mjs",
+      "logic.mjs"
+    ],
+    [
+      "app.mjs",
+      "data/patterns.json"
+    ]
+  ],
+  "immutable": {
+    "data/patterns.json": "b0d17b7bc7194a47f154506e09ffbcc950a0f63be092867321c2a615db3c529c"
+  }
+}

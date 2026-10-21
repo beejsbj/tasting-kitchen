@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "id": "hand-drawn",
+      "label": "Hand-drawn canvas animation",
+      "summary": "Whole expressive drawings, poses, graphite and ink on paper, authored as code-drawn cels.",
+      "entry": "SKILL.md",
+      "source": {
+        "repository": "https://github.com/alesha-pro/tools",
+        "commit": "90e966201add3ff41dc4ebd1348165c0cb2d5eab",
+        "path": "skills/hand-drawn-canvas-animation",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "procedural",
+      "label": "Procedural film",
+      "summary": "Drawn, paper and blueprint modes with a beat grid, procedural props and code-authored sound.",
+      "entry": "SKILL.md",
+      "source": {
+        "repository": "https://github.com/kuhnhomeuk-cell/procedural-film",
+        "commit": "f59413999ae24f6e1f9165b73a0eaa97a0b1c407",
+        "path": "skills/procedural-film",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "motion-reel",
+      "label": "Motion reel",
+      "summary": "Kinetic typography and motion-design reels with cue-driven audio and a small render studio.",
+      "entry": "SKILL.md",
+      "source": {
+        "repository": "https://github.com/alesha-pro/tools",
+        "commit": "90e966201add3ff41dc4ebd1348165c0cb2d5eab",
+        "path": "skills/motion-reel",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "code-animations",
+      "label": "Code animations",
+      "summary": "Clean technical diagrams and explanatory motion with stable visual identities.",
+      "entry": "SKILL.md",
+      "source": {
+        "repository": "https://github.com/beriki770-ship-it/code-animations",
+        "commit": "91465d3fb4ac84c741e857609897db253574aa2f",
+        "path": ".",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "lyric-music-video",
+      "label": "Lyric music video",
+      "summary": "Code-rendered lyric videos where every sung word lands on its own onset inside a deterministic scene engine.",
+      "entry": "SKILL.md",
+      "source": {
+        "repository": "https://github.com/alesha-pro/tools",
+        "commit": "90e966201add3ff41dc4ebd1348165c0cb2d5eab",
+        "path": "skills/lyric-music-video",
+        "license": "MIT"
+      }
+    }
+  ]
+}

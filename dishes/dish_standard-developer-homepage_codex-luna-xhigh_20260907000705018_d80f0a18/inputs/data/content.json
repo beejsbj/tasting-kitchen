@@ -1,0 +1,57 @@
+{
+  "fictionNotice": "Patchlane is a fictional developer tool. Commands, package names and plan terms are supplied marketing examples, not a claim that a real package or service exists. Show this near the installation example and in the footer.",
+  "product": {
+    "name": "Patchlane",
+    "descriptor": "Configuration checks for small development teams",
+    "headline": "Catch missing configuration before release.",
+    "intro": "Define the environment keys your project expects, then run a repeatable check from your terminal or CI job. Patchlane reports missing names without printing secret values.",
+    "primaryAction": "See installation",
+    "secondaryAction": "View pricing",
+    "contact": "hello@patchlane.example",
+    "contactNote": "Fictional contact address; this page does not send messages or schedule demos."
+  },
+  "features": [
+    {"title": "One expected-key list", "body": "Keep required and optional environment key names in a small project file that can be reviewed with your code."},
+    {"title": "Readable local results", "body": "See which key names are present, missing or optional. Values stay out of the report."},
+    {"title": "CI-friendly exit status", "body": "Use the same check in a pipeline. A missing required key produces a failing status so the team can investigate."},
+    {"title": "Profiles for each environment", "body": "Define separate expected-key lists for development, staging and production without copying secret values into the configuration file."},
+    {"title": "Share a check summary", "body": "Export a plain-text summary of key names and check results to include with a release note."},
+    {"title": "Team conventions", "body": "Paid plans add shared check templates and workspace roles for teams that want a common starting point."}
+  ],
+  "workflow": [
+    {"title": "List expected keys", "body": "Add the required and optional names to patchlane.json. Keep secret values in your existing environment setup."},
+    {"title": "Run a check", "body": "Use the local command while preparing a change, or run it as a CI step."},
+    {"title": "Review missing names", "body": "Read the report, update your environment and check again before releasing."}
+  ],
+  "installation": {
+    "heading": "Start with a local check",
+    "command": "npm install --save-dev @patchlane/cli",
+    "runCommand": "npx patchlane check --profile staging",
+    "filename": "patchlane.json",
+    "configSpecimen": "{\n  \"profiles\": {\n    \"staging\": {\n      \"required\": [\"APP_ORIGIN\", \"API_TOKEN\"],\n      \"optional\": [\"LOG_LEVEL\"]\n    }\n  }\n}",
+    "outputSpecimen": "Profile: staging\nAPP_ORIGIN  present\nAPI_TOKEN   missing (required)\nLOG_LEVEL   unset (optional)\n1 required key missing · exit status 1\nValues are not displayed.",
+    "note": "Illustrative commands for a fictional package. Copying does not install or run anything. The report is a static example, not a live check.",
+    "copyLabel": "Copy install command",
+    "copied": "Install command copied.",
+    "copyFailed": "Could not copy automatically. Select and copy the command below."
+  },
+  "pricing": {
+    "heading": "Simple plans for a small workflow",
+    "intro": "Illustrative prices in USD. Paid plans are billed monthly. There is no annual plan or discount in this packet. No checkout is connected.",
+    "plans": [
+      {"id": "local", "name": "Local", "monthlyPriceUsd": 0, "audience": "For individual projects", "features": ["Local and CI checks", "Unlimited local projects", "Plain-text reports", "Self-serve example documentation"], "action": "Preview Local", "preview": "Local plan preview: $0. The example install command is available on this page. No account has been created and no software has been installed."},
+      {"id": "team", "name": "Team", "monthlyPriceUsd": 12, "audience": "For one small team", "features": ["Everything in Local", "One shared workspace", "Up to 5 members", "Shared check templates", "Email support during weekday office hours"], "action": "Preview Team", "preview": "Team plan preview: $12 per workspace per month, up to 5 members. This is an illustrative selection; nothing has been purchased or activated."},
+      {"id": "studio", "name": "Studio", "monthlyPriceUsd": 39, "audience": "For teams managing several projects", "features": ["Everything in Team", "Up to 3 shared workspaces", "Up to 20 members total", "Workspace roles", "Template change history"], "action": "Preview Studio", "preview": "Studio plan preview: $39 per month, up to 3 workspaces and 20 members total. This is an illustrative selection; nothing has been purchased or activated."}
+    ]
+  },
+  "faq": [
+    {"question": "Is Patchlane a secret manager?", "answer": "No. In this fictional product brief, it checks whether expected key names are set. It does not store secrets, rotate credentials or replace your existing secret manager."},
+    {"question": "Does a passing check prove my configuration is correct?", "answer": "No. It confirms that the expected names have values. It does not prove that a token is valid, a service is reachable or the application will work."},
+    {"question": "Can I use the same check in CI?", "answer": "Yes, as described by the supplied product concept. A missing required key returns a failing exit status. The output shown on this page is only an example."},
+    {"question": "Do I need a paid plan for local checks?", "answer": "No. Local includes local and CI checks. Paid plans add shared workspaces and team features."},
+    {"question": "Is annual billing available?", "answer": "No annual option is included in this example. The paid prices shown are monthly USD prices."},
+    {"question": "Can I buy or install it from this page?", "answer": "No. Patchlane is fictional. Plan buttons show local previews and the copy button only copies the example command. There is no checkout, account creation or package execution."}
+  ],
+  "claimBoundary": "Features and plan terms above are the entire fictional product inventory. Do not add adoption metrics, customer logos, endorsements, security certifications, benchmarks, uptime promises, discounts or a working dashboard. No external docs, repository or social links are supplied; link to local installation, workflow, pricing and FAQ sections instead.",
+  "footer": "Patchlane · Fictional developer tool · Local product-page preview"
+}

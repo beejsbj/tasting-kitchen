@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "fresh-editorial-second-life",
+    "hash": "sha256:3a0adef2d084c4b01877ae8a72fd4c82d96f0f9602b6d7e6a95daf364317e891"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/brief.md",
+      "mountAs": "fixtures/brief.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:6559e972232a6250a958419fba9ff8127873987169b33e7056d858c12497fd66",
+      "bytes": 2354
+    },
+    {
+      "id": "article",
+      "path": "fixtures/article.json",
+      "mountAs": "data/article.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:ef9a2e19ba5b5d65c260697052fd0e274b679b0b9dde6d45b7cde398a259e970",
+      "bytes": 10041
+    },
+    {
+      "id": "ledger",
+      "path": "fixtures/ledger.json",
+      "mountAs": "data/ledger.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:93fde73b1179a9b9dc1ed7d4ea4bb1292316a6e2fbe73f70cf24487fed3b3c7f",
+      "bytes": 707
+    },
+    {
+      "id": "validator-contract-json",
+      "path": "validation/contract.json",
+      "mountAs": "validation/contract.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:24b8d891ba6991c34ca00afb5e65ee6d30947718b75b51738f221c3cf03ca60d",
+      "bytes": 623
+    },
+    {
+      "id": "validator-cases-json",
+      "path": "validation/cases.json",
+      "mountAs": "validation/cases.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:cdefc3318df30dced121fc5588d148a5477b6a7b292a0422525b5d7e802c736a",
+      "bytes": 5610
+    },
+    {
+      "id": "validator-mechanics-mjs",
+      "path": "validation/mechanics.mjs",
+      "mountAs": "validation/mechanics.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:5fafa4db05a7ab5fc23049ea09c1b1a53e872bb56fc8625bb7fb4df0e9f5a182",
+      "bytes": 4594
+    },
+    {
+      "id": "validator-validate-output-mjs",
+      "path": "validation/validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:f3e1397ba1b71f91629fb49ef078be5c1f0ee4e6a4c755211bd1fc082d3c38fd",
+      "bytes": 374
+    }
+  ]
+}

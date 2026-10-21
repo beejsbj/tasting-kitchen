@@ -1,0 +1,19 @@
+{
+  "upstream": {
+    "repository": "https://github.com/beejsbj/emotitone-solfrege",
+    "commit": "4cb0fdc513c60f0affd7e3cf3a1302a78af082ab",
+    "resolvedRef": "main",
+    "sourceNature": "Vue 3 and TypeScript application with Tailwind source CSS and local application assets"
+  },
+  "files": [
+    {"path": "src/reference/style.css", "upstreamPath": "src/style.css", "sha256": "e68c8640fdc55e92f44357a6a5f54bf8cd2ecbdc6ab7619bc3a88930933adddb"},
+    {"path": "src/reference/AppHeader.vue", "upstreamPath": "src/components/AppHeader.vue", "sha256": "03488ce91f397bd6ac5854c0ffddf91b8d2a934d0e14dc1a7965a98cabcdda05"},
+    {"path": "src/reference/OverlayPanelShell.vue", "upstreamPath": "src/components/OverlayPanelShell.vue", "sha256": "f8b1cc9f79e7f0b9c6e5789819ae166a370b3e1a92af25a2ac7acbfa0671a6b0"},
+    {"path": "src/reference/IconButton.vue", "upstreamPath": "src/components/ui/IconButton.vue", "sha256": "fd465a437cf992a67e6c484566725027d4359f754f850c9685feb2d2d801cd5f"},
+    {"path": "src/reference/Tabs.vue", "upstreamPath": "src/components/ui/Tabs.vue", "sha256": "216d51dfaf7fe5619669dc6943e5996850525fbc436e9e7522809c1507668455"},
+    {"path": "src/reference/TabsList.vue", "upstreamPath": "src/components/ui/TabsList.vue", "sha256": "488b9413922f30678b49410546a2d3dfc0493c0f35cf96b8bcb8ea8f87af4e65"},
+    {"path": "src/reference/TabsTrigger.vue", "upstreamPath": "src/components/ui/TabsTrigger.vue", "sha256": "254134eb355f54192ca3fdf936e582e15fe9b1c00760c2cc81e84e3f9ed9e418"},
+    {"path": "src/reference/TabsContent.vue", "upstreamPath": "src/components/ui/TabsContent.vue", "sha256": "0da396fce285e1f5a6665307ffe5c26e48925fbf90ad1c89eda1f23852b83ea0"},
+    {"path": "src/reference/solfege.ts", "upstreamPath": "src/data/solfege.ts", "sha256": "298f64acec07b1b43782afc11ae3e353f8d8d89564da592a8cd3a42691ee59c3"}
+  ]
+}

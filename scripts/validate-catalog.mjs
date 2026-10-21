@@ -1,12 +1,22 @@
 import { createHash } from "node:crypto";
-import { lstat, readFile, readdir } from "node:fs/promises";
+import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { hashCanonical } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
-import { loadConfigurationRevisions, loadRecipeRevisions } from "../lib/taste/revisions.mjs";
+import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
+import { INPUTS_MANIFEST, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
+
+const args = process.argv.slice(2);
+if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
+  console.error("Usage: node scripts/validate-catalog.mjs [--public-checkout]");
+  process.exit(1);
+}
+// Public checkout validation never reads private provenance, even when present.
+// The default remains strict: every Recipe requires valid private provenance.
+const publicCheckout = args.includes("--public-checkout");
 
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
@@ -47,7 +57,12 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
+const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
+const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source", "delivery"]);
+const allowedSkillDeliveries = new Set(["workspace", "prompt"]);
+const SKILL_SOURCE_KEYS = new Set(["repository", "commit", "path", "license"]);
+const allowedVisibilities = new Set(["public", "private"]);
 const HARNESS_KEYS = new Set(["workspace", "web", "capabilities"]);
 const SETUP_KEYS = new Set(["instructions", "fixtures"]);
 const FIXTURE_KEYS = new Set(["id", "path", "mountAs", "public", "editable", "mediaType"]);
@@ -59,7 +74,7 @@ const PRESENTATION_KEYS = new Set(["profile", "semanticRuntime"]);
 const SEMANTIC_RUNTIME_KEYS = new Set(["id", "version"]);
 const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "schema", "argv"]);
 
-const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
+const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "skill", "visibility", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
 const DISH_RECIPE_KEYS = new Set(["id", "version", "hash"]);
 const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "requestedServiceTier", "observedServiceTier", "configHash", "catalogHash"]);
 const ARTIFACT_KEYS = new Set(["kind", "entry", "preview", "treeHash", "files"]);
@@ -286,7 +301,7 @@ function validateConfigurations(doc) {
   required(doc, ["schemaVersion", "configurations"], label);
   if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
   if (!array(doc.configurations, `${label}.configurations`, { min: 1 })) return new Map();
-  if (doc.configurations.length !== 7) fail(label, `expected 7 configurations, found ${doc.configurations.length}`);
+  if (doc.configurations.length < 1) fail(label, "expected at least one configuration");
   const map = new Map();
   const tuples = [];
   const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
@@ -318,7 +333,46 @@ function validateConfigurations(doc) {
   return map;
 }
 
-async function validateRecipe(relative, cuisines, tags) {
+async function validateSkills(doc) {
+  const label = "catalog/skills.json";
+  const ids = new Map();
+  if (doc === null) return ids;
+  if (!object(doc, label)) return ids;
+  onlyKeys(doc, new Set(["schemaVersion", "skills"]), label);
+  required(doc, ["schemaVersion", "skills"], label);
+  if (doc.schemaVersion !== 1) fail(label, "schemaVersion must be 1");
+  if (!array(doc.skills, `${label}.skills`)) return ids;
+  for (const [index, skill] of doc.skills.entries()) {
+    const item = `${label}.skills[${index}]`;
+    if (!object(skill, item)) continue;
+    onlyKeys(skill, SKILL_KEYS, item);
+    required(skill, ["id", "label", "summary", "entry", "source"], item);
+    if (skill.delivery !== undefined) enumValue(skill.delivery, allowedSkillDeliveries, `${item}.delivery`);
+    string(skill.id, `${item}.id`, { pattern: IDS });
+    if (skill.id === "none") fail(item, "none is reserved for the absent layer");
+    string(skill.label, `${item}.label`, { min: 3, max: 100 });
+    string(skill.summary, `${item}.summary`, { min: 12, max: 300 });
+    safeRelative(skill.entry, `${item}.entry`);
+    if (object(skill.source, `${item}.source`)) {
+      onlyKeys(skill.source, SKILL_SOURCE_KEYS, `${item}.source`);
+      required(skill.source, [...SKILL_SOURCE_KEYS], `${item}.source`);
+      string(skill.source.repository, `${item}.source.repository`, { pattern: /^https:\/\/[^\s]+$/ });
+      string(skill.source.commit, `${item}.source.commit`, { pattern: /^[a-f0-9]{40}$/ });
+      string(skill.source.path, `${item}.source.path`);
+      string(skill.source.license, `${item}.source.license`);
+    }
+    if (ids.has(skill.id)) fail(item, `duplicate skill id ${skill.id}`);
+    const filesDirectory = `catalog/skills/${skill.id}/files`;
+    const mounted = await walk(filesDirectory, { allFiles: true });
+    if (!mounted.length) fail(item, `${filesDirectory} must contain the mounted skill source`);
+    else if (typeof skill.entry === "string" && !mounted.includes(path.join(filesDirectory, skill.entry))) fail(item, `entry ${skill.entry} is not among the mounted files`);
+    ids.set(skill.id, skill);
+  }
+  publicSafety(doc, label);
+  return ids;
+}
+
+async function validateRecipe(relative, cuisines, tags, skills) {
   const recipe = await json(relative);
   if (!recipe || !object(recipe, relative)) return null;
   onlyKeys(recipe, RECIPE_KEYS, relative);
@@ -327,6 +381,8 @@ async function validateRecipe(relative, cuisines, tags) {
   string(recipe.id, `${relative}.id`, { pattern: IDS });
   string(recipe.version, `${relative}.version`, { pattern: SEMVER });
   enumValue(recipe.status, allowedStatuses, `${relative}.status`);
+  if (recipe.visibility !== undefined) enumValue(recipe.visibility, allowedVisibilities, `${relative}.visibility`);
+  const privateRecipe = recipe.visibility === "private";
   string(recipe.title, `${relative}.title`, { min: 4, max: 100 });
   string(recipe.summary, `${relative}.summary`, { min: 12, max: 300 });
   if (array(recipe.cuisines, `${relative}.cuisines`, { min: 1 })) {
@@ -392,16 +448,43 @@ async function validateRecipe(relative, cuisines, tags) {
         string(fixture.id, `${item}.id`, { pattern: IDS });
         safeRelative(fixture.path, `${item}.path`);
         safeRelative(fixture.mountAs, `${item}.mountAs`);
-        if (fixture.public !== true) fail(item, "public catalog fixtures must set public to true");
+        boolean(fixture.public, `${item}.public`);
+        if (fixture.public === false && !privateRecipe) fail(item, "private fixtures belong only to recipes with visibility private");
         if (fixture.editable !== undefined) boolean(fixture.editable, `${item}.editable`);
         string(fixture.mediaType, `${item}.mediaType`, { pattern: MEDIA_TYPE });
         fixtureIds.push(fixture.id);
         mountPaths.push(fixture.mountAs);
+        if (fixture.public === false) {
+          // Private bytes live under the ignored private tree and may be absent on this machine.
+          const privateSource = resolveContained(path.join(root, "private", "fixtures", recipe.id), fixture.path, `${item}.path`);
+          if (privateSource) mountedFixtures.set(fixture.mountAs, privateSource);
+          continue;
+        }
         const source = resolveContained(recipeDirectory, fixture.path, `${item}.path`);
         if (source && await regularFile(source, `${item}.path`)) mountedFixtures.set(fixture.mountAs, source);
       }
       unique(fixtureIds, `${relative}.setup fixture ids`);
       unique(mountPaths, `${relative}.setup mount paths`);
+    }
+  }
+
+  if (recipe.skills !== undefined && object(recipe.skills, `${relative}.skills`)) {
+    onlyKeys(recipe.skills, SKILLS_CONTRACT_KEYS, `${relative}.skills`);
+    required(recipe.skills, ["optional", "layers"], `${relative}.skills`);
+    const skillMount = recipe.skills.mountAs ?? "skill";
+    const hasWorkspaceLayer = Array.isArray(recipe.skills.layers) && recipe.skills.layers.some((id) => (skills.get(id)?.delivery ?? "workspace") === "workspace");
+    if (safeRelative(skillMount, `${relative}.skills.mountAs`) && hasWorkspaceLayer) {
+      for (const mountPath of mountedFixtures.keys()) {
+        if (mountPath === skillMount || mountPath.startsWith(`${skillMount}/`) || skillMount.startsWith(`${mountPath}/`)) fail(`${relative}.skills.mountAs`, `collides with fixture mount ${mountPath}`);
+      }
+    }
+    boolean(recipe.skills.optional, `${relative}.skills.optional`);
+    if (array(recipe.skills.layers, `${relative}.skills.layers`, { min: 1 })) {
+      unique(recipe.skills.layers, `${relative}.skills.layers`);
+      for (const layer of recipe.skills.layers) {
+        string(layer, `${relative}.skills.layers`, { pattern: IDS });
+        if (!skills.has(layer)) fail(`${relative}.skills.layers`, `unknown skill ${layer}`);
+      }
     }
   }
 
@@ -500,7 +583,20 @@ async function validateRecipe(relative, cuisines, tags) {
   }
 
   publicSafety(recipe, relative);
-  return { recipe, relative };
+  // Hash the current contract from the same fixture bytes as loadCatalog.
+  // A private input may be absent on a public checkout; no current-hash claim
+  // can be made in that case, but old Dishes remain independently verifiable.
+  let recipeHash = null;
+  try {
+    const fixtureHashes = {};
+    for (const fixture of recipe.setup?.fixtures ?? []) {
+      const source = mountedFixtures.get(fixture.mountAs);
+      if (!source) throw new Error("fixture unavailable");
+      fixtureHashes[fixture.id] = sha256(await readFile(source));
+    }
+    recipeHash = computeRecipeHash(recipe, fixtureHashes);
+  } catch { /* Invalid public fixtures already have validation errors. */ }
+  return { recipe, relative, recipeHash };
 }
 
 async function validateProvenance(recipeRecords) {
@@ -538,7 +634,60 @@ async function validateProvenance(recipeRecords) {
   for (const [recipeId, provenance] of byRecipe) if (!recipeRecords.has(recipeId)) fail(provenance.relative, `orphan provenance for unknown recipe ${recipeId}`);
 }
 
-async function validateDish(relative, recipeRecords, revisions, configurationRevisions) {
+const exists = (target) => access(target).then(() => true, () => false);
+
+// A Dish's receipts are sidecars outside dishHash. They are optional so an
+// older Dish still validates, but when present they must be internally honest.
+async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
+  const inputsPath = path.join(dishDirectory, INPUTS_MANIFEST);
+  const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
+  const inputsRelative = path.relative(root, inputsPath);
+  const receiptRelative = path.relative(root, receiptPath);
+  if (await exists(inputsPath)) {
+    const inputs = await json(inputsRelative);
+    if (inputs && object(inputs, inputsRelative)) {
+      onlyKeys(inputs, new Set(["schemaVersion", "recipe", "fixtures"]), inputsRelative);
+      if (inputs.recipe?.id !== dish.recipe.id || inputs.recipe?.hash !== dish.recipe.hash) fail(inputsRelative, "recipe does not match the Dish");
+      if (array(inputs.fixtures, `${inputsRelative}.fixtures`)) {
+        for (const problem of await verifyInputs(dishDirectory, inputs)) fail(inputsRelative, problem);
+      }
+    }
+  }
+  if (!await exists(inputsPath)) {
+    for (const problem of await verifyInputs(dishDirectory, { fixtures: [] })) fail(inputsRelative, problem);
+  }
+  if (await exists(receiptPath)) {
+    const receipt = await json(receiptRelative);
+    const configuration = receipt?.configuration;
+    if (receipt && object(configuration, `${receiptRelative}.configuration`)) {
+      if (computeConfigHash(configuration) !== dish.identity.configHash) fail(receiptRelative, "configuration does not reproduce identity.configHash");
+      if (configuration.id !== dish.identity.variantId) fail(receiptRelative, "configuration id does not match identity.variantId");
+      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
+      for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== configuration[variantKey]) fail(receiptRelative, `identity.${dishKey} does not match the recorded configuration`);
+      const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
+      const observedTierRecorded = dish.identity.observedServiceTier !== undefined;
+      const observedTier = observedTierRecorded ? dish.identity.observedServiceTier : dish.identity.serviceTier;
+      if (requestedTier !== configuration.serviceTier) fail(receiptRelative, "identity requested service tier does not match the recorded configuration");
+      if (observedTierRecorded) {
+        if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
+        if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, "identity service tier does not match the requested tier");
+      } else if (dish.identity.requestedServiceTier !== undefined && dish.identity.serviceTier !== requestedTier) {
+        fail(relative, "identity.serviceTier must preserve the requested tier when the observed tier was not recorded");
+      } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
+        fail(relative, "identity service tier does not match the requested tier");
+      }
+    }
+    if (receipt && (dish.skill || receipt.skill != null)) {
+      try {
+        const skill = validateSkillReceipt(receipt.skill, dish.skill);
+        if (recipeRecord?.recipeHash === dish.recipe?.hash && skill.delivery === "workspace" && skill.mountAs !== (recipeRecord.recipe.skills?.mountAs ?? "skill")) fail(receiptRelative, "skill mount does not match the current Recipe contract");
+      }
+      catch (error) { fail(receiptRelative, error.message); }
+    }
+  }
+}
+
+async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
   onlyKeys(dish, DISH_KEYS, relative);
@@ -551,6 +700,15 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
   string(dish.finalizedAt, `${relative}.finalizedAt`);
   if (typeof dish.finalizedAt === "string" && (Number.isNaN(Date.parse(dish.finalizedAt)) || !dish.finalizedAt.includes("T"))) fail(relative, "finalizedAt must be an ISO date-time");
   if (dish.status !== "accepted") fail(relative, "public dish status must be accepted");
+  if (privateDish) {
+    if (dish.visibility !== "private") fail(relative, "private Dish must declare visibility private");
+  } else if ("visibility" in dish) fail(relative, "private dishes must not be published under dishes/");
+  if ("skill" in dish && object(dish.skill, `${relative}.skill`)) {
+    onlyKeys(dish.skill, new Set(["id", "hash"]), `${relative}.skill`);
+    required(dish.skill, ["id", "hash"], `${relative}.skill`);
+    string(dish.skill.id, `${relative}.skill.id`, { pattern: IDS });
+    string(dish.skill.hash, `${relative}.skill.hash`, { pattern: SHA256 });
+  }
   string(dish.dishHash, `${relative}.dishHash`, { pattern: SHA256 });
   const dishDirectory = path.dirname(path.join(root, relative));
 
@@ -563,10 +721,7 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
-    const revision = revisions.get(`${dish.recipe.id}:${dish.recipe.hash}`);
-    if (!revision) fail(`${relative}.recipe.hash`, "does not resolve to an immutable recipe revision");
-    else if (revision.version !== dish.recipe.version) fail(`${relative}.recipe.version`, "does not match the immutable recipe revision");
-    recipeRecord = revision ? { recipe: { kind: revision.execution.kind } } : recipeRecord;
+    else if (privateDish !== (recipeRecord.recipe.visibility === "private")) fail(relative, "Dish storage does not match Recipe visibility");
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
@@ -578,33 +733,14 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     }
     string(dish.identity.configHash, `${relative}.identity.configHash`, { pattern: SHA256 });
     if ("catalogHash" in dish.identity) string(dish.identity.catalogHash, `${relative}.identity.catalogHash`, { pattern: SHA256 });
-    const revision = configurationRevisions.get(dish.identity.configHash);
-    const variant = revision?.configuration;
-    if (!variant) fail(`${relative}.identity.configHash`, "does not resolve to an immutable configuration revision");
-    else {
-      if (dish.identity.variantId !== variant.id) fail(relative, `identity.variantId does not match configuration revision ${variant.id}`);
-      const comparisons = { provider: "provider", requestedModel: "model", harness: "harness", reasoningEffort: "reasoningEffort" };
-      for (const [dishKey, variantKey] of Object.entries(comparisons)) if (dish.identity[dishKey] !== variant[variantKey]) fail(relative, `identity.${dishKey} does not match variant ${variant.id}`);
-      const requestedTier = dish.identity.requestedServiceTier ?? dish.identity.serviceTier;
-      const observedTierRecorded = dish.identity.observedServiceTier !== undefined;
-      const observedTier = observedTierRecorded ? dish.identity.observedServiceTier : dish.identity.serviceTier;
-      if (requestedTier !== variant.serviceTier) fail(relative, `identity requested service tier does not match variant ${variant.id}`);
-      if (observedTierRecorded) {
-        if (dish.identity.serviceTier !== observedTier) fail(relative, "identity.serviceTier must preserve the observed service tier");
-        if (!serviceTiersMatch(requestedTier, observedTier)) fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
-      } else if (dish.identity.requestedServiceTier !== undefined && dish.identity.serviceTier !== requestedTier) {
-        fail(relative, "identity.serviceTier must preserve the requested tier when the observed tier was not recorded");
-      } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
-        fail(relative, `identity service tier does not match the requested tier for variant ${variant.id}`);
-      }
-    }
+    await validateSidecars(relative, dish, dishDirectory, recipeRecord);
   }
 
   if (object(dish.artifact, `${relative}.artifact`)) {
     onlyKeys(dish.artifact, ARTIFACT_KEYS, `${relative}.artifact`);
     required(dish.artifact, ["kind", "entry", "files", "treeHash"], `${relative}.artifact`);
     enumValue(dish.artifact.kind, allowedKinds, `${relative}.artifact.kind`);
-    if (recipeRecord && dish.artifact.kind !== recipeRecord.recipe.kind) fail(relative, "dish artifact kind does not match recipe kind");
+    if (recipeRecord?.recipeHash === dish.recipe?.hash && dish.artifact.kind !== recipeRecord.recipe.kind) fail(relative, "dish artifact kind does not match recipe kind");
     safeRelative(dish.artifact.entry, `${relative}.artifact.entry`);
     if ("preview" in dish.artifact) safeRelative(dish.artifact.preview, `${relative}.artifact.preview`);
     string(dish.artifact.treeHash, `${relative}.artifact.treeHash`, { pattern: SHA256 });
@@ -652,7 +788,7 @@ async function validateDish(relative, recipeRecords, revisions, configurationRev
     if (trace) await regularFile(trace, `${relative}.publicTrace`);
   }
 
-  publicSafety(dish, relative);
+  if (!privateDish) publicSafety(dish, relative);
   const { dishHash, ...dishWithoutHash } = dish;
   if (dishHash !== hashCanonical(dishWithoutHash)) {
     fail(`${relative}.dishHash`, "does not match the canonical dish manifest");
@@ -712,13 +848,22 @@ async function validateReview(relative, dishes) {
   return review;
 }
 
+// Mounted skill sources are third-party public code. They are scanned for
+// leaked credentials and private machine paths, not for prose conventions.
+const skillSourcePatterns = new Set(["private Unix home path", "private Windows home path", "private key", "provider credential variable", "API-key-like value", "private evidence ID"]);
+
 async function scanPublicCatalog() {
   const files = await walk("catalog", { allFiles: true });
   for (const relative of files) {
     const absolute = path.join(root, relative);
     const contents = await readFile(absolute);
     if (contents.includes(0)) continue;
-    scanText(contents.toString("utf8"), relative);
+    const text = contents.toString("utf8");
+    if (/^catalog\/skills\/[^/]+\/files\//.test(relative.split(path.sep).join("/"))) {
+      for (const { name, pattern } of publicLeakPatterns) if (skillSourcePatterns.has(name) && pattern.test(text)) fail(relative, `public-safety scan matched ${name}`);
+      continue;
+    }
+    scanText(text, relative);
   }
 }
 
@@ -744,41 +889,38 @@ const variantsDoc = await json("catalog/configurations.json");
 const cuisines = validateCuisines(cuisinesDoc);
 const tags = validateTags(tagsDoc);
 const variants = validateConfigurations(variantsDoc);
+const skillsDoc = (await walk("catalog", { basename: "skills.json" })).length ? await json("catalog/skills.json") : null;
+const skills = await validateSkills(skillsDoc);
 
 const recipeFiles = await walk("catalog/recipes", { basename: "recipe.json" });
 const recipeRecords = new Map();
 for (const relative of recipeFiles.sort()) {
-  const record = await validateRecipe(relative, cuisines, tags);
+  const record = await validateRecipe(relative, cuisines, tags, skills);
   if (!record) continue;
   if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
   recipeRecords.set(record.recipe.id, record);
 }
 
-await validateProvenance(recipeRecords);
-
-let revisions = new Map();
-try {
-  const loaded = await loadRecipeRevisions(root);
-  revisions = new Map(loaded.map((revision) => [`${revision.recipeId}:${revision.hash}`, revision]));
-} catch (error) {
-  fail("catalog/revisions", `could not load immutable recipe revisions: ${error.message}`);
-}
-
-let configurationRevisions = new Map();
-try {
-  const loaded = await loadConfigurationRevisions(root);
-  configurationRevisions = new Map(loaded.map((revision) => [revision.hash, revision]));
-} catch (error) {
-  fail("catalog/revisions", `could not load immutable configuration revisions: ${error.message}`);
-}
+if (!publicCheckout) await validateProvenance(recipeRecords);
 
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
 for (const relative of dishFiles.sort()) {
-  const dish = await validateDish(relative, recipeRecords, revisions, configurationRevisions);
+  const dish = await validateDish(relative, recipeRecords);
   if (!dish) continue;
   if (dishes.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
   dishes.set(dish.id, dish);
+}
+
+// Owner validation covers private accepted artifacts with the same immutable
+// manifest, bytes, receipt and tree checks. Public checkouts never read them.
+const privateDishFiles = publicCheckout ? [] : await walk("private/dishes", { basename: "dish.json" });
+const allDishIds = new Set(dishes.keys());
+for (const relative of privateDishFiles.sort()) {
+  const dish = await validateDish(relative, recipeRecords, { privateDish: true });
+  if (!dish) continue;
+  if (allDishIds.has(dish.id)) fail(relative, `duplicate dish id ${dish.id}`);
+  allDishIds.add(dish.id);
 }
 
 const reviewFiles = await walk("reviews", { allFiles: true });
@@ -794,6 +936,14 @@ for (const relative of reviewFiles.sort()) {
   reviewIds.add(review.id);
 }
 
+let axisSets = [];
+try {
+  axisSets = await loadAxisSets(root);
+  await loadObservations(root, { dishes: [...dishes.values()], axisSets });
+} catch (error) {
+  fail("observations", error.message);
+}
+
 await scanPublicCatalog();
 
 if (errors.length) {
@@ -802,4 +952,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${publicCheckout ? "private provenance skipped (--public-checkout)" : `${recipeRecords.size} private provenance records checked`}.`);

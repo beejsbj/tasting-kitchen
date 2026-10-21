@@ -1,0 +1,73 @@
+{
+  "fictionNotice": "Maya Chen, her employers, education and projects are original fictional content for this portfolio exercise. Include a discreet fictional-portfolio notice in the footer.",
+  "person": {
+    "name": "Maya Chen",
+    "role": "Frontend developer",
+    "location": "Ottawa, Ontario",
+    "headline": "I build clear, usable websites and product interfaces.",
+    "intro": "I'm a frontend developer working with small product teams. I enjoy turning a well-defined problem into a responsive interface that people can understand and use with confidence.",
+    "availability": "Open to frontend roles and small website projects. Remote within Canada or hybrid in Ottawa.",
+    "email": "maya@mayachen.example",
+    "contactCopy": "Have a frontend role or a small website project in mind? The fictional contact address is shown here for context. This preview does not send messages.",
+    "about": ["I came to frontend development through maintaining a community newsletter website. I liked the mix of careful implementation and small decisions that make a page easier to use.", "My recent work has focused on forms, content-heavy pages and component libraries. I like collaborating with designers, documenting tradeoffs and leaving code that another developer can pick up.", "Away from the screen, I enjoy cooking, neighbourhood walks and sketching buildings. I'm currently practising accessible form patterns and learning more about browser performance tools."]
+  },
+  "skills": [
+    {"group": "Frontend", "items": ["Semantic HTML", "CSS", "JavaScript", "TypeScript", "React"]},
+    {"group": "Working practices", "items": ["Responsive layouts", "Keyboard accessibility", "Component documentation", "Git", "Browser testing"]},
+    {"group": "Tools", "items": ["Vite", "Playwright", "Figma handoff"]}
+  ],
+  "projectCategories": ["All", "Websites", "Product UI"],
+  "projects": [
+    {
+      "id": "cedar-classes",
+      "title": "Cedar Classes",
+      "category": "Websites",
+      "year": "2025",
+      "summary": "A community studio website that makes class descriptions, schedules and booking information easy to find.",
+      "role": "Frontend development and content structure, personal demonstration project",
+      "stack": ["HTML", "CSS", "JavaScript"],
+      "problem": "The fictional studio's class details were scattered across long pages, so a visitor had to hunt for the time, skill level and materials list.",
+      "approach": "I grouped classes into a consistent card structure and gave each class a detail section with its schedule, prerequisites and supplies. The small-screen navigation keeps the class list one tap away.",
+      "result": "The completed demonstration includes six class pages, responsive navigation and a local booking enquiry preview. There is no live booking service or measured conversion result.",
+      "learning": "Writing the content structure before choosing a layout helped keep the cards consistent without hiding useful detail.",
+      "linksNote": "This local case study is the available project material. A hosted demo and public repository are not available."
+    },
+    {
+      "id": "stockroom-notes",
+      "title": "Stockroom Notes",
+      "category": "Product UI",
+      "year": "2025",
+      "summary": "A small inventory interface for recording supplies and flagging items that need attention.",
+      "role": "Frontend implementation, independent practice project",
+      "stack": ["React", "TypeScript", "CSS"],
+      "problem": "A fictional workshop needed a readable way to review stock counts without presenting every editing control at once.",
+      "approach": "I built a searchable table with clear stock states and a focused edit panel. Form labels, validation and keyboard focus were treated as part of the interface from the start.",
+      "result": "The prototype supports searching, editing local sample records and reviewing low-stock items. It has no backend, production users or published performance measurements.",
+      "learning": "Keeping the edit panel focused on one record made error messages easier to explain and test.",
+      "linksNote": "Read this local case study. The original prototype and its source are not publicly available."
+    },
+    {
+      "id": "fieldwork-journal",
+      "title": "Fieldwork Journal",
+      "category": "Websites",
+      "year": "2024",
+      "summary": "A reading-focused website for a fictional independent design journal.",
+      "role": "Frontend development from a self-written brief",
+      "stack": ["HTML", "CSS", "JavaScript"],
+      "problem": "The journal needed an article template that could handle short announcements and longer essays without separate layouts for every story.",
+      "approach": "I created a shared reading layout, article metadata and related-story links, then checked headings and line length at narrow and wide widths.",
+      "result": "The static demonstration contains an issue index and four sample articles. It is a portfolio exercise, with no audience or engagement figures claimed.",
+      "learning": "A restrained template gave the writing room and made inconsistent spacing much easier to spot.",
+      "linksNote": "The case study on this page is the supplied record. No external publication or repository link is available."
+    }
+  ],
+  "experience": [
+    {"company": "Common Desk Software", "role": "Frontend developer", "dates": "2024–present", "description": "Implement interface updates for a small scheduling product in collaboration with a designer and two other developers.", "contributions": ["Build and maintain React components for settings and account forms.", "Document component states and review changes for keyboard use.", "Write browser tests for recurring form and navigation flows."]},
+    {"company": "Maple Row Studio", "role": "Junior web developer", "dates": "2022–2024", "description": "Worked on small business websites and ongoing content updates in a four-person studio.", "contributions": ["Built responsive page sections from supplied designs and copy.", "Maintained reusable HTML and CSS patterns across brochure sites.", "Checked releases in major desktop and mobile browsers."]}
+  ],
+  "education": {"qualification": "Diploma in Web Development", "institution": "Ottawa Technical College (fictional)", "year": "2022"},
+  "linkPolicy": "Use local project detail anchors and contact/experience anchors. No social profiles, external project URLs, live demos or downloadable CV file are supplied. Omit those actions or show an explicit unavailable note; never use empty or dummy links. Do not build the projects described in these case studies.",
+  "filterCopy": {"label": "Filter projects", "all": "All projects", "empty": "No projects in this category."},
+  "claimBoundary": "Use only the supplied biography, employment, skills and project outcomes. Do not add customers, degrees, certifications, metrics, endorsements or testimonials.",
+  "footer": "Maya Chen · Fictional developer portfolio · Contact shown for preview only"
+}

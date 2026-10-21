@@ -1,0 +1,30 @@
+{
+  "required": [
+    "index.html",
+    "styles.css",
+    "app.mjs",
+    "logic.mjs",
+    "data/product.json"
+  ],
+  "edges": [
+    [
+      "index.html",
+      "styles.css"
+    ],
+    [
+      "index.html",
+      "app.mjs"
+    ],
+    [
+      "app.mjs",
+      "logic.mjs"
+    ],
+    [
+      "app.mjs",
+      "data/product.json"
+    ]
+  ],
+  "immutable": {
+    "data/product.json": "8c62b24cd3d8dba2fb079dd7253f685199e87a27013341a6b658b2324c9fa64a"
+  }
+}

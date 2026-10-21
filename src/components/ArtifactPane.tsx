@@ -40,7 +40,7 @@ function ArtifactReviewMark({ reviews }: { reviews: ArtifactReview[] }) {
 
 export function ArtifactPane({ recipe, variant, dish, reviews = [] }: { recipe: Recipe; variant: Variant; dish?: Dish; reviews?: ArtifactReview[] }) {
   const supported = recipeSupported(recipe, variant);
-  if (!supported) return <section className="artifact-pane artifact-pane--empty"><div><span>Unsupported by this harness</span><h2>{variantTasteLabel(variant)}</h2><p>This recipe needs {recipe.harness.capabilities.filter((item) => !variant.capabilities.includes(item)).join(", ")}.</p></div></section>;
+  if (!dish && !supported) return <section className="artifact-pane artifact-pane--empty"><div><span>Unsupported by this harness</span><h2>{variantTasteLabel(variant)}</h2><p>This recipe needs {recipe.harness.capabilities.filter((item) => !variant.capabilities.includes(item)).join(", ")}.</p></div></section>;
   if (!dish) return <section className="artifact-pane artifact-pane--empty"><div><span>{recipe.status === "draft" ? "Recipe draft" : "Not tasted yet"}</span><h2>{variantTasteLabel(variant)}</h2><p>Run this recipe with the CLI to add its dish to the kitchen.</p></div></section>;
   if (dish.artifact.kind === "web") return <section className="artifact-pane"><ArtifactReviewMark reviews={reviews} /><iframe src={artifactUrl(dish)} title={`${recipe.title} by ${variant.label}`} sandbox="allow-scripts allow-forms" /></section>;
   if (dish.artifact.kind === "image") return <section className="artifact-pane artifact-pane--image"><ArtifactReviewMark reviews={reviews} /><img src={artifactUrl(dish)} alt={`${recipe.title} by ${variant.label}`} /></section>;

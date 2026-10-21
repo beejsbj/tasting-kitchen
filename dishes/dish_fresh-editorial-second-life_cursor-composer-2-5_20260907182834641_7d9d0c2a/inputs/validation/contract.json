@@ -1,0 +1,36 @@
+{
+  "required": [
+    "index.html",
+    "styles.css",
+    "app.mjs",
+    "logic.mjs",
+    "data/article.json",
+    "data/ledger.json"
+  ],
+  "edges": [
+    [
+      "index.html",
+      "styles.css"
+    ],
+    [
+      "index.html",
+      "app.mjs"
+    ],
+    [
+      "app.mjs",
+      "logic.mjs"
+    ],
+    [
+      "app.mjs",
+      "data/article.json"
+    ],
+    [
+      "app.mjs",
+      "data/ledger.json"
+    ]
+  ],
+  "immutable": {
+    "data/article.json": "ef9a2e19ba5b5d65c260697052fd0e274b679b0b9dde6d45b7cde398a259e970",
+    "data/ledger.json": "93fde73b1179a9b9dc1ed7d4ea4bb1292316a6e2fbe73f70cf24487fed3b3c7f"
+  }
+}

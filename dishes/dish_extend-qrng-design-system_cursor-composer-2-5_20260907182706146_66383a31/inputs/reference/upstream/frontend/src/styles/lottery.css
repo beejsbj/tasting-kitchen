@@ -1,0 +1,808 @@
+inner-column {
+  display: grid;
+  gap: clamp(12px, 1.8vw, 22px);
+  /*box-shadow: 5px 5px 105px  dimgray;*/
+  overflow: visible;
+}
+
+inner-column > h1 {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+}
+
+ol {
+  display: grid;
+  gap: 5px;
+  list-style-type: decimal;
+  list-style-position: inside;
+  font-size: 1.5rem;
+}
+
+past-card ol {
+  list-style-type: none;
+  gap: 10px;
+}
+
+rules-card {
+  display: grid;
+  grid-row: 2 / 3;
+  background: transparent;
+  align-content: start;
+  min-height: clamp(390px, 34vw, 460px);
+  perspective: 1100px;
+}
+
+.rules-card-inner {
+  display: grid;
+  min-height: inherit;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.2, 0.8, 0.15, 1);
+}
+
+rules-card.is-flipped .rules-card-inner {
+  transform: rotateY(180deg);
+}
+
+.rules-face {
+  backface-visibility: hidden;
+  background-color: hsla(60, 100%, 100%, 1);
+  background-image: url("../assets/paper.jpg");
+  background-size: cover;
+  border: 4px solid black;
+  box-shadow: -8px 8px 0 rgba(0, 0, 0, 0.9);
+  color: black;
+  display: grid;
+  gap: 18px;
+  grid-area: 1 / 1;
+  inset: 0;
+  min-height: 100%;
+  padding: clamp(18px, 2vw, 26px);
+  position: absolute;
+  transform: rotate(0deg);
+}
+
+.rules-back {
+  background-blend-mode: multiply;
+  background-color: rgba(255, 255, 190, 0.96);
+  transform: rotateY(180deg);
+}
+
+rules-card ol {
+  display: grid;
+  gap: 13px;
+  list-style-position: outside;
+  padding-left: 1.2em;
+}
+
+rules-card li {
+  font-size: clamp(1.02rem, 2.2vw, 1.45rem);
+  line-height: 1.05;
+  max-width: none;
+}
+
+rules-card li::marker {
+  color: var(--shade);
+  font-family: "expose", "Luckiest Guy", cursive;
+}
+
+rules-card h2 {
+  text-align: center;
+  font-size: clamp(2.1rem, 4.6vw, 3rem);
+}
+
+bid-card ticket-card,
+bid-card text-content {
+  background-color: var(--shade);
+  background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.12), transparent 45%),
+    url("../assets/paper.jpg");
+  background-blend-mode: multiply;
+  border: 4px solid black;
+  color: white;
+  padding: clamp(16px, 2vw, 24px);
+  text-align: center;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  justify-items: center;
+  position: relative;
+}
+
+bid-card ticket-card::before,
+past-card::before {
+  background: black;
+  content: "";
+  height: 10px;
+  left: 18%;
+  position: absolute;
+  right: 18%;
+  top: -7px;
+  transform: rotate(-1deg);
+}
+
+past-card {
+  background-color: var(--shade);
+  background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.18), transparent 50%),
+    url("../assets/paper.jpg");
+  background-blend-mode: multiply;
+  border: 4px solid black;
+  color: white;
+  padding: clamp(16px, 1.8vw, 22px);
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  justify-items: stretch;
+  position: relative;
+}
+
+ticket-card div {
+	display: flex;
+	justify-content: space-between;
+	justify-self: stretch;
+	padding: 0 20px;
+	align-items: center;
+}
+
+bid-card{
+	display: grid;
+	grid-template-rows: 1fr 1fr;
+	gap: 10px;
+}
+
+bid-card input {
+  width: 100%;
+}
+
+bid-card text-content {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  justify-items: center;
+}
+
+bid-card h2,
+bid-card .bid-form label,
+past-card h2 {
+  display: block;
+  background-color: black;
+  padding: 5px;
+  transform: rotate(1deg);
+}
+
+bid-card header,
+ticket-card header,
+past-card header,
+rules-card header {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.ticket-kicker {
+  background: yellow;
+  color: black;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 3px 6px;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+.ticket-counter {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(48px, 0.7fr) minmax(78px, 1fr) minmax(48px, 0.7fr);
+  justify-self: stretch;
+  padding: 0;
+}
+
+.ticket-box {
+  align-content: center;
+  background: white;
+  color: var(--shade);
+  display: grid;
+  justify-items: center;
+  line-height: 0.9;
+  padding: 10px 4px;
+  transform: rotate(-1deg);
+}
+
+.ticket-box span {
+  display: block;
+}
+
+.ticket-box small,
+.ticket-limit,
+.bid-note {
+  font-family: monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ticket-limit,
+.bid-note {
+  opacity: 0.9;
+}
+
+#current-bid {
+  background: black;
+  color: white;
+  display: inline-block;
+  line-height: 0.95;
+  padding: 8px 12px;
+  transform: rotate(-1deg);
+}
+
+.winner-board {
+  display: grid;
+  gap: 9px;
+  list-style: none;
+}
+
+.winner-row {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.86);
+  color: white;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 36px minmax(42px, 0.7fr) minmax(70px, 1fr);
+  max-width: none;
+  padding: 8px;
+  position: relative;
+  transform: rotate(-0.5deg);
+}
+
+.winner-row:nth-child(even) {
+  transform: rotate(0.7deg);
+}
+
+.winner-row.latest {
+  background: black;
+  box-shadow: -4px 4px 0 yellow;
+}
+
+.winner-rank,
+.winner-week {
+  font-family: monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.winner-number {
+  background: white;
+  color: var(--shade);
+  font-family: "expose", "Luckiest Guy", cursive;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 0.8;
+  padding: 4px;
+  text-align: center;
+}
+
+.winner-pot {
+  font-family: "Luckiest Guy", cursive;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  overflow-wrap: anywhere;
+}
+
+.winner-week {
+  color: yellow;
+  grid-column: 2 / -1;
+  justify-self: end;
+}
+
+.rules-flip {
+  background: black;
+  border: 0;
+  color: white;
+  cursor: url(../assets/pointer.cur), pointer;
+  font-family: "Luckiest Guy", cursive;
+  justify-self: center;
+  padding: 8px 12px;
+  transform: rotate(-1deg);
+}
+
+.rules-flip:hover,
+.rules-flip:focus-visible {
+  background: var(--shade);
+  outline: 3px solid yellow;
+}
+
+@media (min-width: 600px) and (max-width: 925px) {
+  inner-column {
+	  grid-template-columns: repeat(12, 1fr);
+    width: min(calc(100% - 28px), var(--standard));
+	}
+ 
+	inner-column > h1 {
+	  grid-column: span 12;
+	}
+	bid-card {
+		grid-column: 1 / -1;
+
+		/* transform: rotate(-2deg); */
+		box-shadow: -5px -5px black;
+		grid-template-columns: repeat(12, 1fr);
+		grid-template-rows: 1fr;
+	 }
+	 bid-card ticket-card {
+		order: 2;
+		grid-column: 5 / -1;
+	 }
+
+	 bid-card text-content {
+		order: 1;
+		grid-column: 1/5;
+	 }
+  
+	 past-card {
+		grid-row: 3 / 4;
+
+		grid-column: 1 / 5;
+		/* transform: rotate(-2deg); */
+		box-shadow: -5px -5px black;
+	 }
+	lottery-module {
+		grid-row: 2 / 4;
+
+		grid-column: 5 / -1;
+	 }
+	 rules-card {
+		grid-row: 2 / 3;
+		grid-column: 1 / 5;
+		/* transform: rotate(2deg); */
+	 }
+  
+	 .flipdown {
+		grid-column: 1 / -1;
+		align-self: stretch;
+	 }
+	}
+
+@media (min-width: 925px) {
+  inner-column {
+    grid-template-columns: repeat(12, 1fr);
+    width: min(calc(100% - 48px), var(--standard));
+  }
+
+  inner-column > h1 {
+    grid-column: span 12;
+  }
+
+  lottery-module {
+    grid-column: 6 / 13;
+    grid-row: 2 / 5;
+  }
+
+  bid-card {
+    grid-row: 2 / 3;
+    grid-column: 1 / 4;
+    transform: rotate(-2deg);
+    box-shadow: -5px -5px black;
+  }
+
+  past-card {
+    grid-column: 4 / 6;
+    grid-row: 2 / 3;
+    transform: rotate(-2deg);
+    box-shadow: -5px -5px black;
+  }
+
+  rules-card {
+    grid-column-start: 1;
+    grid-column: 1 / 6;
+    grid-row: 3 / 4;
+    transform: rotate(2deg);
+  }
+
+  .flipdown {
+    grid-row: 5 / 6;
+    grid-column: 1 / 6;
+    align-self: stretch;
+  }
+}
+
+@media (min-width: 1500px) {
+  lottery-module {
+    grid-row: 2 / 5;
+    grid-column: 6 / 13;
+  }
+
+  lottery-module ul {
+    gap: 30px;
+  }
+  rules-card {
+    /* grid-row: 3 / 5; */
+  }
+}
+
+lottery-module {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+lottery-module > * {
+  transition: 0.2s;
+  border-radius: 5px;
+}
+
+lottery-module .buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* overflow: hidden; */
+  min-width: 0;
+}
+
+lottery-module .buttons button {
+  padding: 20px;
+  width: 100%;
+}
+
+.board-status {
+  background: white;
+  border-left: 4px solid black;
+  border-right: 4px solid black;
+  color: black;
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.board-status span {
+  background: black;
+  color: yellow;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  padding: 4px 9px;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+}
+
+lottery-module ul {
+  background-color: black;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  justify-items: center;
+  gap: clamp(7px, 1.2vw, 14px);
+  padding: clamp(14px, 2vw, 24px);
+  width: 100%;
+  overflow: visible;
+  transform-origin: center;
+}
+
+lottery-module ul li {
+  display: grid;
+  justify-items: center;
+  max-width: none;
+  min-width: 0;
+  width: 100%;
+}
+
+lottery-module ul .dials {
+  border-radius: 50%;
+  background-color: var(--shade);
+  display: none;
+}
+
+lottery-module ul label {
+  aspect-ratio: 1 / 1;
+  background-color: white;
+  display: block;
+  position: relative;
+  cursor: url(../assets/pointer.cur), pointer;
+  color: black;
+  transition: 0.2s;
+  width: clamp(42px, 5.2vw, 64px);
+  max-width: 100%;
+}
+
+lottery-module ul li:nth-of-type(3n + 1) label {
+  animation: passiveSkew 2.4s steps(2, end) 3;
+}
+
+lottery-module ul li:nth-of-type(3n + 2) label {
+  animation: passiveSkew 2.6s steps(2, end) 3 reverse;
+}
+
+lottery-module ul li:nth-of-type(3n + 3) label {
+  animation: passiveSkew 2.2s steps(2, end) 3 -0.5s;
+}
+
+lottery-module ul li:nth-of-type(odd) label:hover {
+  transition: 0.01s;
+  filter: sepia(50%) saturate(3);
+  /*background-color: hsla(60, 100%, 50%, 1.00);*/
+  animation: tiltScale 0.1s;
+  transform: scale(1.14) rotate(-13deg);
+  font-family: "expose";
+  background-color: transparent;
+  color: black;
+}
+
+lottery-module ul li:nth-of-type(even) label:hover {
+  transition: 0.01s;
+  filter: sepia(50%) saturate(3);
+  animation: alttiltScale 0.1s;
+  transform: scale(1.14) rotate(13deg);
+  background-color: transparent;
+  color: black;
+}
+
+lottery-module ul label span {
+  font-family: "Luckiest Guy", cursive;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+lottery-module label:hover span {
+  font-family: "expose";
+  font-size: 1.3rem;
+}
+
+/*labels after and before psedo elements*/
+lottery-module ul label::after,
+lottery-module ul label::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) skew(20deg) scale(0, 0.2);
+  background-color: hsla(0, 100%, 45%, 1);
+  transition: 0.3s;
+  z-index: 100;
+  padding: 50%;
+}
+lottery-module ul label::before {
+  background-color: hsla(180, 100%, 50%, 1);
+  mix-blend-mode: screen;
+}
+
+lottery-module ul .dials + label:hover::after {
+  mix-blend-mode: color-burn;
+  transition: 0.01s;
+  animation: joltalt 0.15s ease-out, jelly infinite 0.4s 0.2s;
+}
+
+lottery-module ul .dials + label:hover::before {
+  mix-blend-mode: difference;
+  transition: 0.01s;
+  animation: jolt 0.15s ease-out, jelly infinite 0.4s 0.4s;
+}
+
+/*checked stuff*/
+lottery-module ul li:nth-of-type(odd) .dials:checked + label {
+  transition: 10ms;
+  background-color: yellow;
+  transform: scale(1.14) rotate(-13deg);
+  animation: slipPunch 180ms steps(2, end) both;
+}
+
+lottery-module ul li:nth-of-type(even) .dials:checked + label {
+  transition: 10ms;
+
+  background-color: yellow;
+  transform: scale(1.14) rotate(13deg);
+  animation: slipPunchAlt 180ms steps(2, end) both;
+}
+
+lottery-module .dials:checked + label span {
+  font-family: "expose";
+  font-size: 1.5rem;
+}
+
+lottery-module ul li .dials:checked + label::after {
+  transform: translate(-50%, -50%) skew(20deg) scale(1.4, 0.1) !important;
+}
+
+lottery-module ul li .dials:checked + label::before {
+  transform: translate(-50%, -50%) skew(-20deg) scale(0.1, 1.2) !important;
+}
+
+/*final result style*/
+.final-result {
+  position: fixed;
+  z-index: 99999999;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(3) rotate(5deg);
+  padding: 20px;
+  background-color: red;
+  background-image: url("../assets/paper.jpg");
+  background-size: cover;
+  background-blend-mode: multiply;
+  color: white;
+  border: 5px solid black;
+  animation: bigStamp 0.1s both;
+  text-align: center;
+}
+
+.final-result span {
+  color: black;
+}
+
+.final-result.hide {
+  display: none;
+}
+
+
+.ticket-box {
+	aspect-ratio: 1 / 1;
+	width: 50px;
+}
+
+
+/* ended lottery
+ */
+.lottery-ended {
+  position: relative;
+}
+.lottery-ended form {
+	pointer-events: none;
+	filter: grayscale(0.5) saturate(0.5) opacity(0.8) contrast(0.5) brightness(0.5) blur(0.5px) drop-shadow(0 0 0.5px black) ;
+}
+
+.reset-lottery {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -100%) rotate(-10deg);
+	z-index: 1;
+	color: white;
+}
+
+.reset-lottery button,
+.reset-lottery .attention-voice {
+	font-size: clamp(2.3rem, 6vw, 5rem);
+	border-radius: 0;
+}
+
+.lottery-ended-rules .rules-face {
+  background-blend-mode: multiply;
+  background-color: rgba(255, 255, 210, 0.97);
+}
+
+
+.pot-beat-change {
+  animation: potBeatChange 1s cubic-bezier(0.54, -0.75, 0, 1.64);
+}
+
+.dial-board.is-rolling {
+  animation: boardShuffle 680ms steps(5, end) both;
+}
+
+lottery-module ul .punched-slip::after {
+  animation: joltalt 0.16s ease-out;
+}
+
+lottery-module ul .punched-slip::before {
+  animation: jolt 0.16s ease-out;
+}
+
+@media (max-width: 599px) {
+  inner-column {
+    gap: 14px;
+    grid-template-columns: 1fr;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 24px;
+    width: min(calc(100% - 28px), var(--standard));
+  }
+
+  inner-column > h1 {
+    margin-bottom: 6px;
+    order: 0;
+  }
+
+  lottery-module {
+    grid-column: auto;
+    grid-row: auto;
+    order: 1;
+    width: 100%;
+  }
+
+  bid-card {
+    grid-column: auto;
+    grid-row: auto;
+    order: 2;
+    width: 100%;
+  }
+
+  past-card {
+    grid-column: auto;
+    grid-row: auto;
+    order: 4;
+    width: 100%;
+  }
+
+  rules-card {
+    grid-column: auto;
+    grid-row: auto;
+    order: 5;
+    width: 100%;
+  }
+
+  .flipdown {
+    grid-column: auto;
+    grid-row: auto;
+    order: 6;
+  }
+
+  lottery-module ul {
+    gap: 4px;
+    padding: 12px 8px;
+  }
+
+  lottery-module ul label {
+    width: clamp(34px, 11.5vw, 42px);
+  }
+
+  lottery-module .buttons button {
+    font-size: clamp(1.35rem, 10vw, 2.1rem);
+    min-width: 0;
+    padding: 16px 8px;
+  }
+
+  bid-card ticket-card,
+  bid-card text-content,
+  past-card,
+  rules-card {
+    padding: 16px;
+  }
+
+  ticket-card div {
+    padding: 0;
+  }
+
+  bid-card,
+  past-card,
+  rules-card {
+    transform: none;
+  }
+
+  rules-card {
+    min-height: 430px;
+  }
+
+  rules-card li {
+    font-size: clamp(1rem, 5.2vw, 1.22rem);
+  }
+
+  .ticket-counter {
+    grid-template-columns: minmax(44px, 0.6fr) minmax(74px, 1fr) minmax(44px, 0.6fr);
+  }
+
+  .winner-row {
+    grid-template-columns: 34px minmax(44px, 0.7fr) 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rules-card-inner {
+    transition: none;
+  }
+}
+
+@keyframes potBeatChange {
+  0% {
+	 transform: scale(1) rotate(0deg);
+  }
+  50% {
+	 transform: scale(2) rotate(5deg);
+  }
+  100% {
+	 transform: scale(1) rotate(0deg);
+  }
+}

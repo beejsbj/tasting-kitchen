@@ -1,0 +1,34 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 24,
+  "duration": 24,
+  "frames": 576,
+  "beats": [
+    {
+      "id": "notice",
+      "start": 4,
+      "end": 7
+    },
+    {
+      "id": "offer-a",
+      "start": 8,
+      "end": 10
+    },
+    {
+      "id": "offer-b",
+      "start": 11,
+      "end": 13
+    },
+    {
+      "id": "move-bag",
+      "start": 15,
+      "end": 18
+    },
+    {
+      "id": "share",
+      "start": 20,
+      "end": 23.5
+    }
+  ]
+}

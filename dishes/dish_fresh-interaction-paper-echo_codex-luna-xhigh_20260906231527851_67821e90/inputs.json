@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "fresh-interaction-paper-echo",
+    "hash": "sha256:b23668ce0e1ecbbce76cc8a020de4958908895e917d30387600264908bd9354a"
+  },
+  "fixtures": [
+    {
+      "id": "brief",
+      "path": "fixtures/brief.md",
+      "mountAs": "fixtures/brief.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:497166321cecbb4bc8fa0b7b3e5302abb8d2ff50c8719c04f5dc54f96b486ec5",
+      "bytes": 3077
+    },
+    {
+      "id": "patterns",
+      "path": "fixtures/patterns.json",
+      "mountAs": "data/patterns.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:b0d17b7bc7194a47f154506e09ffbcc950a0f63be092867321c2a615db3c529c",
+      "bytes": 968
+    },
+    {
+      "id": "validator-contract-json",
+      "path": "validation/contract.json",
+      "mountAs": "validation/contract.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:333b555a6dcd759a1e3f1b9299fe2f964da33539e049e6ac53c0027ff931edd5",
+      "bytes": 455
+    },
+    {
+      "id": "validator-cases-json",
+      "path": "validation/cases.json",
+      "mountAs": "validation/cases.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:92c97fd8f64b7b0273a95e47fd2af9d22c9a741c0912a546ef011bd91e682e94",
+      "bytes": 75568
+    },
+    {
+      "id": "validator-mechanics-mjs",
+      "path": "validation/mechanics.mjs",
+      "mountAs": "validation/mechanics.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:5fafa4db05a7ab5fc23049ea09c1b1a53e872bb56fc8625bb7fb4df0e9f5a182",
+      "bytes": 4594
+    },
+    {
+      "id": "validator-validate-output-mjs",
+      "path": "validation/validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:f3e1397ba1b71f91629fb49ef078be5c1f0ee4e6a4c755211bd1fc082d3c38fd",
+      "bytes": 374
+    }
+  ]
+}

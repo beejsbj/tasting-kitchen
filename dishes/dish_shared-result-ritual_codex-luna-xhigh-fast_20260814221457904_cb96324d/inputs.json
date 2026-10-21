@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "shared-result-ritual",
+    "hash": "sha256:7ea2e47fb18b50d7d11dcac27605e6fea82e5120fe9b3bd062a03736ef661dd7"
+  },
+  "fixtures": [
+    {
+      "id": "event-packet",
+      "path": "fixtures/event.json",
+      "mountAs": "fixtures/event.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:406fa7afe4a76218022dc25ee3552c5916b9a8e8f6218b79f105553bebc6e3e0",
+      "bytes": 695
+    }
+  ]
+}

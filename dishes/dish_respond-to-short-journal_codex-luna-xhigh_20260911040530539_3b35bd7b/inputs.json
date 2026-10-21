@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "respond-to-short-journal",
+    "hash": "sha256:955d233407ece303b97fc0e71b8ce9318079a1e382e06c0f8d74891a418fcb0b"
+  },
+  "fixtures": []
+}

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "words-with-weight",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Words with weight",
+  "summary": "Compare typographic judgment, material-specific movement, reading time and sound synchronization.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe; the benchmark shape awaits owner acceptance.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the same pinned toolchain (Node 22 or later, Python, a browser, FFmpeg and fonts) and compute profile to every compared model and layer. Before Ready, that toolchain must be pinned and smoked; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      }
+    ]
+  },
+  "skills": {
+    "mountAs": "skill",
+    "optional": true,
+    "layers": [
+      "motion-reel",
+      "procedural"
+    ]
+  },
+  "turns": [
+    {
+      "id": "make-film",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and any mounted skill. Create Words with weight and deliver the specified movie, live player, source, contact sheet and evidence. Make routine creative decisions yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1920, 60fps, 1440 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence structure.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Is the exact copy readable at phone size for long enough? Do the four verbs have meaningfully different motion? Do stillness and the final hold create an intentional rhythm? Inspect actual playback, audio, authorship and correspondence between evidence times and visible events."
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

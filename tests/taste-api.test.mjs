@@ -5,14 +5,13 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { cook, inspect, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
+import { cook, inspect, loadCatalog, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
 import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 
-async function menuRevisionFiles(root = repoRoot) {
-  try { return await readdir(path.join(root, "catalog", "revisions", "menus")); }
-  catch (error) { if (error.code === "ENOENT") return []; throw error; }
+async function catalogFiles(root) {
+  return (await readdir(path.join(root, "catalog"), { recursive: true })).sort();
 }
 
 async function fixtureRepository(t, { reactivateRecipeId } = {}) {
@@ -29,22 +28,22 @@ async function fixtureRepository(t, { reactivateRecipeId } = {}) {
   return root;
 }
 
-test("inspect returns exact public Recipe and immutable revision contracts", async (t) => {
+test("inspect returns the current public Recipe contract and its Dishes", async (t) => {
   const root = await fixtureRepository(t, { reactivateRecipeId: "responsive-product-launch" });
   const current = await inspect(root, { recipeId: "responsive-product-launch" });
   assert.ok(current.recipe.turns.length > 0);
   assert.ok(current.recipe.output.entry);
   assert.ok(current.recipe.validation.checks.length > 0);
-  const snapshot = await inspect(root, { revisionHash: current.revisions[0].hash });
-  assert.deepEqual(snapshot.recipeRevision.execution.turns, current.revisions[0].execution.turns);
-  await assert.rejects(inspect(root, { revisionHash: `sha256:${"0".repeat(64)}` }), /Unknown revision hash/);
-  await assert.rejects(inspect(root, { recipeId: "responsive-product-launch", revisionHash: current.revisions[0].hash }), /exactly one/);
+  assert.ok(current.dishes.every((dish) => dish.recipe.id === "responsive-product-launch"));
+  assert.equal(current.revisions, undefined);
+  assert.equal((await inspect(root, { menuId: "fresh-visual-ui" })).menu.id, "fresh-visual-ui");
+  await assert.rejects(inspect(root, { recipeId: "responsive-product-launch", menuId: "fresh-visual-ui" }), /exactly one/);
   await assert.rejects(plan(root, { configurationId: "codex-sol-high", menuId: "visual-ui", recipeIds: ["responsive-product-launch"] }), /either menuId or recipeIds/);
 });
 
-test("dry cooking has no revision side effect and API execution requires paid-run opt-in", async (t) => {
+test("dry cooking has no catalog side effect and API execution requires paid-run opt-in", async (t) => {
   const root = await fixtureRepository(t, { reactivateRecipeId: "responsive-product-launch" });
-  const before = await menuRevisionFiles(root);
+  const before = await catalogFiles(root);
   const dry = await cook(root, {
     configurationId: "codex-sol-high",
     recipeIds: ["responsive-product-launch"],
@@ -59,13 +58,13 @@ test("dry cooking has no revision side effect and API execution requires paid-ru
   });
   assert.equal(repeat.planned.length, 1);
   assert.equal(repeat.skipped.length, 0);
-  assert.deepEqual(await menuRevisionFiles(root), before);
+  assert.deepEqual(await catalogFiles(root), before);
   await assert.rejects(cook(root, {
     configurationId: "codex-sol-high", recipeIds: ["responsive-product-launch"], intent: "repeat", execute: true, env: {},
   }), /TASTE_ALLOW_MODEL_RUNS=1/);
 });
 
-test("executing a Menu pins every member before a fake runner sees only supported cells", async (t) => {
+test("executing a Menu hands a fake runner only supported, uncovered cells and writes nothing to the catalog", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-api-menu-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(repoRoot, "catalog"), path.join(root, "catalog"), { recursive: true });
@@ -83,21 +82,20 @@ test("executing a Menu pins every member before a fake runner sees only supporte
       return { results: [], accepted: [], failed: [], unsupported: plan.unsupported };
     },
   });
-  assert.equal(result.menuRevision.recipes.length, menu.recipes.length);
-  assert.deepEqual(result.menuRevision.recipes.map((item) => item.recipeId), menu.recipes);
+  assert.equal(result.menuRevision, undefined);
+  const catalog = await loadCatalog(root);
   const existing = await loadDishes(root);
-  const expectedSkipped = result.menuRevision.recipes.filter((item) => existing.some((dish) => (
-    dish.recipe.id === item.recipeId
-    && dish.recipe.hash === item.recipeHash
+  const expectedSkipped = menu.recipes.filter((recipeId) => existing.some((dish) => (
+    dish.recipe.id === recipeId
+    && dish.recipe.hash === catalog.recipes.find((recipe) => recipe.id === recipeId).recipeHash
     && dish.identity.configHash === received.variant.configHash
   )));
-  assert.deepEqual(result.skipped.map(({ recipeId, recipeHash }) => ({ recipeId, recipeHash })), expectedSkipped);
+  assert.deepEqual(result.skipped.map(({ recipeId }) => recipeId), expectedSkipped);
   assert.equal(received.supported.length + result.skipped.length + received.unsupported.length, menu.recipes.length);
   const registry = JSON.parse(await readFile(path.join(root, "public/data/registry.json"), "utf8"));
-  const configurationHashes = new Set(registry.configurationRevisions.map((revision) => revision.hash));
-  for (const dish of registry.dishes) assert.ok(configurationHashes.has(dish.identity.configHash));
-  const pinned = JSON.parse(await readFile(path.join(root, "catalog/revisions/menus", `fresh-visual-ui--${result.menuRevision.hash.slice("sha256:".length)}.json`), "utf8"));
-  assert.deepEqual(pinned.recipes, result.menuRevision.recipes);
+  for (const gone of ["recipeRevisions", "configurationRevisions", "skillRevisions", "menuRevisions"]) assert.equal(registry[gone], undefined, gone);
+  for (const dish of registry.dishes) assert.ok(dish.receipt?.configuration?.configHash === dish.identity.configHash || dish.receipt?.configuration);
+  assert.equal(await catalogFiles(root).then((files) => files.some((file) => file.startsWith("revisions"))), false);
 });
 
 test("cook preserves an explicit allowed-status override through execution", async (t) => {
@@ -142,15 +140,52 @@ test("CLI rejects malformed, irrelevant, and ambiguous flags with JSON errors", 
   }
 });
 
-test("CLI help and catalog validation have structured JSON forms", () => {
+test("CLI help and catalog validation have structured JSON forms", async (t) => {
+  const root = await fixtureRepository(t);
+  const env = { ...process.env, TASTE_CATALOG_ROOT: root };
   const help = spawnSync(process.execPath, ["bin/taste.mjs", "cook", "--help", "--json"], { cwd: repoRoot, encoding: "utf8" });
   assert.equal(help.status, 0);
   assert.match(JSON.parse(help.stdout).help, /--menu ID/u);
 
-  const validation = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--json"], { cwd: repoRoot, encoding: "utf8" });
+  assert.match(JSON.parse(help.stdout).help, /taste validate \[--public-checkout\] \[--json\]/u);
+
+  const validation = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--public-checkout", "--json"], { cwd: repoRoot, encoding: "utf8", env });
   assert.equal(validation.status, 0, validation.stderr);
   const result = JSON.parse(validation.stdout);
   assert.equal(result.status, "valid");
   assert.deepEqual(result.errors, []);
   assert.match(result.output, /Catalog valid/u);
+  assert.match(result.output, /private provenance skipped \(--public-checkout\)/u);
+  assert.doesNotMatch(result.output, /provenance records checked/u);
+
+  const plain = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--public-checkout"], { cwd: repoRoot, encoding: "utf8", env });
+  assert.equal(plain.status, 0, plain.stderr);
+  assert.match(plain.stdout, /private provenance skipped \(--public-checkout\)/u);
+
+  const strict = spawnSync(process.execPath, ["bin/taste.mjs", "validate", "--json"], { cwd: repoRoot, encoding: "utf8", env });
+  assert.equal(strict.status, 1, strict.stderr);
+  const strictResult = JSON.parse(strict.stdout);
+  assert.equal(strictResult.status, "invalid");
+  assert.ok(strictResult.errors.some((error) => /missing private\/provenance\//u.test(error)));
+  assert.equal(strictResult.output, undefined);
+});
+
+
+test("CLI restricts public-checkout to validate and rejects malformed uses", () => {
+  const otherCommands = ["help", "discover", "inspect", "list", "plan", "cook", "axes", "observations", "observe", "compare-rubrics", "build-registry", "recover"];
+  const cases = [
+    ...otherCommands.map((command) => [command, "--public-checkout"]),
+    ["--public-checkout"],
+    ["validate", "--public-checkout=false"],
+    ["validate", "--public-checkout", "--public-checkout"],
+    ["validate", "--public-checkout", "false"],
+    ["validate", "--public-checkout", "--help"],
+    ["validate", "--catalog", "--public-checkout"],
+  ];
+  for (const argv of cases) {
+    const result = spawnSync(process.execPath, ["bin/taste.mjs", ...argv, "--json"], { cwd: repoRoot, encoding: "utf8" });
+    assert.equal(result.status, 1, argv.join(" "));
+    assert.equal(JSON.parse(result.stderr).error.code, "INVALID_ARGUMENT", argv.join(" "));
+    assert.equal(result.stdout, "", argv.join(" "));
+  }
 });

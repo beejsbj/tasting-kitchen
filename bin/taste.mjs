@@ -4,21 +4,25 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { buildRegistry, cook, discover, inspect, listRecipes, loadCatalog, plan } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan } from "../lib/taste/index.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex"]);
-const booleanFlags = new Set(["json", "execute", "help"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout"]);
 
 const commandFlags = {
   help: new Set(),
-  validate: new Set(),
+  validate: new Set(["public-checkout"]),
   discover: new Set(),
-  inspect: new Set(["recipe", "menu", "revision"]),
+  inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
-  plan: new Set(["recipe", "menu", "config", "variant", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex"]),
+  plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex"]),
+  axes: new Set(["recipe", "menu"]),
+  observations: new Set(["dish"]),
+  observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
+  "compare-rubrics": new Set(["experiment", "output"]),
   "build-registry": new Set(["output"]),
   recover: new Set(["attempt"]),
 };
@@ -83,7 +87,7 @@ function selection(options) {
   const configurationId = options.config ?? options.variant;
   if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { configurationId, ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { configurationId, ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -91,10 +95,19 @@ function inspectSelection(options) {
   const selectors = [
     options.recipe?.length ? { recipeId: options.recipe[0] } : null,
     options.menu ? { menuId: options.menu } : null,
-    options.revision ? { revisionHash: options.revision } : null,
   ].filter(Boolean);
-  if (selectors.length !== 1) throw new UsageError("inspect requires exactly one of --recipe, --menu, or --revision");
+  if (selectors.length !== 1) throw new UsageError("inspect requires exactly one of --recipe or --menu");
   return selectors[0];
+}
+
+function contextSelection(options, { revision = false } = {}) {
+  if (options.recipe?.length > 1) throw new UsageError("This command accepts one --recipe id");
+  if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
+  const kind = options.recipe?.length ? "recipe" : options.menu ? "menu" : null;
+  const id = options.recipe?.[0] ?? options.menu;
+  if (!kind || !id) throw new UsageError("One of --recipe or --menu is required");
+  if (revision && !options.revision) throw new UsageError("--revision (the recipe hash the Dish was cooked from) is required to pin the comparison context");
+  return { kind, id, ...(revision ? { revisionHash: options.revision } : {}) };
 }
 
 function print(value, json = false) {
@@ -102,25 +115,31 @@ function print(value, json = false) {
 }
 
 function help() {
-  return `taste — inspect and cook immutable Recipe revisions
+  return `taste — inspect and cook Recipes
 
 Usage:
   taste discover [--json]
-  taste inspect --recipe ID|--menu ID|--revision HASH [--json]
+  taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
-  taste validate
+  taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--json]
+  taste axes --recipe ID|--menu ID [--json]
+  taste observations --dish ID [--json]
+  taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
+  taste compare-rubrics --experiment PATH [--output PATH] [--json]
+  taste validate [--public-checkout] [--json]
   taste build-registry [--output PATH]
   taste recover --attempt ID
 
-Cook is dry-run by default. --execute additionally requires TASTE_ALLOW_MODEL_RUNS=1.
+  Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
+  --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
+  Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
 }
 
-async function validate({ json = false } = {}) {
-  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs")], { cwd: repoRoot, stdio: json ? "pipe" : "inherit", shell: false });
+async function validate({ json = false, publicCheckout = false } = {}) {
+  const child = spawn(process.execPath, [path.join(repoRoot, "scripts", "validate-catalog.mjs"), ...(publicCheckout ? ["--public-checkout"] : [])], { cwd: repoRoot, stdio: json ? "pipe" : "inherit", shell: false });
   return new Promise((resolve) => {
     let stdout = "";
     let stderr = "";
@@ -136,7 +155,7 @@ async function main() {
   const { command, options } = commandAndOptions(parsed.positional, parsed.options);
   if (command === "help") return print(options.json ? { help: help() } : help(), options.json);
   if (command === "validate") {
-    const result = await validate({ json: options.json });
+    const result = await validate({ json: options.json, publicCheckout: options["public-checkout"] });
     process.exitCode = result.exitCode;
     if (options.json) print({ status: result.exitCode === 0 ? "valid" : "invalid", errors: result.stderr.trim() ? result.stderr.trim().split("\n") : [], output: result.stdout.trim() || undefined }, true);
     return;
@@ -154,6 +173,36 @@ async function main() {
     const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.codex });
     if (result.failed?.length) process.exitCode = 1;
     return print(result, true);
+  }
+  if (command === "axes") {
+    const context = contextSelection(options);
+    return print(axisSetsForContext(await loadAxisSets(repoRoot), context), true);
+  }
+  if (command === "observations") {
+    if (!options.dish) throw new UsageError("observations requires --dish ID");
+    const dishes = await loadDishes(repoRoot);
+    if (!dishes.some((dish) => dish.id === options.dish)) throw new UsageError(`Unknown Dish: ${options.dish}`);
+    const axisSets = await loadAxisSets(repoRoot);
+    return print((await loadObservations(repoRoot, { dishes, axisSets })).filter((observation) => observation.dishId === options.dish), true);
+  }
+  if (command === "observe") {
+    if (!options.dish || !options["axis-set"] || !options["axis-version"]) throw new UsageError("observe requires --dish, --axis-set, and --axis-version");
+    if (options.execute && process.env.TASTE_ALLOW_JEV_RUNS !== "1") throw new UsageError("Refusing Jev execution: set TASTE_ALLOW_JEV_RUNS=1 as an explicit paid-run acknowledgement");
+    return print(await evaluateDishWithJev(repoRoot, {
+      dishId: options.dish,
+      axisSetId: options["axis-set"],
+      axisSetVersion: options["axis-version"],
+      context: contextSelection(options, { revision: true }),
+      execute: options.execute,
+      evaluatorProvider: options.provider,
+      evaluatorId: options.evaluator,
+    }), true);
+  }
+  if (command === "compare-rubrics") {
+    if (!options.experiment) throw new UsageError("compare-rubrics requires --experiment PATH");
+    const experiment = path.resolve(process.cwd(), options.experiment);
+    const output = options.output ? path.resolve(process.cwd(), options.output) : undefined;
+    return print(await compareRubricsFromFile(experiment, { output }), true);
   }
   if (command === "build-registry") {
     const output = options.output ? path.resolve(process.cwd(), options.output) : undefined;

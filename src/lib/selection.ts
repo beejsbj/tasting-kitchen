@@ -1,14 +1,31 @@
 import type { Configuration, Dish, Recipe, Registry } from "../types";
 import type { GalleryState } from "./url-state";
 
+// Kept local (not imported from ./registry) so this module stays importable by node's type-stripping test runner.
+const NO_SKILL = "none";
+const dishSkillKey = (dish: Pick<Dish, "skill">) => dish.skill?.hash ?? NO_SKILL;
+
 export type RecipeSelectionSlot = {
   config?: Configuration;
+  /** "none", a skill hash, or undefined when the URL left the layer to the latest Dish. */
+  skillKey: string;
   repeats: Dish[];
   dish?: Dish;
 };
 
+/** Filters accept skill ids, exact hashes, or "none"; Dish links always carry exact hashes. */
+export function skillKeyForToken(registry: Pick<Registry, "skills">, token: string | undefined): string | undefined {
+  if (!token) return undefined;
+  if (token === NO_SKILL) return NO_SKILL;
+  const current = registry.skills?.find((skill) => skill.id === token || skill.skillHash === token);
+  return current?.skillHash ?? token;
+}
+export function skillTokenForDish(_registry: Pick<Registry, "skills">, dish: Dish) {
+  if (!dish.skill) return NO_SKILL;
+  return dish.skill.hash;
+}
+
 export type ResolvedRecipeSelection = {
-  recipeHash: string;
   slots: RecipeSelectionSlot[];
 };
 
@@ -22,42 +39,52 @@ function configurationForDish(registry: Registry, dish: Dish): Configuration | u
 }
 
 /** Builds the URL patch for one immutable Dish and its exact configuration snapshot. */
-export function selectionForDish(registry: Registry, dish: Dish): Pick<GalleryState, "recipe" | "revision" | "models" | "dishes"> {
+export function selectionForDish(registry: Registry, dish: Dish): Pick<GalleryState, "recipe" | "models" | "skills" | "dishes"> {
   const config = configurationForDish(registry, dish);
   if (!config) throw new Error(`No public configuration snapshot exists for Dish ${dish.id}.`);
-  return { recipe: dish.recipe.id, revision: dish.recipe.hash, models: [config.id], dishes: [dish.id] };
+  return { recipe: dish.recipe.id, models: [config.id], skills: [skillTokenForDish(registry, dish)], dishes: [dish.id] };
 }
 
-function slotForConfiguration(config: Configuration | undefined, dishes: Dish[], selectedDishId: string | undefined): RecipeSelectionSlot {
-  const repeats = config ? dishes.filter((dish) => dish.identity.configHash === config.configHash)
+function slotForConfiguration(config: Configuration | undefined, requestedSkillKey: string | undefined, dishes: Dish[], selectedDishId: string | undefined): RecipeSelectionSlot {
+  const configDishes = config ? dishes.filter((dish) => dish.identity.configHash === config.configHash)
     .sort((a, b) => a.executedAt.localeCompare(b.executedAt) || a.id.localeCompare(b.id)) : [];
-  return { config, repeats, dish: repeats.find((dish) => dish.id === selectedDishId) ?? latestDish(repeats) };
+  // An unspecified layer follows the selected or newest Dish; Repeats never mix layers.
+  const anchor = configDishes.find((dish) => dish.id === selectedDishId) ?? latestDish(configDishes);
+  const skillKey = requestedSkillKey ?? (anchor ? dishSkillKey(anchor) : NO_SKILL);
+  const layerDishes = configDishes.filter((dish) => dishSkillKey(dish) === skillKey);
+  // Nor do Repeats mix briefs: they share the recipe hash of the Dish in view.
+  const inView = layerDishes.find((dish) => dish.id === selectedDishId) ?? latestDish(layerDishes);
+  const repeats = inView ? layerDishes.filter((dish) => dish.recipe.hash === inView.recipe.hash) : [];
+  return { config, skillKey, repeats, dish: inView };
 }
 
 /**
- * Resolves URL selection against immutable Recipe Revision and configuration
- * snapshots. An explicit revision is never broadened to Dishes from another
- * revision; unavailable slots therefore remain empty.
+ * Resolves URL selection against the registry's Dishes of one recipe. Dishes
+ * cooked from an older brief stay selectable; callers mark them with
+ * `briefChanged`. Repeats share configuration, skill layer and recipe hash.
  */
-export function resolveRecipeSelection(registry: Registry, recipe: Recipe, state: Pick<GalleryState, "revision" | "models" | "dishes">): ResolvedRecipeSelection {
+export function resolveRecipeSelection(registry: Registry, recipe: Recipe, state: Pick<GalleryState, "models" | "skills" | "dishes">): ResolvedRecipeSelection {
   const recipeDishes = registry.dishes.filter((dish) => dish.recipe.id === recipe.id);
-  const recipeHash = state.revision || latestDish(recipeDishes)?.recipe.hash || recipe.recipeHash;
-  const revisionDishes = recipeDishes.filter((dish) => dish.recipe.hash === recipeHash);
 
-  if (state.models.length) {
+  if (state.models.length || state.dishes.some(Boolean)) {
     return {
-      recipeHash,
-      slots: state.models.map((id, index) => slotForConfiguration(
-        registry.configurations.find((config) => config.id === id),
-        revisionDishes,
-        state.dishes[index],
-      )),
+      slots: Array.from({ length: Math.max(state.models.length, state.dishes.length) }, (_, index) => {
+        const selectedId = state.dishes[index];
+        const selected = recipeDishes.find((dish) => dish.id === selectedId);
+        // Explicit Dish links retain their recorded identity after catalog edits.
+        // Filter-only slots continue to resolve current model and skill tokens.
+        const config = selected ? configurationForDish(registry, selected)
+          : registry.configurations.find((candidate) => candidate.id === state.models[index]);
+        const skillKey = selected ? dishSkillKey(selected) : skillKeyForToken(registry, state.skills?.[index]);
+        // An unavailable explicit Dish must not silently become a different Dish.
+        if (selectedId && !selected) return { config, skillKey: skillKey ?? NO_SKILL, repeats: [] };
+        return slotForConfiguration(config, skillKey, recipeDishes, selectedId);
+      }),
     };
   }
 
-  const defaultDish = latestDish(revisionDishes);
+  const defaultDish = latestDish(recipeDishes);
   return {
-    recipeHash,
-    slots: defaultDish ? [slotForConfiguration(configurationForDish(registry, defaultDish), revisionDishes, defaultDish.id)] : [],
+    slots: defaultDish ? [slotForConfiguration(configurationForDish(registry, defaultDish), dishSkillKey(defaultDish), recipeDishes, defaultDish.id)] : [],
   };
 }

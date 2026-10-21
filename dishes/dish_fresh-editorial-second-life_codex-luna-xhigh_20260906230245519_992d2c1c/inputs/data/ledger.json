@@ -1,0 +1,44 @@
+[
+  {
+    "month": "2026-03",
+    "season": "spring",
+    "loans": 18,
+    "loanedKg": 620,
+    "returnedKg": 410
+  },
+  {
+    "month": "2026-04",
+    "season": "spring",
+    "loans": 24,
+    "loanedKg": 810,
+    "returnedKg": 730
+  },
+  {
+    "month": "2026-05",
+    "season": "spring",
+    "loans": 21,
+    "loanedKg": 760,
+    "returnedKg": 690
+  },
+  {
+    "month": "2026-06",
+    "season": "summer",
+    "loans": 32,
+    "loanedKg": 540,
+    "returnedKg": 880
+  },
+  {
+    "month": "2026-07",
+    "season": "summer",
+    "loans": 20,
+    "loanedKg": 1120,
+    "returnedKg": 620
+  },
+  {
+    "month": "2026-08",
+    "season": "summer",
+    "loans": 27,
+    "loanedKg": 930,
+    "returnedKg": 1080
+  }
+]

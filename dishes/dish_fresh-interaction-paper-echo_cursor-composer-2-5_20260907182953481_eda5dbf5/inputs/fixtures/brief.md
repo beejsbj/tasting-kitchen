@@ -1,0 +1,15 @@
+# Paper Echo
+Make an expressive interactive object for composing an eight-beat call and discovering its reflected response. It should feel like handling something with a character of its own, rather than completing a settings form. Paper is a starting metaphor, not an instruction to draw a sheet, use beige, or simulate physical folding. Decide what a mark, a reflection and the space between phrases look and feel like. Sound is optional; the complete experience must work silently.
+
+The call is eight binary steps. Visitors can toggle each step, choose one of the supplied presets, and set an integer echo offset 0–7. The response first reverses the call, then rotates that reversal to the right by the offset. Keep both phrases available for inspection. Play highlights the eight call positions followed by eight response positions at 300ms per position, once, then stops; silence steps advance too. Stop returns to rest. Editing or loading a preset stops playback, keeping the new pattern. Repeated Play must replace the current playback, never stack timers. Respect reduced motion with static position emphasis instead of motion. Playback is local visual timing, not an audio synthesis task.
+
+Offer a shareable URL fragment and a selectable fallback address if clipboard access is unavailable. A copied fragment must reopen the same call and offset on this page; it is not a server-side saved object. Reloading an invalid fragment returns to blank/offset 0 with a helpful notice. Reset returns to blank/0 and rest. Provide native keyboard-operable controls or equivalent semantics, names and pressed states. Do not require dragging, hearing, a timed response, randomness or a network.
+
+Shared pure logic.mjs API, imported and used by app.mjs:
+- echo(steps, offset): return the transformed eight-element array; reject anything other than exactly eight numeric 0/1 values and integer offset 0–7 with RangeError.
+- encode(steps, offset): validate as above, return "#echo=XXXXXXXX.N", where X are the eight bits and N the offset.
+- decode(fragment): valid canonical fragment returns {steps:[...],offset:N}; everything else returns null (including nonstrings). Do not accept truncated data, extra suffixes or out-of-range offsets.
+- frameAt(elapsedMs): for finite numbers 0 <= t < 4800, return {phrase:"call"|"response",index:0..7}, floor(t/300) choosing the slot. Otherwise return null. The UI owns elapsed time and stopping, not this function.
+Pure functions never mutate their inputs. These APIs fix the mechanical language, not the visual object. Human browser probes check timer cancellation, sharing, focus and expressiveness.
+
+Required outputs: index.html, styles.css, app.mjs, logic.mjs, data/patterns.json (already mounted, immutable). Load the CSS and app module from HTML; import and call all four logic exports from the app and load the patterns file. Optional self-authored assets belong in assets/. Plain JS/CSS, local resources, no install or build step. Works at 360px and 1440px, and without clipboard permission. Run node validation/validate-output.mjs.

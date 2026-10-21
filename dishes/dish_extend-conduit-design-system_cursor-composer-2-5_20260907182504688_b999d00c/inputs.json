@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "extend-conduit-design-system",
+    "hash": "sha256:1c651912ec6b376cc2fedd11cd969b6ded1c019fdd62c533d176b1ff9d8655f6"
+  },
+  "fixtures": [
+    {
+      "id": "conduit-brief",
+      "path": "fixtures/brief.json",
+      "mountAs": "fixtures/brief.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:941ed5fb3ab325fc3ec71f882863613b5017fb396237cd4fd6fe7821de25faba",
+      "bytes": 2417
+    },
+    {
+      "id": "source-provenance",
+      "path": "fixtures/provenance.json",
+      "mountAs": "fixtures/provenance.json",
+      "public": true,
+      "editable": false,
+      "mediaType": "application/json",
+      "sha256": "sha256:daf607a0260a7c874d72a49f0c7cc3718d6d568c4f7a5ae589420209c1a9614f",
+      "bytes": 3290
+    },
+    {
+      "id": "source-notes",
+      "path": "fixtures/README.md",
+      "mountAs": "fixtures/README.md",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/markdown",
+      "sha256": "sha256:fdb40ee77c37ff4aadaae21bd17bcc55c7a692b6af3251c4ddddfa4ef376726d",
+      "bytes": 1137
+    },
+    {
+      "id": "source-theme",
+      "path": "fixtures/upstream/src/styles/theme.css",
+      "mountAs": "fixtures/upstream/src/styles/theme.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:43e0858ba5af6752f8579b7b1a8de19ad8cc4af3edce7b91613cbeee5b2757aa",
+      "bytes": 13801
+    },
+    {
+      "id": "source-typography",
+      "path": "fixtures/upstream/src/styles/typography.css",
+      "mountAs": "fixtures/upstream/src/styles/typography.css",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/css",
+      "sha256": "sha256:640bbf72043e52a81d73f8cdad9b49eb7640819b5e712a0a456ac0ea3bc8246a",
+      "bytes": 3673
+    },
+    {
+      "id": "source-styleguide-page",
+      "path": "fixtures/upstream/src/pages/StyleGuide.tsx",
+      "mountAs": "fixtures/upstream/src/pages/StyleGuide.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:c053d37aa9d254e2252ab3eb09a08d281575976701337cd07e84ed76fed1bb23",
+      "bytes": 3668
+    },
+    {
+      "id": "source-color-guide",
+      "path": "fixtures/upstream/src/components/StyleGuide/ColorGuide.tsx",
+      "mountAs": "fixtures/upstream/src/components/StyleGuide/ColorGuide.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:07fc35d8a370e2434799ecca82303d829446307503cc04dd4e69c7e93c68ea89",
+      "bytes": 5414
+    },
+    {
+      "id": "source-button-guide",
+      "path": "fixtures/upstream/src/components/StyleGuide/ButtonGuide.tsx",
+      "mountAs": "fixtures/upstream/src/components/StyleGuide/ButtonGuide.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:95a5d0872cff227368c1623cafdc2a8c08f0a61c442d92b63ef0ce0926ee3bdb",
+      "bytes": 2317
+    },
+    {
+      "id": "source-button",
+      "path": "fixtures/upstream/src/components/Buttons/Button.tsx",
+      "mountAs": "fixtures/upstream/src/components/Buttons/Button.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:5ad3a487ad38467b759f82f958849f3727b7274582ad7759bf2009793b73b340",
+      "bytes": 3624
+    },
+    {
+      "id": "source-tabs",
+      "path": "fixtures/upstream/src/components/Tabs.tsx",
+      "mountAs": "fixtures/upstream/src/components/Tabs.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:dc0da9480c734f9c047ce1d653e5e195fa37dcaee9340de7cc2d8008fa42549f",
+      "bytes": 3283
+    },
+    {
+      "id": "source-badge",
+      "path": "fixtures/upstream/src/components/Badge.tsx",
+      "mountAs": "fixtures/upstream/src/components/Badge.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:c36bc771f46d5d4f5ab1dd78255ac4f6531b1f7e2c3da3ef3985eefda3095920",
+      "bytes": 910
+    },
+    {
+      "id": "source-page-section",
+      "path": "fixtures/upstream/src/layouts/PageSection.tsx",
+      "mountAs": "fixtures/upstream/src/layouts/PageSection.tsx",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/plain",
+      "sha256": "sha256:9128fa2c433185c5355cc6081d790677ade776289b592c6baee4c40be04c3fce",
+      "bytes": 914
+    },
+    {
+      "id": "output-validator",
+      "path": "validate-output.mjs",
+      "mountAs": "validation/validate-output.mjs",
+      "public": true,
+      "editable": false,
+      "mediaType": "text/javascript",
+      "sha256": "sha256:82a5ab657c4ee30ad3f493232d479b83eec5a8c488446e1800aa37b434589f5e",
+      "bytes": 4034
+    }
+  ]
+}

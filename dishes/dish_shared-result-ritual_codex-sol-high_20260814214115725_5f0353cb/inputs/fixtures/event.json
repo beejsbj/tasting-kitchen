@@ -1,0 +1,13 @@
+{
+  "event": "Neighborhood seed-library drawing",
+  "context": "Thirty neighbors are watching one shared screen after contributing growing notes to a communal seed shelf.",
+  "states": {
+    "waiting": "Entries close in 01:12",
+    "interrupted": "The sealed list could not be verified. Nothing has been drawn.",
+    "sealed": "32 valid entries — list sealed",
+    "reveal": "Entry 18",
+    "selected": "Mina's balcony plot receives the rare tomato set"
+  },
+  "actions": ["Retry verification", "Begin drawing", "Reveal entry", "Return to sealed list"],
+  "constraints": ["No money or wagering", "No accounts", "No confetti requirement", "Do not invent testimonials or participant details"]
+}

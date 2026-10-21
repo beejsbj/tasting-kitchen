@@ -1,0 +1,66 @@
+.observation-float {
+  position: fixed; right: 5.25rem; bottom: 1.5rem; z-index: 29;
+  width: 300px; max-width: calc(100vw - 6.25rem);
+  border: 1px solid #e2e8f0; border-radius: 14px;
+  background: rgb(255 255 255 / .97); color: #334155;
+  box-shadow: 0 4px 24px rgb(15 23 42 / .07);
+}
+.observation-float button, .observation-panel button { font: inherit; cursor: pointer; }
+.observation-float__body { display: block; width: 100%; border: 0; border-radius: 14px; padding: 16px; background: transparent; color: inherit; text-align: left; }
+.observation-float__body:hover { background: #f8fafc; }
+.observation-float__heading { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; padding-right: 15px; }
+.observation-float__heading > span { margin-left: auto; font-size: 10px; font-weight: 500; color: #64748b; }
+.observation-float__axes { display: grid; gap: 10px; margin: 17px 0; }
+.observation-float__axis { display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; gap: 12px; font-size: 11px; line-height: 1.4; }
+.observation-float__axis > span { color: #64748b; }
+.observation-float__axis strong { font-weight: 500; text-align: right; }
+.observation-float__footer { display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: #64748b; }
+.observation-float__footer > span { display: inline-flex; align-items: center; gap: 3px; }
+.observation-float__dismiss { position: absolute; top: 7px; right: 5px; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; color: #94a3b8; background: transparent; }
+.observation-float__dismiss:hover { color: #334155; }
+.observation-overlay { position: fixed; inset: 0; z-index: 45; background: rgb(15 23 42 / .16); }
+.observation-panel { position: fixed; z-index: 46; top: 24px; right: 84px; width: 440px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 48px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 18px; background: white; color: #334155; box-shadow: 0 16px 60px rgb(15 23 42 / .14); outline: none; }
+.observation-panel__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 24px 24px 16px; }
+.observation-panel__header h2 { margin: 0; font-size: 18px; line-height: 1.4; font-weight: 600; letter-spacing: -.025em; color: #0f172a; }
+.observation-panel__actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.observation-pin { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: #64748b; }
+.observation-pin:hover, .observation-pin[aria-pressed="true"] { background: #f1f5f9; color: #0f172a; }
+.observation-panel__header p { margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5; }
+.observation-panel .observation-close { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; flex-shrink: 0; border: 0; border-radius: 8px; background: #f8fafc; color: #64748b; }
+.observation-panel__body { overflow-y: auto; padding: 0 24px 20px; }
+.observation-versions { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 24px; }
+.observation-panel .observation-versions button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #64748b; font-size: 12px; line-height: 1.5; }
+.observation-panel .observation-versions button[aria-pressed=true] { background: #f1f5f9; color: #0f172a; }
+.observation-versions button > span { font-size: 10px; color: #64748b; }
+.observation-record + .observation-record { border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 12px; }
+.observation-record__header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.observation-record__header h3 { margin: 0; color: #0f172a; font-size: 13px; font-weight: 600; }
+.observation-record__header time { color: #64748b; font-size: 11px; }
+.observation-axes { padding: 24px 0 8px; }
+.observation-axis { margin-bottom: 24px; }
+.observation-axis > header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 12px; }
+.observation-axis h4 { margin: 0; font-size: 12px; font-weight: 600; }
+.observation-axis > header > span { font-size: 11px; color: #64748b; }
+.observation-distribution { display: grid; gap: 8px; }
+.observation-distribution__row { display: grid; grid-template-columns: 140px minmax(32px, 1fr) 32px; align-items: center; gap: 10px; font-size: 11px; line-height: 1.5; color: #64748b; }
+.observation-distribution__row[data-selected=true] { color: #334155; }
+.observation-distribution__track { height: 4px; border-radius: 2px; background: #f1f5f9; overflow: hidden; }
+.observation-distribution__track > span { display: block; height: 100%; background: #cbd5e1; border-radius: inherit; }
+.observation-distribution__row[data-selected=true] .observation-distribution__track > span { background: #64748b; }
+.observation-distribution__value { text-align: right; font-variant-numeric: tabular-nums; }
+.observation-disclosure { border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; }
+.observation-disclosure summary { cursor: pointer; padding: 14px 0; font-size: 12px; color: #475569; }
+.observation-disclosure p, .observation-disclosure dl { margin: 0 0 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.observation-disclosure h4 { color: #334155; font-size: 12px; margin: 16px 0 4px; }
+.observation-disclosure dt { color: #475569; font-weight: 500; }
+.observation-disclosure dd { margin: 0 0 8px; }
+.observation-empty, .observation-disagreement, .observation-note { font-size: 12px; line-height: 1.6; margin: 0 0 20px; color: #64748b; }
+.observation-disagreement { color: #92400e; }
+.observation-float button:focus-visible, .observation-panel button:focus-visible, .observation-disclosure summary:focus-visible { outline: 2px solid #64748b; outline-offset: 2px; }
+@media (max-width: 650px) {
+  .observation-float { right: 12px; bottom: 12px; width: 284px; max-width: calc(100vw - 24px); }
+  .observation-panel { top: auto; bottom: 12px; right: 12px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
+  .observation-panel__header { padding: 20px 20px 16px; }
+  .observation-panel__body { padding: 0 20px 16px; }
+  .observation-distribution__row { grid-template-columns: minmax(100px, 1.2fr) minmax(32px, 1fr) 30px; gap: 8px; }
+}
