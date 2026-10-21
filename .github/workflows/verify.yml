@@ -1,0 +1,52 @@
+name: Verify Kitchen
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kitchen-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run lint
+      - run: npx playwright install --with-deps chromium
+      - name: Verify desktop and phone gallery
+        shell: bash
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5177 > /tmp/kitchen-vite.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node --input-type=module <<'JS'
+          import { chromium } from 'playwright';
+          import { spawnSync } from 'node:child_process';
+          let ready = false;
+          for (let attempt = 0; attempt < 60; attempt += 1) {
+            try {
+              const response = await fetch('http://127.0.0.1:5177/data/registry.json');
+              if (response.ok) { ready = true; break; }
+            } catch {}
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          if (!ready) throw new Error('Kitchen preview did not become ready');
+          const result = spawnSync(process.execPath, ['scripts/verify-gallery-browser.mjs'], {
+            stdio: 'inherit', env: { ...process.env, CHROME_PATH: chromium.executablePath() },
+          });
+          if (result.error) throw result.error;
+          process.exit(result.status ?? 1);
+          JS

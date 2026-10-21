@@ -6,13 +6,17 @@ The public Kitchen is a static site. Cooking, raw evidence, provenance and the a
 
 ```bash
 npm ci
-npm test
+npm test # validates the public checkout; private provenance is not required
 npm run lint
 npm run preview -- --host 127.0.0.1
 
 docker build -t tasting-kitchen:visual-v1 .
 docker run --rm --network none tasting-kitchen:visual-v1 nginx -t
 ```
+
+On the owner checkout, `npm run validate:catalog` also requires and validates the ignored private provenance records. Keep those records private; `npm test` uses `validate:catalog:public` and explicitly reports that it does not establish provenance completeness.
+
+On bjslab, run finite verification through `cockpit resources run --profile portable -- <command>` (or `portable-browser` for the browser suite).
 
 For the browser regression suite, start `npm run dev -- --host 127.0.0.1 --port 5177` in another terminal, then run `npm run test:browser`. It uses installed Chrome at `/usr/bin/google-chrome`; override `CHROME_PATH` or `TASTE_BROWSER_URL` as needed. Set `TASTE_BROWSER_SCREENSHOTS` to an evidence directory to save screenshots. The test uses intercepted sample data for missing Menu cells and Repeats; it never adds Dishes to the catalog.
 
@@ -36,7 +40,7 @@ The registry and HTML revalidate; hashed application assets can be cached indefi
 
 Live: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify application `rlh7jvdyrxrsidy9hdwztmgz`. The canonical deployment was promoted from commit `d2f9e01` on September 7, 2026. Its HTTP-to-HTTPS redirect, root, `/healthz`, registry, every represented artifact entry, public input previews, TLS and sandbox headers passed production checks. The historical proof at `https://artifacts.burooj.dev/model-tasting/` was then stopped and now returns 404; its stopped container and files remain available for rollback.
 
-Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The private source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
+Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The public source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
 
 For each promotion, prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm neighboring artifact routes still work. Roll back in Coolify to the previous healthy image or stop the canonical application; during the initial cutover, the stopped historical proof container can also be restarted from `/mnt/server-ssd/services/model-tasting/compose.yaml`.
 
@@ -50,7 +54,7 @@ The owner Cook UI, authentication/job service and additional harnesses are separ
 
 `vercel.json` configures the source build and preserves the artifact sandbox/CORS headers. `.vercelignore` excludes private evidence, environment files and local working material from CLI source uploads. The Vercel project is `beejsbjs-projects/tasting-kitchen`.
 
-The private [GitHub repository](https://github.com/beejsbj/tasting-kitchen) is connected to the Vercel project. [PR #1](https://github.com/beejsbj/tasting-kitchen/pull/1) contains the visual Kitchen implementation.
+The public [GitHub repository](https://github.com/beejsbj/tasting-kitchen) is connected to the Vercel project. [PR #1](https://github.com/beejsbj/tasting-kitchen/pull/1) contains the visual Kitchen implementation.
 
 The current [Recipe Book preview](https://tasting-kitchen-nssu93tsf-beejsbjs-projects.vercel.app/?view=recipes) was deployed September 6, 2026 from application commit `1d3d195` for merged [PR #2](https://github.com/beejsbj/tasting-kitchen/pull/2). It contains ten active, uncooked Recipes and an empty Dishes gallery. The 54-recipe archive includes the three original cooked recipes; their 15 historical Dishes remain stored in the repository and are excluded from this deployment. Hosted edits target `main`. This remains a review Preview, not a production promotion. The [earlier preview](https://tasting-kitchen-q1fel6fss-beejsbjs-projects.vercel.app) remains available with its prior build.
 

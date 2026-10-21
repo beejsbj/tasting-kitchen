@@ -9,6 +9,15 @@ import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { INPUTS_MANIFEST, RECEIPT_MANIFEST, verifyInputs } from "../lib/taste/receipts.mjs";
 
+const args = process.argv.slice(2);
+if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
+  console.error("Usage: node scripts/validate-catalog.mjs [--public-checkout]");
+  process.exit(1);
+}
+// Public checkout validation never reads private provenance, even when present.
+// The default remains strict: every Recipe requires valid private provenance.
+const publicCheckout = args.includes("--public-checkout");
+
 const root = path.resolve(process.env.TASTE_CATALOG_ROOT ?? path.resolve(import.meta.dirname, ".."));
 const errors = [];
 
@@ -865,7 +874,7 @@ for (const relative of recipeFiles.sort()) {
   recipeRecords.set(record.recipe.id, record);
 }
 
-await validateProvenance(recipeRecords);
+if (!publicCheckout) await validateProvenance(recipeRecords);
 
 const dishFiles = await walk("dishes", { basename: "dish.json" });
 const dishes = new Map();
@@ -905,4 +914,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${recipeRecords.size} provenance records.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${publicCheckout ? "private provenance skipped (--public-checkout)" : `${recipeRecords.size} private provenance records checked`}.`);
