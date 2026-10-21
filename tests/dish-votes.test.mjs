@@ -61,5 +61,38 @@ test('client sync retains local mode on public denial and accepts trusted merged
   assert.equal(denied.mode, 'local'); assert.equal(voteFor(denied.votes, 'dish_local'), 'up');
   const synced = await syncDishVotes(local, async () => Response.json({ mode: 'synced', votes: local }));
   assert.equal(synced.mode, 'synced');
-  assert.equal(await saveDishVotes(local, async () => new Response('{}', { status: 200 })), 'synced');
+});
+
+
+test('saving votes requires explicit sync acknowledgement and preserves the submitted records', async () => {
+  const votes = { dish_local: { vote: 'up', changedAt: '2026-09-07T20:00:00.000Z' } };
+  const mode = await saveDishVotes(votes, async (url, options) => {
+    assert.equal(url, '/api/votes');
+    assert.equal(options.method, 'PUT');
+    assert.deepEqual(JSON.parse(options.body), { votes });
+    return Response.json({ mode: 'synced' });
+  });
+  assert.equal(mode, 'synced');
+  assert.deepEqual(votes, { dish_local: { vote: 'up', changedAt: '2026-09-07T20:00:00.000Z' } });
+});
+
+test('saving votes stays local on local fallback, absent or invalid acknowledgement, and denial', async () => {
+  const responses = [
+    ['local fallback', () => Response.json({ mode: 'local' })],
+    ['missing mode', () => Response.json({})],
+    ['unknown mode', () => Response.json({ mode: 'accepted' })],
+    ['invalid mode type', () => Response.json({ mode: true })],
+    ['null body', () => Response.json(null)],
+    ['primitive body', () => Response.json('synced')],
+    ['array body', () => Response.json([{ mode: 'synced' }])],
+    ['invalid JSON', () => new Response('<html>fallback</html>')],
+    ['empty body', () => new Response('')],
+    ['no content', () => new Response(null, { status: 204 })],
+    ['denial overrides body', () => Response.json({ mode: 'synced' }, { status: 403 })],
+    ['server failure', () => new Response('', { status: 500 })],
+    ['network failure', () => { throw new Error('Network unavailable'); }],
+  ];
+  for (const [name, response] of responses) {
+    assert.equal(await saveDishVotes({}, async () => response()), 'local', name);
+  }
 });

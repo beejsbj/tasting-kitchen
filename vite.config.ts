@@ -1,7 +1,15 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Connect } from "vite";
 import { recipeBookMiddleware } from './lib/taste/recipe-book.mjs';
+
+// Local servers keep votes in browser storage; hosted deployments supply the API.
+const localVoteFallback: Connect.NextHandleFunction = (request, response, next) => {
+  if (!request.url?.startsWith('/api/votes')) return next();
+  response.statusCode = 200;
+  response.setHeader('content-type', 'application/json');
+  response.end(JSON.stringify({ mode: 'local' }));
+};
 
 export default defineConfig({
   base: process.env.TASTE_BASE_PATH || "/",
@@ -11,6 +19,7 @@ export default defineConfig({
   plugins: [tailwindcss(), react(), {
     name: "kitchen-artifact-headers",
     configureServer(server) {
+      server.middlewares.use(localVoteFallback);
       server.middlewares.use(recipeBookMiddleware(process.cwd()));
       server.middlewares.use((request, response, next) => {
         if (request.url?.includes("/dishes/")) {
@@ -21,12 +30,7 @@ export default defineConfig({
       });
     },
     configurePreviewServer(server) {
-      server.middlewares.use((request, response, next) => {
-        if (!request.url?.startsWith('/api/votes')) return next();
-        response.statusCode = 200;
-        response.setHeader('content-type', 'application/json');
-        response.end(JSON.stringify({ mode: 'local' }));
-      });
+      server.middlewares.use(localVoteFallback);
     },
   }],
   build: {

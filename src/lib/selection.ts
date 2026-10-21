@@ -13,16 +13,16 @@ export type RecipeSelectionSlot = {
   dish?: Dish;
 };
 
-/** URL skill tokens are skill ids or "none"; Dish grouping uses the exact skill hash a Dish recorded. */
+/** Filters accept skill ids, exact hashes, or "none"; Dish links always carry exact hashes. */
 export function skillKeyForToken(registry: Pick<Registry, "skills">, token: string | undefined): string | undefined {
   if (!token) return undefined;
   if (token === NO_SKILL) return NO_SKILL;
   const current = registry.skills?.find((skill) => skill.id === token || skill.skillHash === token);
   return current?.skillHash ?? token;
 }
-export function skillTokenForDish(registry: Pick<Registry, "skills">, dish: Dish) {
+export function skillTokenForDish(_registry: Pick<Registry, "skills">, dish: Dish) {
   if (!dish.skill) return NO_SKILL;
-  return registry.skills?.find((skill) => skill.skillHash === dish.skill?.hash)?.id ?? dish.skill.hash;
+  return dish.skill.hash;
 }
 
 export type ResolvedRecipeSelection = {
@@ -66,14 +66,20 @@ function slotForConfiguration(config: Configuration | undefined, requestedSkillK
 export function resolveRecipeSelection(registry: Registry, recipe: Recipe, state: Pick<GalleryState, "models" | "skills" | "dishes">): ResolvedRecipeSelection {
   const recipeDishes = registry.dishes.filter((dish) => dish.recipe.id === recipe.id);
 
-  if (state.models.length) {
+  if (state.models.length || state.dishes.some(Boolean)) {
     return {
-      slots: state.models.map((id, index) => slotForConfiguration(
-        registry.configurations.find((config) => config.id === id),
-        skillKeyForToken(registry, state.skills?.[index]),
-        recipeDishes,
-        state.dishes[index],
-      )),
+      slots: Array.from({ length: Math.max(state.models.length, state.dishes.length) }, (_, index) => {
+        const selectedId = state.dishes[index];
+        const selected = recipeDishes.find((dish) => dish.id === selectedId);
+        // Explicit Dish links retain their recorded identity after catalog edits.
+        // Filter-only slots continue to resolve current model and skill tokens.
+        const config = selected ? configurationForDish(registry, selected)
+          : registry.configurations.find((candidate) => candidate.id === state.models[index]);
+        const skillKey = selected ? dishSkillKey(selected) : skillKeyForToken(registry, state.skills?.[index]);
+        // An unavailable explicit Dish must not silently become a different Dish.
+        if (selectedId && !selected) return { config, skillKey: skillKey ?? NO_SKILL, repeats: [] };
+        return slotForConfiguration(config, skillKey, recipeDishes, selectedId);
+      }),
     };
   }
 

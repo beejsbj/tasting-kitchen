@@ -14,7 +14,21 @@ let cleanupFixture = async () => {};
 const errors = [];
 const settle = page => page.waitForTimeout(500);
 const save = async (page, name) => { if (screenshotDir) await page.screenshot({ path: `${screenshotDir}/${name}.png`, fullPage: true }); };
-const recordErrors = (page, label) => { page.on("pageerror", error => errors.push({ label, kind: "page", text: error.message })); page.on("console", message => { if (message.type() === "error") errors.push({ label, kind: "console", text: message.text() }); }); };
+const recordErrors = (page, label) => {
+  page.on("pageerror", error => errors.push({ label, kind: "page", text: error.message, pageUrl: page.url() }));
+  page.on("console", message => {
+    if (message.type() !== "error") return;
+    const location = message.location();
+    errors.push({ label, kind: "console", text: message.text(), url: location.url,
+      lineNumber: location.lineNumber, columnNumber: location.columnNumber, pageUrl: page.url() });
+  });
+  page.on("response", response => {
+    if (response.status() < 400) return;
+    const request = response.request();
+    errors.push({ label, kind: "http", text: `HTTP ${response.status()} ${response.statusText()}`,
+      url: response.url(), method: request.method(), resourceType: request.resourceType(), pageUrl: page.url() });
+  });
+};
 const latest = dishes => [...dishes].sort((a, b) => b.executedAt.localeCompare(a.executedAt) || b.id.localeCompare(a.id))[0];
 const configFor = (registry, dish) => registry.configurations.find(config => config.configHash === dish.identity.configHash);
 
@@ -40,8 +54,19 @@ try {
   assert.notEqual(new URL(live.url()).searchParams.get('dishes'), openedDish, 'Dish navigation selects another interpretation of the same Recipe');
   const upVote = live.getByRole('button', { name: 'Good dish', exact: true });
   const downVote = live.getByRole('button', { name: 'Not a good dish', exact: true });
-  await upVote.click(); assert.equal(await upVote.getAttribute('aria-pressed'), 'true');
-  await downVote.click(); assert.equal(await upVote.getAttribute('aria-pressed'), 'false'); assert.equal(await downVote.getAttribute('aria-pressed'), 'true');
+  const clickLocalVote = async button => {
+    const saved = live.waitForResponse(response => new URL(response.url()).pathname === '/api/votes' && response.request().method() === 'PUT');
+    await button.click();
+    const response = await saved;
+    assert.equal(response.status(), 200, 'local dev/preview vote fallback succeeds');
+    assert.equal((await response.json()).mode, 'local', 'local fallback does not claim server persistence');
+    await live.waitForLoadState('networkidle');
+    await settle(live);
+    assert.equal(await live.getByRole('group', { name: 'Rate this dish · Saved on this device', exact: true }).count(), 1, 'vote remains visibly local after the save response');
+    assert.equal(await live.getByRole('group', { name: 'Rate this dish · Synced to Tasting Kitchen', exact: true }).count(), 0);
+  };
+  await clickLocalVote(upVote); assert.equal(await upVote.getAttribute('aria-pressed'), 'true');
+  await clickLocalVote(downVote); assert.equal(await upVote.getAttribute('aria-pressed'), 'false'); assert.equal(await downVote.getAttribute('aria-pressed'), 'true');
   await live.reload({ waitUntil: 'networkidle' });
   assert.equal(await live.getByRole('button', { name: 'Not a good dish', exact: true }).getAttribute('aria-pressed'), 'true', 'Dish votes persist after reload');
   await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
@@ -137,6 +162,37 @@ try {
   const targetLatest = latest(targetDishes);
   const filterConfig = configFor(registry, targetLatest);
   assert.ok(filterConfig, "latest Dish should have a public configuration");
+  // A later capability requirement cannot prevent playback of an accepted Dish.
+  const historicalPage = await context.newPage();
+  recordErrors(historicalPage, "historical-capabilities");
+  const newCapability = "browser-regression-new-capability";
+  const changedRegistry = {
+    ...registry,
+    recipes: registry.recipes.map(recipe => recipe.id === target.id ? {
+      ...recipe, recipeHash: "sha256:browser-changed-brief",
+      harness: { ...recipe.harness, capabilities: [...recipe.harness.capabilities, newCapability] },
+    } : recipe),
+  };
+  await historicalPage.route("**/data/registry.json", route => route.fulfill({
+    status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(changedRegistry),
+  }));
+  const historicalQuery = new URLSearchParams({ recipe: target.id, models: filterConfig.id, dishes: targetLatest.id });
+  await historicalPage.goto(`${base}/?${historicalQuery}`, { waitUntil: "networkidle" });
+  assert.equal(await historicalPage.locator(".comparison-slot iframe").count(), 1, "accepted old web Dish still renders after capabilities change");
+  assert.equal(await historicalPage.locator(".comparison-slot iframe").getAttribute("src"), `${targetLatest.artifactBase.replace(/\/$/, "")}/${targetLatest.artifact.entry.split("/").map(encodeURIComponent).join("/")}`);
+  assert.doesNotMatch(await historicalPage.locator(".comparison-slot").innerText(), /Unsupported by this harness/);
+  // The same incompatible configuration must still be gated when its slot is empty.
+  await historicalPage.unroute("**/data/registry.json");
+  await historicalPage.route("**/data/registry.json", route => route.fulfill({
+    status: 200, headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ...changedRegistry, dishes: changedRegistry.dishes.filter(dish => dish.recipe.id !== target.id || dish.identity.configHash !== filterConfig.configHash) }),
+  }));
+  historicalQuery.delete("dishes");
+  await historicalPage.goto(`${base}/?${historicalQuery}`, { waitUntil: "networkidle" });
+  assert.match(await historicalPage.locator(".comparison-slot").innerText(), /Unsupported by this harness/);
+  assert.equal(await historicalPage.locator(".comparison-slot iframe").count(), 0);
+  await historicalPage.close();
+
   const familyMatch = filterConfig.model.match(/(?:^|-)(astra|sol|terra|luna|fable)(?:-|$)/i);
   if (familyMatch) {
     const family = familyMatch[1][0].toUpperCase() + familyMatch[1].slice(1).toLowerCase();

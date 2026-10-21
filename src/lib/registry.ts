@@ -50,7 +50,7 @@ export function briefChanged(dish: Pick<Dish, "recipe">, recipe: Pick<Recipe, "r
 /** Plain reasons the catalog no longer matches what a Dish ran as. Empty when it still does. */
 export function catalogChanges(registry: Pick<Registry, "configurations" | "skills">, dish: Pick<Dish, "identity" | "skill">) {
   const reasons: string[] = [];
-  if (!registry.configurations.some((config) => config.configHash === dish.identity.configHash)) reasons.push("configuration");
+  if (!registry.configurations.some((config) => !config.historical && config.configHash === dish.identity.configHash)) reasons.push("configuration");
   if (dish.skill && !registry.skills?.some((skill) => skill.skillHash === dish.skill?.hash)) reasons.push("skill layer");
   return reasons;
 }

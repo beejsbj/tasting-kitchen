@@ -117,3 +117,65 @@ test('a selected Repeat is preserved while defaults choose the latest Repeat', (
   assert.equal(selected.slots[0].dish.id, 'first');
   assert.equal(defaulted.slots[0].dish.id, 'second');
 });
+
+test('historical configurations still report catalog changes after gallery reconstruction', () => {
+  const old = selectionDish('old', 'old', 'sha256:old', '2026-01-01T00:00:00Z');
+  old.receipt = { configuration: { id: 'model', model: 'old-model', configHash: 'sha256:old' } };
+  const registry = { configurations: [{ id: 'model', configHash: 'sha256:new' }], dishes: [old], skills: [] };
+  registry.configurations = comparisonConfigurations(registry);
+  assert.deepEqual(catalogChanges(registry, old), ['configuration']);
+  assert.deepEqual(catalogChanges(registry, { identity: { configHash: 'sha256:new' } }), []);
+});
+
+test('Dish URLs survive configuration edits and skill repins while filters follow the catalog', () => {
+  const oldConfig = { id: 'model', model: 'old-model', configHash: 'sha256:old-config' };
+  const old = {
+    ...selectionDish('old', 'old', oldConfig.configHash, '2026-01-01T00:00:00Z'),
+    skill: { id: 'method', hash: 'sha256:old-skill' }, receipt: { configuration: oldConfig },
+  };
+  const before = { configurations: [oldConfig], skills: [{ id: 'method', skillHash: old.skill.hash }], dishes: [old] };
+  const link = selectionForDish(before, old);
+  assert.deepEqual(link.skills, ['sha256:old-skill']);
+  const fresh = {
+    ...selectionDish('fresh', 'current', 'sha256:new-config', '2026-01-02T00:00:00Z'),
+    skill: { id: 'method', hash: 'sha256:new-skill' },
+  };
+  const after = {
+    configurations: [{ ...oldConfig, configHash: fresh.identity.configHash }],
+    skills: [{ id: 'method', skillHash: fresh.skill.hash }], dishes: [old, fresh],
+  };
+  after.configurations = comparisonConfigurations(after);
+  // Both newly serialized hashes and old mutable-id links retain the explicit Dish.
+  for (const skills of [link.skills, ['method']]) {
+    const { slots: [slot] } = resolveRecipeSelection(after, selectionRecipe, { ...link, skills });
+    assert.equal(slot.dish.id, old.id);
+    assert.equal(slot.config.configHash, old.identity.configHash);
+    assert.equal(slot.skillKey, old.skill.hash);
+    assert.deepEqual(slot.repeats.map(dish => dish.id), [old.id]);
+  }
+  const filtered = resolveRecipeSelection(after, selectionRecipe, { models: ['model'], skills: ['method'], dishes: [] });
+  assert.equal(filtered.slots[0].dish.id, fresh.id);
+  assert.equal(filtered.slots[0].config.configHash, fresh.identity.configHash);
+  const dishOnly = resolveRecipeSelection(after, selectionRecipe, { models: [], skills: [], dishes: [old.id] });
+  assert.equal(dishOnly.slots[0].dish.id, old.id);
+});
+
+test('explicit Dish slots retain independent identities and unavailable Dishes stay empty', () => {
+  const plain = selectionDish('plain', 'current', 'sha256:current', '2026-01-01T00:00:00Z');
+  const layered = { ...selectionDish('layered', 'old', 'sha256:preserved', '2026-01-02T00:00:00Z'), skill: { id: 'method', hash: 'sha256:skill' } };
+  const foreign = { ...plain, id: 'foreign', recipe: { id: 'another-recipe', hash: 'current' } };
+  const registry = selectionRegistry([plain, layered, foreign]);
+  const { slots } = resolveRecipeSelection(registry, selectionRecipe, {
+    models: ['current-config', 'current-config', 'current-config'],
+    skills: ['method', 'none', 'none'], dishes: ['plain', 'layered', 'foreign'],
+  });
+  assert.equal(slots[0].dish.id, plain.id);
+  assert.equal(slots[0].skillKey, 'none');
+  assert.equal(slots[1].dish.id, layered.id);
+  assert.equal(slots[1].config.configHash, layered.identity.configHash);
+  assert.equal(slots[1].skillKey, layered.skill.hash);
+  assert.equal(slots[2].dish, undefined);
+  assert.deepEqual(slots[2].repeats, []);
+  const missing = resolveRecipeSelection(registry, selectionRecipe, { models: ['current-config'], skills: [], dishes: ['deleted'] });
+  assert.equal(missing.slots[0].dish, undefined);
+});
