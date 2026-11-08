@@ -151,6 +151,13 @@ test("a Dish cooked from the current Recipe publishes exactly that Recipe's fixt
 
   await writeFile(manifestPath, JSON.stringify(inputs));
   await buildRegistry({ repoRoot: root });
+
+  // Dropping only the inputs sidecar must not fall back to current fixtures.
+  await rm(manifestPath);
+  await rm(path.join(directory, "inputs"), { recursive: true });
+  await assert.rejects(buildRegistry({ repoRoot: root }), /missing inputs for Recipe/);
+  await rm(path.join(directory, "receipt.json"));
+  await buildRegistry({ repoRoot: root });
 });
 
 function skill(delivery = "workspace") {

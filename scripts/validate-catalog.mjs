@@ -662,6 +662,8 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   }
   if (!await exists(inputsPath)) {
     for (const problem of await verifyInputs(dishDirectory, { fixtures: [] })) fail(inputsRelative, problem);
+    // A receipt marks a sidecar-era Dish; only a Dish with neither sidecar is legacy.
+    if (await exists(receiptPath) && recipeRecord?.recipeHash === dish.recipe?.hash && recipeRecord.recipe.setup?.fixtures?.length) fail(inputsRelative, `missing inputs for Recipe ${dish.recipe.id} at its current hash`);
   }
   if (await exists(receiptPath)) {
     const receipt = await json(receiptRelative);

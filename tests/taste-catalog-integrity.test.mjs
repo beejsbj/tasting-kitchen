@@ -259,9 +259,18 @@ test("official catalog validation refuses inputs the current Recipe never declar
     id: "extra", path: "fixtures/extra.txt", mountAs: "extra.txt", public: true, editable: false,
     sha256: `sha256:${createHash("sha256").update(extra).digest("hex")}`, bytes: extra.length,
   }] }));
-  const result = validate(root);
+  let result = validate(root);
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /inputs do not match Recipe/);
+
+  await rm(path.join(directory, "inputs.json"));
+  await rm(path.join(directory, "inputs"), { recursive: true });
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /missing inputs for Recipe/);
+  await rm(path.join(directory, "receipt.json"));
+  result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
 });
 
 async function writeManifest(filename, dish) {
