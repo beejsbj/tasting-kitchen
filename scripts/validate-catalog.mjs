@@ -689,6 +689,13 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   }
 }
 
+// A personal-environment Dish of a public Recipe is kept private unless the Cook published it, so private
+// storage is also valid when the Dish's own receipt records a personal configuration.
+async function hasPersonalReceipt(dishDirectory) {
+  const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
+  return await exists(receiptPath) && (await json(path.relative(root, receiptPath)))?.configuration?.executionProfile?.environment === "personal";
+}
+
 async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {
   const dish = await json(relative);
   if (!dish || !object(dish, relative)) return null;
@@ -723,7 +730,7 @@ async function validateDish(relative, recipeRecords, { privateDish = false } = {
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
-    else if (privateDish !== (recipeRecord.recipe.visibility === "private")) fail(relative, "Dish storage does not match Recipe visibility");
+    else if (privateDish !== (recipeRecord.recipe.visibility === "private") && !(privateDish && await hasPersonalReceipt(dishDirectory))) fail(relative, "Dish storage does not match Recipe visibility");
   }
 
   if (object(dish.identity, `${relative}.identity`)) {

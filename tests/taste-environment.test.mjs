@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { computeConfigHash, computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { OPTIONAL_PROFILE_KEYS } from "../lib/taste/harness-adapters.mjs";
 import { cook } from "../lib/taste/index.mjs";
@@ -110,29 +110,64 @@ test("the attempt manifest records environment, harnessProfile and the publish c
   }
 });
 
-test("validate-catalog accepts only string environment keys, and rejects any environment a profile does not declare", async (t) => {
-  // A scratch copy of the public tree with `private/` linked in; only configurations.json is edited.
+// A scratch copy of the public tree (no private/), so validation can be run against edited catalog files.
+async function scratchCatalog(t) {
   const scratch = await mkdtemp(path.join(os.tmpdir(), "taste-validate-"));
   t.after(() => rm(scratch, { recursive: true, force: true }));
   for (const entry of await readdir(repoRoot)) {
     if (["node_modules", ".git", "private"].includes(entry)) continue;
     await cp(path.join(repoRoot, entry), path.join(scratch, entry), { recursive: true });
   }
-  await symlink(path.join(repoRoot, "private"), path.join(scratch, "private"));
+  const validate = (...flags) => execFileAsync("node", ["scripts/validate-catalog.mjs", ...flags], { cwd: repoRoot, env: { ...process.env, TASTE_CATALOG_ROOT: scratch } })
+    .then(() => "", (error) => `${error.stdout}${error.stderr}`);
+  return { scratch, validate };
+}
+
+test("validate-catalog accepts only string environment keys, and rejects any environment a profile does not declare", async (t) => {
+  const { scratch, validate } = await scratchCatalog(t);
   const file = path.join(scratch, "catalog/configurations.json");
   const original = JSON.parse(await readFile(file, "utf8"));
-  const validate = async (extra) => {
+  const withProfile = async (extra) => {
     const doc = structuredClone(original);
-    const first = (doc.configurations ?? doc.variants ?? doc)[0];
-    Object.assign(first.executionProfile, extra);
+    Object.assign(doc.configurations[0].executionProfile, extra);
     await writeFile(file, `${JSON.stringify(doc, null, 2)}\n`);
-    const outcome = await execFileAsync("node", ["scripts/validate-catalog.mjs"], { cwd: repoRoot, env: { ...process.env, TASTE_CATALOG_ROOT: scratch } }).then(() => "", (error) => `${error.stdout}${error.stderr}`);
-    return outcome;
+    return validate("--public-checkout");
   };
-  assert.equal(await validate({}), "");
-  assert.match(await validate({ environment: 7 }), /executionProfile\.environment/);
-  assert.match(await validate({ harnessProfile: 7 }), /executionProfile\.harnessProfile/);
-  assert.match(await validate({ environment: "clean" }), /declares no environment/);
-  assert.match(await validate({ environment: "personal", harnessProfile: "rose" }), /declares no environment/);
-  assert.match(await validate({ colour: "red" }), /colour/);
+  assert.equal(await withProfile({}), "");
+  assert.match(await withProfile({ environment: 7 }), /executionProfile\.environment/);
+  assert.match(await withProfile({ harnessProfile: 7 }), /executionProfile\.harnessProfile/);
+  assert.match(await withProfile({ environment: "clean" }), /declares no environment/);
+  assert.match(await withProfile({ environment: "personal", harnessProfile: "rose" }), /declares no environment/);
+  assert.match(await withProfile({ colour: "red" }), /colour/);
+});
+
+test("owner validation accepts a private Dish of a public Recipe only when its receipt records a personal configuration", async (t) => {
+  const { scratch, validate } = await scratchCatalog(t);
+  const [dishId] = await readdir(path.join(scratch, "dishes"));
+  const publicDirectory = path.join(scratch, "dishes", dishId);
+  const privateDirectory = path.join(scratch, "private/dishes", dishId);
+  const keepPrivate = async (environment) => {
+    await rm(path.join(scratch, "private"), { recursive: true, force: true });
+    await mkdir(path.dirname(privateDirectory), { recursive: true });
+    await cp(publicDirectory, privateDirectory, { recursive: true });
+    const receiptFile = path.join(privateDirectory, "receipt.json");
+    const receipt = JSON.parse(await readFile(receiptFile, "utf8"));
+    if (environment) receipt.configuration.executionProfile.environment = environment;
+    receipt.configuration.configHash = computeConfigHash(receipt.configuration);
+    await writeFile(receiptFile, `${JSON.stringify(receipt, null, 2)}\n`);
+    const dishFile = path.join(privateDirectory, "dish.json");
+    const dish = JSON.parse(await readFile(dishFile, "utf8"));
+    delete dish.dishHash;
+    dish.visibility = "private";
+    dish.identity.configHash = receipt.configuration.configHash;
+    await writeFile(dishFile, `${JSON.stringify({ ...dish, dishHash: hashCanonical(dish) }, null, 2)}\n`);
+    await rm(publicDirectory, { recursive: true });
+    const output = await validate();
+    await cp(privateDirectory, publicDirectory, { recursive: true });
+    return output;
+  };
+  // Without the private/ tree, owner mode reports unrelated missing-provenance errors; only the storage rule matters here.
+  assert.doesNotMatch(await keepPrivate("personal"), /Dish storage does not match Recipe visibility/);
+  assert.match(await keepPrivate("clean"), /Dish storage does not match Recipe visibility/);
+  assert.match(await keepPrivate(undefined), /Dish storage does not match Recipe visibility/);
 });
