@@ -9,6 +9,7 @@ import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
+import { loadToolchains, toolchainPinFindings } from "../lib/taste/toolchains.mjs";
 import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
@@ -59,7 +60,7 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "toolchain", "variation", "supersedes"]);
 const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
 const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source", "delivery"]);
 const allowedSkillDeliveries = new Set(["workspace", "prompt"]);
@@ -978,6 +979,17 @@ for (const relative of recipeFiles.sort()) {
 }
 
 await validateMenus(recipeRecords, cuisines);
+
+// A Recipe on a pinned toolchain must name a known toolchain and carry its current pin.
+const toolchains = await loadToolchains(root);
+const toolchainRecipes = [...recipeRecords.values()].filter((record) => record.recipe.toolchain !== undefined);
+for (const { recipe, relative } of toolchainRecipes) {
+  if (!object(recipe.toolchain, `${relative}.toolchain`)) continue;
+  onlyKeys(recipe.toolchain, new Set(["id", "engineMount"]), `${relative}.toolchain`);
+  string(recipe.toolchain.id, `${relative}.toolchain.id`, { pattern: IDS });
+  if (recipe.toolchain.engineMount !== undefined) safeRelative(recipe.toolchain.engineMount, `${relative}.toolchain.engineMount`);
+}
+for (const finding of await toolchainPinFindings(root, toolchainRecipes.map(({ recipe, relative }) => ({ ...recipe, sourcePath: relative })), toolchains)) fail("toolchains", finding);
 
 if (!publicCheckout) await validateProvenance(recipeRecords);
 
