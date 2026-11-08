@@ -11,6 +11,17 @@ const localVoteFallback: Connect.NextHandleFunction = (request, response, next) 
   response.end(JSON.stringify({ mode: 'local' }));
 };
 
+// Mirrors the /dishes/ rule in vercel.json and deploy/nginx.conf so the dev and
+// preview servers exercise the same artifact hosting contract.
+const artifactHeaders: Connect.NextHandleFunction = (request, response, next) => {
+  if (request.url?.includes("/dishes/")) {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Content-Security-Policy", "sandbox allow-scripts allow-forms; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'");
+    response.setHeader("X-Content-Type-Options", "nosniff");
+  }
+  next();
+};
+
 export default defineConfig({
   base: process.env.TASTE_BASE_PATH || "/",
   // Recipe saves return updated data through the API; a full page reload would
@@ -21,16 +32,11 @@ export default defineConfig({
     configureServer(server) {
       server.middlewares.use(localVoteFallback);
       server.middlewares.use(recipeBookMiddleware(process.cwd()));
-      server.middlewares.use((request, response, next) => {
-        if (request.url?.includes("/dishes/")) {
-          response.setHeader("Access-Control-Allow-Origin", "*");
-          response.setHeader("Content-Security-Policy", "sandbox allow-scripts allow-forms; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'");
-        }
-        next();
-      });
+      server.middlewares.use(artifactHeaders);
     },
     configurePreviewServer(server) {
       server.middlewares.use(localVoteFallback);
+      server.middlewares.use(artifactHeaders);
     },
   }],
   build: {
