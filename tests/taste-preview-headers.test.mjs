@@ -41,3 +41,12 @@ test("the preview server leaves non-artifact routes without the sandbox", async 
   assert.equal(headers["content-security-policy"], undefined);
   assert.equal(headers["access-control-allow-origin"], undefined);
 });
+
+test("only the URL path selects artifact routes, never the query string", async () => {
+  for (const hook of [headerPlugin().configurePreviewServer, headerPlugin().configureServer]) {
+    const headers = await responseHeaders(hook, "/?next=/dishes/");
+    assert.equal(headers["content-security-policy"], undefined);
+    assert.equal(headers["access-control-allow-origin"], undefined);
+    assert.ok((await responseHeaders(hook, "/dishes/dish_a/artifact/index.html?v=1"))["content-security-policy"]);
+  }
+});

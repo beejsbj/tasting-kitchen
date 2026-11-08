@@ -14,7 +14,7 @@ const localVoteFallback: Connect.NextHandleFunction = (request, response, next) 
 // Mirrors the /dishes/ rule in vercel.json and deploy/nginx.conf so the dev and
 // preview servers exercise the same artifact hosting contract.
 const artifactHeaders: Connect.NextHandleFunction = (request, response, next) => {
-  if (request.url?.includes("/dishes/")) {
+  if (request.url && new URL(request.url, "http://localhost").pathname.includes("/dishes/")) {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Security-Policy", "sandbox allow-scripts allow-forms; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'");
     response.setHeader("X-Content-Type-Options", "nosniff");
