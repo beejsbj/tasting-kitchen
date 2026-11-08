@@ -180,10 +180,10 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
   return <>
     <h2 className="mb-4 text-base font-semibold">{title}</h2>
     {compareBy}
-    {panes.map((pane, index) => <section key={index} className="mb-3 border-b border-slate-100 pb-3 last:mb-0 last:border-0 last:pb-0" aria-label={panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}>
+    <div>{panes.map((pane, index) => <section key={index} className="mb-3 border-b border-slate-100 pb-3 last:mb-0 last:border-0 last:pb-0" aria-label={panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}>
       <div className="mb-1 flex min-h-8 items-center justify-between"><span className="text-xs font-medium text-slate-500">{panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}</span>{panes.length > 1 && <button className="inline-flex min-h-8 items-center gap-1 rounded-md border-0 bg-transparent px-2 text-xs text-slate-500 hover:bg-slate-100" aria-label={`Remove configuration ${index + 1}`} onClick={() => remove(index)}>Remove<X size={12} aria-hidden="true" /></button>}</div>
       <AxisPicker label={`Configuration ${index + 1}`} axes={paneAxes(context, pane, (config) => chooseConfig(index, config), (token) => chooseLayer(index, token))} />
-    </section>)}
+    </section>)}</div>
     {repeatGroups}
     {panes.length > 1 && <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>}
   </>;
