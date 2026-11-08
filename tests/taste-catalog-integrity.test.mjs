@@ -120,6 +120,21 @@ test("public checkout still rejects catalog and skill tampering", async (t) => {
   }
 });
 
+test("catalog validation applies the published-inputs scan to public fixtures before any Cook", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const fixture = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  // The LUFS regex is shaped like a Windows path; it must stay publishable.
+  assert.match(await readFile(fixture, "utf8"), /I:\\s\+/);
+  let result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+  // A leak the catalog patterns miss would otherwise first fail at paid finalization.
+  await writeFile(fixture, `${await readFile(fixture, "utf8")}// access_token = example\n`);
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(authentication-token field\)/);
+});
+
 test("official catalog validation rejects tampered publication hashes", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));

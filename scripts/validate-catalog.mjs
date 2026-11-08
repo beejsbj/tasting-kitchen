@@ -4,7 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
-import { describeTree } from "../lib/taste/files.mjs";
+import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
@@ -592,7 +592,13 @@ async function validateRecipe(relative, cuisines, tags, skills) {
     for (const fixture of recipe.setup?.fixtures ?? []) {
       const source = mountedFixtures.get(fixture.mountAs);
       if (!source) throw new Error("fixture unavailable");
-      fixtureHashes[fixture.id] = sha256(await readFile(source));
+      const bytes = await readFile(source);
+      fixtureHashes[fixture.id] = sha256(bytes);
+      // Public fixture bytes are published verbatim in each Dish's inputs/.
+      // Apply that scan here so a failure surfaces before a paid Cook.
+      if (fixture.public !== false && !bytes.includes(0)) {
+        for (const reason of verbatimInputFindings(fixture.mountAs, bytes.toString("utf8"))) fail(relative, `fixture ${fixture.id} would fail the published inputs scan (${reason})`);
+      }
     }
     recipeHash = computeRecipeHash(recipe, fixtureHashes);
   } catch { /* Invalid public fixtures already have validation errors. */ }
