@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { planSelection } from "../lib/taste/catalog.mjs";
-import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { OPTIONAL_PROFILE_KEYS, assertProfileMatch, getHarnessAdapter, isPersonalEnvironment, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const profile = { id: "codex-linux-host-unsandboxed-v1", label: "via Codex CLI · host-unsandboxed fallback", runtime: "linux-host", sandbox: "danger-full-access", approvalPolicy: "never", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
 const variant = { id: "codex", provider: "openai", model: "gpt-5.6-sol", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: profile, configHash: "sha256:test" };
@@ -64,4 +64,38 @@ test("adapters expose pure fresh and exact-resume turn plans", () => {
   const resumedCursor = getHarnessAdapter("cursor-agent").planTurn({ variant: cursorVariant, workspace: "/tmp/work", prompt: "correct", threadId: UUID });
   assert.equal(freshCursor.includes("--resume"), false);
   assert.equal(resumedCursor[resumedCursor.indexOf("--resume") + 1], UUID);
+});
+
+test("a shipped profile declares no environment, so Codex and Cursor reject clean and personal until they implement them", () => {
+  const withProfile = (extra) => ({ ...variant, executionProfile: { ...profile, ...extra } });
+  assert.doesNotThrow(() => resolveHarnessAdapter(variant));
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "clean" })), /declares no environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "personal", harnessProfile: "rose" })), /declares no environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "mine" })), /environment must be one of/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ harnessProfile: "rose" })), /requires the personal environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ id: "unknown-profile" })), /profile\.id must be one of/);
+  const cursorProfile = { id: "cursor-linux-host-unsandboxed-v1", label: "via Cursor Agent · host-unsandboxed", runtime: "linux-host", sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
+  const cursor = { ...variant, provider: "cursor", model: "composer-2.5[fast=false]", harness: "cursor-agent", reasoningEffort: "adaptive", personality: "default" };
+  assert.doesNotThrow(() => resolveHarnessAdapter({ ...cursor, executionProfile: cursorProfile }));
+  assert.throws(() => resolveHarnessAdapter({ ...cursor, executionProfile: { ...cursorProfile, environment: "clean" } }), /declares no environment/);
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "personal" })), true);
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "clean" })), false);
+  assert.equal(isPersonalEnvironment(variant), false);
+});
+
+test("a profile that declares an environment accepts exactly that one; harnessProfile needs personal", () => {
+  const declared = (environment) => ({ ...profile, ...(environment ? { environment } : {}) });
+  const match = (expected, candidate) => assertProfileMatch("test-harness", expected, candidate);
+  assert.ok(OPTIONAL_PROFILE_KEYS.includes("environment") && OPTIONAL_PROFILE_KEYS.includes("harnessProfile"));
+  assert.doesNotThrow(() => match(declared("clean"), declared("clean")));
+  assert.throws(() => match(declared("clean"), declared("personal")), /environment must be clean \(got personal\)/);
+  assert.throws(() => match(declared("clean"), declared()), /environment must be clean \(omitted\)/);
+  assert.throws(() => match(declared("clean"), { ...declared("clean"), harnessProfile: "rose" }), /requires the personal environment/);
+  assert.doesNotThrow(() => match(declared("personal"), { ...declared("personal"), harnessProfile: "rose" }));
+  assert.throws(() => match(declared("personal"), { ...declared("personal"), harnessProfile: "../rose" }), /plain profile name/);
+  assert.throws(() => match(declared("personal"), declared("clean")), /environment must be personal/);
+  assert.throws(() => match(declared("clean"), declared("mine")), /must be one of clean, personal/);
+  // Absent stays absent: a profile with no environment accepts only a configuration without one.
+  assert.doesNotThrow(() => match(declared(), declared()));
+  assert.throws(() => match(declared(), declared("clean")), /declares no environment/);
 });

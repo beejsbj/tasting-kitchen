@@ -136,7 +136,14 @@ The public model view is faceted rather than hierarchical. A visitor may start w
 
 The exact requested configuration remains part of Dish identity and Repeat grouping. It includes every requested dimension capable of changing the result, such as provider, model, harness, reasoning effort, service tier, and execution profile. Requested and observed identity are recorded separately, and drift is disclosed.
 
-Multi-harness execution is post-v1. When it arrives, the same model used through two harnesses represents two configurations and does not form a Repeat.
+The same model used through two harnesses represents two configurations and does not form a Repeat. A harness brings its own system prompt, tools and defaults; that difference is part of what is tasted, and Kitchen never attributes it to the model alone.
+
+**Environment** is a configuration dimension inside the execution profile (`executionProfile.environment`):
+
+- `clean` starts the harness from an empty home: no user instructions, skills, memory, hooks or MCP servers. Only the harness itself shapes the Run.
+- `personal` loads Burooj's own setup for that harness, optionally a named harness profile (`executionProfile.harnessProfile`, such as a Hermes profile). It tastes the model as he actually works with it.
+
+Clean and personal are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the setup adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. The current Codex and Cursor configurations declare no environment, because neither harness yet isolates its home: Codex cooks run inside the Kitchen repo, and Cursor runs with the real home directory (see [#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
 
 ### Skill and skill hash
 
@@ -241,7 +248,7 @@ An explicit Repeat-intent Cook creates another Run. Its Dish joins the Repeat gr
 
 ### One model through different harnesses
 
-The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Multi-harness execution remains post-v1.
+The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Holding the model, effort and environment constant while changing only the harness is the closest Kitchen gets to isolating a harness; the receipts still say what else each harness supplied.
 
 ### A Recipe in several Menus
 
@@ -286,6 +293,6 @@ V1 is about:
 - visual design; and
 - deployment.
 
-The owner-only Cook button and multi-harness execution are post-v1.
+The owner-only Cook button is post-v1.
 
 Sitegeist is inspiration for repeated same-brief comparison across a deliberately varied set. It is not a visual identity to copy.
