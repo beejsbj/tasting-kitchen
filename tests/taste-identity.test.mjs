@@ -26,11 +26,14 @@ test("extracts effective identity only from private rollout settings", () => {
   });
 });
 
-test("service-tier comparison aliases only requested fast to observed priority", () => {
+test("service-tier comparison aliases only fast to priority and default to standard", () => {
   assert.equal(serviceTiersMatch("fast", "priority"), true);
   assert.equal(serviceTiersMatch("fast", "fast"), false);
   assert.equal(serviceTiersMatch("fast", "default"), false);
   assert.equal(serviceTiersMatch("default", "default"), true);
+  assert.equal(serviceTiersMatch("default", "standard"), true);
+  assert.equal(serviceTiersMatch("default", "priority"), false);
+  assert.equal(serviceTiersMatch("fast", "standard"), false);
   assert.equal(serviceTiersMatch("priority", "priority"), true);
   assert.equal(serviceTiersMatch("flex", "flex"), true);
   assert.equal(serviceTiersMatch("priority", "fast"), false);

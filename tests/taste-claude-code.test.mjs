@@ -62,7 +62,7 @@ if (args[0] === "--version") { console.log(process.env.FAKE_VERSION || "2.1.312 
 let token = "";
 try { token = readFileSync(Number(process.env.CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR), "utf8"); } catch {}
 const inherited = Object.keys(process.env).filter((key) => /^(CLAUDECODE|CLAUDE_EFFORT|ANTHROPIC_)/.test(key));
-appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, tokenMatches: token === process.env.FAKE_EXPECTED_TOKEN, configDir: process.env.CLAUDE_CONFIG_DIR, inherited }) + "\\n");
+appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, tokenMatches: token === process.env.FAKE_EXPECTED_TOKEN, configDir: process.env.CLAUDE_CONFIG_DIR, gitCeiling: process.env.GIT_CEILING_DIRECTORIES, inherited }) + "\\n");
 const resume = args.indexOf("--resume");
 const session = resume >= 0 ? args[resume + 1] : process.env.FAKE_SESSION;
 const requested = args[args.indexOf("--model") + 1];
@@ -92,7 +92,7 @@ test("clean and personal turn plans pin model, effort, isolation and exact resum
   assert.equal(argAfter(clean, "--setting-sources"), "");
   assert.ok(clean.includes("--strict-mcp-config"));
   assert.deepEqual(JSON.parse(argAfter(clean, "--mcp-config")), { mcpServers: {} });
-  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true });
+  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true, includeGitInstructions: false });
   assert.equal(argAfter(clean, "--tools"), "Bash,Edit,Glob,Grep,Read,Write");
   assert.equal(argAfter(clean, "--permission-mode"), "bypassPermissions");
   assert.deepEqual(clean.slice(-2), ["--", "-Cook"], "a dash-leading prompt stays a prompt");
@@ -124,7 +124,9 @@ test("the child environment drops a parent Claude session and points at the atte
   assert.equal(clean.ENABLE_CLAUDEAI_MCP_SERVERS, "false");
   assert.equal(clean.CLAUDE_CODE_DISABLE_CLAUDE_MDS, "1");
   assert.equal(clean.CLAUDE_CODE_DISABLE_AUTO_MEMORY, "1");
-  const personal = claudeChildEnv({ variant: claudeVariant("personal"), harnessHome: "/attempt/claude-home", base });
+  assert.equal(clean.GIT_CEILING_DIRECTORIES, undefined);
+  const personal = claudeChildEnv({ variant: claudeVariant("personal"), harnessHome: "/attempt/claude-home", workspace: "/srv/a/workspace", workspaceRealPath: "/mnt/a/workspace", base });
+  assert.equal(personal.GIT_CEILING_DIRECTORIES, ["/srv/a", "/mnt/a"].join(path.delimiter));
   assert.equal(personal.CLAUDE_CODE_DISABLE_CLAUDE_MDS, undefined, "personal keeps the mirrored user CLAUDE.md");
   assert.equal(personal.ENABLE_CLAUDEAI_MCP_SERVERS, "false");
 });
@@ -209,6 +211,7 @@ test("Claude Code runs fixed turns in one session, hands the token on a descript
   for (const call of calls) {
     assert.equal(call.tokenMatches, true);
     assert.equal(call.configDir, harnessHome);
+    assert.equal(call.gitCeiling, root);
     assert.deepEqual(call.inherited, []);
     assert.equal(call.args.some((arg) => arg.includes(TOKEN)), false);
   }
@@ -218,6 +221,7 @@ test("Claude Code runs fixed turns in one session, hands the token on a descript
   assert.equal(observed.model, "claude-haiku-5-5");
   assert.equal(observed.reasoningEffortEvidence, "pinned-argv");
   assert.equal(observed.observedServiceTier, "standard");
+  assert.equal(observed.serviceTier, "standard", "the Dish keeps the tier the stream reported");
   assert.deepEqual(observed.auxiliaryModels, []);
 
   const drifted = structuredClone(result);
