@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { chromium } from "playwright";
-import { galleryBrowserFixture } from "./gallery-browser-fixture.mjs";
+import { galleryBrowserFixture, withHarnessConfigurations } from "./gallery-browser-fixture.mjs";
 
 const base = process.env.TASTE_BROWSER_URL ?? "http://127.0.0.1:5177";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -201,6 +201,54 @@ try {
     assert.ok(await page.locator(".recipe-card").count() > 0, "family filter should leave matching Recipes on the counter");
   }
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
+
+  // One model through several harnesses and environments: facets, picker, comparison and receipts.
+  const harnessPage = await context.newPage(); await harnessPage.setViewportSize({ width: 1280, height: 900 }); recordErrors(harnessPage, "harness");
+  const harnessRegistry = withHarnessConfigurations(registry, target.id);
+  await harnessPage.route("**/data/registry.json", route => route.fulfill({ json: harnessRegistry }));
+  await harnessPage.goto(`${base}/`, { waitUntil: "networkidle" });
+  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 3, "the shipped catalog offers All, Codex CLI and Cursor Agent");
+  assert.equal(await page.getByRole("group", { name: "Filter by environment" }).count(), 0, "no environment facet while every configuration predates environments");
+  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "harness facet lists all harnesses plus All");
+  await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
+  assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
+  assert.equal(await harnessPage.locator(".dish-card").count(), 2, "only Hermes Dishes remain");
+  await harnessPage.getByRole("group", { name: "Filter by environment" }).getByRole("button", { name: "Personal · rose", exact: true }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".dish-card").count(), 1, "environment narrows within the harness");
+  assert.match(await harnessPage.locator(".dish-card__setup").innerText(), /Hermes · Personal · rose/);
+  assert.equal(await harnessPage.getByRole("group", { name: "Active filters" }).getByRole("button").count(), 2, "each active facet has a chip");
+  await save(harnessPage, "counter-facets");
+  await harnessPage.getByRole("button", { name: "Remove Harness: Hermes filter", exact: true }).click();
+  await harnessPage.getByRole("button", { name: "Remove Environment: Personal · rose filter", exact: true }).click();
+  assert.equal(new URL(harnessPage.url()).search, "", "removing chips clears the URL filters");
+
+  const claudeClean = harnessRegistry.configurations.find(config => config.id === "claude-opus-high-clean");
+  const fixtureDish = harnessRegistry.dishes.find(dish => dish.identity.configHash === claudeClean.configHash);
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: claudeClean.id, dishes: fixtureDish.id })}`, { waitUntil: "networkidle" });
+  await harnessPage.getByRole("button", { name: "Models and comparison" }).click(); await settle(harnessPage);
+  const picker = harnessPage.getByRole("group", { name: "Configuration 1", exact: true });
+  assert.equal(await picker.locator(".model-choice__caption").getByText("Claude Code · Clean", { exact: true }).count(), 1, "the picker captions each setup of a family");
+  assert.equal(await picker.locator(".model-choice__caption").getByText("Hermes · Personal · rose", { exact: true }).count(), 1);
+  assert.equal(await picker.locator(".model-choice", { hasText: "Sol" }).locator(".model-choice__caption").count(), 0, "a single-setup family stays compact");
+  await save(harnessPage, "model-picker");
+  await harnessPage.getByRole("button", { name: /^Compare configuration 1 across harnesses: Hermes$/ }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".comparison-slot").count(), 2, "compare across harnesses opens one slot per other harness");
+  assert.deepEqual(await harnessPage.locator(".pane-label").allInnerTexts(), ["1 · Opus 5.5 · High · Claude Code · Clean", "2 · Opus 5.5 · High · Hermes · Clean"]);
+  assert.match(await harnessPage.getByText(/^Same brief · only the harness differs/).innerText(), /only the harness differs · its own prompt, tools and defaults come with it/);
+  await harnessPage.getByText(/^Same brief · only the harness differs/).scrollIntoViewIfNeeded();
+  await save(harnessPage, "harness-comparison");
+  await harnessPage.getByRole("button", { name: /^Compare configuration 1 across environments: Personal$/ }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".comparison-slot").count(), 3, "compare across environments adds the same harness in each other environment");
+  await harnessPage.getByRole("button", { name: "Configuration receipts" }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".receipt dt", { hasText: "Environment" }).count(), 3);
+  assert.equal(await harnessPage.locator(".receipt dt", { hasText: "Harness profile" }).count(), 0, "a harness profile is listed only when one was used");
+  await harnessPage.keyboard.press("Escape");
+  const roseConfig = harnessRegistry.configurations.find(config => config.id === "hermes-opus-high-personal-rose");
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: roseConfig.id })}`, { waitUntil: "networkidle" });
+  await harnessPage.getByRole("button", { name: "Configuration receipts" }).click(); await settle(harnessPage);
+  assert.match(await harnessPage.locator(".receipt").innerText(), /Hermes 9\.9\.9[\s\S]*Environment\s+Personal[\s\S]*Harness profile\s+rose/);
+  await save(harnessPage, "harness-receipt");
+  await harnessPage.close();
 
   const historyBefore = await page.evaluate(() => history.length);
   await page.locator(`[data-dish-id="${targetLatest.id}"] button`).click(); await settle(page);

@@ -31,3 +31,31 @@ export async function galleryBrowserFixture(context) {
     await fs.rm(temporary, { recursive: true, force: true }); throw error;
   }
 }
+
+/**
+ * One model through several harnesses and environments, as the catalog will
+ * hold once the Claude Code and Hermes adapters land. Each synthetic Dish
+ * replays an existing artifact of `recipeId`; served only to browser checks.
+ */
+export function withHarnessConfigurations(registry, recipeId) {
+  const base = registry.configurations[0];
+  const source = registry.dishes.find(dish => dish.recipe.id === recipeId && dish.artifact.kind === 'web');
+  const setups = [
+    ['claude-opus-high-clean', 'claude-code', 'claude-opus-5-5', 'high', 'clean'],
+    ['claude-opus-max-clean', 'claude-code', 'claude-opus-5-5', 'max', 'clean'],
+    ['claude-opus-high-personal', 'claude-code', 'claude-opus-5-5', 'high', 'personal'],
+    ['claude-sonnet-high-clean', 'claude-code', 'claude-sonnet-5-5', 'high', 'clean'],
+    ['hermes-opus-high-clean', 'hermes', 'anthropic/claude-opus-5.5', 'high', 'clean'],
+    ['hermes-opus-high-personal-rose', 'hermes', 'anthropic/claude-opus-5.5', 'high', 'personal', 'rose'],
+  ];
+  const configurations = setups.map(([id, harness, model, reasoningEffort, environment, harnessProfile]) => ({
+    ...base, id, harness, model, provider: 'anthropic', reasoningEffort, label: id, configHash: `sha256:fixture-${id}`,
+    executionProfile: { ...base.executionProfile, id: `${harness}-${environment}-fixture`, label: `via ${harness}`, environment, ...(harnessProfile && { harnessProfile }) },
+  }));
+  const dishes = configurations.map((configuration, index) => ({
+    ...source, id: `dish_fixture_${configuration.id}`, executedAt: `2099-02-0${index + 1}T00:00:00.000Z`, dishHash: `sha256:fixture-dish-${configuration.id}`,
+    identity: { ...source.identity, variantId: configuration.id, harness: configuration.harness, harnessVersion: '9.9.9', requestedModel: configuration.model, observedModel: configuration.model, reasoningEffort: configuration.reasoningEffort, configHash: configuration.configHash },
+    receipt: { ...source.receipt, configuration },
+  }));
+  return { ...registry, configurations: [...registry.configurations, ...configurations], dishes: [...registry.dishes, ...dishes] };
+}
