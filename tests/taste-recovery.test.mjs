@@ -267,6 +267,32 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(await pathExists(`${poison}.invoked`), false);
 });
 
+test("recovery records the attempted catalog hash, not the live catalog's", async (t) => {
+  const attempted = `sha256:${"a".repeat(64)}`;
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedPath = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedPath, "utf8"));
+  requested.identity.catalogHash = attempted;
+  await json(requestedPath, requested);
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.notEqual(f.catalog.catalogHash, attempted);
+  assert.equal(dish.identity.catalogHash, attempted);
+});
+
+test("recovery of an attempt that never recorded a catalog hash does not claim the live one", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedPath = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedPath, "utf8"));
+  delete requested.identity.catalogHash;
+  await json(requestedPath, requested);
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.equal("catalogHash" in dish.identity, false);
+});
+
 test("requested configuration recovery rejects scalar and recorded execution drift", async (t) => {
   const cases = [
     { name: "scalar", mutate: (requested) => { requested.identity.model = "gpt-5.6-luna"; }, pattern: /Frozen configuration model/ },
