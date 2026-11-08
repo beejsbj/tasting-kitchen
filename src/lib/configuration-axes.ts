@@ -1,5 +1,5 @@
 import type { Configuration } from "../types";
-import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessLabel, UNSPECIFIED_ENVIRONMENT, type ComparisonDimension } from "./configuration-label.ts";
+import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessLabel, UNDECLARED_ENVIRONMENT, type ComparisonDimension } from "./configuration-label.ts";
 
 /**
  * A configuration seen as independent axes. A pane is the combination of one
@@ -69,7 +69,7 @@ export function axisValueLabel(axis: ConfigAxis, value: string) {
  * its harness, so across different harnesses the environment kind is what holds.
  */
 function sameOn(a: AxisConfiguration, b: AxisConfiguration, axis: ConfigAxis) {
-  if (axis === "environment" && a.harness !== b.harness) return (a.executionProfile.environment ?? UNSPECIFIED_ENVIRONMENT) === (b.executionProfile.environment ?? UNSPECIFIED_ENVIRONMENT);
+  if (axis === "environment" && a.harness !== b.harness) return (a.executionProfile.environment ?? UNDECLARED_ENVIRONMENT) === (b.executionProfile.environment ?? UNDECLARED_ENVIRONMENT);
   return axisValue(a, axis) === axisValue(b, axis);
 }
 
@@ -230,7 +230,7 @@ export function toggleComparisonValue(selection: readonly string[], value: strin
 
 const ISOLATION: Partial<Record<ComparisonDimension, string>> = {
   harness: "its own prompt, tools and defaults come with it",
-  environment: "what the setup adds",
+  environment: "what the environment adds",
   "skill layer": "the model still decides how to use it",
 };
 /**

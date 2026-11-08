@@ -69,7 +69,7 @@ test('changing the model may move lower axes, and the option says how', () => {
   assert.equal(model['Sonnet 5.5'].config.id, 'claude-sonnet-high-clean', 'the closest configuration keeps harness, environment and effort');
   assert.deepEqual(model['Sonnet 5.5'].changes, []);
   assert.equal(model['gpt-5.6-sol'].config.id, 'codex-sol-high');
-  assert.deepEqual(model['gpt-5.6-sol'].changes.map((change) => change.label), ['Codex CLI', 'Unspecified']);
+  assert.deepEqual(model['gpt-5.6-sol'].changes.map((change) => change.label), ['Codex CLI', 'Not declared']);
   const fromMax = byValue(axisOptions(catalog, claude('opus', 'max', 'clean'), 'model', cooked));
   assert.equal(fromMax['Sonnet 5.5'].config.id, 'claude-sonnet-max-clean', 'holding effort wins over finding a Dish');
   assert.equal(fromMax['Sonnet 5.5'].status, 'uncooked');
@@ -128,7 +128,7 @@ test('the compare-by note states what was held and never credits the varied axis
   const slot = (config) => ({ config, skillKey: 'none' });
   const harness = differingDimensions([slot(opusHighClean), slot(hermes('opus', 'high', 'clean'))]);
   assert.equal(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], harness), 'Holding Opus 5.5 · High · Clean · only the harness differs · its own prompt, tools and defaults come with it');
-  assert.equal(compareByNote('environment', ['Opus 5.5', 'High', 'Claude Code'], ['environment']), 'Holding Opus 5.5 · High · Claude Code · only the environment differs · what the setup adds');
+  assert.equal(compareByNote('environment', ['Opus 5.5', 'High', 'Claude Code'], ['environment']), 'Holding Opus 5.5 · High · Claude Code · only the environment differs · what the environment adds');
   assert.equal(compareByNote('skill', ['Opus 5.5'], ['skill layer']), 'Holding Opus 5.5 · only the skill layer differs · the model still decides how to use it');
   assert.equal(compareByNote('model', ['Claude Code'], ['model']), 'Holding Claude Code · only the model differs');
   const loose = differingDimensions([slot(opusHighClean), slot(catalog.find((config) => config.id === 'codex-sol-high'))]);

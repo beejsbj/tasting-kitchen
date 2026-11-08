@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
-import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, harnessLabel } from '../src/lib/configuration-label.ts';
+import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, environmentName, harnessLabel } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -224,14 +224,16 @@ test('harness and environment labels read plainly and unknown harnesses keep the
   assert.equal(environmentLabel(hermesPersonal), 'Personal · rose');
   assert.equal(environmentLabel(hermesPersonal, false), 'Personal');
   assert.equal(environmentLabel(legacy), undefined);
-  assert.deepEqual([claudeClean, hermesPersonal, legacy].map(environmentKey), ['clean', 'personal:rose', 'unspecified']);
+  assert.equal(environmentName(legacy), 'Not declared');
+  assert.equal(environmentName(claudeClean), 'Clean');
+  assert.deepEqual([claudeClean, hermesPersonal, legacy].map(environmentKey), ['clean', 'personal:rose', 'undeclared']);
   assert.equal(configurationHeading(claudeClean, 'Opus'), 'Opus 5.5 · High · Claude Code · Clean');
   assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Personal · rose');
   assert.equal(configurationHeading(legacy, 'Sol'), 'Sol · High · Codex CLI');
 });
 
 test('facets list the values present, so a single-harness catalog has nothing to choose', () => {
-  assert.deepEqual(configurationFacets([legacy, { ...legacy, id: 'other' }]), { harnesses: [{ id: 'codex-cli', label: 'Codex CLI' }], environments: [{ id: 'unspecified', label: 'Unspecified' }] });
+  assert.deepEqual(configurationFacets([legacy, { ...legacy, id: 'other' }]), { harnesses: [{ id: 'codex-cli', label: 'Codex CLI' }], environments: [{ id: 'undeclared', label: 'Not declared' }] });
   assert.deepEqual(configurationFacets([claudeClean, claudePersonal, hermesPersonal]), {
     harnesses: [{ id: 'claude-code', label: 'Claude Code' }, { id: 'hermes', label: 'Hermes' }],
     environments: [{ id: 'clean', label: 'Clean' }, { id: 'personal', label: 'Personal' }, { id: 'personal:rose', label: 'Personal · rose' }],

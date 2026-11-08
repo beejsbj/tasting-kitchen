@@ -7,7 +7,8 @@ const HARNESSES: Record<string, string> = { "claude-code": "Claude Code", hermes
 const ENVIRONMENTS: Record<string, string> = { clean: "Clean", personal: "Personal" };
 const EFFORTS: Record<string, string> = { none: "None", minimal: "Minimal", low: "Low", medium: "Medium", high: "High", xhigh: "XHigh", max: "Max", ultra: "Ultra", adaptive: "Adaptive" };
 /** Environment key of a configuration that predates the dimension. */
-export const UNSPECIFIED_ENVIRONMENT = "unspecified";
+export const UNDECLARED_ENVIRONMENT = "undeclared";
+export const NOT_DECLARED = "Not declared";
 
 export const harnessLabel = (harness: string) => HARNESSES[harness] ?? harness;
 export const effortName = (effort: string) => EFFORTS[effort] ?? effort;
@@ -16,13 +17,15 @@ export function environmentLabel({ executionProfile: { environment, harnessProfi
   if (!environment) return undefined;
   return `${ENVIRONMENTS[environment] ?? environment}${withProfile && harnessProfile ? ` · ${harnessProfile}` : ""}`;
 }
-/** Filter and URL token: "clean", "personal", "personal:rose" or "unspecified". */
+/** `environmentLabel`, or "Not declared" for a configuration that declares none; for places that show the axis beside a choice. */
+export const environmentName = (config: Pick<Dimensioned, "executionProfile">, withProfile = true) => environmentLabel(config, withProfile) ?? NOT_DECLARED;
+/** Filter and URL token: "clean", "personal", "personal:rose" or "undeclared". */
 export function environmentKey({ executionProfile: { environment, harnessProfile } }: Pick<Dimensioned, "executionProfile">) {
-  return environment ? `${environment}${harnessProfile ? `:${harnessProfile}` : ""}` : UNSPECIFIED_ENVIRONMENT;
+  return environment ? `${environment}${harnessProfile ? `:${harnessProfile}` : ""}` : UNDECLARED_ENVIRONMENT;
 }
 export function environmentKeyLabel(key: string) {
   const [environment, profile] = key.split(":");
-  return key === UNSPECIFIED_ENVIRONMENT ? "Unspecified" : `${ENVIRONMENTS[environment] ?? environment}${profile ? ` · ${profile}` : ""}`;
+  return key === UNDECLARED_ENVIRONMENT ? NOT_DECLARED : `${ENVIRONMENTS[environment] ?? environment}${profile ? ` · ${profile}` : ""}`;
 }
 /** "Opus 5.5" for Claude-style ids ("claude-opus-5-5", "anthropic/claude-opus-5.5"); undefined for other models. */
 export function claudeModelName(model: string) {
@@ -63,7 +66,7 @@ export function differingDimensions(slots: ReadonlyArray<{ config: Dimensioned &
 }
 const ONLY_NOTES: Partial<Record<ComparisonDimension, string>> = {
   harness: "only the harness differs · its own prompt, tools and defaults come with it",
-  environment: "only the environment differs · what the setup adds",
+  environment: "only the environment differs · what the environment adds",
 };
 /** The comparison note once the briefs match and nothing drifted: it names what differs. */
 export function differenceNote(dimensions: readonly ComparisonDimension[]) {
