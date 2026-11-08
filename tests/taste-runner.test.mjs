@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
-import { executeRecipe } from "../lib/taste/runner.mjs";
+import { executePlan, executeRecipe } from "../lib/taste/runner.mjs";
 
 async function fixture({ failing = false } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-runner-"));
@@ -201,6 +201,19 @@ test("direct execution refuses every planner-incompatible recipe before runtime 
     await assert.rejects(executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe, variant: f.variant, nonce: `refuse-${recipe.status}-${recipe.harness.web}`, runSession: async () => { launches += 1; return fakeSession(); } }), /Unsupported recipe\/configuration/);
     assert.equal(launches, 0);
   }
+  await assert.rejects(stat(path.join(f.root, "private/runtime")), /ENOENT/);
+});
+
+test("plan execution refuses a recipe whose hash moved since the plan was made", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  let launches = 0;
+  const stale = { variant: f.variant, skill: null, supported: [{ recipeId: f.recipe.id, recipeHash: `sha256:${"9".repeat(64)}` }], unsupported: [] };
+  await assert.rejects(
+    executePlan({ repoRoot: f.root, catalog: f.catalog, plan: stale, runSession: async () => { launches += 1; return fakeSession(); } }),
+    /Recipe demo-session changed since this plan was made/,
+  );
+  assert.equal(launches, 0);
   await assert.rejects(stat(path.join(f.root, "private/runtime")), /ENOENT/);
 });
 

@@ -8,11 +8,16 @@
 .tasting-room--immersive .artifact-pane { height: 100%; border: 0; }
 /* Keep session text clear of the fixed viewer dock, including while scrolling. */
 .tasting-room--immersive .artifact-pane--session { padding-right: 5rem; }
+/* Keep the review mark clear of the fixed viewer dock. When a Dish is marked, the pane label joins the flow above the pane so it can wrap without covering the mark. */
+.tasting-room--immersive .artifact-review-mark { padding-right: 5rem; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) { display: flex; flex-direction: column; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .pane-label { position: static; align-self: flex-start; margin: .75rem .75rem .5rem; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .artifact-pane { flex: 1 1 0; min-height: 0; height: auto; }
 .tasting-room--immersive .session-artifact { max-width: 76ch; margin-inline: auto; }
 .pane-label__held { color: #64748b; }
 .pane-label__total { display: none; color: #94a3b8; }
 .pane-label b { color: #0f172a; font-weight: 600; }
-.pane-label { max-width: calc(100% - 1.5rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
+.pane-label { max-width: calc(100% - 1.5rem); position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
 .recipe-sheet > section, .recipe-sheet > footer { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .recipe-sheet { animation: recipe-in 220ms cubic-bezier(.22,1,.36,1); }
 @keyframes recipe-in { from { transform: translateX(100%); } to { transform: translateX(0); } }

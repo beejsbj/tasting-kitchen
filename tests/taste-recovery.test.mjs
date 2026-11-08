@@ -8,7 +8,7 @@ import { computeConfigHash, hashCanonical } from "../lib/taste/catalog.mjs";
 import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
 import { copyTree, pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
-import { recoverAttempt } from "../lib/taste/recovery.mjs";
+import { configurationFromRequest, recoverAttempt } from "../lib/taste/recovery.mjs";
 import { applySkillToRecipe, loadSkills } from "../lib/taste/skills.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
@@ -267,6 +267,32 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(await pathExists(`${poison}.invoked`), false);
 });
 
+test("recovery records the attempted catalog hash, not the live catalog's", async (t) => {
+  const attempted = `sha256:${"a".repeat(64)}`;
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedPath = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedPath, "utf8"));
+  requested.identity.catalogHash = attempted;
+  await json(requestedPath, requested);
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.notEqual(f.catalog.catalogHash, attempted);
+  assert.equal(dish.identity.catalogHash, attempted);
+});
+
+test("recovery of an attempt that never recorded a catalog hash does not claim the live one", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedPath = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedPath, "utf8"));
+  delete requested.identity.catalogHash;
+  await json(requestedPath, requested);
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+  assert.equal("catalogHash" in dish.identity, false);
+});
+
 test("requested configuration recovery rejects scalar and recorded execution drift", async (t) => {
   const cases = [
     { name: "scalar", mutate: (requested) => { requested.identity.model = "gpt-5.6-luna"; }, pattern: /Frozen configuration model/ },
@@ -314,6 +340,40 @@ test("legacy configuration recovery verifies current identity or complete manife
       } else assert.equal((await recovery).status, "accepted");
     }
   }
+});
+
+test("recovery checks the recorded environment against the configuration, and rebuilds it when the catalog entry is gone", async (t) => {
+  const prepare = async (record) => {
+    const f = await recoveryFixture();
+    t.after(() => rm(f.root, { recursive: true, force: true }));
+    const requestedFile = path.join(f.attemptDir, "requested.json");
+    const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+    const profile = f.selectedVariant.executionProfile;
+    requested.identity.capabilities = [...f.selectedVariant.capabilities];
+    requested.execution = {
+      ...requested.execution, runtime: profile.runtime, sandbox: profile.sandbox, approvalPolicy: profile.approvalPolicy,
+      nativeWeb: profile.nativeWeb, networkEnforcement: "not-technically-enforced", hostFilesystem: profile.filesystemBoundary, ...record,
+    };
+    await json(requestedFile, requested);
+    return f;
+  };
+  // The current configuration has no environment, so a manifest that recorded one is not the same request.
+  for (const record of [{ environment: "personal" }, { environment: "clean" }, { harnessProfile: "rose" }]) {
+    const f = await prepare(record);
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /execution profile (environment|harnessProfile) does not match/, JSON.stringify(record));
+  }
+  // With the entry gone, the recorded environment rebuilds a personal configuration whose hash matches what was requested.
+  // The adapter then refuses it by design (no profile declares personal yet), not with a hash mismatch.
+  const f = await prepare({ environment: "personal", harnessProfile: "rose" });
+  const personal = configurationFromRequest(JSON.parse(await readFile(path.join(f.attemptDir, "requested.json"), "utf8")));
+  assert.equal(personal.executionProfile.environment, "personal");
+  assert.equal(personal.executionProfile.harnessProfile, "rose");
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  requested.identity.configHash = computeConfigHash(personal);
+  await json(requestedFile, requested);
+  f.catalog.variants = [];
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /declares no environment/);
 });
 
 test("Cursor publication recovery reconstructs stream identity without invoking a model", async (t) => {
