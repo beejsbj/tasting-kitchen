@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { sha256 } from "../lib/taste/catalog.mjs";
+import { loadCatalog, sha256 } from "../lib/taste/catalog.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
-import { buildRegistry } from "../lib/taste/registry.mjs";
+import { buildRegistry, loadDishes } from "../lib/taste/registry.mjs";
 import { readDishSidecars, validateSkillReceipt } from "../lib/taste/receipts.mjs";
 import { computeSkillHash } from "../lib/taste/skills.mjs";
 
@@ -80,6 +80,85 @@ for (const change of ["tamper", "delete", "undeclared", "private", "manifest-mis
     assert.equal(legacy.registry.dishes[0].inputs, undefined);
   });
 }
+
+test("published inputs keep the leak scan; only relative and route-shaped paths are exempt", async (t) => {
+  const root = await temporary(t);
+  await json(root, "catalog/cuisines.json", { schemaVersion: 1, cuisines: [] });
+  await json(root, "catalog/tags.json", { schemaVersion: 1, tags: [] });
+  await json(root, "catalog/configurations.json", { schemaVersion: 1, configurations: [] });
+  await json(root, "catalog/recipes/talk/once/recipe.json", {
+    id: "once", status: "ready", title: "Once", summary: "Talk once", cuisines: [], tags: [],
+    kind: "session", harness: { workspace: "read", web: "disabled", capabilities: [] },
+    validation: { mode: "completeness", checks: [] },
+    setup: { instructions: "Respond", fixtures: [] }, turns: [{ id: "ask", role: "prompt", content: "Hello" }],
+    output: { kind: "session", entry: "output/session.json", include: ["output/session.json"] },
+  });
+  const directory = path.join(root, "dishes/dish_once");
+  await json(root, "dishes/dish_once/dish.json", {
+    id: "dish_once", status: "accepted", recipe: { id: "once", hash: `sha256:${"1".repeat(64)}` },
+    identity: { configHash: `sha256:${"2".repeat(64)}` },
+    artifact: { kind: "session", entry: "artifact/output/session.json", files: [] },
+  });
+  await json(root, "dishes/dish_once/artifact/output/session.json", { turns: [] });
+  const writeInput = async (text) => {
+    const bytes = Buffer.from(text);
+    await json(root, "dishes/dish_once/inputs.json", { fixtures: [{ id: "source", public: true, mountAs: "source.js", sha256: sha256(bytes), bytes: bytes.length }] });
+    await mkdir(path.join(directory, "inputs"), { recursive: true });
+    await writeFile(path.join(directory, "inputs/source.js"), bytes);
+  };
+  await writeInput('import "../../source.js";\nconst route = `/style-guide/components/`;\n');
+  await buildRegistry({ repoRoot: root });
+  for (const [text, reason] of [
+    ["const key = 'sk-proj1234567890abcdefghij';\n", /credential-like token/],
+    ["const notes = '/home/someone/notes.txt';\n", /absolute home path/],
+    ["// see file:///etc/hosts\n", /file URL/],
+  ]) {
+    // Self-consistent hashes do not make leaked bytes publishable.
+    await writeInput(text);
+    await assert.doesNotReject(readDishSidecars(directory));
+    await assert.rejects(buildRegistry({ repoRoot: root }), reason);
+  }
+});
+
+test("a Dish cooked from the current Recipe publishes exactly that Recipe's fixtures", async (t) => {
+  const root = await temporary(t);
+  const repoRoot = path.resolve(import.meta.dirname, "..");
+  await cp(path.join(repoRoot, "catalog"), path.join(root, "catalog"), { recursive: true });
+  await cp(path.join(repoRoot, "dishes"), path.join(root, "dishes"), { recursive: true });
+  const catalog = await loadCatalog(root);
+  const current = (dish) => catalog.recipes.find((recipe) => recipe.id === dish.recipe.id && recipe.status === "ready" && recipe.visibility !== "private" && recipe.recipeHash === dish.recipe.hash);
+  const dish = (await loadDishes(root)).find((candidate) => current(candidate)?.setup.fixtures.length);
+  assert.ok(dish, "an accepted public Dish matches its current Recipe hash");
+  const directory = path.join(root, "dishes", dish.id);
+  const manifestPath = path.join(directory, "inputs.json");
+  const inputs = JSON.parse(await readFile(manifestPath, "utf8"));
+  await buildRegistry({ repoRoot: root });
+
+  // Self-consistent extra bytes, outside the recipe hash, must not ride along.
+  const extra = Buffer.from([0, 1, 2, 3]);
+  await writeFile(path.join(directory, "inputs/smuggled.bin"), extra);
+  await writeFile(manifestPath, JSON.stringify({ ...inputs, fixtures: [...inputs.fixtures, { id: "smuggled", path: "fixtures/smuggled.bin", mountAs: "smuggled.bin", public: true, editable: false, sha256: sha256(extra), bytes: extra.length }] }));
+  await assert.doesNotReject(readDishSidecars(directory));
+  await assert.rejects(buildRegistry({ repoRoot: root }), /inputs do not match Recipe/);
+  await rm(path.join(directory, "inputs/smuggled.bin"));
+
+  const [first] = inputs.fixtures;
+  await writeFile(manifestPath, JSON.stringify({ ...inputs, fixtures: [...inputs.fixtures, { ...first, mountAs: `copy-${first.mountAs}`, public: false }] }));
+  await assert.rejects(readDishSidecars(directory), /duplicate input id/);
+
+  await writeFile(manifestPath, JSON.stringify({ ...inputs, fixtures: inputs.fixtures.map((fixture, index) => index === 0 ? { ...fixture, editable: !fixture.editable } : fixture) }));
+  await assert.rejects(buildRegistry({ repoRoot: root }), /inputs do not match Recipe/);
+
+  await writeFile(manifestPath, JSON.stringify(inputs));
+  await buildRegistry({ repoRoot: root });
+
+  // Dropping only the inputs sidecar must not fall back to current fixtures.
+  await rm(manifestPath);
+  await rm(path.join(directory, "inputs"), { recursive: true });
+  await assert.rejects(buildRegistry({ repoRoot: root }), /missing inputs for Recipe/);
+  await rm(path.join(directory, "receipt.json"));
+  await buildRegistry({ repoRoot: root });
+});
 
 function skill(delivery = "workspace") {
   const value = {
