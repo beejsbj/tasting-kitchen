@@ -416,3 +416,26 @@ test("catalog validation re-hashes historical skill receipts and checks current 
   result = validate(root);
   assert.equal(result.status, 0, result.stderr);
 });
+
+test("catalog validation rejects malformed Menu documents", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const menuFile = path.join(root, "catalog/menus/standard-web.json");
+  const original = JSON.parse(await readFile(menuFile, "utf8"));
+  const [first] = original.recipes;
+  const cases = [
+    ["unknown recipe id", { recipes: [...original.recipes, "no-such-recipe"] }, /standard-web\.json.*unknown recipe no-such-recipe/],
+    ["duplicate recipe id", { recipes: [...original.recipes, first] }, /standard-web\.json.*duplicate value/],
+    ["unknown cuisine", { cuisines: ["no-such-cuisine"] }, /standard-web\.json.*unknown cuisine no-such-cuisine/],
+    ["filename mismatch", { id: "another-menu" }, /standard-web\.json.*id must match filename/],
+    ["unknown key", { extra: true }, /standard-web\.json.*unknown key extra/],
+    ["empty recipes", { recipes: [] }, /standard-web\.json.*at least 1 item/],
+  ];
+  assert.equal(validate(root).status, 0);
+  for (const [name, change, expected] of cases) {
+    await writeFile(menuFile, `${JSON.stringify({ ...original, ...change }, null, 2)}\n`);
+    const result = validate(root);
+    assert.equal(result.status, 1, `${name} should fail validation`);
+    assert.match(result.stderr, expected, name);
+  }
+});

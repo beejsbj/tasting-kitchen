@@ -164,7 +164,7 @@ async function main() {
   if (command === "inspect") return print(await inspect(repoRoot, inspectSelection(options)), true);
   if (command === "list") {
     const recipes = listRecipes(await loadCatalog(repoRoot), filterFrom(options));
-    return options.json ? print(recipes, true) : recipes.forEach((recipe) => process.stdout.write(`${recipe.id}\t${recipe.cuisines.join(",")}\t${recipe.origin}\t${recipe.status}\t${recipe.kind}\t${recipe.title}\n`));
+    return options.json ? print(recipes, true) : recipes.forEach((recipe) => process.stdout.write(`${recipe.id}\t${(recipe.cuisines ?? [recipe.domain]).join(",")}\t${recipe.origin}\t${recipe.status}\t${recipe.kind}\t${recipe.title}\n`));
   }
   if (command === "plan") return print(await plan(repoRoot, selection(options)), true);
   if (command === "cook") {
