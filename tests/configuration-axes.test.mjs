@@ -75,6 +75,9 @@ test('changing the model may move lower axes, and the option says how', () => {
   assert.equal(fromMax['Sonnet 5.5'].status, 'uncooked');
   assert.equal(fromMax['Haiku 5.5'].config.id, 'claude-haiku-high-clean');
   assert.deepEqual(fromMax['Haiku 5.5'].changes.map((change) => change.axis), ['effort']);
+  const withUncookedTwin = [...catalog, configuration('codex-sol-max', 'codex-cli', 'gpt-5.6-sol', 'max')];
+  assert.equal(byValue(axisOptions(withUncookedTwin, claude('opus', 'max', 'clean'), 'model', cooked))['gpt-5.6-sol'].config.id, 'codex-sol-high', 'once the harness must move anyway, the jump lands on a Dish');
+  assert.deepEqual(axisOptions(catalog, opusHighClean, 'model', cooked).map((option) => option.value), ['Opus 5.5', 'Sonnet 5.5', 'Haiku 5.5', 'gpt-5.6-sol', 'composer-2.5[fast=false]'], 'values that move nothing else lead');
 });
 
 test('a preserved snapshot beside the current configuration is offered only when it exists', () => {

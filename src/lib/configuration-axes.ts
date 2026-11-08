@@ -133,7 +133,10 @@ export function axisOptions<C extends AxisConfiguration>(configs: readonly C[], 
     const label = axisValueLabel(axis, value);
     const selected = value === currentValue;
     const candidates = selected ? [current] : configs.filter((config) => axisValue(config, axis) === value && higher.every((held) => sameOn(config, current, held)));
-    const config = closest(candidates, current, lower, dishCount);
+    // Hold every lower axis when that combination exists, cooked or not; once
+    // something has to move anyway, land on a Dish when one exists.
+    const exact = candidates.filter((config) => lower.every((other) => sameOn(config, current, other)));
+    const config = exact.length ? closest(exact, current, lower, dishCount) : closest(candidates.filter((config) => dishCount(config) > 0), current, lower, dishCount) ?? closest(candidates, current, lower, dishCount);
     if (!config) {
       const held = higher.map((held) => axisValueLabel(held, axisValue(current, held)));
       return { value, label, dishes: 0, status: "impossible", changes: [], selected, reason: `No configuration for ${[...held, label].join(" · ")}` };
@@ -142,8 +145,9 @@ export function axisOptions<C extends AxisConfiguration>(configs: readonly C[], 
     const changes = lower.filter((other) => !sameOn(config, current, other)).map((other) => ({ axis: other, label: axisValueLabel(other, axisValue(config, other)) }));
     return { value, label, config, dishes, status: dishes > 0 ? "cooked" : "uncooked", changes, selected };
   });
-  // Impossible values keep their reason but sink below the reachable ones.
-  return [...options.filter((option) => option.status !== "impossible"), ...options.filter((option) => option.status === "impossible")];
+  // Values reachable without moving anything else lead; impossible ones keep their reason but sink last.
+  const order = (option: AxisOption<C>) => option.status === "impossible" ? 2 : option.changes.length ? 1 : 0;
+  return options.map((option, index) => ({ option, index })).sort((a, b) => order(a.option) - order(b.option) || a.index - b.index).map(({ option }) => option);
 }
 
 /**
