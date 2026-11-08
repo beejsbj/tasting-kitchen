@@ -71,3 +71,10 @@ test("the built site publishes only active Dishes and their selected public arti
   assert.ok(registry.menus.every((menu) => menu.recipes.every((recipeId) => activeRecipeIds.has(recipeId))));
   assert.ok(registry.dishes.every((dish) => dish.artifact.files.every((file) => !/^(?:fixtures|private)\//u.test(file.path))));
 });
+
+test("the built gallery ships the harness and environment controls", async () => {
+  const assets = await readdir(path.join(root, "dist", "assets"));
+  const javascript = (await Promise.all(assets.filter((filename) => filename.endsWith(".js")).map((filename) => readFile(path.join(root, "dist", "assets", filename), "utf8")))).join("\n");
+  for (const label of ["All harnesses", "All environments", "Compare across", "Harness profile", "Claude Code", "Cursor Agent", "Personal"]) assert.match(javascript, new RegExp(label));
+  assert.doesNotMatch(javascript, /Clear saved harness/);
+});
