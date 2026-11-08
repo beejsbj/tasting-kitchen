@@ -77,8 +77,10 @@ test("executing a Menu hands a fake runner only supported, uncovered cells and w
     intent: "fill-missing",
     execute: true,
     env: { TASTE_ALLOW_MODEL_RUNS: "1" },
-    executePlan: async ({ plan }) => {
+    executePlan: async ({ plan, catalog: executed }) => {
       received = plan;
+      assert.equal(executed.catalogHash, plan.catalogHash, "the runner receives the catalog snapshot that was planned");
+      for (const item of plan.supported) assert.equal(executed.recipes.find((recipe) => recipe.id === item.recipeId).recipeHash, item.recipeHash);
       return { results: [], accepted: [], failed: [], unsupported: plan.unsupported };
     },
   });
