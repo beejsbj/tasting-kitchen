@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { axisSetsForDish, comparisonConfigurations, dishesFor, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
+import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -178,4 +179,20 @@ test('explicit Dish slots retain independent identities and unavailable Dishes s
   assert.deepEqual(slots[2].repeats, []);
   const missing = resolveRecipeSelection(registry, selectionRecipe, { models: ['current-config'], skills: [], dishes: ['deleted'] });
   assert.equal(missing.slots[0].dish, undefined);
+});
+
+test('service tier drift compares the observed tier with the requested tier, honouring the fast to priority alias', () => {
+  // Publication records serviceTier as the observed value, so it can never disagree with itself.
+  assert.equal(serviceTierDrift({ serviceTier: 'priority', requestedServiceTier: 'default', observedServiceTier: 'priority' }), true);
+  assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'priority', observedServiceTier: 'default' }), true);
+  assert.equal(serviceTierDrift({ serviceTier: 'priority', requestedServiceTier: 'fast', observedServiceTier: 'priority' }), false);
+  assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'default', observedServiceTier: 'default' }), false);
+  assert.equal(serviceTierDrift({ serviceTier: 'default' }), false);
+  assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'priority' }), false);
+});
+
+test('the main artifact pane receives its Dish reviews, not an empty list', () => {
+  const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(app, /<ArtifactPane[^>]*reviews=\{\[\]\}/u);
+  assert.match(app, /<ArtifactPane[^>]*reviews=\{reviewsForDish\(registry\.reviews, dish\)\}/u);
 });

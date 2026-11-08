@@ -70,6 +70,7 @@ test("builds the gallery registry without private runtime data", async (t) => {
   assert.equal(registry.recipes.length, 1);
   assert.equal(registry.recipes[0].title, "Talk once clearly");
   assert.equal(registry.recipes[0].recipeHash, recipeHash);
+  assert.equal(registry.recipes[0].originNote, "A conventional conversation test.");
   for (const gone of ["recipeRevisions", "configurationRevisions", "skillRevisions", "menuRevisions"]) assert.equal(registry[gone], undefined, gone);
   assert.deepEqual(registry.dishes[0].inputs, { fixtures: [] });
   assert.equal(registry.dishes[0].receipt.configuration.id, "v");

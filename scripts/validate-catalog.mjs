@@ -3,11 +3,11 @@ import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
-import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
-import { describeTree } from "../lib/taste/files.mjs";
+import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
+import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
-import { INPUTS_MANIFEST, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
+import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
 if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
@@ -45,7 +45,7 @@ const allowedReviewerKinds = new Set(["human", "agent"]);
 
 const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
 const publicLeakPatterns = [
-  { name: "private Unix home path", pattern: /\/(?:home|Users)\// },
+  { name: "private Unix home path", pattern: /\/(?:home|Users)\/|(?<![A-Za-z0-9._-])\/root\/|(?<![A-Za-z0-9._-])\/mnt\/server-ssd(?![A-Za-z0-9._-])/ },
   { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
   { name: "file URL", pattern: /file:\/\//i },
   { name: "home path form", pattern: /(?:^|[\s("'`])(?:~\/|\$HOME(?:\/|\b)|\$\{HOME\}(?:\/|\b)|%USERPROFILE%(?:[\\/]|\b))/im },
@@ -85,8 +85,7 @@ const REVIEW_PROBE_KEYS = new Set(["id", "device", "viewport", "verdict", "findi
 const VIEWPORT_KEYS = new Set(["width", "height", "deviceScaleFactor"]);
 const PROBE_DETAILS_KEYS = new Set(["method", "path", "scrollWidth", "clientWidth"]);
 const EXECUTION_PROFILE_KEYS = new Set(["id", "label", "runtime", "sandbox", "approvalPolicy", "nativeWeb", "networkPolicy", "filesystemBoundary"]);
-// Absent on configurations that predate the environment dimension, so their hashes stay put.
-const OPTIONAL_EXECUTION_PROFILE_KEYS = ["environment", "harnessProfile"];
+// Optional keys are absent on configurations that predate the environment dimension, so their hashes stay put.
 
 function fail(label, message) {
   errors.push(`${label}: ${message}`);
@@ -322,10 +321,10 @@ function validateConfigurations(doc) {
     }
     if (object(variant.executionProfile, `${item}.executionProfile`)) {
       const profile = variant.executionProfile;
-      onlyKeys(profile, new Set([...EXECUTION_PROFILE_KEYS, ...OPTIONAL_EXECUTION_PROFILE_KEYS]), `${item}.executionProfile`);
+      onlyKeys(profile, new Set([...EXECUTION_PROFILE_KEYS, ...OPTIONAL_PROFILE_KEYS]), `${item}.executionProfile`);
       required(profile, [...EXECUTION_PROFILE_KEYS], `${item}.executionProfile`);
       for (const key of EXECUTION_PROFILE_KEYS) string(profile[key], `${item}.executionProfile.${key}`);
-      for (const key of OPTIONAL_EXECUTION_PROFILE_KEYS) if (profile[key] !== undefined) string(profile[key], `${item}.executionProfile.${key}`);
+      for (const key of OPTIONAL_PROFILE_KEYS) if (profile[key] !== undefined) string(profile[key], `${item}.executionProfile.${key}`);
     }
     const adapterReason = adapterSupport(variant);
     if (adapterReason) fail(item, adapterReason);
@@ -590,16 +589,22 @@ async function validateRecipe(relative, cuisines, tags, skills) {
   // A private input may be absent on a public checkout; no current-hash claim
   // can be made in that case, but old Dishes remain independently verifiable.
   let recipeHash = null;
+  const fixtureHashes = {};
   try {
-    const fixtureHashes = {};
     for (const fixture of recipe.setup?.fixtures ?? []) {
       const source = mountedFixtures.get(fixture.mountAs);
       if (!source) throw new Error("fixture unavailable");
-      fixtureHashes[fixture.id] = sha256(await readFile(source));
+      const bytes = await readFile(source);
+      fixtureHashes[fixture.id] = sha256(bytes);
+      // Public fixture bytes are published verbatim in each Dish's inputs/.
+      // Apply that scan here so a failure surfaces before a paid Cook.
+      if (fixture.public !== false) {
+        for (const reason of verbatimInputFindings(bytes)) fail(relative, `fixture ${fixture.id} would fail the published inputs scan (${reason})`);
+      }
     }
     recipeHash = computeRecipeHash(recipe, fixtureHashes);
   } catch { /* Invalid public fixtures already have validation errors. */ }
-  return { recipe, relative, recipeHash };
+  return { recipe, relative, recipeHash, fixtureHashes };
 }
 
 async function validateProvenance(recipeRecords) {
@@ -651,6 +656,7 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
     if (inputs && object(inputs, inputsRelative)) {
       onlyKeys(inputs, new Set(["schemaVersion", "recipe", "fixtures"]), inputsRelative);
       if (inputs.recipe?.id !== dish.recipe.id || inputs.recipe?.hash !== dish.recipe.hash) fail(inputsRelative, "recipe does not match the Dish");
+      if (recipeRecord?.recipeHash === dish.recipe?.hash && !inputsMatchRecipe(inputs, recipeRecord.recipe, recipeRecord.fixtureHashes)) fail(inputsRelative, `inputs do not match Recipe ${dish.recipe.id} at its current hash`);
       if (array(inputs.fixtures, `${inputsRelative}.fixtures`)) {
         for (const problem of await verifyInputs(dishDirectory, inputs)) fail(inputsRelative, problem);
       }
@@ -658,6 +664,8 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   }
   if (!await exists(inputsPath)) {
     for (const problem of await verifyInputs(dishDirectory, { fixtures: [] })) fail(inputsRelative, problem);
+    // A receipt marks a sidecar-era Dish; only a Dish with neither sidecar is legacy.
+    if (await exists(receiptPath) && recipeRecord?.recipeHash === dish.recipe?.hash && recipeRecord.recipe.setup?.fixtures?.length) fail(inputsRelative, `missing inputs for Recipe ${dish.recipe.id} at its current hash`);
   }
   if (await exists(receiptPath)) {
     const receipt = await json(receiptRelative);
@@ -688,6 +696,13 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
       catch (error) { fail(receiptRelative, error.message); }
     }
   }
+}
+
+// A personal-environment Dish of a public Recipe is kept private unless the Cook published it, so private
+// storage is also valid when the Dish's own receipt records a personal configuration.
+async function hasPersonalReceipt(dishDirectory) {
+  const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
+  return await exists(receiptPath) && (await json(path.relative(root, receiptPath)))?.configuration?.executionProfile?.environment === "personal";
 }
 
 async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {
@@ -724,7 +739,7 @@ async function validateDish(relative, recipeRecords, { privateDish = false } = {
     string(dish.recipe.hash, `${relative}.recipe.hash`, { pattern: SHA256 });
     recipeRecord = recipeRecords.get(dish.recipe.id);
     if (!recipeRecord) fail(relative, `unknown recipe ${dish.recipe.id}`);
-    else if (privateDish !== (recipeRecord.recipe.visibility === "private")) fail(relative, "Dish storage does not match Recipe visibility");
+    else if (privateDish !== (recipeRecord.recipe.visibility === "private") && !(privateDish && await hasPersonalReceipt(dishDirectory))) fail(relative, "Dish storage does not match Recipe visibility");
   }
 
   if (object(dish.identity, `${relative}.identity`)) {
@@ -886,6 +901,37 @@ if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedRevi
   fail("catalog/review.schema.json", "reviewerKind enum disagrees with runtime validator");
 }
 
+// A Menu is a plain list of recipe ids; nothing else checks them before they reach coverage and the registry.
+const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes"]);
+async function validateMenus(recipeRecords, cuisines) {
+  let entries = [];
+  try { entries = await readdir(path.join(root, "catalog/menus"), { withFileTypes: true }); }
+  catch (error) { if (error.code !== "ENOENT") throw error; }
+  const ids = new Set();
+  for (const entry of entries.filter((item) => item.isFile() && item.name.endsWith(".json")).sort((a, b) => a.name.localeCompare(b.name))) {
+    const relative = path.join("catalog/menus", entry.name);
+    const menu = await json(relative);
+    if (!object(menu, relative)) continue;
+    onlyKeys(menu, MENU_KEYS, relative);
+    required(menu, ["schemaVersion", "id", "title", "summary", "cuisines", "recipes"], relative);
+    if (menu.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+    string(menu.id, `${relative}.id`, { pattern: IDS });
+    if (typeof menu.id === "string" && menu.id !== path.basename(entry.name, ".json")) fail(relative, "id must match filename");
+    if (ids.has(menu.id)) fail(relative, `duplicate menu id ${menu.id}`);
+    ids.add(menu.id);
+    string(menu.title, `${relative}.title`, { max: 120 });
+    string(menu.summary, `${relative}.summary`, { max: 500 });
+    if (array(menu.cuisines, `${relative}.cuisines`, { min: 1 })) {
+      unique(menu.cuisines, `${relative}.cuisines`);
+      for (const cuisine of menu.cuisines) if (!cuisines.has(cuisine)) fail(relative, `unknown cuisine ${cuisine}`);
+    }
+    if (array(menu.recipes, `${relative}.recipes`, { min: 1 })) {
+      unique(menu.recipes, `${relative}.recipes`);
+      for (const recipeId of menu.recipes) if (!recipeRecords.has(recipeId)) fail(relative, `unknown recipe ${recipeId}`);
+    }
+  }
+}
+
 const cuisinesDoc = await json("catalog/cuisines.json");
 const tagsDoc = await json("catalog/tags.json");
 const variantsDoc = await json("catalog/configurations.json");
@@ -903,6 +949,8 @@ for (const relative of recipeFiles.sort()) {
   if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
   recipeRecords.set(record.recipe.id, record);
 }
+
+await validateMenus(recipeRecords, cuisines);
 
 if (!publicCheckout) await validateProvenance(recipeRecords);
 

@@ -44,6 +44,44 @@ test("public tree scan permits only parent references that resolve inside the ar
   await assert.rejects(scanPublicTree(root), /path traversal/);
 });
 
+test("verbatim inputs relax path shapes, including regexes shaped like Windows paths, but not leaks", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-verbatim-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "inputs/validation"), { recursive: true });
+  const film = "const integrated = ebur.stderr.match(/I:\\s+(-?[\\d.]+) LUFS/)?.[1];\n";
+  assert.ok(publicTextFindings(film).includes("absolute Windows path"));
+  await writeFile(path.join(root, "inputs/validation/film.mjs"), film);
+  await assert.doesNotReject(scanPublicTree(root, { verbatim: ["inputs"] }));
+  await assert.rejects(scanPublicTree(root), /absolute Windows path/);
+  await writeFile(path.join(root, "inputs/validation/film.mjs"), `${film}// access_token = example\n`);
+  await assert.rejects(scanPublicTree(root, { verbatim: ["inputs"] }), /authentication-token field/);
+});
+
+test("verbatim inputs are scanned by content, whatever their extension; binary bytes are left alone", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-verbatim-ext-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "inputs/src"), { recursive: true });
+  await writeFile(path.join(root, "inputs/src/Card.vue"), "<template><div/></template>\n");
+  await writeFile(path.join(root, "inputs/src/image.bin"), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0xff, 0xfe, 0x73, 0x6b, 0x2d]));
+  await writeFile(path.join(root, "inputs/src/latin1.dat"), Buffer.from([0x63, 0x61, 0x66, 0xe9]));
+  await assert.doesNotReject(scanPublicTree(root, { verbatim: ["inputs"] }));
+  for (const name of ["Card.vue", "NOTES", "build.log"]) {
+    const file = path.join(root, "inputs/src", name);
+    await writeFile(file, "const key = 'sk-proj1234567890abcdefghij';\n");
+    await assert.rejects(scanPublicTree(root, { verbatim: ["inputs"] }), /credential-like token/, name);
+    await rm(file);
+  }
+});
+
+test("private machine paths are caught with or without a trailing segment", () => {
+  for (const text of ["cd /home/admin", "see /Users/burooj", "open /root/.config/app", "under /mnt/server-ssd/BJsWorkspace/Brain", "mounted at /mnt/server-ssd"]) {
+    assert.ok(publicTextFindings(text).includes("absolute home path"), text);
+  }
+  for (const text of ["Keep camera/root/drawing exposure decisions explicit.", "route `/style-guide/components/`"]) {
+    assert.equal(publicTextFindings(text).includes("absolute home path"), false, text);
+  }
+});
+
 test("web artifact scan rejects remote runtime dependencies", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-web-scan-"));
   t.after(() => rm(root, { recursive: true, force: true }));

@@ -120,6 +120,26 @@ test("public checkout still rejects catalog and skill tampering", async (t) => {
   }
 });
 
+test("catalog validation applies the published-inputs scan to public fixtures before any Cook", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const fixture = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  // The LUFS regex is shaped like a Windows path; it must stay publishable.
+  assert.match(await readFile(fixture, "utf8"), /I:\\s\+/);
+  let result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+  // A leak the catalog patterns miss would otherwise first fail at paid finalization.
+  await writeFile(fixture, `${await readFile(fixture, "utf8")}// access_token = example\n`);
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(authentication-token field\)/);
+  const home = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  await writeFile(home, "// cache under /mnt/server-ssd/cache\n");
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /private Unix home path/);
+});
+
 test("official catalog validation rejects tampered publication hashes", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -217,6 +237,41 @@ test("official catalog validation checks Dish sidecars against the Dish", async 
   assert.match(result.stderr, /configuration does not reproduce identity\.configHash/);
 });
 
+
+test("official catalog validation refuses inputs the current Recipe never declared", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const catalog = await loadCatalog(root);
+  const dishIds = (await readdir(path.join(root, "dishes"))).sort();
+  let dishId;
+  for (const candidate of dishIds) {
+    const dish = JSON.parse(await readFile(path.join(root, "dishes", candidate, "dish.json"), "utf8"));
+    const recipe = catalog.recipes.find((item) => item.id === dish.recipe.id);
+    if (recipe?.recipeHash === dish.recipe.hash && recipe.setup.fixtures.length) { dishId = candidate; break; }
+  }
+  assert.ok(dishId, "a Dish matches its current Recipe hash");
+  const directory = path.join(root, "dishes", dishId);
+  const inputs = JSON.parse(await readFile(path.join(directory, "inputs.json"), "utf8"));
+  const extra = Buffer.from("extra bytes outside the recipe hash\n");
+  await writeFile(path.join(directory, "inputs", "extra.txt"), extra);
+  const { createHash } = await import("node:crypto");
+  await writeFile(path.join(directory, "inputs.json"), JSON.stringify({ ...inputs, fixtures: [...inputs.fixtures, {
+    id: "extra", path: "fixtures/extra.txt", mountAs: "extra.txt", public: true, editable: false,
+    sha256: `sha256:${createHash("sha256").update(extra).digest("hex")}`, bytes: extra.length,
+  }] }));
+  let result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /inputs do not match Recipe/);
+
+  await rm(path.join(directory, "inputs.json"));
+  await rm(path.join(directory, "inputs"), { recursive: true });
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /missing inputs for Recipe/);
+  await rm(path.join(directory, "receipt.json"));
+  result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+});
 
 async function writeManifest(filename, dish) {
   const body = { ...dish };
@@ -415,4 +470,27 @@ test("catalog validation re-hashes historical skill receipts and checks current 
   await writeFile(skillsPath, JSON.stringify(current));
   result = validate(root);
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("catalog validation rejects malformed Menu documents", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const menuFile = path.join(root, "catalog/menus/standard-web.json");
+  const original = JSON.parse(await readFile(menuFile, "utf8"));
+  const [first] = original.recipes;
+  const cases = [
+    ["unknown recipe id", { recipes: [...original.recipes, "no-such-recipe"] }, /standard-web\.json.*unknown recipe no-such-recipe/],
+    ["duplicate recipe id", { recipes: [...original.recipes, first] }, /standard-web\.json.*duplicate value/],
+    ["unknown cuisine", { cuisines: ["no-such-cuisine"] }, /standard-web\.json.*unknown cuisine no-such-cuisine/],
+    ["filename mismatch", { id: "another-menu" }, /standard-web\.json.*id must match filename/],
+    ["unknown key", { extra: true }, /standard-web\.json.*unknown key extra/],
+    ["empty recipes", { recipes: [] }, /standard-web\.json.*at least 1 item/],
+  ];
+  assert.equal(validate(root).status, 0);
+  for (const [name, change, expected] of cases) {
+    await writeFile(menuFile, `${JSON.stringify({ ...original, ...change }, null, 2)}\n`);
+    const result = validate(root);
+    assert.equal(result.status, 1, `${name} should fail validation`);
+    assert.match(result.stderr, expected, name);
+  }
 });
