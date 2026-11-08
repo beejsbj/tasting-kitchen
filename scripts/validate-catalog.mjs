@@ -4,10 +4,10 @@ import path from "node:path";
 import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
-import { describeTree } from "../lib/taste/files.mjs";
+import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
-import { INPUTS_MANIFEST, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
+import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
 if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
@@ -45,7 +45,7 @@ const allowedReviewerKinds = new Set(["human", "agent"]);
 
 const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
 const publicLeakPatterns = [
-  { name: "private Unix home path", pattern: /\/(?:home|Users)\// },
+  { name: "private Unix home path", pattern: /\/(?:home|Users)\/|(?<![A-Za-z0-9._-])\/root\/|(?<![A-Za-z0-9._-])\/mnt\/server-ssd(?![A-Za-z0-9._-])/ },
   { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
   { name: "file URL", pattern: /file:\/\//i },
   { name: "home path form", pattern: /(?:^|[\s("'`])(?:~\/|\$HOME(?:\/|\b)|\$\{HOME\}(?:\/|\b)|%USERPROFILE%(?:[\\/]|\b))/im },
@@ -589,16 +589,22 @@ async function validateRecipe(relative, cuisines, tags, skills) {
   // A private input may be absent on a public checkout; no current-hash claim
   // can be made in that case, but old Dishes remain independently verifiable.
   let recipeHash = null;
+  const fixtureHashes = {};
   try {
-    const fixtureHashes = {};
     for (const fixture of recipe.setup?.fixtures ?? []) {
       const source = mountedFixtures.get(fixture.mountAs);
       if (!source) throw new Error("fixture unavailable");
-      fixtureHashes[fixture.id] = sha256(await readFile(source));
+      const bytes = await readFile(source);
+      fixtureHashes[fixture.id] = sha256(bytes);
+      // Public fixture bytes are published verbatim in each Dish's inputs/.
+      // Apply that scan here so a failure surfaces before a paid Cook.
+      if (fixture.public !== false) {
+        for (const reason of verbatimInputFindings(bytes)) fail(relative, `fixture ${fixture.id} would fail the published inputs scan (${reason})`);
+      }
     }
     recipeHash = computeRecipeHash(recipe, fixtureHashes);
   } catch { /* Invalid public fixtures already have validation errors. */ }
-  return { recipe, relative, recipeHash };
+  return { recipe, relative, recipeHash, fixtureHashes };
 }
 
 async function validateProvenance(recipeRecords) {
@@ -650,6 +656,7 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
     if (inputs && object(inputs, inputsRelative)) {
       onlyKeys(inputs, new Set(["schemaVersion", "recipe", "fixtures"]), inputsRelative);
       if (inputs.recipe?.id !== dish.recipe.id || inputs.recipe?.hash !== dish.recipe.hash) fail(inputsRelative, "recipe does not match the Dish");
+      if (recipeRecord?.recipeHash === dish.recipe?.hash && !inputsMatchRecipe(inputs, recipeRecord.recipe, recipeRecord.fixtureHashes)) fail(inputsRelative, `inputs do not match Recipe ${dish.recipe.id} at its current hash`);
       if (array(inputs.fixtures, `${inputsRelative}.fixtures`)) {
         for (const problem of await verifyInputs(dishDirectory, inputs)) fail(inputsRelative, problem);
       }
@@ -657,6 +664,8 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   }
   if (!await exists(inputsPath)) {
     for (const problem of await verifyInputs(dishDirectory, { fixtures: [] })) fail(inputsRelative, problem);
+    // A receipt marks a sidecar-era Dish; only a Dish with neither sidecar is legacy.
+    if (await exists(receiptPath) && recipeRecord?.recipeHash === dish.recipe?.hash && recipeRecord.recipe.setup?.fixtures?.length) fail(inputsRelative, `missing inputs for Recipe ${dish.recipe.id} at its current hash`);
   }
   if (await exists(receiptPath)) {
     const receipt = await json(receiptRelative);
