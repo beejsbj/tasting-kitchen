@@ -81,6 +81,45 @@ for (const change of ["tamper", "delete", "undeclared", "private", "manifest-mis
   });
 }
 
+test("published inputs keep the leak scan; only relative and route-shaped paths are exempt", async (t) => {
+  const root = await temporary(t);
+  await json(root, "catalog/cuisines.json", { schemaVersion: 1, cuisines: [] });
+  await json(root, "catalog/tags.json", { schemaVersion: 1, tags: [] });
+  await json(root, "catalog/configurations.json", { schemaVersion: 1, configurations: [] });
+  await json(root, "catalog/recipes/talk/once/recipe.json", {
+    id: "once", status: "ready", title: "Once", summary: "Talk once", cuisines: [], tags: [],
+    kind: "session", harness: { workspace: "read", web: "disabled", capabilities: [] },
+    validation: { mode: "completeness", checks: [] },
+    setup: { instructions: "Respond", fixtures: [] }, turns: [{ id: "ask", role: "prompt", content: "Hello" }],
+    output: { kind: "session", entry: "output/session.json", include: ["output/session.json"] },
+  });
+  const directory = path.join(root, "dishes/dish_once");
+  await json(root, "dishes/dish_once/dish.json", {
+    id: "dish_once", status: "accepted", recipe: { id: "once", hash: `sha256:${"1".repeat(64)}` },
+    identity: { configHash: `sha256:${"2".repeat(64)}` },
+    artifact: { kind: "session", entry: "artifact/output/session.json", files: [] },
+  });
+  await json(root, "dishes/dish_once/artifact/output/session.json", { turns: [] });
+  const writeInput = async (text) => {
+    const bytes = Buffer.from(text);
+    await json(root, "dishes/dish_once/inputs.json", { fixtures: [{ id: "source", public: true, mountAs: "source.js", sha256: sha256(bytes), bytes: bytes.length }] });
+    await mkdir(path.join(directory, "inputs"), { recursive: true });
+    await writeFile(path.join(directory, "inputs/source.js"), bytes);
+  };
+  await writeInput('import "../../source.js";\nconst route = `/style-guide/components/`;\n');
+  await buildRegistry({ repoRoot: root });
+  for (const [text, reason] of [
+    ["const key = 'sk-proj1234567890abcdefghij';\n", /credential-like token/],
+    ["const notes = '/home/someone/notes.txt';\n", /absolute home path/],
+    ["// see file:///etc/hosts\n", /file URL/],
+  ]) {
+    // Self-consistent hashes do not make leaked bytes publishable.
+    await writeInput(text);
+    await assert.doesNotReject(readDishSidecars(directory));
+    await assert.rejects(buildRegistry({ repoRoot: root }), reason);
+  }
+});
+
 function skill(delivery = "workspace") {
   const value = {
     id: "historical", source: { repository: "https://github.com/example/workflows", commit: "a".repeat(40), path: "skills/history", license: "MIT" },
