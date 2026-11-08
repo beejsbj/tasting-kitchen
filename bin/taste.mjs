@@ -8,7 +8,7 @@ import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discov
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
 const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal"]);
 
 const commandFlags = {
@@ -18,7 +18,7 @@ const commandFlags = {
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
   plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "publish-personal"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
@@ -122,7 +122,7 @@ Usage:
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
   taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--publish-personal] [--json]
+  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -170,7 +170,7 @@ async function main() {
   if (command === "cook") {
     if (!options.intent || !["fill-missing", "repeat"].includes(options.intent)) throw new UsageError("cook requires --intent fill-missing or --intent repeat");
     if (options.execute && process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new UsageError("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
-    const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.codex, publishPersonal: options["publish-personal"] === true });
+    const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.executable ?? options.codex, publishPersonal: options["publish-personal"] === true });
     if (result.failed?.length) process.exitCode = 1;
     return print(result, true);
   }
