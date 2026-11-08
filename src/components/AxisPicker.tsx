@@ -34,7 +34,7 @@ export function AxisPicker({ label, axes }: { label: string; axes: AxisPickerAxi
   const list = useRef<HTMLDivElement>(null);
   const id = useId();
   const openAxis = axes.find((axis) => axis.id === open);
-  const focusCurrent = () => requestAnimationFrame(() => list.current?.querySelector<HTMLButtonElement>('[aria-pressed="true"]:not(:disabled), button:not(:disabled)')?.focus());
+  const focusCurrent = () => requestAnimationFrame(() => (list.current?.querySelector<HTMLButtonElement>('[aria-pressed="true"]:not(:disabled)') ?? list.current?.querySelector<HTMLButtonElement>('button:not(:disabled)'))?.focus());
   const toggle = (axisId: string) => { if (open === axisId) setOpen(undefined); else { setOpen(axisId); focusCurrent(); } };
   const close = (focus = true) => { if (focus && open) chips.current.get(open)?.focus(); setOpen(undefined); };
   const onListKey = (event: KeyboardEvent<HTMLButtonElement>) => {
