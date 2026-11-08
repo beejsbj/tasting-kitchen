@@ -248,4 +248,6 @@ test("recover rebuilds the registry with the configured base path, and only afte
   assert.deepEqual(result, outcome);
   assert.deepEqual(seen, ["attempt_x"]);
   assert.equal(JSON.parse(await readFile(registryFile, "utf8")).basePath, "/kitchen/");
+  await recover(root, { attemptId: "attempt_x", env: { TASTE_BASE_PATH: "/from-env/" }, recoverAttempt: async () => outcome });
+  assert.equal(JSON.parse(await readFile(registryFile, "utf8")).basePath, "/from-env/");
 });
