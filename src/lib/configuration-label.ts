@@ -5,7 +5,7 @@ type Dimensioned = Pick<Configuration, "harness" | "model" | "reasoningEffort" |
 
 const HARNESSES: Record<string, string> = { "claude-code": "Claude Code", hermes: "Hermes", "codex-cli": "Codex CLI", "cursor-agent": "Cursor Agent" };
 const ENVIRONMENTS: Record<string, string> = { clean: "Clean", personal: "Personal" };
-const EFFORTS: Record<string, string> = { none: "None", minimal: "Minimal", low: "Low", medium: "Medium", high: "High", xhigh: "XHigh", max: "Max", ultra: "Ultra" };
+const EFFORTS: Record<string, string> = { none: "None", minimal: "Minimal", low: "Low", medium: "Medium", high: "High", xhigh: "XHigh", max: "Max", ultra: "Ultra", adaptive: "Adaptive" };
 /** Environment key of a configuration that predates the dimension. */
 export const UNSPECIFIED_ENVIRONMENT = "unspecified";
 

@@ -18,7 +18,7 @@ test('links preserve repeated configuration slots, and selected Dishes', () => {
 test('legacy domain deep links translate without emitting retired vocabulary', () => {
   assert.equal(readGalleryState('?domain=ui-visual').cuisine, 'ui-visual');
   assert.equal(readGalleryState('?view=untrusted').view, 'dishes');
-  assert.equal(readGalleryState('?models=a,b,c,d').models.length, 3);
+  assert.equal(readGalleryState('?models=a,b,c,d,e,f,g').models.length, 6, 'six panes is the most a link keeps');
 });
 
 test('Repeats share recipe hash and configuration and retain deterministic order', () => {

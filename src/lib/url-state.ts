@@ -1,8 +1,12 @@
+import { isCompareAxis, MAX_PANES, type CompareAxis } from "./configuration-axes.ts";
+
 export type GalleryState = {
   view: "dishes" | "recipes" | "menus" | "models";
   cuisine: string; origin: string; query: string; family: string; effort: string; harness: string; environment: string; tier: string; skill: string;
   recipe: string; menu: string;
-  models: string[]; skills: string[]; dishes: string[]; brief: boolean; styleguide: boolean; editRecipe: string;
+  models: string[]; skills: string[]; dishes: string[];
+  /** The axis a "Compare by" layout varies; "" for panes chosen one by one. */
+  compare: CompareAxis | ""; brief: boolean; styleguide: boolean; editRecipe: string;
 };
 export function readGalleryState(search = window.location.search): GalleryState {
   const query = new URLSearchParams(search);
@@ -12,7 +16,8 @@ export function readGalleryState(search = window.location.search): GalleryState 
     cuisine: query.get("cuisine") ?? query.get("domain") ?? "all",
     origin: query.get("origin") ?? "all", query: query.get("q") ?? "", family: query.get("family") ?? "all", effort: query.get("effort") ?? "all", harness: query.get("harness") ?? "all", environment: query.get("environment") ?? "all", tier: query.get("tier") ?? "all", skill: query.get("skill") ?? "all",
     recipe: query.get("recipe") ?? "", menu: query.get("menu") ?? "",
-    models: (query.get("models") ?? "").split(",").filter(Boolean).slice(0, 3), skills: (query.get("skills") ?? "").split(",").slice(0, 3), dishes: (query.get("dishes") ?? "").split(",").slice(0, 3),
+    models: (query.get("models") ?? "").split(",").filter(Boolean).slice(0, MAX_PANES), skills: (query.get("skills") ?? "").split(",").slice(0, MAX_PANES), dishes: (query.get("dishes") ?? "").split(",").slice(0, MAX_PANES),
+    compare: isCompareAxis(query.get("compare") ?? "") ? query.get("compare") as CompareAxis : "",
     brief: query.get("brief") === "1", styleguide: query.get("styleguide") === "1", editRecipe: query.get("edit") ?? "",
   };
 }
@@ -26,6 +31,7 @@ export function writeGalleryState(state: GalleryState, mode: "push" | "replace" 
   if (state.models.length) query.set("models", state.models.join(","));
   if (state.skills.some(Boolean)) query.set("skills", state.skills.join(","));
   if (state.dishes.some(Boolean)) query.set("dishes", state.dishes.join(","));
+  if (state.compare) query.set("compare", state.compare);
   if (state.brief) query.set("brief", "1");
   if (state.styleguide) query.set("styleguide", "1");
   const url = `${window.location.pathname}${query.size ? `?${query}` : ""}`;
