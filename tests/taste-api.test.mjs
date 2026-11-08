@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { cook, inspect, loadCatalog, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
+import { cook, inspect, loadCatalog, loadDishes, loadMenus, plan, recover } from "../lib/taste/index.mjs";
 import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
@@ -211,4 +211,25 @@ test("taste list prints legacy catalogs whose recipes carry domain instead of cu
   const result = spawnSync(process.execPath, [path.join(root, "bin/taste.mjs"), "list"], { cwd: root, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /^alpha\told-domain\t/);
+});
+
+test("recover rebuilds the registry with the configured base path, and only after a successful recovery", async (t) => {
+  const root = await fixtureRepository(t);
+  const registryFile = path.join(root, "public", "data", "registry.json");
+  const outcome = { status: "accepted", recovered: true, dishId: "dish_stub" };
+  const seen = [];
+  await assert.rejects(recover(root, {
+    attemptId: "attempt_x",
+    basePath: "/kitchen/",
+    recoverAttempt: async () => { throw new Error("recovery refused"); },
+  }), /recovery refused/);
+  assert.equal(await readFile(registryFile, "utf8").catch(() => null), null);
+  const result = await recover(root, {
+    attemptId: "attempt_x",
+    basePath: "/kitchen/",
+    recoverAttempt: async (args) => { seen.push(args.attemptId); return outcome; },
+  });
+  assert.deepEqual(result, outcome);
+  assert.deepEqual(seen, ["attempt_x"]);
+  assert.equal(JSON.parse(await readFile(registryFile, "utf8")).basePath, "/kitchen/");
 });

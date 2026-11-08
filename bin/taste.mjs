@@ -4,8 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan } from "../lib/taste/index.mjs";
-import { recoverAttempt } from "../lib/taste/recovery.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
@@ -211,7 +210,7 @@ async function main() {
   }
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
-    return print(await recoverAttempt({ repoRoot, catalog: await loadCatalog(repoRoot), attemptId: options.attempt }), true);
+    return print(await recover(repoRoot, { attemptId: options.attempt, basePath: process.env.TASTE_BASE_PATH ?? "/" }), true);
   }
 }
 
