@@ -8,11 +8,11 @@
 .tasting-room--immersive .artifact-pane { height: 100%; border: 0; }
 /* Keep session text clear of the fixed viewer dock, including while scrolling. */
 .tasting-room--immersive .artifact-pane--session { padding-right: 5rem; }
-/* Keep the review mark clear of the fixed viewer dock and the comparison pane label. */
+/* Keep the review mark clear of the fixed viewer dock and the comparison pane label (single-line, so its height is fixed). */
 .tasting-room--immersive .artifact-review-mark { padding-right: 5rem; }
 .pane-label ~ .artifact-pane .artifact-review-mark { padding-top: 2.75rem; }
 .tasting-room--immersive .session-artifact { max-width: 76ch; margin-inline: auto; }
-.pane-label { position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
+.pane-label { position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; line-height: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 1.5rem); pointer-events: none; }
 .recipe-sheet > section, .recipe-sheet > footer { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .recipe-sheet { animation: recipe-in 220ms cubic-bezier(.22,1,.36,1); }
 @keyframes recipe-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
