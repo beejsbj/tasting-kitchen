@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
@@ -188,4 +189,10 @@ test('service tier drift compares the observed tier with the requested tier, hon
   assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'default', observedServiceTier: 'default' }), false);
   assert.equal(serviceTierDrift({ serviceTier: 'default' }), false);
   assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'priority' }), false);
+});
+
+test('the main artifact pane receives its Dish reviews, not an empty list', () => {
+  const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(app, /<ArtifactPane[^>]*reviews=\{\[\]\}/u);
+  assert.match(app, /<ArtifactPane[^>]*reviews=\{reviewsForDish\(registry\.reviews, dish\)\}/u);
 });
