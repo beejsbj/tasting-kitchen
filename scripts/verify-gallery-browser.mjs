@@ -216,7 +216,7 @@ try {
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.identity.harness === "hermes").length, "only Hermes Dishes remain");
   await harnessPage.getByRole("group", { name: "Filter by environment" }).getByRole("button", { name: "Personal · rose", exact: true }).click(); await settle(harnessPage);
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.receipt.configuration.executionProfile.harnessProfile === "rose").length, "environment narrows within the harness");
-  assert.match(await harnessPage.locator(".dish-card__setup").first().innerText(), /Hermes · Personal · rose/);
+  assert.match(await harnessPage.locator(".dish-card__environment").first().innerText(), /Hermes · Personal · rose/);
   assert.equal(await harnessPage.getByRole("group", { name: "Active filters" }).getByRole("button").count(), 2, "each active facet has a chip");
   await save(harnessPage, "counter-facets");
   await harnessPage.getByRole("button", { name: "Remove Harness: Hermes filter", exact: true }).click();
