@@ -7,7 +7,7 @@ import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
-import { INPUTS_MANIFEST, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
+import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
 if (args.some((argument) => argument !== "--public-checkout") || args.length > 1) {
@@ -587,8 +587,8 @@ async function validateRecipe(relative, cuisines, tags, skills) {
   // A private input may be absent on a public checkout; no current-hash claim
   // can be made in that case, but old Dishes remain independently verifiable.
   let recipeHash = null;
+  const fixtureHashes = {};
   try {
-    const fixtureHashes = {};
     for (const fixture of recipe.setup?.fixtures ?? []) {
       const source = mountedFixtures.get(fixture.mountAs);
       if (!source) throw new Error("fixture unavailable");
@@ -596,7 +596,7 @@ async function validateRecipe(relative, cuisines, tags, skills) {
     }
     recipeHash = computeRecipeHash(recipe, fixtureHashes);
   } catch { /* Invalid public fixtures already have validation errors. */ }
-  return { recipe, relative, recipeHash };
+  return { recipe, relative, recipeHash, fixtureHashes };
 }
 
 async function validateProvenance(recipeRecords) {
@@ -648,6 +648,7 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
     if (inputs && object(inputs, inputsRelative)) {
       onlyKeys(inputs, new Set(["schemaVersion", "recipe", "fixtures"]), inputsRelative);
       if (inputs.recipe?.id !== dish.recipe.id || inputs.recipe?.hash !== dish.recipe.hash) fail(inputsRelative, "recipe does not match the Dish");
+      if (recipeRecord?.recipeHash === dish.recipe?.hash && !inputsMatchRecipe(inputs, recipeRecord.recipe, recipeRecord.fixtureHashes)) fail(inputsRelative, `inputs do not match Recipe ${dish.recipe.id} at its current hash`);
       if (array(inputs.fixtures, `${inputsRelative}.fixtures`)) {
         for (const problem of await verifyInputs(dishDirectory, inputs)) fail(inputsRelative, problem);
       }

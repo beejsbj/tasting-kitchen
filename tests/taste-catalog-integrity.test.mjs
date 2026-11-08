@@ -218,6 +218,32 @@ test("official catalog validation checks Dish sidecars against the Dish", async 
 });
 
 
+test("official catalog validation refuses inputs the current Recipe never declared", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const catalog = await loadCatalog(root);
+  const dishIds = (await readdir(path.join(root, "dishes"))).sort();
+  let dishId;
+  for (const candidate of dishIds) {
+    const dish = JSON.parse(await readFile(path.join(root, "dishes", candidate, "dish.json"), "utf8"));
+    const recipe = catalog.recipes.find((item) => item.id === dish.recipe.id);
+    if (recipe?.recipeHash === dish.recipe.hash && recipe.setup.fixtures.length) { dishId = candidate; break; }
+  }
+  assert.ok(dishId, "a Dish matches its current Recipe hash");
+  const directory = path.join(root, "dishes", dishId);
+  const inputs = JSON.parse(await readFile(path.join(directory, "inputs.json"), "utf8"));
+  const extra = Buffer.from("extra bytes outside the recipe hash\n");
+  await writeFile(path.join(directory, "inputs", "extra.txt"), extra);
+  const { createHash } = await import("node:crypto");
+  await writeFile(path.join(directory, "inputs.json"), JSON.stringify({ ...inputs, fixtures: [...inputs.fixtures, {
+    id: "extra", path: "fixtures/extra.txt", mountAs: "extra.txt", public: true, editable: false,
+    sha256: `sha256:${createHash("sha256").update(extra).digest("hex")}`, bytes: extra.length,
+  }] }));
+  const result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /inputs do not match Recipe/);
+});
+
 async function writeManifest(filename, dish) {
   const body = { ...dish };
   delete body.dishHash;
