@@ -57,6 +57,15 @@ test("verbatim inputs relax path shapes, including regexes shaped like Windows p
   await assert.rejects(scanPublicTree(root, { verbatim: ["inputs"] }), /authentication-token field/);
 });
 
+test("private machine paths are caught with or without a trailing segment", () => {
+  for (const text of ["cd /home/admin", "see /Users/burooj", "open /root/.config/app", "under /mnt/server-ssd/BJsWorkspace/Brain", "mounted at /mnt/server-ssd"]) {
+    assert.ok(publicTextFindings(text).includes("absolute home path"), text);
+  }
+  for (const text of ["Keep camera/root/drawing exposure decisions explicit.", "route `/style-guide/components/`"]) {
+    assert.equal(publicTextFindings(text).includes("absolute home path"), false, text);
+  }
+});
+
 test("web artifact scan rejects remote runtime dependencies", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-web-scan-"));
   t.after(() => rm(root, { recursive: true, force: true }));

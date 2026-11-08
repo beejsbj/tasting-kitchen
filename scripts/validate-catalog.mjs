@@ -45,7 +45,7 @@ const allowedReviewerKinds = new Set(["human", "agent"]);
 
 const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
 const publicLeakPatterns = [
-  { name: "private Unix home path", pattern: /\/(?:home|Users)\// },
+  { name: "private Unix home path", pattern: /\/(?:home|Users)\/|(?<![A-Za-z0-9._-])\/root\/|(?<![A-Za-z0-9._-])\/mnt\/server-ssd(?![A-Za-z0-9._-])/ },
   { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
   { name: "file URL", pattern: /file:\/\//i },
   { name: "home path form", pattern: /(?:^|[\s("'`])(?:~\/|\$HOME(?:\/|\b)|\$\{HOME\}(?:\/|\b)|%USERPROFILE%(?:[\\/]|\b))/im },

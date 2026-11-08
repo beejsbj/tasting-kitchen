@@ -133,6 +133,11 @@ test("catalog validation applies the published-inputs scan to public fixtures be
   result = validate(root);
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(authentication-token field\)/);
+  const home = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  await writeFile(home, "// cache under /mnt/server-ssd/cache\n");
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /private Unix home path/);
 });
 
 test("official catalog validation rejects tampered publication hashes", async (t) => {
