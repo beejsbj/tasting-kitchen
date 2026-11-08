@@ -3,7 +3,7 @@ import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
-import { adapterSupport } from "../lib/taste/harness-adapters.mjs";
+import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { describeTree } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
@@ -85,8 +85,7 @@ const REVIEW_PROBE_KEYS = new Set(["id", "device", "viewport", "verdict", "findi
 const VIEWPORT_KEYS = new Set(["width", "height", "deviceScaleFactor"]);
 const PROBE_DETAILS_KEYS = new Set(["method", "path", "scrollWidth", "clientWidth"]);
 const EXECUTION_PROFILE_KEYS = new Set(["id", "label", "runtime", "sandbox", "approvalPolicy", "nativeWeb", "networkPolicy", "filesystemBoundary"]);
-// Absent on configurations that predate the environment dimension, so their hashes stay put.
-const OPTIONAL_EXECUTION_PROFILE_KEYS = ["environment", "harnessProfile"];
+// Optional keys are absent on configurations that predate the environment dimension, so their hashes stay put.
 
 function fail(label, message) {
   errors.push(`${label}: ${message}`);
@@ -322,10 +321,10 @@ function validateConfigurations(doc) {
     }
     if (object(variant.executionProfile, `${item}.executionProfile`)) {
       const profile = variant.executionProfile;
-      onlyKeys(profile, new Set([...EXECUTION_PROFILE_KEYS, ...OPTIONAL_EXECUTION_PROFILE_KEYS]), `${item}.executionProfile`);
+      onlyKeys(profile, new Set([...EXECUTION_PROFILE_KEYS, ...OPTIONAL_PROFILE_KEYS]), `${item}.executionProfile`);
       required(profile, [...EXECUTION_PROFILE_KEYS], `${item}.executionProfile`);
       for (const key of EXECUTION_PROFILE_KEYS) string(profile[key], `${item}.executionProfile.${key}`);
-      for (const key of OPTIONAL_EXECUTION_PROFILE_KEYS) if (profile[key] !== undefined) string(profile[key], `${item}.executionProfile.${key}`);
+      for (const key of OPTIONAL_PROFILE_KEYS) if (profile[key] !== undefined) string(profile[key], `${item}.executionProfile.${key}`);
     }
     const adapterReason = adapterSupport(variant);
     if (adapterReason) fail(item, adapterReason);
