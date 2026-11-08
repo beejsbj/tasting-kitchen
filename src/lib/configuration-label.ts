@@ -72,19 +72,3 @@ export function differenceNote(dimensions: readonly ComparisonDimension[]) {
   return undefined;
 }
 
-/**
- * Other configurations of the same model and effort (and tier) that differ in
- * one dimension: through each other harness at the same environment kind, or
- * in each other environment of the same harness. One per value; only those in
- * `available` (the config hashes with a Dish for this recipe).
- */
-export function siblingConfigurations<C extends Dimensioned & Pick<Configuration, "configHash">>(configs: readonly C[], anchor: C, dimension: "harness" | "environment", available: ReadonlySet<string | undefined>): C[] {
-  const sameModel = (config: C) => modelKey(config.model) === modelKey(anchor.model) && config.reasoningEffort === anchor.reasoningEffort && config.serviceTier === anchor.serviceTier;
-  const seen = new Set<string>([dimension === "harness" ? anchor.harness : environmentKey(anchor)]);
-  return configs.filter((config) => {
-    if (!available.has(config.configHash) || !sameModel(config)) return false;
-    if (dimension === "harness" ? config.executionProfile.environment !== anchor.executionProfile.environment : config.harness !== anchor.harness) return false;
-    const value = dimension === "harness" ? config.harness : environmentKey(config);
-    return !seen.has(value) && Boolean(seen.add(value));
-  });
-}

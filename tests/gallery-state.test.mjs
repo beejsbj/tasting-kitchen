@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
-import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, harnessLabel, siblingConfigurations } from '../src/lib/configuration-label.ts';
+import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, harnessLabel } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -251,17 +251,4 @@ test('the comparison note names the one dimension that differs, without creditin
   assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...hermesPersonal, reasoningEffort: 'max' })]), ['effort', 'harness', 'environment']);
   assert.equal(differenceNote(['effort', 'harness', 'environment']), 'Same brief · effort, harness, environment differ');
   assert.equal(differenceNote([]), undefined);
-});
-
-test('compare-across finds each other harness or environment with a Dish, one per value', () => {
-  const claudeMax = configuration('claude-max', 'claude-code', 'clean', undefined, { reasoningEffort: 'max' });
-  const hermesClean = configuration('hermes-clean', 'hermes', 'clean', undefined, { model: 'anthropic/claude-opus-5.5' });
-  const cursor = configuration('cursor', 'cursor-agent', 'clean', undefined, { model: 'composer-2.5[fast=false]' });
-  const all = [claudeClean, claudePersonal, claudeMax, hermesClean, hermesPersonal, cursor, legacy];
-  const hashes = new Set(all.map(config => config.configHash));
-  assert.deepEqual(siblingConfigurations(all, claudeClean, 'harness', hashes).map(config => config.id), ['hermes-clean'], 'same model, effort and environment through the other harness');
-  assert.deepEqual(siblingConfigurations(all, claudePersonal, 'harness', hashes).map(config => config.id), ['hermes-personal'], 'personal pairs with personal, whatever the harness profile');
-  assert.deepEqual(siblingConfigurations(all, claudeClean, 'environment', hashes).map(config => config.id), ['claude-personal']);
-  assert.deepEqual(siblingConfigurations(all, hermesClean, 'environment', hashes).map(config => config.id), ['hermes-personal']);
-  assert.deepEqual(siblingConfigurations(all, claudeClean, 'harness', new Set([claudeClean.configHash])), [], 'a configuration without a Dish for this recipe is not offered');
 });

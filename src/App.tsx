@@ -9,12 +9,13 @@ import { KitchenButton } from "./components/KitchenButton";
 import { KitchenHero } from "./components/KitchenHero";
 import { Mark } from "./components/Mark";
 import { RecipeBrief } from "./components/RecipeBrief";
-import { ModelChoices } from "./components/ModelChoices";
+import { ComparisonControls, comparisonValuesFor, heldLabels, valueOf, type ComparisonContext } from "./components/ComparisonControls";
 import { TasteObservations } from "./components/TasteObservations";
 import { latestDish, resolveRecipeSelection, selectionForDish, skillTokenForDish } from "./lib/selection";
 import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, briefChanged, catalogChanges, dishesFor, dishSkillKey, loadRegistry, modelFamily, NO_SKILL, reviewsForDish, shortHash, skillLabelFor } from "./lib/registry";
-import { configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, harnessLabel, siblingConfigurations } from "./lib/configuration-label";
+import { configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, harnessLabel } from "./lib/configuration-label";
+import { compareByNote, MAX_PANES } from "./lib/configuration-axes";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
 import { readDishVotes, saveDishVotes, syncDishVotes, voteFor, writeDishVote, type DishVote, type VoteMode } from './lib/dish-votes';
@@ -80,14 +81,14 @@ export default function App() {
   const facets = configurationFacets(registry.configurations);
   const allRecipes = registry.recipes;
   const currentRecipe = allRecipes.find((recipe) => recipe.id === state.recipe);
-  const closeRecipe = () => update({ recipe: "", skills: [], dishes: [], brief: false });
+  const closeRecipe = () => update({ recipe: "", skills: [], dishes: [], compare: "", brief: false });
   const openRecipe = (recipe: Recipe, dish?: Dish) => {
     const latest = dish ?? latestDish(dishesFor(registry.dishes, recipe.id));
-    if (latest) update({ ...selectionForDish(registry, latest), view: 'dishes', editRecipe: '', brief: false });
+    if (latest) update({ ...selectionForDish(registry, latest), compare: '', view: 'dishes', editRecipe: '', brief: false });
   };
 
   if (state.styleguide) return <StyleGuide registry={registry} onExit={() => update({ styleguide: false })} />;
-  const navigate = (view: 'dishes' | 'recipes' | 'menus') => update({ view, recipe: '', editRecipe: '', menu: '', skills: [], dishes: [], brief: false });
+  const navigate = (view: 'dishes' | 'recipes' | 'menus') => update({ view, recipe: '', editRecipe: '', menu: '', skills: [], dishes: [], compare: '', brief: false });
   if (state.view === 'recipes' && !state.recipe) return <main className="kitchen"><KitchenNavigation active="recipes" onNavigate={navigate} /><div className="counter-content"><RecipeBook selectedId={state.editRecipe} onSelect={editRecipe => update({ editRecipe })} registry={registry} onDishes={id => { const recipe = registry.recipes.find(item => item.id === id); if (recipe) openRecipe(recipe); }} /></div><footer className="kitchen-footer"><Mark /><KitchenButton onClick={() => update({ styleguide: true })}>Visual system ↗</KitchenButton></footer></main>;
   if (state.recipe && !currentRecipe) return <main className="kitchen"><Mark /><EmptyState title="That recipe isn’t on the public counter."><p>It may be private, uncooked, or no longer available at this address.</p><KitchenButton onClick={closeRecipe}>Back to dishes</KitchenButton></EmptyState></main>;
 
@@ -97,43 +98,32 @@ export default function App() {
     const recipe = currentRecipe;
     const slots = resolved.slots.filter((slot): slot is typeof slot & { config: Configuration } => Boolean(slot.config));
     const selected = slots.map((slot) => slot.config);
-    const viewerConfigurations = [...registry.configurations].sort((a, b) => {
-      const latestA = latestDish(recipeDishes.filter((dish) => dish.identity.configHash === a.configHash));
-      const latestB = latestDish(recipeDishes.filter((dish) => dish.identity.configHash === b.configHash));
-      return (latestB?.executedAt ?? '').localeCompare(latestA?.executedAt ?? '') || (latestB?.id ?? '').localeCompare(latestA?.id ?? '');
-    });
     const differing = differingDimensions(slots);
     const skillLayers = (recipe.skills?.layers ?? []).map((id) => registry.skills?.find((skill) => skill.id === id)).filter((skill): skill is NonNullable<typeof skill> => Boolean(skill));
     const changedLayers = [...new Set(recipeDishes.filter((dish) => dish.skill && !skillLayers.some((skill) => skill.skillHash === dish.skill?.hash)).map((dish) => dish.skill!.hash))];
-    const layerChoices = [{ token: NO_SKILL, key: NO_SKILL, label: 'Without skill' }, ...skillLayers.map((skill) => ({ token: skill.id, key: skill.skillHash, label: skill.label })), ...changedLayers.map((hash) => ({ token: hash, key: hash, label: `${recipeDishes.find((dish) => dish.skill?.hash === hash) ? skillLabelFor(registry, recipeDishes.find((dish) => dish.skill?.hash === hash)!) : 'Skill'} · catalog changed` }))];
+    const layerChoices = [{ token: NO_SKILL, key: NO_SKILL, label: 'Without skill' }, ...skillLayers.map((skill) => ({ token: skill.id, key: skill.skillHash, label: skill.label })), ...changedLayers.map((hash) => ({ token: hash, key: hash, label: `${recipeDishes.find((dish) => dish.skill?.hash === hash) ? skillLabelFor(registry, recipeDishes.find((dish) => dish.skill?.hash === hash)!) : 'Skill'} · catalog changed`, changed: true }))];
     const showLayers = Boolean(recipe.skills) || recipeDishes.some((dish) => dish.skill);
     const slotTokens = () => slots.map((slot) => slot.dish ? skillTokenForDish(registry, slot.dish) : layerChoices.find((choice) => choice.key === slot.skillKey)?.token ?? '');
     const harnessVersions = new Set(slots.map(({ dish }) => dish?.identity.harnessVersion).filter(Boolean));
     const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || (dish.identity.observedServiceTier && dish.identity.observedServiceTier !== dish.identity.serviceTier)));
     const briefHashes = new Set(slots.map(({ dish }) => dish?.recipe.hash).filter(Boolean));
-    const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : briefHashes.size > 1 ? "These Dishes were cooked from different versions of the brief" : drift ? "Observed configuration drift — inspect receipts" : differenceNote(differing) ?? (harnessVersions.size > 1 ? "Same brief · harness versions differ" : "Same brief · inspect configuration receipts");
-    function chooseConfig(index: number, id: string) {
-      const models = selected.map((config) => config.id); models[index] = id;
-      const skills = slotTokens(); skills[index] = "";
-      const dishes = [...state.dishes]; dishes[index] = "";
-      update({ models, skills, dishes });
-    }
-    const chooseSkill = (index: number, token: string) => {
-      const skills = slotTokens(); skills[index] = token;
-      const dishes = slots.map((slot) => slot.dish?.id ?? ''); dishes[index] = "";
-      update({ models: selected.map((config) => config.id), skills, dishes });
+    const context: ComparisonContext = { configurations: registry.configurations, recipeDishes, layerChoices, showLayers };
+    const compare = slots.length > 1 ? state.compare : "";
+    const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : briefHashes.size > 1 ? "These Dishes were cooked from different versions of the brief" : drift ? "Observed configuration drift — inspect receipts"
+      : compare ? compareByNote(compare, heldLabels(context, slots[0], compare), differing) : differenceNote(differing) ?? (harnessVersions.size > 1 ? "Same brief · harness versions differ" : "Same brief · inspect configuration receipts");
+    /** In a "Compare by" layout a pane is named by its value of the varied axis; the first also says what is held. */
+    const compareValues = compare ? comparisonValuesFor(context, slots[0], compare) : [];
+    const paneLabel = (slot: (typeof slots)[number], index: number) => {
+      const full = `${configurationHeading(slot.config, modelFamily(slot.config.model))}${showLayers ? ` · ${slot.dish ? skillLabelFor(registry, slot.dish) : layerChoices.find((choice) => choice.key === slot.skillKey)?.label ?? 'Without skill'}` : ''}`;
+      if (!compare) return <>{index + 1}<span className="pane-label__total" aria-hidden="true">/{slots.length}</span> · {full}</>;
+      const value = compareValues.find((item) => item.value === valueOf(slot, compare));
+      return <><span className="sr-only">{index + 1} · {full}</span><span aria-hidden="true">{index + 1}<span className="pane-label__total">/{slots.length}</span> · <b>{value?.label ?? full}</b>{value && !value.isolated && <> · also {value.differs.join(' · ')}</>}{index === 0 && <span className="pane-label__held"> · holding {heldLabels(context, slots[0], compare).join(' · ')}</span>}</span></>;
     };
+    const columns = slots.length <= 3 ? Math.max(1, slots.length) : slots.length === 4 ? 2 : 3;
+    const rows = Math.ceil(Math.max(1, slots.length) / columns);
     const addComparison = () => {
       const next = registry.configurations.find((candidate) => !selected.some((config) => config.id === candidate.id) && recipeDishes.some((dish) => dish.identity.configHash === candidate.configHash)) ?? selected[0];
-      if (next) update({ models: [...selected.map((config) => config.id), next.id], skills: [...slotTokens(), ''], dishes: slots.map((slot) => slot.dish?.id ?? '') });
-    };
-    const dishHashes = new Set(recipeDishes.map((dish) => dish.identity.configHash));
-    const siblings = (config: Configuration, dimension: "harness" | "environment") => siblingConfigurations(registry.configurations, config, dimension, dishHashes).filter((candidate) => !selected.some((item) => item.id === candidate.id));
-    /** Opens the same model, effort and tier through each other harness (or environment) that has a Dish, keeping this slot's skill layer where they have one. */
-    const compareAcross = (index: number, dimension: "harness" | "environment") => {
-      const added = siblings(slots[index].config, dimension).slice(0, 3 - selected.length);
-      const layered = (candidate: Configuration) => recipeDishes.some((dish) => dish.identity.configHash === candidate.configHash && dishSkillKey(dish) === slots[index].skillKey);
-      update({ models: [...selected.map((config) => config.id), ...added.map((config) => config.id)], skills: [...slotTokens(), ...added.map((candidate) => layered(candidate) ? slotTokens()[index] : '')], dishes: slots.map((slot) => slot.dish?.id ?? '') });
+      if (next) update({ compare: '', models: [...selected.map((config) => config.id), next.id], skills: [...slotTokens(), ''], dishes: slots.map((slot) => slot.dish?.id ?? '') });
     };
     const chooseRepeat = (index: number, id: string) => { const dishes = slots.map((slot) => slot.dish?.id ?? ''); dishes[index] = id; update({ skills: slotTokens(), dishes }); };
     const navigableDishes = [...recipeDishes].sort((a, b) => a.executedAt.localeCompare(b.executedAt) || a.id.localeCompare(b.id));
@@ -141,7 +131,7 @@ export default function App() {
     const focusedIndex = focusedDish ? navigableDishes.findIndex((dish) => dish.id === focusedDish.id) : -1;
     const navigateDish = (offset: -1 | 1) => {
       const dish = navigableDishes[focusedIndex + offset];
-      if (dish) update({ ...selectionForDish(registry, dish), brief: false });
+      if (dish) update({ ...selectionForDish(registry, dish), compare: '', brief: false });
     };
     const vote = (value: DishVote) => {
       if (focusedDish) setDishVotes((current) => {
@@ -152,9 +142,9 @@ export default function App() {
     };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
-      <section className="comparison-grid" style={{ "--columns": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
+      <section className="comparison-grid" data-panes={slots.length} style={{ "--columns": columns, "--rows": rows, "--panes": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
         {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
-          {slots.length > 1 && <div className="pane-label">{index + 1} · {configurationHeading(config, modelFamily(config.model))}{showLayers && <> · {dish ? skillLabelFor(registry, dish) : layerChoices.find((choice) => choice.key === slots[index].skillKey)?.label ?? 'Without skill'}</>}</div>}
+          {slots.length > 1 && <div className="pane-label">{paneLabel(slots[index], index)}</div>}
           <ArtifactPane recipe={recipe} variant={config} dish={dish} reviews={[]} />
         </article>)}
       </section>
@@ -169,24 +159,9 @@ export default function App() {
           <IconButton aria-label="Good dish" title={`Good dish · ${voteMode === 'synced' ? 'Synced' : 'This device'}`} aria-pressed={voteFor(dishVotes, focusedDish.id) === 'up'} onClick={() => vote('up')}><ThumbsUp size={18} /></IconButton>
           <IconButton aria-label="Not a good dish" title={`Not a good dish · ${voteMode === 'synced' ? 'Synced' : 'This device'}`} aria-pressed={voteFor(dishVotes, focusedDish.id) === 'down'} onClick={() => vote('down')}><ThumbsDown size={18} /></IconButton>
         </div>}
-        <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= 3 || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
-        <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />}>
-          <h2 className="mb-4 text-base font-semibold">{currentRecipe.title}</h2>
-          {slots.map(({ config, repeats, dish }, index) => <section key={index} className="mb-4 border-b border-slate-100 pb-4 last:mb-0 last:border-0 last:pb-0">
-            <div className="mb-2 flex items-center justify-between"><span className="text-xs font-medium text-slate-500">{slots.length > 1 ? `Pane ${index + 1}` : 'Model & thinking'}</span>{slots.length > 1 && <button className="min-h-8 rounded-md border-0 bg-transparent px-2 text-xs text-slate-500 hover:bg-slate-100" aria-label={`Remove configuration ${index + 1}`} onClick={() => update({ models: selected.filter((_, i) => i !== index).map((item) => item.id), skills: slotTokens().filter((_, i) => i !== index), dishes: slots.filter((_, i) => i !== index).map((item) => item.dish?.id ?? '') })}>Remove</button>}</div>
-            <ModelChoices configurations={viewerConfigurations} selectedId={config.id} label={`Configuration ${index + 1}`} onSelect={(candidate) => chooseConfig(index, candidate.id)} />
-            {(["harness", "environment"] as const).some((dimension) => siblings(config, dimension).length > 0) && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label={`Compare configuration ${index + 1} across`}><span className="mr-1 text-xs text-slate-500">Compare across</span>{(["harness", "environment"] as const).map((dimension) => {
-              const options = siblings(config, dimension);
-              const names = options.map((candidate) => dimension === "harness" ? harnessLabel(candidate.harness) : environmentLabel(candidate) ?? environmentKey(candidate));
-              return options.length > 0 && <KitchenButton key={dimension} disabled={selected.length >= 3} title={selected.length >= 3 ? "Three panes is the most" : `Adds ${names.join(", ")}`} aria-label={`Compare configuration ${index + 1} across ${dimension === "harness" ? "harnesses" : "environments"}: ${names.join(", ")}`} onClick={() => compareAcross(index, dimension)}>{dimension === "harness" ? "Harnesses" : "Environments"} · {options.length}</KitchenButton>;
-            })}</div>}
-            {showLayers && <div className="mt-3" role="group" aria-label={`Skill layer for configuration ${index + 1}`}><p className="mb-1 text-xs text-slate-500">Skill layer</p><div className="pill-row">{layerChoices.map((choice) => {
-              const available = recipeDishes.some((candidate) => candidate.identity.configHash === config.configHash && dishSkillKey(candidate) === choice.key);
-              return <KitchenButton key={choice.token} aria-pressed={slots[index].skillKey === choice.key} disabled={!available} title={available ? choice.label : `No ${modelFamily(config.model)} run`} onClick={() => chooseSkill(index, choice.token)}>{choice.label}{!available && <span className="ml-1 text-xs opacity-70">· no run</span>}</KitchenButton>;
-            })}</div></div>}
-            {repeats.length > 1 && slots.length > 1 && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label={`Dishes for configuration ${index + 1}`}>{repeats.map((repeat, i) => <IconButton key={repeat.id} aria-label={`Repeat ${i + 1} for configuration ${index + 1}`} aria-pressed={dish?.id === repeat.id} onClick={() => chooseRepeat(index, repeat.id)}>{i + 1}</IconButton>)}</div>}
-          </section>)}
-          {slots.length > 1 && <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>}
+        <IconButton aria-label="Compare another" title="Compare another" disabled={selected.length >= MAX_PANES || !selected.length} onClick={addComparison}><Columns2 size={19} /></IconButton>
+        <ControlPopover label="Models and comparison" icon={<SlidersHorizontal size={19} />} className="w-[26rem]">
+          <ComparisonControls context={context} title={currentRecipe.title} panes={slots} compare={compare} comparisonNote={comparisonNote} update={(patch) => update(patch)} />
         </ControlPopover>
         <IconButton aria-label="Read the recipe" title="Read the recipe" data-brief-control onClick={() => update({ brief: true }, "replace")}><BookOpen size={19} /></IconButton>
         <ControlPopover label="Configuration receipts" icon={<Info size={19} />}>
@@ -213,7 +188,7 @@ export default function App() {
       <header className="section-heading"><h2>{state.view === 'menus' ? 'Menus' : 'Dishes'}</h2><span>{state.view === 'menus' ? `${registry.menus.length} public menus` : `${counterDishes.filter(dish => visibleRecipes.some(recipe => recipe.id === dish.recipe.id)).length} dishes`}</span></header>
       {state.view !== 'menus' && <CounterFilters registry={registry} state={state} update={update} />}
       {state.view !== "menus" && (visibleRecipes.length ? <DishGallery registry={registry} recipes={visibleRecipes} dishes={counterDishes} onOpen={openRecipe} /> : registry.dishes.length === 0 ? <EmptyState title="No dishes yet."><p>The active recipes haven’t been cooked yet. Open the recipe book to see what’s ready.</p><KitchenButton tone="primary" onClick={() => navigate('recipes')}>Browse recipes</KitchenButton></EmptyState> : <EmptyState title="No matching dishes."><p>Try another model or clear your filters.</p><KitchenButton onClick={() => update({ query: "", cuisine: "all", origin: "all", family: "all", effort: "all", harness: "all", environment: "all", tier: "all", skill: "all" })}>Clear filters</KitchenButton></EmptyState>)}
-      {state.view === "menus" && (registry.menus.length ? <><div className="menu-grid">{registry.menus.map((menu) => <KitchenButton className="menu-card" key={menu.id} onClick={() => update({ menu: menu.id })}><span className="eyebrow">A Menu for comparison</span><strong>{menu.title}</strong><span>{menu.summary}</span><span>Inspect the Menu →</span></KitchenButton>)}</div>{openMenu && <section className="menu-detail"><header><h3>{openMenu.title}</h3><p>All {menuMembers.length} recipes count toward coverage, measured against each recipe&apos;s current brief. A blank cell stays blank.</p></header><div className="coverage-scroll"><table className="coverage-table"><caption>Coverage by exact requested configuration</caption><thead><tr><th scope="col">Recipe</th>{registry.configurations.map((config) => <th scope="col" key={config.id}>{configLabel(config, facets.environments.length > 1 || facets.harnesses.length > 1)}<small>{menuMembers.filter((member) => dishesFor(registry.dishes, member.id, member.recipeHash, config.configHash).length).length}/{menuMembers.length} represented</small></th>)}</tr></thead><tbody>{menuMembers.map((recipe) => <tr key={recipe.id}><th scope="row">{recipe.title}<small>{shortHash(recipe.recipeHash)}</small></th>{registry.configurations.map((config) => { const count = dishesFor(registry.dishes, recipe.id, recipe.recipeHash, config.configHash).length; return <td key={config.id}>{count ? <KitchenButton onClick={() => update({ recipe: recipe.id, models: [config.id], skills: [], dishes: [] })}>{count} {count === 1 ? "dish" : "dishes"} ↗</KitchenButton> : <span className="missing-cell">Not cooked</span>}</td>; })}</tr>)}</tbody></table></div></section>}</> : <EmptyState title="No menus yet."><p>Menus group recipes for comparison. They appear here once every recipe has a dish.</p><KitchenButton tone="primary" onClick={() => update({ view: "recipes" })}>Browse recipes →</KitchenButton></EmptyState>)}
+      {state.view === "menus" && (registry.menus.length ? <><div className="menu-grid">{registry.menus.map((menu) => <KitchenButton className="menu-card" key={menu.id} onClick={() => update({ menu: menu.id })}><span className="eyebrow">A Menu for comparison</span><strong>{menu.title}</strong><span>{menu.summary}</span><span>Inspect the Menu →</span></KitchenButton>)}</div>{openMenu && <section className="menu-detail"><header><h3>{openMenu.title}</h3><p>All {menuMembers.length} recipes count toward coverage, measured against each recipe&apos;s current brief. A blank cell stays blank.</p></header><div className="coverage-scroll"><table className="coverage-table"><caption>Coverage by exact requested configuration</caption><thead><tr><th scope="col">Recipe</th>{registry.configurations.map((config) => <th scope="col" key={config.id}>{configLabel(config, facets.environments.length > 1 || facets.harnesses.length > 1)}<small>{menuMembers.filter((member) => dishesFor(registry.dishes, member.id, member.recipeHash, config.configHash).length).length}/{menuMembers.length} represented</small></th>)}</tr></thead><tbody>{menuMembers.map((recipe) => <tr key={recipe.id}><th scope="row">{recipe.title}<small>{shortHash(recipe.recipeHash)}</small></th>{registry.configurations.map((config) => { const count = dishesFor(registry.dishes, recipe.id, recipe.recipeHash, config.configHash).length; return <td key={config.id}>{count ? <KitchenButton onClick={() => update({ recipe: recipe.id, models: [config.id], skills: [], dishes: [], compare: '' })}>{count} {count === 1 ? "dish" : "dishes"} ↗</KitchenButton> : <span className="missing-cell">Not cooked</span>}</td>; })}</tr>)}</tbody></table></div></section>}</> : <EmptyState title="No menus yet."><p>Menus group recipes for comparison. They appear here once every recipe has a dish.</p><KitchenButton tone="primary" onClick={() => update({ view: "recipes" })}>Browse recipes →</KitchenButton></EmptyState>)}
     </section>
     <footer className="kitchen-footer"><Mark /><KitchenButton onClick={() => update({ styleguide: true })}>Visual system ↗</KitchenButton></footer>
   </main>;
