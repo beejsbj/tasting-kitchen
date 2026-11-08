@@ -50,3 +50,11 @@ test("only the URL path selects artifact routes, never the query string", async 
     assert.ok((await responseHeaders(hook, "/dishes/dish_a/artifact/index.html?v=1"))["content-security-policy"]);
   }
 });
+
+test("encoded artifact paths receive the sandbox, as Vite decodes them before serving", async () => {
+  for (const hook of [headerPlugin().configurePreviewServer, headerPlugin().configureServer]) {
+    for (const url of ["/dishes%2Fdish_a/artifact/index.html", "/dishes%2fdish_a/artifact/index.html", "/%64ishes/dish_a/artifact/index.html", "/dishes/%E0%A4%A"]) {
+      assert.ok((await responseHeaders(hook, url))["content-security-policy"], url);
+    }
+  }
+});

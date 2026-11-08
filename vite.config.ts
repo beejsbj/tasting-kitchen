@@ -13,8 +13,15 @@ const localVoteFallback: Connect.NextHandleFunction = (request, response, next) 
 
 // Mirrors the /dishes/ rule in vercel.json and deploy/nginx.conf so the dev and
 // preview servers exercise the same artifact hosting contract.
+// Vite decodes the path before serving, so match the decoded pathname: /dishes%2Fid/ must not escape the sandbox.
+// An undecodable path is sandboxed too.
+function isArtifactPath(url = "") {
+  const { pathname } = new URL(url, "http://localhost");
+  try { return decodeURIComponent(pathname).includes("/dishes/"); } catch { return true; }
+}
+
 const artifactHeaders: Connect.NextHandleFunction = (request, response, next) => {
-  if (request.url && new URL(request.url, "http://localhost").pathname.includes("/dishes/")) {
+  if (isArtifactPath(request.url)) {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Security-Policy", "sandbox allow-scripts allow-forms; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'");
     response.setHeader("X-Content-Type-Options", "nosniff");
