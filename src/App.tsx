@@ -145,7 +145,7 @@ export default function App() {
       <section className="comparison-grid" style={{ "--columns": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
         {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
           {slots.length > 1 && <div className="pane-label">{index + 1} · {modelFamily(config.model)} · {config.reasoningEffort}{showLayers && <> · {dish ? skillLabelFor(registry, dish) : layerChoices.find((choice) => choice.key === slots[index].skillKey)?.label ?? 'Without skill'}</>}</div>}
-          <ArtifactPane recipe={recipe} variant={config} dish={dish} reviews={[]} />
+          <ArtifactPane recipe={recipe} variant={config} dish={dish} reviews={reviewsForDish(registry.reviews, dish)} />
         </article>)}
       </section>
       <nav aria-label="Artifact controls" className="viewer-dock fixed right-3 top-4 z-30 flex max-h-[calc(100dvh-2rem)] flex-col items-center gap-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-slate-800 shadow-lg backdrop-blur-md sm:right-5 sm:top-6">
