@@ -129,4 +129,7 @@ from firing, but the session is still recorded in that profile's `state.db` and
 the profile's plugin hooks run, so it refuses unless
 `TASTE_ALLOW_HERMES_PROFILE_WRITES=1` is set. Both environments write an empty
 `.git` marker beside the workspace: Hermes reads every AGENTS.md from the git
-root down, and attempts live inside the Kitchen checkout.
+root down, and attempts live inside the Kitchen checkout. That placement still
+shows: Hermes finds Kitchen's `package.json` within six levels and gives every
+run its coding posture (a system-prompt block about editing, tests and git),
+and the working-directory path names the Recipe and configuration.
