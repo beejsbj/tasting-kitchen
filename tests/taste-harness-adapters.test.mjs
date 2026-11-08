@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { planSelection } from "../lib/taste/catalog.mjs";
-import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { getHarnessAdapter, isPersonalEnvironment, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const profile = { id: "codex-linux-host-unsandboxed-v1", label: "via Codex CLI · host-unsandboxed fallback", runtime: "linux-host", sandbox: "danger-full-access", approvalPolicy: "never", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
 const variant = { id: "codex", provider: "openai", model: "gpt-5.6-sol", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: profile, configHash: "sha256:test" };
@@ -64,4 +64,18 @@ test("adapters expose pure fresh and exact-resume turn plans", () => {
   const resumedCursor = getHarnessAdapter("cursor-agent").planTurn({ variant: cursorVariant, workspace: "/tmp/work", prompt: "correct", threadId: UUID });
   assert.equal(freshCursor.includes("--resume"), false);
   assert.equal(resumedCursor[resumedCursor.indexOf("--resume") + 1], UUID);
+});
+
+test("execution environment is optional, enumerated, and a harness profile requires the personal environment", () => {
+  const withProfile = (extra) => ({ ...variant, executionProfile: { ...profile, ...extra } });
+  assert.doesNotThrow(() => resolveHarnessAdapter(variant));
+  assert.doesNotThrow(() => resolveHarnessAdapter(withProfile({ environment: "clean" })));
+  assert.doesNotThrow(() => resolveHarnessAdapter(withProfile({ environment: "personal", harnessProfile: "rose" })));
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "mine" })), /environment must be one of/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "clean", harnessProfile: "rose" })), /requires the personal environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "personal", harnessProfile: "../rose" })), /plain profile name/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ id: "unknown-profile" })), /profile\.id must be one of/);
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "personal" })), true);
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "clean" })), false);
+  assert.equal(isPersonalEnvironment(variant), false);
 });
