@@ -7,7 +7,7 @@ import test from "node:test";
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
-  PERSONAL_WRITES_ENV, buildHermesTurnArgs, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
+  PERSONAL_WRITES_ENV, buildHermesTurnArgs, hermesEnvironment, hermesProcessEnv, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
@@ -105,6 +105,20 @@ test("Hermes configurations validate model, effort, tier and the personal profil
   const unnamed = { ...personalProfile };
   delete unnamed.harnessProfile;
   assert.throws(() => resolveHarnessAdapter({ ...personal, executionProfile: unnamed }), /must name its harnessProfile/);
+});
+
+test("a caller's env cannot bring back a credential or a Hermes home, and the environment must be declared", () => {
+  const env = { ANTHROPIC_API_KEY: "sk-leak", HERMES_HOME: "/real/.hermes", OPENROUTER_API_KEY: "or-leak", FAKE_LOG: "/tmp/log" };
+  const processEnv = hermesProcessEnv({ variant: clean, hermesHome: "/tmp/attempt/hermes-home", env });
+  assert.equal(processEnv.ANTHROPIC_API_KEY, undefined);
+  assert.equal(processEnv.OPENROUTER_API_KEY, undefined);
+  assert.equal(processEnv.HERMES_HOME, "/tmp/attempt/hermes-home");
+  assert.equal(processEnv.FAKE_LOG, "/tmp/log");
+  assert.equal(hermesProcessEnv({ variant: personal, hermesHome: "/x", env }).HERMES_HOME, undefined);
+  assert.equal(hermesEnvironment(clean), "clean");
+  assert.equal(hermesEnvironment(personal), "personal");
+  const undeclared = { ...clean, executionProfile: { ...cleanProfile, environment: undefined } };
+  assert.throws(() => hermesEnvironment(undeclared), /clean or personal environment/);
 });
 
 test("Hermes JSONL requires one init and one successful result, and an exact resume", () => {
