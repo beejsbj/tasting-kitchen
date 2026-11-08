@@ -16,7 +16,8 @@ const localVoteFallback: Connect.NextHandleFunction = (request, response, next) 
 // Vite decodes the path before serving, so match the decoded pathname: /dishes%2Fid/ must not escape the sandbox.
 // An undecodable path is sandboxed too.
 function isArtifactPath(url = "") {
-  const { pathname } = new URL(url, "http://localhost");
+  // Not new URL(): it reads "//dishes/x" as a host and drops the segment.
+  const pathname = url.split(/[?#]/u, 1)[0];
   try { return decodeURIComponent(pathname).includes("/dishes/"); } catch { return true; }
 }
 
