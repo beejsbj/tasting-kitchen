@@ -44,7 +44,8 @@ sidecar, and skill checks. Success output says `private provenance skipped
 valid only for `validate` and takes no value. Strict success reports the number
 of private provenance records checked.
 
-`TASTE_BASE_PATH` controls CLI registry URLs and defaults to `/`. Public
+`TASTE_BASE_PATH` controls CLI registry URLs, including the registry rebuilt after an
+executed `cook`, and defaults to `/`. Public
 fixture URLs preserve a safe file extension from the fixture path, so their
 media type can be served correctly. Registry staging replaces the fixture and
 Dish trees atomically. Each registry Dish carries `inputs` (its recorded

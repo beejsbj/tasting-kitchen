@@ -210,7 +210,7 @@ async function main() {
   }
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
-    return print(await recover(repoRoot, { attemptId: options.attempt, basePath: process.env.TASTE_BASE_PATH ?? "/" }), true);
+    return print(await recover(repoRoot, { attemptId: options.attempt }), true);
   }
 }
 
