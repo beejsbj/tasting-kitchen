@@ -98,6 +98,22 @@ test("executing a Menu hands a fake runner only supported, uncovered cells and w
   assert.equal(await catalogFiles(root).then((files) => files.some((file) => file.startsWith("revisions"))), false);
 });
 
+test("executed cook rebuilds the registry under the deployment base path", async (t) => {
+  const root = await fixtureRepository(t);
+  const cookWith = (env, extra = {}) => cook(root, {
+    configurationId: "codex-sol-high", recipeIds: ["responsive-product-launch"], intent: "repeat", execute: true, allowStatuses: ["draft", "ready"],
+    env: { TASTE_ALLOW_MODEL_RUNS: "1", ...env }, ...extra,
+    executePlan: async () => ({ results: [], accepted: [], failed: [], unsupported: [] }),
+  });
+  const registryBase = async () => JSON.parse(await readFile(path.join(root, "public/data/registry.json"), "utf8")).basePath;
+  await cookWith({ TASTE_BASE_PATH: "/kitchen/" });
+  assert.equal(await registryBase(), "/kitchen/");
+  await cookWith({ TASTE_BASE_PATH: "/kitchen/" }, { basePath: "/explicit/" });
+  assert.equal(await registryBase(), "/explicit/");
+  await cookWith({});
+  assert.equal(await registryBase(), "/");
+});
+
 test("cook preserves an explicit allowed-status override through execution", async (t) => {
   const root = await fixtureRepository(t);
   const recipeId = "responsive-product-launch";
