@@ -883,6 +883,37 @@ if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedRevi
   fail("catalog/review.schema.json", "reviewerKind enum disagrees with runtime validator");
 }
 
+// A Menu is a plain list of recipe ids; nothing else checks them before they reach coverage and the registry.
+const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes"]);
+async function validateMenus(recipeRecords, cuisines) {
+  let entries = [];
+  try { entries = await readdir(path.join(root, "catalog/menus"), { withFileTypes: true }); }
+  catch (error) { if (error.code !== "ENOENT") throw error; }
+  const ids = new Set();
+  for (const entry of entries.filter((item) => item.isFile() && item.name.endsWith(".json")).sort((a, b) => a.name.localeCompare(b.name))) {
+    const relative = path.join("catalog/menus", entry.name);
+    const menu = await json(relative);
+    if (!object(menu, relative)) continue;
+    onlyKeys(menu, MENU_KEYS, relative);
+    required(menu, ["schemaVersion", "id", "title", "summary", "cuisines", "recipes"], relative);
+    if (menu.schemaVersion !== 1) fail(relative, "schemaVersion must be 1");
+    string(menu.id, `${relative}.id`, { pattern: IDS });
+    if (typeof menu.id === "string" && menu.id !== path.basename(entry.name, ".json")) fail(relative, "id must match filename");
+    if (ids.has(menu.id)) fail(relative, `duplicate menu id ${menu.id}`);
+    ids.add(menu.id);
+    string(menu.title, `${relative}.title`, { max: 120 });
+    string(menu.summary, `${relative}.summary`, { max: 500 });
+    if (array(menu.cuisines, `${relative}.cuisines`, { min: 1 })) {
+      unique(menu.cuisines, `${relative}.cuisines`);
+      for (const cuisine of menu.cuisines) if (!cuisines.has(cuisine)) fail(relative, `unknown cuisine ${cuisine}`);
+    }
+    if (array(menu.recipes, `${relative}.recipes`, { min: 1 })) {
+      unique(menu.recipes, `${relative}.recipes`);
+      for (const recipeId of menu.recipes) if (!recipeRecords.has(recipeId)) fail(relative, `unknown recipe ${recipeId}`);
+    }
+  }
+}
+
 const cuisinesDoc = await json("catalog/cuisines.json");
 const tagsDoc = await json("catalog/tags.json");
 const variantsDoc = await json("catalog/configurations.json");
@@ -900,6 +931,8 @@ for (const relative of recipeFiles.sort()) {
   if (recipeRecords.has(record.recipe.id)) fail(relative, `duplicate recipe id ${record.recipe.id}`);
   recipeRecords.set(record.recipe.id, record);
 }
+
+await validateMenus(recipeRecords, cuisines);
 
 if (!publicCheckout) await validateProvenance(recipeRecords);
 
