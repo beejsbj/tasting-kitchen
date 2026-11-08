@@ -3,6 +3,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { buildRegistry } from '../lib/taste/registry.mjs';
 
+/**
+ * Synthetic Dishes show this routed 1×1 image on the counter rather than
+ * dozens of sandboxed iframes of one artifact, which race Playwright's
+ * interception of out-of-process frames and reach the dev server directly.
+ */
+const FIXTURE_PREVIEW = 'fixture-preview.png';
+const PREVIEW_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==', 'base64');
+
 /** Archived real artifacts plus one synthetic Repeat, served only to this browser test. */
 export async function galleryBrowserFixture(context) {
   const root = path.resolve(import.meta.dirname, '..');
@@ -22,6 +30,7 @@ export async function galleryBrowserFixture(context) {
     await context.route('**/data/registry.json', route => route.fulfill({ json: registry }));
     await context.route(/\/(?:dishes|data\/fixtures)\//u, async route => {
       const relative = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\//u, '');
+      if (relative.endsWith(`/${FIXTURE_PREVIEW}`)) return route.fulfill({ body: PREVIEW_PNG, contentType: 'image/png' });
       const file = path.resolve(temporary, 'public', relative);
       if (!file.startsWith(path.join(temporary, 'public') + path.sep)) return route.abort();
       await route.fulfill({ path: file, headers: { 'Access-Control-Allow-Origin': '*', ...(relative.startsWith('dishes/') ? { 'Content-Security-Policy': "sandbox allow-scripts allow-forms; default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'none'; base-uri 'none'" } : {}) } });
@@ -59,7 +68,7 @@ export function withHarnessConfigurations(registry, recipeId) {
   const uncooked = id => /^claude-haiku-max|^hermes-haiku-max|^hermes-fable-.*-personal/u.test(id);
   const cooked = configurations.filter(configuration => !uncooked(configuration.id));
   const dish = (configuration, index, layer) => ({
-    ...source, id: `dish_fixture_${configuration.id}${layer ? '_hand-drawn' : ''}`, executedAt: `2099-02-01T${String(index % 24).padStart(2, '0')}:${layer ? '00' : '30'}:00.000Z`, dishHash: `sha256:fixture-dish-${configuration.id}${layer ? '-hand-drawn' : ''}`,
+    ...source, artifact: { ...source.artifact, preview: FIXTURE_PREVIEW }, id: `dish_fixture_${configuration.id}${layer ? '_hand-drawn' : ''}`, executedAt: `2099-02-01T${String(index % 24).padStart(2, '0')}:${layer ? '00' : '30'}:00.000Z`, dishHash: `sha256:fixture-dish-${configuration.id}${layer ? '-hand-drawn' : ''}`,
     identity: { ...source.identity, variantId: configuration.id, harness: configuration.harness, harnessVersion: '9.9.9', requestedModel: configuration.model, observedModel: configuration.model, reasoningEffort: configuration.reasoningEffort, serviceTier: 'default', configHash: configuration.configHash },
     ...(layer ? { skill: { id: skill.id, hash: skill.skillHash } } : { skill: undefined }),
     receipt: { ...source.receipt, configuration },
