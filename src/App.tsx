@@ -13,7 +13,7 @@ import { ModelChoices } from "./components/ModelChoices";
 import { TasteObservations } from "./components/TasteObservations";
 import { latestDish, resolveRecipeSelection, selectionForDish, skillTokenForDish } from "./lib/selection";
 import { DishGallery } from "./components/DishGallery";
-import { artifactUrl, briefChanged, catalogChanges, dishesFor, dishSkillKey, loadRegistry, modelFamily, NO_SKILL, reviewsForDish, shortHash, skillLabelFor } from "./lib/registry";
+import { artifactUrl, briefChanged, catalogChanges, dishesFor, dishSkillKey, loadRegistry, modelFamily, NO_SKILL, reviewsForDish, shortHash, serviceTierDrift, skillLabelFor } from "./lib/registry";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
 import { readDishVotes, saveDishVotes, syncDishVotes, voteFor, writeDishVote, type DishVote, type VoteMode } from './lib/dish-votes';
@@ -107,7 +107,7 @@ export default function App() {
     const showLayers = Boolean(recipe.skills) || recipeDishes.some((dish) => dish.skill);
     const slotTokens = () => slots.map((slot) => slot.dish ? skillTokenForDish(registry, slot.dish) : layerChoices.find((choice) => choice.key === slot.skillKey)?.token ?? '');
     const harnessVersions = new Set(slots.map(({ dish }) => dish?.identity.harnessVersion).filter(Boolean));
-    const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || (dish.identity.observedServiceTier && dish.identity.observedServiceTier !== dish.identity.serviceTier)));
+    const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || serviceTierDrift(dish.identity)));
     const briefHashes = new Set(slots.map(({ dish }) => dish?.recipe.hash).filter(Boolean));
     const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : briefHashes.size > 1 ? "These Dishes were cooked from different versions of the brief" : drift ? "Observed configuration drift — inspect receipts" : (dimensions.size > 1 || harnessVersions.size > 1) ? "Same brief · settings differ" : "Same brief · inspect configuration receipts";
     function chooseConfig(index: number, id: string) {

@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { cook, inspect, loadCatalog, loadDishes, loadMenus, plan } from "../lib/taste/index.mjs";
+import { cook, inspect, loadCatalog, loadDishes, loadMenus, plan, recover } from "../lib/taste/index.mjs";
 import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
@@ -188,4 +188,48 @@ test("CLI restricts public-checkout to validate and rejects malformed uses", () 
     assert.equal(JSON.parse(result.stderr).error.code, "INVALID_ARGUMENT", argv.join(" "));
     assert.equal(result.stdout, "", argv.join(" "));
   }
+});
+
+test("taste list prints legacy catalogs whose recipes carry domain instead of cuisines", async (t) => {
+  const { mkdir } = await import("node:fs/promises");
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-legacy-list-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, value) => { await mkdir(path.dirname(path.join(root, relative)), { recursive: true }); await writeFile(path.join(root, relative), JSON.stringify(value)); };
+  await write("catalog/domains.json", { schemaVersion: 1, domains: [{ id: "old-domain", label: "Old", description: "Legacy domain.", order: 1 }] });
+  await write("catalog/tags.json", { schemaVersion: 1, tags: ["one"] });
+  await write("catalog/variants.json", { schemaVersion: 1, variants: [] });
+  await write("catalog/recipes/old-domain/alpha/recipe.json", {
+    schemaVersion: 1, id: "alpha", version: "1.0.0", status: "ready", title: "Alpha", summary: "A legacy recipe for listing.", domain: "old-domain", origin: "textbook",
+    originNote: "A legacy fixture for list output.", tags: ["one"], kind: "session",
+    harness: { workspace: "read", web: "disabled", capabilities: [] }, setup: { instructions: "Use only the supplied material.", fixtures: [] },
+    turns: [{ id: "ask", role: "prompt", content: "Perform alpha." }],
+    output: { kind: "session", entry: "output/session.json", include: ["output/session.json"], limits: { maxFiles: 2, maxBytes: 4096 } },
+    validation: { mode: "completeness", checks: [{ id: "entry", type: "file-exists", required: true, description: "Output exists.", target: "output/session.json" }] },
+  });
+  // The CLI resolves its catalog from its own location, so run a copy of it beside the legacy catalog.
+  for (const entry of ["bin", "lib", "package.json"]) await cp(path.join(repoRoot, entry), path.join(root, entry), { recursive: true });
+  const result = spawnSync(process.execPath, [path.join(root, "bin/taste.mjs"), "list"], { cwd: root, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^alpha\told-domain\t/);
+});
+
+test("recover rebuilds the registry with the configured base path, and only after a successful recovery", async (t) => {
+  const root = await fixtureRepository(t);
+  const registryFile = path.join(root, "public", "data", "registry.json");
+  const outcome = { status: "accepted", recovered: true, dishId: "dish_stub" };
+  const seen = [];
+  await assert.rejects(recover(root, {
+    attemptId: "attempt_x",
+    basePath: "/kitchen/",
+    recoverAttempt: async () => { throw new Error("recovery refused"); },
+  }), /recovery refused/);
+  assert.equal(await readFile(registryFile, "utf8").catch(() => null), null);
+  const result = await recover(root, {
+    attemptId: "attempt_x",
+    basePath: "/kitchen/",
+    recoverAttempt: async (args) => { seen.push(args.attemptId); return outcome; },
+  });
+  assert.deepEqual(result, outcome);
+  assert.deepEqual(seen, ["attempt_x"]);
+  assert.equal(JSON.parse(await readFile(registryFile, "utf8")).basePath, "/kitchen/");
 });

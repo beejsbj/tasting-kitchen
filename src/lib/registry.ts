@@ -25,6 +25,16 @@ export function comparisonConfigurations(registry: Pick<Registry, "configuration
   }
   return [...registry.configurations, ...historical.values()];
 }
+/**
+ * Whether a Dish's observed service tier departs from the tier it requested.
+ * serviceTier is stored as the observed value, so it cannot be the baseline.
+ * Codex records a requested fast tier as priority; that alias is not drift.
+ */
+export function serviceTierDrift(identity: Pick<Dish["identity"], "serviceTier" | "requestedServiceTier" | "observedServiceTier">) {
+  if (!identity.observedServiceTier) return false;
+  const requested = identity.requestedServiceTier ?? identity.serviceTier;
+  return requested === "fast" ? identity.observedServiceTier !== "priority" : identity.observedServiceTier !== requested;
+}
 export function recipeSupported(recipe: Recipe, variant: Variant) {
   return recipe.harness.capabilities.every((capability) => variant.capabilities.includes(capability));
 }
