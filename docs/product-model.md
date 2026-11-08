@@ -143,6 +143,8 @@ The same model used through two harnesses represents two configurations and does
 - `clean` starts the harness from an empty home: no user instructions, skills, memory, hooks or MCP servers. Only the harness itself shapes the Run.
 - `personal` loads Burooj's own setup for that harness, optionally a named harness profile (`executionProfile.harnessProfile`, such as a Hermes profile). It tastes the model as he actually works with it.
 
+For Claude Code, [agent-interface.md](agent-interface.md#claude-code) lists exactly what each environment loads and withholds.
+
 Clean and personal are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the setup adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Configurations that predate the dimension omit `environment`; their hashes are unchanged.
 
 ### Skill and skill hash
