@@ -60,7 +60,7 @@ test("no adapter's child inherits an unknown or credential-bearing variable", ()
     "claude-code snapshot": claudeChildEnv({ variant: claudeVariant("snapshot"), harnessHome: "/cook/claude-home" }),
     "codex clean": planCodexTurn({ prompt: "x", model: "gpt-5.6-sol", reasoningEffort: "high", serviceTier: "default", workspace: "/cook/workspace", codexHome: "/cook/codex-home", home: "/cook/home", artifactDir: "/cook/raw" }).env,
     "codex original": planCodexTurn({ prompt: "x", model: "gpt-5.6-sol", reasoningEffort: "high", serviceTier: "default", workspace: "/cook/workspace", codexHome: "/cook/codex-home", artifactDir: "/cook/raw" }).env,
-    cursor: cursorEnv({}),
+    cursor: cursorEnv({}, { harness: "cursor-agent", executionProfile: { environment: "clean" } }),
     "t3 → claude-code": scrubbedEnv({}),
     "t3 → codex-cli": scrubbedEnv({}, { userHome: "/cook/codex-user-home" }),
     "hermes anthropic": hermesProcessEnv({ variant: { harness: "hermes", executionProfile: { id: "hermes-linux-host-clean-anthropic-v1", environment: "clean" } }, hermesHome: "/cook/hermes-home" }),

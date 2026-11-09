@@ -305,8 +305,9 @@ rewrites. Authentication is his own `auth.json`, which must exist.
 ### Cursor live
 
 `cursor-linux-host-live-v1` runs `cursor-agent` as the original profile does, against his real
-`~/.cursor` and `HOME`, with the whole environment of the shell that started the Cook; what differs
-is the claim and the `live` label on the receipt. It keeps the
+`~/.cursor` and `HOME`, with the whole environment of the shell that started the Cook (including any
+parent agent session's own variables, which only Claude Code live strips); what differs
+is the claim, the environment and the `live` label on the receipt. It keeps the
 existing login preflight. Cursor has no switch for its memory or account rules, and `--approve-mcps`
 only gates MCP servers a workspace declares: the servers in his `~/.cursor/mcp.json` and his plugins
 load whatever Kitchen does. So live Cursor offers memory `on` and connections `on` only, passes
