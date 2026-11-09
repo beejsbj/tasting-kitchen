@@ -26,7 +26,7 @@ export function NoDishPane({ plate, variant, verdict }: { plate: NoDish; variant
   }, [plate]);
   const failing = report?.checks.filter((check) => check.required && !check.passed) ?? [];
   return <section className="artifact-pane artifact-pane--no-dish" data-outcome="no-dish" data-fault={plate.fault.code} aria-label={`No Dish: ${CHEF_FAULT_LABELS[plate.fault.code]}`}>
-    <VerdictMark verdict={verdict} checksFailed />
+    <VerdictMark verdict={verdict} checks={plate.fault.code === 'checks-failed' ? 'failed' : 'not-run'} />
     <div className="no-dish">
       <span className="no-dish__plate" aria-hidden="true" />
       <span className="no-dish__eyebrow">No Dish</span>

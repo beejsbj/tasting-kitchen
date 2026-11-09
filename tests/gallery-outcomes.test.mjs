@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { isDish, isNoDish, noDishLabel, outcomeOf, plateCountLabel, platesOf, standingVerdict } from '../src/lib/outcomes.ts';
+import { isDish, isNoDish, noDishLabel, outcomeOf, passedNoDishLabel, plateCountLabel, platesOf, standingVerdict } from '../src/lib/outcomes.ts';
 import { resolveRecipeSelection } from '../src/lib/selection.ts';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { dishesFor } from '../src/lib/registry.ts';
@@ -40,6 +40,9 @@ test('outcomes: cooked, No Dish, and failed by Burooj; his verdict outranks the 
 test('a No Dish reads plainly and counts as a plate, never as a dish', () => {
   assert.equal(noDishLabel(plate), 'No Dish · Failed the required checks (render)');
   assert.equal(noDishLabel(noDish('nodish_d', 'c3', '2026-01-04', 'refused', null)), 'No Dish · Declined the Recipe');
+  // His pass says "checks failed" only where the checks failed.
+  assert.equal(passedNoDishLabel(plate), 'Passed by Burooj · checks failed · No Dish · Failed the required checks (render)');
+  assert.equal(passedNoDishLabel(noDish('nodish_d', 'c3', '2026-01-04', 'refused', null)), 'Passed by Burooj · No Dish · Declined the Recipe');
   assert.equal(plateCountLabel([cooked, failed]), '2 dishes');
   assert.equal(plateCountLabel([cooked, plate]), '1 dish · 1 no dish');
   assert.equal(plateCountLabel([plate]), '1 no dish');
@@ -82,7 +85,7 @@ test('the gallery renders No Dishes in panes and on the counter, and shows the v
   assert.match(app, /platesOf\(registry\)/u);
   assert.match(pane, /if \(isNoDish\(dish\)\) return <NoDishPane/u);
   assert.match(pane, /<VerdictMark verdict=\{verdict\} \/><ArtifactReviewMark/u, 'the verdict leads, the automated review stays');
-  assert.match(pane, /<VerdictMark verdict=\{verdict\} checksFailed \/>/u, 'a passed No Dish says the checks failed');
+  assert.match(pane, /<VerdictMark verdict=\{verdict\} checks=\{plate\.fault\.code === 'checks-failed' \? 'failed' : 'not-run'\} \/>/u, 'a passed No Dish says the checks failed only where they did');
   assert.match(counter, /data-outcome=\{isNoDish\(dish\) \? 'no-dish'/u);
   assert.match(filters, /aria-label="Filter by outcome"/u);
   // Distinct but not shaming: a No Dish never uses the danger colour.

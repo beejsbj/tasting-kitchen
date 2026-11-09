@@ -13,12 +13,13 @@ const VERDICT_LABEL: Record<Verdict['verdict'], string> = { failed: 'Failed by B
  * in what the gallery leads with, and says so: the checks' own result stays in
  * view beside it.
  */
-export function VerdictMark({ verdict, checksFailed = false }: { verdict?: Verdict; checksFailed?: boolean }) {
+/** `checks`: what the automated checks said. A No Dish stopped for another reason (a refusal, a spent turn budget) says nothing about them. */
+export function VerdictMark({ verdict, checks = 'passed' }: { verdict?: Verdict; checks?: 'passed' | 'failed' | 'not-run' }) {
   if (!verdict) return null;
   return <aside className="verdict-mark" data-verdict={verdict.verdict} aria-label={`${VERDICT_LABEL[verdict.verdict]}: ${verdict.note}`}>
     <b>{VERDICT_LABEL[verdict.verdict]}</b>
     <span className="verdict-mark__note">{verdict.note}</span>
-    <span className="verdict-mark__checks">{checksFailed ? 'Checks failed' : 'Automated checks passed'}</span>
+    {checks !== 'not-run' && <span className="verdict-mark__checks">{checks === 'failed' ? 'Checks failed' : 'Automated checks passed'}</span>}
   </aside>;
 }
 
