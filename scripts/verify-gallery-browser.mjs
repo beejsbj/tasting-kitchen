@@ -209,8 +209,11 @@ try {
   assert.ok(harnessRegistry.configurations.length >= 40, "the fixture stresses the picker with dozens of configurations");
   await harnessPage.route("**/data/registry.json", route => route.fulfill({ json: harnessRegistry }));
   await harnessPage.goto(`${base}/`, { waitUntil: "networkidle" });
-  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "the shipped catalog offers All, Claude Code, Codex CLI, Cursor Agent and Hermes");
-  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "harness facet lists all harnesses plus All");
+  // A harness value is the whole delivery path: harness path plus any declared route.
+  const harnessKeys = (configurations) => new Set(configurations.map((config) => `${(config.harnessPath ?? [config.harness]).join(">")}${config.executionProfile.route ? `@${config.executionProfile.route}` : ""}`));
+  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), harnessKeys(registry.configurations).size + 1, "the shipped catalog offers All plus each delivery path");
+  for (const label of ["Claude Code", "Codex CLI", "Cursor Agent", "Hermes", "Hermes · OpenRouter", "Direct API · OpenRouter"]) assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: label, exact: true }).count(), 1, `the harness facet offers ${label}`);
+  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), harnessKeys(harnessRegistry.configurations).size + 1, "harness facet lists all harnesses plus All");
   await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
   assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.identity.harness === "hermes").length, "only Hermes Dishes remain");
@@ -271,7 +274,7 @@ try {
   assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Claude Code", "Hermes"], "panes are named by the varied value");
   assert.match(await harnessPage.locator(".pane-label").first().innerText(), /holding Opus 5\.5 · High · Clean · Without skill/);
   assert.equal(await harnessPage.locator("[role=status][aria-live=polite].sr-only").innerText(), "Comparing 2 harnesses, holding Opus 5.5 · High · Clean · Without skill", "a Compare by layout is announced politely");
-  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools and defaults come with it$/;
+  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools, route and defaults come with it$/;
   assert.equal(await harnessPage.getByText(note).count(), 1, "the note states the isolation by construction");
   const harnessValues = harnessPage.getByRole("region", { name: "Harness values" });
   await harnessValues.getByRole("checkbox").nth(2).check(); await settle(harnessPage);

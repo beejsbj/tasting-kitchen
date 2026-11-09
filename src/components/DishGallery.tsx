@@ -1,6 +1,6 @@
 import { artifactUrl, briefChanged, dishesFor, dishSkillKey, modelFamily, shortHash, skillLabelFor } from '../lib/registry';
 import { effortLabel } from '../lib/effort-label';
-import { configurationFacets, environmentName, harnessLabel } from '../lib/configuration-label';
+import { configurationFacets, environmentName, harnessKey, harnessLabel } from '../lib/configuration-label';
 import type { Dish, Recipe, Registry } from '../types';
 
 export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: Registry; recipes: Recipe[]; dishes: Dish[]; onOpen: (recipe: Recipe, dish: Dish) => void }) {
@@ -12,7 +12,7 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
         const model = modelFamily(config?.model ?? dish.identity.requestedModel);
         const effort = config?.reasoningEffort ?? dish.identity.reasoningEffort;
         const iterations = dishesFor(registry.dishes, recipe.id, dish.recipe.hash, dish.identity.configHash, dishSkillKey(dish));
-        const harnessEnvironment = showEnvironment ? [harnessLabel(config?.harness ?? dish.identity.harness), config && environmentName(config)].filter(Boolean).join(' · ') : '';
+        const harnessEnvironment = showEnvironment ? [harnessLabel(config ? harnessKey(config) : dish.identity.harness), config && environmentName(config)].filter(Boolean).join(' · ') : '';
         const skillLabel = skillLabelFor(registry, dish);
         const iteration = iterations.findIndex(item => item.id === dish.id) + 1;
         const date = new Date(dish.executedAt).toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
