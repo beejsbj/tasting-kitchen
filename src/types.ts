@@ -301,4 +301,4 @@ export type Registry = {
 };
 
 export type Variant = Configuration;
-export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };
+export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[]; configurations?: string[] };
