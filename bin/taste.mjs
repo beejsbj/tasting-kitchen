@@ -4,11 +4,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover, verdict } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, prune, recover, verdict } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "failed", "passed"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed"]);
 
 const commandFlags = {
   help: new Set(),
@@ -25,6 +25,7 @@ const commandFlags = {
   "build-registry": new Set(["output"]),
   recover: new Set(["attempt"]),
   verdict: new Set(["dish", "failed", "passed", "note"]),
+  prune: new Set(["dry-run"]),
 };
 
 class UsageError extends Error {
@@ -131,10 +132,12 @@ Usage:
   taste build-registry [--output PATH]
   taste recover --attempt ID
   taste verdict --dish ID --failed|--passed --note TEXT
+  taste prune [--dry-run]
 
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
+  Prune removes the cook directories of accepted attempts, of failed attempts older than TASTE_COOK_RETENTION_DAYS (14 by default), and orphans; every Cook prunes first.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
   A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it. --dish may also name a No Dish (nodish_…), which takes only --passed: Burooj overruling checks that failed it.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
@@ -220,6 +223,7 @@ async function main() {
     const result = await verdict(repoRoot, { plateId: options.dish, verdict: options.failed ? "failed" : "passed", note: options.note });
     return print({ status: "recorded", path: result.path, verdict: result.verdict }, true);
   }
+  if (command === "prune") return print(await prune(repoRoot, { dryRun: options["dry-run"] === true }), true);
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
     return print(await recover(repoRoot, { attemptId: options.attempt }), true);
