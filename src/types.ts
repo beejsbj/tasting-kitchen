@@ -40,6 +40,10 @@ export type Configuration = {
     /** The OpenRouter upstream provider slug the route is pinned to, with no fallbacks. */
     upstream?: string;
   };
+  /** Why an OpenRouter pin is the provider it is, when that is not the maker's own from Kitchen's table. Not hashed. */
+  upstreamChoice?: { name: string; reason: "maker" | "sole-provider" | "named" };
+  /** Present when a configuration template made this entry on first cook. Provenance, not identity. */
+  materialized?: { template: string; spec: string; selector?: string; at: string; free?: true; contextLength?: number; source: string };
 };
 
 export type Skill = {

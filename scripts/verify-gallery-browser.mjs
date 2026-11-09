@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { chromium } from "playwright";
-import { galleryBrowserFixture, withHarnessConfigurations } from "./gallery-browser-fixture.mjs";
+import { galleryBrowserFixture, MANY_MODELS, withHarnessConfigurations, withManyModels } from "./gallery-browser-fixture.mjs";
 
 const base = process.env.TASTE_BROWSER_URL ?? "http://127.0.0.1:5177";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -196,7 +196,10 @@ try {
   const familyMatch = filterConfig.model.match(/(?:^|-)(astra|sol|terra|luna|fable)(?:-|$)/i);
   if (familyMatch) {
     const family = familyMatch[1][0].toUpperCase() + familyMatch[1].slice(1).toLowerCase();
-    await page.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: family, exact: true }).click(); await settle(page);
+    // Past a handful of families the facet is one button opening a searchable list grouped by maker.
+    const facetTrigger = page.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: /^Filter by model: / });
+    const facetList = await facetTrigger.count() ? (await facetTrigger.click(), page.getByRole("dialog", { name: "Filter by model" })) : page.getByRole("group", { name: "Filter by model" });
+    await facetList.getByRole("button", { name: family, exact: true }).click(); await settle(page);
     assert.equal(new URL(page.url()).searchParams.get("family"), family, "counter family filter should be URL-addressable");
     assert.ok(await page.locator(".recipe-card").count() > 0, "family filter should leave matching Recipes on the counter");
   }
@@ -410,6 +413,40 @@ try {
     const menuPage = await context.newPage(); await menuPage.setViewportSize({ width: 1280, height: 900 }); recordErrors(menuPage, "menu"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(menuRegistry) })); await menuPage.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); assert.match(await menuPage.locator("body").innerText(), /1\/2 represented/); assert.match(await menuPage.locator("body").innerText(), /Not cooked/); await menuPage.getByRole("button", { name: /1 dish/ }).first().click(); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("recipe"), menuRecipes[0].id, "menu cell should open its recipe");
     const repeat = { ...menuRegistry.dishes.find(dish => dish.recipe.id === menuRecipes[0].id && dish.identity.configHash === missingConfig), id: "dish_browser_repeat", executedAt: "2099-01-01T00:00:00.000Z", dishHash: "sha256:browser-repeat" }; const repeatRegistry = { ...menuRegistry, dishes: [...menuRegistry.dishes, repeat] }; await menuPage.unroute("**/data/registry.json"); await menuPage.route("**/data/registry.json", route => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify(repeatRegistry) })); await menuPage.goto(`${base}/?view=menus`, { waitUntil: "networkidle" }); await menuPage.getByRole("button", { name: /Browser pair/i }).click(); await settle(menuPage); await menuPage.getByRole("button", { name: /2 dishes/ }).first().click(); await settle(menuPage); assert.equal(await menuPage.getByRole("group", { name: "Dishes for configuration 1" }).count(), 1, "Repeats should be direct Dish pills"); await menuPage.getByRole("button", { name: "Repeat 2 for configuration 1" }).click(); await settle(menuPage); assert.equal(new URL(menuPage.url()).searchParams.get("dishes"), "dish_browser_repeat"); await menuPage.close();
   }
+
+  // Many models, free ones among them: the Model chip searches and groups by maker, and so does the counter's model facet.
+  const manyPage = await context.newPage(); await manyPage.setViewportSize({ width: 1280, height: 900 }); recordErrors(manyPage, "many-models");
+  const manyRegistry = withManyModels(registry, target.id);
+  await manyPage.route("**/data/registry.json", route => route.fulfill({ json: manyRegistry }));
+  const gemma = manyRegistry.configurations.find(config => config.model === "google/gemma-4-31b-it:free");
+  const gemmaDish = manyRegistry.dishes.find(dish => dish.identity.configHash === gemma.configHash);
+  await manyPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: gemma.id, dishes: gemmaDish.id })}`, { waitUntil: "networkidle" });
+  await manyPage.getByRole("button", { name: "Models and comparison" }).click(); await settle(manyPage);
+  await manyPage.getByRole("group", { name: "Configuration 1", exact: true }).getByRole("button", { name: "Model: Gemma 4 31b It" }).click(); await settle(manyPage);
+  const modelOptions = manyPage.getByRole("group", { name: "Model options" });
+  const modelSearch = modelOptions.getByRole("searchbox", { name: "Search model options" });
+  assert.equal(await modelSearch.evaluate(node => node === document.activeElement), true, "a long model list opens on its search field");
+  for (const maker of ["Google", "NVIDIA", "Cohere", "Moonshot AI"]) assert.equal(await modelOptions.getByRole("group", { name: maker, exact: true }).count(), 1, `models group under ${maker}`);
+  assert.equal(await modelOptions.getByRole("button", { name: /· Free ·/ }).count(), MANY_MODELS.filter(model => model.endsWith(":free") || model.startsWith("stealth/")).length, "every free model carries the Free badge");
+  await save(manyPage, "model-chip-many");
+  await manyPage.keyboard.type("nemotron"); await settle(manyPage);
+  assert.equal(await modelOptions.locator(".axis-option").count(), 2, "typing filters the list");
+  await save(manyPage, "model-chip-search");
+  await manyPage.keyboard.press("ArrowDown");
+  assert.equal(await modelOptions.locator(".axis-option").first().evaluate(node => node === document.activeElement), true, "ArrowDown moves from the search field into the list");
+  await manyPage.keyboard.press("Enter"); await settle(manyPage);
+  assert.match(new URL(manyPage.url()).searchParams.get("models") ?? "", /^fixture-many-nvidia-nemotron/u, "choosing a found model moves the pane to it");
+  await manyPage.keyboard.press("Escape"); await settle(manyPage);
+  await manyPage.goto(`${base}/`, { waitUntil: "networkidle" });
+  await manyPage.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: "Filter by model: All models", exact: true }).click(); await settle(manyPage);
+  const facet = manyPage.getByRole("dialog", { name: "Filter by model" });
+  await facet.getByRole("searchbox", { name: "Search models" }).fill("google"); await settle(manyPage);
+  assert.deepEqual(await facet.getByRole("group").evaluateAll(groups => groups.map(group => group.getAttribute("aria-label"))), ["Google"], "searching a maker keeps its group");
+  assert.match(await facet.getByRole("button", { name: /^Gemma/ }).innerText(), /free/i, "a family with a free configuration is marked");
+  await save(manyPage, "counter-model-facet");
+  await facet.getByRole("button", { name: /^Gemma/ }).click(); await settle(manyPage);
+  assert.equal(new URL(manyPage.url()).searchParams.get("family"), "Gemma", "a family chosen from search is URL-addressable");
+  await manyPage.close();
 
   await page.goto(`${base}/?recipe=${target.id}`, { waitUntil: "networkidle" }); await page.route(/\/(?:data\/fixtures|dishes\/[^/]+\/inputs)\//, route => route.abort()); await page.getByRole("button", { name: "Read the recipe" }).click(); await settle(page); if (await page.locator('[role="dialog"] .fixture summary').count()) await page.locator('[role="dialog"] .fixture summary').first().click(); await page.waitForTimeout(900); assert.match(await page.locator('[role="dialog"]').innerText(), /Failed to fetch|Input could not be loaded/); await page.unroute(/\/(?:data\/fixtures|dishes\/[^/]+\/inputs)\//);
   await page.goto(`${base}/`, { waitUntil: "networkidle" }); await page.getByRole("button", { name: /Visual system/i }).click(); await settle(page); assert.match(await page.locator("body").innerText(), /Back to the Kitchen/); await save(page, "styleguide-desktop");

@@ -27,11 +27,33 @@ export function harnessLabel(key: string) {
   const [layers, route] = key.split("@");
   return `${layers.split(">").map((layer) => HARNESSES[layer] ?? layer).join(" → ")}${route ? ` · ${ROUTES[route] ?? route}` : ""}`;
 }
-/** "Gemini 4 Argon" for "google/gemini-4-argon": the maker drops, the slug's words are capitalized. */
+/** "Gemini 4 Argon" for "google/gemini-4-argon": the maker drops, the slug's words are capitalized. A `:free` offering keeps the plain name; the Free badge marks it. */
 export function slugModelName(model: string) {
-  const slug = model.match(/^[a-z0-9-]+\/([a-z0-9.-]+)$/i)?.[1];
-  if (!slug) return undefined;
-  return slug.split("-").map((word) => MODEL_WORDS[word.toLowerCase()] ?? `${word[0].toUpperCase()}${word.slice(1)}`).join(" ");
+  const match = model.match(/^[a-z0-9-]+\/([a-z0-9.-]+)(?::free)?$/i);
+  if (!match) return undefined;
+  const name = match[1].split("-").map((word) => MODEL_WORDS[word.toLowerCase()] ?? `${word[0].toUpperCase()}${word.slice(1)}`).join(" ");
+  return name;
+}
+const MAKERS: Record<string, string> = {
+  anthropic: "Anthropic", openai: "OpenAI", cursor: "Cursor", google: "Google", "x-ai": "xAI", meta: "Meta", "meta-llama": "Meta Llama", moonshotai: "Moonshot AI",
+  deepseek: "DeepSeek", "z-ai": "Z.AI", qwen: "Qwen", mistralai: "Mistral", nvidia: "NVIDIA", cohere: "Cohere", liquid: "Liquid", minimax: "MiniMax", stepfun: "StepFun",
+};
+/** The maker of a model, by its route slug ("google/…") or, for a harness's own spelling, by its family: "anthropic", "openai", "cursor". */
+export function modelMaker(model: string) {
+  const slug = model.match(/^([a-z0-9-]+)\//i)?.[1]?.toLowerCase();
+  if (slug) return slug;
+  if (/^claude-/i.test(model)) return "anthropic";
+  if (/^gpt-/i.test(model)) return "openai";
+  if (/^composer/i.test(model)) return "cursor";
+  return "other";
+}
+/** "Google", "Moonshot AI", "Dots Studio": a maker slug as a heading. */
+export function makerLabel(maker: string) {
+  return MAKERS[maker] ?? maker.split("-").map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`).join(" ");
+}
+/** Free to cook: OpenRouter's `:free` offering, or a configuration materialized while its model was priced at zero. */
+export function isFreeModel(config: { model: string; materialized?: { free?: boolean } }) {
+  return config.model.endsWith(":free") || config.materialized?.free === true;
 }
 /** "Gemini", "DeepSeek": the family of a maker/slug model, from the slug's leading letters. */
 export function slugModelFamily(model: string) {

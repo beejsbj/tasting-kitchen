@@ -5,6 +5,7 @@ import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
+import { materializedProblems } from "../lib/taste/configuration-templates.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
@@ -313,7 +314,9 @@ function validateConfigurations(doc) {
   const tuples = [];
   const requiredKeys = ["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"];
   // harnessPath is present only when the harness wraps another, so existing hashes stay put.
-  const allowedKeys = new Set([...requiredKeys, "harnessPath"]);
+  // upstreamChoice (why an OpenRouter pin is what it is) and materialized (which template and
+  // spec made the entry) are provenance, not identity: neither is hashed.
+  const allowedKeys = new Set([...requiredKeys, "harnessPath", "upstreamChoice", "materialized"]);
   for (const [index, variant] of doc.configurations.entries()) {
     const item = `${label}.configurations[${index}]`;
     if (!object(variant, item)) continue;
@@ -336,6 +339,8 @@ function validateConfigurations(doc) {
     }
     const adapterReason = adapterSupport(variant);
     if (adapterReason) fail(item, adapterReason);
+    if (variant.upstreamChoice !== undefined) onlyKeys(variant.upstreamChoice, new Set(["name", "reason"]), `${item}.upstreamChoice`);
+    for (const problem of materializedProblems(variant)) fail(item, problem);
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
     tuples.push([variant.provider, variant.model, variant.harness, JSON.stringify(variant.harnessPath ?? null), variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }

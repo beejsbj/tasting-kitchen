@@ -4,20 +4,21 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, prune, recover, verdict } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, discoverModels, evaluateDishWithJev, formatDiscovery, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, prune, recover, verdict } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note", "harness", "route", "upstream"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed", "free"]);
 
 const commandFlags = {
   help: new Set(),
   validate: new Set(["public-checkout"]),
   discover: new Set(),
+  models: new Set(["harness", "route", "free"]),
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
-  plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
+  plan: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
@@ -88,7 +89,7 @@ function selection(options) {
   const configurationId = options.config ?? options.variant;
   if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { configurationId, ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { configurationId, ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -120,10 +121,11 @@ function help() {
 
 Usage:
   taste discover [--json]
+  taste models [--harness hermes] [--route ID] [--free] [--json]
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
+  taste plan --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -134,6 +136,11 @@ Usage:
   taste verdict --dish ID --failed|--passed --note TEXT
   taste prune [--dry-run]
 
+  models lists every route Hermes is set up for and the models on it, free ones marked, from Hermes's own caches and OpenRouter's public model list. It reads only.
+  A SPEC names a model on a configuration template: hermes:openrouter/google/gemma-4-31b-it:free@high[:clean]. If the catalog holds no
+  configuration with that hash, the first executed cook materializes one into catalog/configurations.json. A SELECTOR names many:
+  'hermes:openrouter/*@auto+free' is every free OpenRouter model Hermes can cook, each at high or its own default effort. Plan shows what it resolves to.
+  --upstream names the OpenRouter provider to pin when the maker's own does not serve a model and more than one provider does.
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
@@ -168,6 +175,10 @@ async function main() {
     return;
   }
   if (command === "discover") return print(await discover(repoRoot), true);
+  if (command === "models") {
+    const result = await discoverModels({ harness: options.harness ?? "hermes", route: options.route ?? null, free: options.free === true });
+    return options.json ? print(result, true) : print(formatDiscovery(result));
+  }
   if (command === "inspect") return print(await inspect(repoRoot, inspectSelection(options)), true);
   if (command === "list") {
     const recipes = listRecipes(await loadCatalog(repoRoot), filterFrom(options));

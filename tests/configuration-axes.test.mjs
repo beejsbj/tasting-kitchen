@@ -217,3 +217,42 @@ test('a Compare by layout is announced with what it holds', () => {
   assert.equal(compareAnnouncement('tier', 2, []), 'Comparing 2 service tiers');
   assert.equal(compareAnnouncement('harness', 2, ['Luna 5.6'], false), 'Comparing 2 harnesses, holding Luna 5.6; not an isolated comparison', 'panes that also differ are not announced as held');
 });
+
+test('long model lists group by maker, search by name, maker or id, and mark free models', async () => {
+  const { groupOptions, matchesQuery, searchOptions, SEARCH_THRESHOLD } = await import('../src/lib/option-search.ts');
+  const { isFreeModel, makerLabel, modelMaker } = await import('../src/lib/configuration-label.ts');
+  assert.equal(modelName('google/gemma-4-31b-it:free'), 'Gemma 4 31b It');
+  assert.equal(modelName('google/gemma-4-31b-it'), 'Gemma 4 31b It');
+  assert.deepEqual(['claude-opus-5-5', 'gpt-5.6-sol', 'composer-2.5[fast=false]', 'moonshotai/kimi-k3', 'dots-studio/dots-3:free'].map(modelMaker), ['anthropic', 'openai', 'cursor', 'moonshotai', 'dots-studio']);
+  assert.deepEqual(['moonshotai', 'x-ai', 'dots-studio'].map(makerLabel), ['Moonshot AI', 'xAI', 'Dots Studio']);
+  assert.equal(isFreeModel({ model: 'nvidia/nemotron-3-ultra:free' }), true);
+  assert.equal(isFreeModel({ model: 'stealth/crouton-alpha', materialized: { free: true } }), true);
+  assert.equal(isFreeModel({ model: 'stealth/crouton-alpha' }), false);
+  assert.ok(matchesQuery('Gemma 4 31b It Google google/gemma-4-31b-it:free', 'gemma free'));
+  assert.ok(!matchesQuery('Opus 5.5 Anthropic', 'gemma'));
+  const options = [
+    { label: 'Opus 5.5', group: 'Anthropic' }, { label: 'Gemma 4 31b It', group: 'Google', badge: 'Free', terms: 'google/gemma-4-31b-it:free' },
+    { label: 'Sonnet 5.5', group: 'Anthropic' }, { label: 'Nemotron 3 Ultra', group: 'NVIDIA', badge: 'Free' }, { label: 'Ungrouped' },
+  ];
+  assert.deepEqual(groupOptions(options).map(({ group, options: items }) => [group, items.map((item) => item.label)]), [
+    ['Anthropic', ['Opus 5.5', 'Sonnet 5.5']], ['Google', ['Gemma 4 31b It']], ['NVIDIA', ['Nemotron 3 Ultra']], [undefined, ['Ungrouped']],
+  ]);
+  assert.deepEqual(searchOptions(options, 'free').map((item) => item.label), ['Gemma 4 31b It', 'Nemotron 3 Ultra']);
+  assert.deepEqual(searchOptions(options, 'anthropic').map((item) => item.label), ['Opus 5.5', 'Sonnet 5.5']);
+  assert.deepEqual(searchOptions(options, 'gemma-4-31b').map((item) => item.label), ['Gemma 4 31b It']);
+  assert.equal(searchOptions(options, '  ').length, options.length);
+  assert.ok(SEARCH_THRESHOLD >= 5 && SEARCH_THRESHOLD <= 12);
+});
+
+test('the counter groups model families by maker and marks a family with a free configuration', async () => {
+  const { familyOptions } = await import('../src/lib/model-facets.ts');
+  const families = familyOptions([
+    configuration('a', 'claude-code', 'claude-opus-5-5', 'high', 'clean'),
+    configuration('b', 'hermes', 'anthropic/claude-opus-5.5', 'high', 'clean'),
+    configuration('c', 'hermes', 'google/gemma-4-31b-it', 'high', 'clean'),
+    configuration('d', 'hermes', 'google/gemma-4-31b-it:free', 'high', 'clean'),
+    configuration('e', 'hermes', 'stealth/crouton-alpha', 'high', 'clean', undefined, { materialized: { free: true } }),
+  ]);
+  assert.deepEqual(families.map(({ id, group, badge }) => [id, group, badge ?? null]), [['Opus', 'Anthropic', null], ['Gemma', 'Google', 'Free'], ['Crouton', 'Stealth', 'Free']]);
+  assert.match(families[1].terms, /google\/gemma-4-31b-it:free/);
+});
