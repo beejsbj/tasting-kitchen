@@ -7,7 +7,7 @@ import test from "node:test";
 import { computeRecipeHash } from "../lib/taste/catalog.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
-import { buildT3TurnArgs, parseT3Turn, prepareT3Attempt, runT3Session, t3Settings, verifyT3Identity } from "../lib/taste/t3.mjs";
+import { buildT3TurnArgs, parseT3Turn, prepareT3Attempt, runT3Session, startT3Server, t3Settings, verifyT3Identity } from "../lib/taste/t3.mjs";
 
 const TOKEN = "sk-ant-oat-access-token-for-tests";
 const profile = {
@@ -41,7 +41,8 @@ const log = (entry) => appendFileSync(process.env.FAKE_LOG, JSON.stringify(entry
 if (args[0] === "serve") {
   mkdirSync(path.dirname(runtime), { recursive: true });
   writeFileSync(runtime, JSON.stringify({ pid: process.pid }));
-  log({ cmd: "serve", args, browser: process.env.T3CODE_NO_BROWSER ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, telemetry: process.env.T3CODE_TELEMETRY_ENABLED ?? null, doNotTrack: process.env.DO_NOT_TRACK ?? null, sessionEnv: [process.env.CLAUDECODE, process.env.T3_MCP_BEARER_TOKEN, process.env.CLAUDE_CODE_MESSAGING_TOKEN].filter(Boolean) });
+  if (process.env.FAKE_CRASH) process.exit(3);
+  log({ cmd: "serve", args, browser: process.env.T3CODE_NO_BROWSER ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, home: process.env.HOME ?? null, xdg: process.env.XDG_CONFIG_HOME ?? null, telemetry: process.env.T3CODE_TELEMETRY_ENABLED ?? null, doNotTrack: process.env.DO_NOT_TRACK ?? null, sessionEnv: [process.env.CLAUDECODE, process.env.T3_MCP_BEARER_TOKEN, process.env.CLAUDE_CODE_MESSAGING_TOKEN].filter(Boolean) });
   if (!process.env.FAKE_IGNORE_TERM) process.on("SIGTERM", () => process.exit(0));
   else process.on("SIGTERM", () => {});
   createServer((request, response) => response.end("ok")).listen(Number(flag("--port")), "127.0.0.1");
@@ -173,6 +174,7 @@ test("T3 → Claude Code runs on a scratch server, keeps the refresh token out, 
   assert.equal(serve.browser, "1");
   assert.equal(serve.leaked, null, "no inherited provider key reaches T3");
   assert.equal(serve.telemetry, "false", "T3 reports nothing to its vendor");
+  assert.equal(serve.home, process.env.HOME ?? null, "Claude Code takes its setup from CLAUDE_CONFIG_DIR, so HOME is left alone");
   assert.deepEqual(serve.sessionEnv, [], "the operator's own Claude Code and T3 session credentials never reach the scratch server");
   const [start, send] = calls.filter((call) => call.cmd !== "serve");
   assert.equal(start.cmd, "start");
@@ -231,6 +233,22 @@ test("a multi-turn T3 → Codex run verifies: Codex appends every turn to one ro
   const observed = await verifyT3Identity({ codexHome: a.codexHome, variant: viaCodex, cliVersion: result.cliVersion, result });
   assert.equal(observed.verifiedBy, "codex-rollouts");
   assert.equal(observed.innerSessions, 1);
+  // Codex loads user skills from $HOME/.agents/skills, so the scratch server (and Codex under it) gets a fresh, empty HOME.
+  const serve = (await f.calls()).find((call) => call.cmd === "serve");
+  assert.equal(serve.home, path.join(a.attemptDir, "codex-user-home"));
+  assert.equal(serve.xdg, null);
+  assert.deepEqual(await readdir(serve.home), []);
+});
+
+test("a scratch server that dies before it is ready fails fast, naming that", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "crash");
+  const started = Date.now();
+  await assert.rejects(
+    startT3Server({ executable: f.t3, t3Home: path.join(a.attemptDir, "t3-home"), workspace: a.workspace, env: { ...process.env, FAKE_LOG: path.join(f.root, "calls.jsonl"), FAKE_CRASH: "1" }, readyTimeoutMs: 30_000 }),
+    /exited before it was ready/,
+  );
+  assert.ok(Date.now() - started < 15_000, "no wait for the full readiness timeout");
 });
 
 test("T3 → Codex verification reads every turn's model and effort, not only the last", async (t) => {
