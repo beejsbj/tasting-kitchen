@@ -160,7 +160,8 @@ test("the access token is read without quoting it and must outlive the run", asy
   const noExpiry = await credentials(root, { expiresAt: null });
   await assert.rejects(readClaudeAccessToken({ env: { TASTE_CLAUDE_CREDENTIALS_PATH: noExpiry } }), /lack a valid OAuth expiry/);
   await credentials(root);
-  await assert.rejects(readClaudeAccessToken({ env: { TASTE_CLAUDE_CREDENTIALS_PATH: fresh, TASTE_CLAUDE_TOKEN_MARGIN_MS: "soon" } }), /margin must be a number/);
+  await assert.rejects(readClaudeAccessToken({ env: { TASTE_CLAUDE_CREDENTIALS_PATH: fresh, TASTE_CLAUDE_TOKEN_MARGIN_MS: "soon" } }), /margin must be a non-negative number/);
+  for (const margin of ["", "  ", "-1"]) await assert.rejects(readClaudeAccessToken({ env: { TASTE_CLAUDE_CREDENTIALS_PATH: fresh, TASTE_CLAUDE_TOKEN_MARGIN_MS: margin } }), /margin must be a non-negative number/);
   const empty = path.join(root, "empty.json");
   await writeFile(empty, JSON.stringify({ mcpOAuth: {} }));
   await assert.rejects(readClaudeAccessToken({ env: { TASTE_CLAUDE_CREDENTIALS_PATH: empty } }), /lack a claude.ai OAuth access token/);

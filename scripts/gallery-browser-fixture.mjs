@@ -76,5 +76,8 @@ export function withHarnessConfigurations(registry, recipeId) {
   const layered = skill ? cooked.filter(configuration => ['claude-opus-high-clean', 'claude-sonnet-high-clean'].includes(configuration.id)) : [];
   const dishes = [...cooked.map((configuration, index) => dish(configuration, index)), ...layered.map((configuration, index) => dish(configuration, index, true))];
   const recipes = skill ? registry.recipes.map(recipe => recipe.id === recipeId ? { ...recipe, skills: { optional: true, layers: [skill.id] } } : recipe) : registry.recipes;
-  return { ...registry, recipes, configurations: [...registry.configurations, ...configurations], dishes: [...registry.dishes, ...dishes] };
+  // The shipped catalog now holds real Claude Code configurations; the fixture's set stands in for them,
+  // so keeping both would make each fixture configuration a Snapshot sibling of a real one.
+  const shipped = registry.configurations.filter(configuration => configuration.harness !== 'claude-code');
+  return { ...registry, recipes, configurations: [...shipped, ...configurations], dishes: [...registry.dishes, ...dishes] };
 }

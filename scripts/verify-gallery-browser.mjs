@@ -209,7 +209,7 @@ try {
   assert.ok(harnessRegistry.configurations.length >= 40, "the fixture stresses the picker with dozens of configurations");
   await harnessPage.route("**/data/registry.json", route => route.fulfill({ json: harnessRegistry }));
   await harnessPage.goto(`${base}/`, { waitUntil: "networkidle" });
-  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 3, "the shipped catalog offers All, Codex CLI and Cursor Agent");
+  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 4, "the shipped catalog offers All, Claude Code, Codex CLI and Cursor Agent");
   assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "harness facet lists all harnesses plus All");
   await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
   assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
