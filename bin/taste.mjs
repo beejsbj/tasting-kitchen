@@ -4,11 +4,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover, verdict } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "failed", "passed"]);
 
 const commandFlags = {
   help: new Set(),
@@ -24,6 +24,7 @@ const commandFlags = {
   "compare-rubrics": new Set(["experiment", "output"]),
   "build-registry": new Set(["output"]),
   recover: new Set(["attempt"]),
+  verdict: new Set(["dish", "failed", "passed", "note"]),
 };
 
 class UsageError extends Error {
@@ -129,11 +130,13 @@ Usage:
   taste validate [--public-checkout] [--json]
   taste build-registry [--output PATH]
   taste recover --attempt ID
+  taste verdict --dish ID --failed|--passed --note TEXT
 
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
+  A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
@@ -209,6 +212,13 @@ async function main() {
     const output = options.output ? path.resolve(process.cwd(), options.output) : undefined;
     const result = await buildRegistry({ repoRoot, basePath: process.env.TASTE_BASE_PATH ?? "/", ...(output ? { output } : {}) });
     return print({ status: "built", output: path.relative(repoRoot, result.output), dishes: result.registry.dishes.length }, true);
+  }
+  if (command === "verdict") {
+    if (!options.dish) throw new UsageError("verdict requires --dish ID");
+    if (Boolean(options.failed) === Boolean(options.passed)) throw new UsageError("verdict requires exactly one of --failed or --passed");
+    if (!options.note) throw new UsageError("verdict requires --note TEXT");
+    const result = await verdict(repoRoot, { dishId: options.dish, verdict: options.failed ? "failed" : "passed", note: options.note });
+    return print({ status: "recorded", path: result.path, verdict: result.verdict }, true);
   }
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
