@@ -108,7 +108,11 @@ export default function App() {
     const drift = slots.some(({ dish }) => dish && (dish.identity.requestedModel !== dish.identity.observedModel || serviceTierDrift(dish.identity)));
     const briefHashes = new Set(slots.map(({ dish }) => dish?.recipe.hash).filter(Boolean));
     const context: ComparisonContext = { configurations: registry.configurations, recipeDishes, layerChoices, showLayers };
-    const compare = slots.length > 1 ? state.compare : "";
+    // A "Compare by" link only holds when each pane is the configuration that axis value offers and no value repeats; otherwise the panes show as chosen one by one.
+    const requested = slots.length > 1 ? state.compare : "";
+    const offered = requested ? comparisonValuesFor(context, slots[0], requested) : [];
+    const paneValues = requested ? slots.map((slot) => valueOf(slot, requested)) : [];
+    const compare = requested && new Set(paneValues).size === slots.length && slots.every((slot, index) => offered.find((item) => item.value === paneValues[index])?.config.id === slot.config.id) ? requested : "";
     const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : briefHashes.size > 1 ? "These Dishes were cooked from different versions of the brief" : drift ? "Observed configuration drift — inspect receipts"
       : compare ? compareByNote(compare, heldLabels(context, slots[0], compare), differing) : differenceNote(differing) ?? (harnessVersions.size > 1 ? "Same brief · harness versions differ" : "Same brief · inspect configuration receipts");
     /** In a "Compare by" layout a pane is named by its value of the varied axis; the first also says what is held. */
