@@ -44,7 +44,10 @@ export function configurationFacets(configs: readonly Dimensioned[]) {
   return { harnesses, environments };
 }
 
-export type ComparisonDimension = "model" | "effort" | "service tier" | "harness" | "environment" | "skill layer" | "other settings";
+export type ComparisonDimension = "model" | "effort" | "service tier" | "harness" | "environment" | "skill layer" | "other settings" | "undeclared environments";
+/** Not a difference but a gap: across harnesses, two configurations without a declared environment are not known to share one. */
+export const UNDECLARED_ENVIRONMENTS = "undeclared environments";
+export const UNDECLARED_ENVIRONMENTS_NOTE = "environments not declared, so not known to be the same";
 /**
  * Which configuration dimensions differ across the compared slots. A model is
  * the same model through any harness's naming of it. A harness profile belongs
@@ -53,7 +56,7 @@ export type ComparisonDimension = "model" | "effort" | "service tier" | "harness
  */
 export function differingDimensions(slots: ReadonlyArray<{ config: Dimensioned & Pick<Configuration, "personality" | "capabilities">; skillKey?: string }>): ComparisonDimension[] {
   const sameHarness = new Set(slots.map(({ config }) => config.harness)).size === 1;
-  const read: Record<ComparisonDimension, (slot: (typeof slots)[number]) => unknown> = {
+  const read: Record<Exclude<ComparisonDimension, typeof UNDECLARED_ENVIRONMENTS>, (slot: (typeof slots)[number]) => unknown> = {
     model: ({ config }) => modelKey(config.model),
     effort: ({ config }) => config.reasoningEffort,
     "service tier": ({ config }) => config.serviceTier,
@@ -62,14 +65,18 @@ export function differingDimensions(slots: ReadonlyArray<{ config: Dimensioned &
     "skill layer": ({ skillKey }) => skillKey,
     "other settings": ({ config: { executionProfile: { runtime, sandbox, approvalPolicy, nativeWeb, networkPolicy, filesystemBoundary }, personality, capabilities } }) => JSON.stringify([runtime, sandbox, approvalPolicy, nativeWeb, networkPolicy, filesystemBoundary, personality, [...capabilities].sort()]),
   };
-  return (Object.keys(read) as ComparisonDimension[]).filter((dimension) => new Set(slots.map(read[dimension])).size > 1);
+  const differing = (Object.keys(read) as Array<keyof typeof read>).filter((dimension) => new Set(slots.map(read[dimension])).size > 1);
+  const undeclared = !sameHarness && slots.filter(({ config }) => !config.executionProfile.environment).length > 1;
+  return undeclared ? [...differing, UNDECLARED_ENVIRONMENTS] : differing;
 }
 const ONLY_NOTES: Partial<Record<ComparisonDimension, string>> = {
   harness: "only the harness differs · its own prompt, tools and defaults come with it",
   environment: "only the environment differs · what the environment adds",
 };
 /** The comparison note once the briefs match and nothing drifted: it names what differs. */
-export function differenceNote(dimensions: readonly ComparisonDimension[]) {
+export function differenceNote(all: readonly ComparisonDimension[]) {
+  const dimensions = all.filter((dimension) => dimension !== UNDECLARED_ENVIRONMENTS);
+  if (dimensions.length < all.length) return `Same brief · ${dimensions.join(", ")} ${dimensions.length === 1 ? "differs" : "differ"} · ${UNDECLARED_ENVIRONMENTS_NOTE}`;
   if (dimensions.length === 1) return `Same brief · ${ONLY_NOTES[dimensions[0]] ?? `only the ${dimensions[0]} differs`}`;
   if (dimensions.length) return `Same brief · ${dimensions.join(", ")} differ`;
   return undefined;
