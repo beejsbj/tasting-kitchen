@@ -350,6 +350,10 @@ test("the No Dish loader refuses a Kitchen fault, a tampered manifest and a priv
   await assert.rejects(loadNoDishes(root), /fixed reason for its code/);
   await writeFile(file, JSON.stringify(rehash({ ...original, visibility: "private" })));
   await assert.rejects(loadNoDishes(root), /private No Dish is stored in the public tree/);
+  for (const executedAt of ["Nov 9 2026", "2026-11-09T10:00:00+02:00", 5, null]) {
+    await writeFile(file, JSON.stringify(rehash({ ...original, executedAt })));
+    await assert.rejects(loadNoDishes(root), /executedAt must be a UTC ISO date-time/);
+  }
   await writeFile(file, JSON.stringify(original));
   assert.equal((await loadNoDishes(root)).length, 1);
 });
