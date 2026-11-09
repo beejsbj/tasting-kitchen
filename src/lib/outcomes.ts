@@ -35,14 +35,20 @@ export function platesOf(registry: Pick<Registry, "dishes" | "noDishes">): Plate
   return [...registry.dishes, ...(registry.noDishes ?? [])];
 }
 
-/** The verdict that stands on a Dish: the highest-ranked judge's newest, pinned to the Dish's exact hash. */
-export function standingVerdict(verdicts: Verdict[] | undefined, dish: Plate | undefined): Verdict | undefined {
-  if (!isDish(dish)) return undefined;
-  return (verdicts ?? []).filter((verdict) => verdict.dishId === dish.id && verdict.dishHash === dish.dishHash)
+/** The hash a verdict pins: a Dish's `dishHash` or a No Dish's `noDishHash`. */
+export function plateHashOf(plate: Plate): string {
+  return isNoDish(plate) ? plate.noDishHash : plate.dishHash;
+}
+
+/** The verdict that stands on a plate: the highest-ranked judge's newest, pinned to the plate's exact hash. */
+export function standingVerdict(verdicts: Verdict[] | undefined, plate: Plate | undefined): Verdict | undefined {
+  if (!plate) return undefined;
+  return (verdicts ?? []).filter((verdict) => verdict.plateId === plate.id && verdict.plateHash === plateHashOf(plate))
     .sort((a, b) => JUDGE_RANK[a.judge.kind] - JUDGE_RANK[b.judge.kind] || b.decidedAt.localeCompare(a.decidedAt) || b.id.localeCompare(a.id))[0];
 }
 
 export function outcomeOf(registry: Pick<Registry, "verdicts">, plate: Plate): Outcome {
+  // A No Dish stays a No Dish on the counter even when Burooj passes it; his verdict shows beside the fault.
   if (isNoDish(plate)) return "no-dish";
   return standingVerdict(registry.verdicts, plate)?.verdict === "failed" ? "failed-by-burooj" : "cooked";
 }

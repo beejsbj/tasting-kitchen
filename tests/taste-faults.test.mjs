@@ -10,6 +10,7 @@ import { CHEF_FAULTS, classifyFailure, KITCHEN_FAULTS, refusalIn } from "../lib/
 import { pathExists } from "../lib/taste/files.mjs";
 import { coverage, cook } from "../lib/taste/index.mjs";
 import { loadNoDishes, publishNoDish } from "../lib/taste/no-dishes.mjs";
+import { loadVerdicts, writeVerdict } from "../lib/taste/verdicts.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { buildRegistry, loadDishes } from "../lib/taste/registry.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -340,4 +341,25 @@ test("the No Dish loader refuses a Kitchen fault, a tampered manifest and a priv
   await assert.rejects(loadNoDishes(root), /private No Dish is stored in the public tree/);
   await writeFile(file, JSON.stringify(original));
   assert.equal((await loadNoDishes(root)).length, 1);
+});
+
+test("Burooj can pass a No Dish the checks got wrong; a fail has nothing to attach to and a stale hash breaks the build", async (t) => {
+  const { root, recipe, noDishId } = await repoWithNoDish(t);
+  const manifestBefore = await readFile(path.join(root, "no-dishes", noDishId, "no-dish.json"), "utf8");
+  await assert.rejects(writeVerdict(root, { plateId: noDishId, verdict: "failed", note: "x" }), /a No Dish takes only a pass/);
+  const { verdict, path: relative } = await writeVerdict(root, { plateId: noDishId, verdict: "passed", note: "The checks were wrong: it holds up.", now: new Date("2026-11-09T10:00:00.000Z") });
+  const [plate] = await loadNoDishes(root);
+  assert.equal(verdict.plateId, noDishId);
+  assert.equal(verdict.plateHash, plate.noDishHash);
+  assert.equal(relative, `verdicts/${verdict.id}.json`);
+  assert.equal(await readFile(path.join(root, "no-dishes", noDishId, "no-dish.json"), "utf8"), manifestBefore, "no-dish.json is untouched");
+  assert.deepEqual((await loadVerdicts(root, { plates: [plate] })).map((item) => item.id), [verdict.id]);
+  const { registry } = await buildRegistry({ repoRoot: root });
+  assert.deepEqual(registry.verdicts.map((item) => item.plateId), [noDishId]);
+  assert.equal(registry.noDishes[0].recipe.id, recipe.id);
+  // A hand-written fail, or a pin to another hash, is refused at the build.
+  await writeFile(path.join(root, relative), JSON.stringify({ ...verdict, verdict: "failed" }));
+  await assert.rejects(buildRegistry({ repoRoot: root }), /a No Dish takes only a pass/);
+  await writeFile(path.join(root, relative), JSON.stringify({ ...verdict, plateHash: `sha256:${"0".repeat(64)}` }));
+  await assert.rejects(buildRegistry({ repoRoot: root }), /immutable hash/);
 });

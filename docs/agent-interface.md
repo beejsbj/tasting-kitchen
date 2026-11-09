@@ -110,8 +110,9 @@ see a refusal or an exhausted turn budget in its own stream should tag it the
 same way, and must not tag anything the route could have caused.
 
 `taste verdict --dish ID --failed|--passed --note TEXT` records Burooj's verdict
-beside a Dish in `verdicts/`, then rebuilds the registry. It never edits the
-Dish.
+beside a Dish or No Dish in `verdicts/`, then rebuilds the registry. It never
+edits the plate. A No Dish (`nodish_…`) takes only `--passed`: overruling checks
+that failed it.
 
 ### Where cooking happens
 

@@ -10,7 +10,7 @@ const HASH = (digit) => `sha256:${String(digit).repeat(64)}`;
 const configuration = (id, configHash) => ({ id, label: id, provider: 'p', model: `${id}-model`, harness: 'codex-cli', reasoningEffort: 'high', serviceTier: 'default', personality: 'none', capabilities: [], configHash, executionProfile: { id: 'x', label: 'x', runtime: 'linux-host', sandbox: 's', approvalPolicy: 'a', nativeWeb: 'disabled', networkPolicy: 'n', filesystemBoundary: 'f' } });
 const dish = (id, configHash, executedAt, extra = {}) => ({ id, dishHash: HASH(id.length % 10), recipe: { id: 'r', version: '1.0.0', hash: HASH(1) }, identity: { configHash, requestedModel: 'm', observedModel: 'm' }, executedAt, artifact: { kind: 'web', entry: 'artifact/index.html', files: [], treeHash: HASH(2) }, artifactBase: `/dishes/${id}/`, ...extra });
 const noDish = (id, configHash, executedAt, code = 'checks-failed', checks = ['render']) => ({ id, outcome: 'no-dish', recipe: { id: 'r', version: '1.0.0', hash: HASH(1) }, identity: { configHash, requestedModel: 'm', observedModel: null }, executedAt, failedAt: executedAt, fault: { class: 'chef', code, stage: 'validation', reason: 'The output did not pass the Recipe\'s required checks.', ...(checks ? { checks } : {}) }, validation: { passed: false, report: 'validation.json' }, publicTrace: 'trace.json', artifact: null, noDishHash: HASH(3), artifactBase: `/dishes/${id}/` });
-const verdict = (dishValue, value, decidedAt, extra = {}) => ({ schemaVersion: 1, id: `verdict_${dishValue.id}_${decidedAt}`, dishId: dishValue.id, dishHash: dishValue.dishHash, judge: { kind: 'owner', name: 'Burooj' }, verdict: value, note: 'n', decidedAt, ...extra });
+const verdict = (dishValue, value, decidedAt, extra = {}) => ({ schemaVersion: 1, id: `verdict_${dishValue.id}_${decidedAt}`, plateId: dishValue.id, plateHash: dishValue.dishHash ?? dishValue.noDishHash, judge: { kind: 'owner', name: 'Burooj' }, verdict: value, note: 'n', decidedAt, ...extra });
 
 const cooked = dish('dish_a', 'c1', '2026-01-01');
 const failed = dish('dish_b', 'c2', '2026-01-02');
@@ -18,7 +18,7 @@ const plate = noDish('nodish_c', 'c3', '2026-01-03');
 const registry = {
   configurations: [configuration('one', 'c1'), configuration('two', 'c2'), configuration('three', 'c3')],
   skills: [], dishes: [cooked, failed], noDishes: [plate],
-  verdicts: [verdict(failed, 'passed', '2026-02-01'), verdict(failed, 'failed', '2026-03-01'), verdict(cooked, 'failed', '2026-03-01', { dishHash: HASH(9) })],
+  verdicts: [verdict(failed, 'passed', '2026-02-01'), verdict(failed, 'failed', '2026-03-01'), verdict(cooked, 'failed', '2026-03-01', { plateHash: HASH(9) })],
 };
 
 test('outcomes: cooked, No Dish, and failed by Burooj; his verdict outranks the passed checks', () => {
@@ -30,7 +30,10 @@ test('outcomes: cooked, No Dish, and failed by Burooj; his verdict outranks the 
   assert.equal(outcomeOf(registry, failed), 'failed-by-burooj', 'the newest owner verdict stands');
   assert.equal(outcomeOf(registry, plate), 'no-dish');
   assert.equal(standingVerdict(registry.verdicts, failed).verdict, 'failed');
-  assert.equal(standingVerdict(registry.verdicts, plate), undefined, 'a No Dish carries no verdict');
+  assert.equal(standingVerdict(registry.verdicts, plate), undefined, 'a No Dish with no verdict carries none');
+  const overruled = { verdicts: [verdict(plate, 'passed', '2026-04-01'), verdict(plate, 'passed', '2026-04-02', { plateHash: HASH(8) })] };
+  assert.equal(standingVerdict(overruled.verdicts, plate).id, `verdict_${plate.id}_2026-04-01`, 'a pass pins the No Dish hash');
+  assert.equal(outcomeOf(overruled, plate), 'no-dish', 'a passed No Dish stays a No Dish on the counter; the verdict shows beside the fault');
   assert.equal(outcomeOf({ verdicts: [verdict(failed, 'passed', '2026-04-01'), ...registry.verdicts] }, failed), 'cooked', 'a later pass replaces the fail');
 });
 
@@ -76,6 +79,7 @@ test('the gallery renders No Dishes in panes and on the counter, and shows the v
   assert.match(app, /platesOf\(registry\)/u);
   assert.match(pane, /if \(isNoDish\(dish\)\) return <NoDishPane/u);
   assert.match(pane, /<VerdictMark verdict=\{verdict\} \/><ArtifactReviewMark/u, 'the verdict leads, the automated review stays');
+  assert.match(pane, /<VerdictMark verdict=\{verdict\} checksFailed \/>/u, 'a passed No Dish says the checks failed');
   assert.match(counter, /data-outcome=\{isNoDish\(dish\) \? 'no-dish'/u);
   assert.match(filters, /aria-label="Filter by outcome"/u);
   // Distinct but not shaming: a No Dish never uses the danger colour.

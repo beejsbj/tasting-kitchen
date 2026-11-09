@@ -22,7 +22,7 @@ Cook(Menu, model configurations, skill layer)
   -> each Run that fails by the model's own doing (a chef fault) produces one immutable No Dish
   -> a Run that fails by Kitchen's doing (a kitchen fault) stays private and retryable
 Tasting presents matching Dishes and No Dishes through Recipe, Menu, Cuisine, and model views
-Burooj's verdict attaches beside a Dish and outranks the automated checks
+Burooj's verdict attaches beside a Dish or a No Dish and outranks the automated checks
 ```
 
 ## Canonical vocabulary
@@ -145,9 +145,9 @@ Raw harness output, error messages, stderr and paths never leave the private att
 
 ### Verdict
 
-A **verdict** is a judge's `failed` or `passed` on one Dish, with a short note. It sits beside the Dish in `verdicts/<id>.json`, pinned to the Dish's `dishHash`, and never inside `dish.json`. Verdicts are append-only: a changed mind is a newer verdict, and the newest from the highest-ranked judge stands.
+A **verdict** is a judge's `failed` or `passed` on one plate (a Dish or a No Dish), with a short note. It sits beside the plate in `verdicts/<id>.json`, pinned to its `plateId` and `plateHash` (a Dish's `dishHash` or a No Dish's `noDishHash`), and never inside `dish.json` or `no-dish.json`. Verdicts are append-only: a changed mind is a newer verdict, and the newest from the highest-ranked judge stands.
 
-Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
+Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. A No Dish takes only a pass, so he can overrule checks that failed a plate he judges good (“Passed by Burooj · checks failed”); there is nothing to fail on a plate that holds nothing. A passed No Dish stays a No Dish on the counter and in the Outcome filter, with his verdict beside the fault. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
 
 ### Repeat
 
@@ -316,6 +316,10 @@ The Run fails its required checks (or breaks the output contract, declines, or r
 ### Burooj fails a Dish after tasting it
 
 The Dish passed every required check. He records a failed verdict with a note; the pane and card lead with “Failed by Burooj” and still say the checks passed. The Dish and its hash are unchanged.
+
+### Burooj passes a No Dish
+
+The checks failed a plate he thinks is good. He records a passed verdict with a note; the pane leads with “Passed by Burooj · checks failed” and the No Dish, its fault and its hash are unchanged.
 
 ### The same configuration repeats a Recipe
 

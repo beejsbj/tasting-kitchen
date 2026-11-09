@@ -1034,8 +1034,12 @@ try {
 
 // No Dishes: chef faults only, each verified against its own hash and the public scan.
 let noDishCount = 0;
+let publicNoDishes = [];
+let privateNoDishes = [];
 try {
-  const noDishes = [...await loadNoDishes(root), ...(publicCheckout ? [] : await loadPrivateNoDishes(root))];
+  publicNoDishes = await loadNoDishes(root);
+  privateNoDishes = publicCheckout ? [] : await loadPrivateNoDishes(root);
+  const noDishes = [...publicNoDishes, ...privateNoDishes];
   for (const plate of noDishes) {
     if (dishes.has(plate.id) || allDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "id collides with a Dish");
     if (!recipeRecords.has(plate.recipe.id)) fail(`no-dishes/${plate.id}`, `unknown recipe ${plate.recipe.id}`);
@@ -1047,8 +1051,8 @@ try {
 
 let verdictCount = 0;
 try {
-  verdictCount = (await loadVerdicts(root, { dishes: [...dishes.values()] })).length;
-  if (!publicCheckout) await loadPrivateVerdicts(root, { dishes: await loadPrivateDishes(root) });
+  verdictCount = (await loadVerdicts(root, { plates: [...dishes.values(), ...publicNoDishes] })).length;
+  if (!publicCheckout) await loadPrivateVerdicts(root, { plates: [...await loadPrivateDishes(root), ...privateNoDishes] });
 } catch (error) {
   fail("verdicts", error.message);
 }

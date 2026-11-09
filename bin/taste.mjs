@@ -136,7 +136,7 @@ Usage:
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
-  A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it.
+  A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it. --dish may also name a No Dish (nodish_…), which takes only --passed: Burooj overruling checks that failed it.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
@@ -217,7 +217,7 @@ async function main() {
     if (!options.dish) throw new UsageError("verdict requires --dish ID");
     if (Boolean(options.failed) === Boolean(options.passed)) throw new UsageError("verdict requires exactly one of --failed or --passed");
     if (!options.note) throw new UsageError("verdict requires --note TEXT");
-    const result = await verdict(repoRoot, { dishId: options.dish, verdict: options.failed ? "failed" : "passed", note: options.note });
+    const result = await verdict(repoRoot, { plateId: options.dish, verdict: options.failed ? "failed" : "passed", note: options.note });
     return print({ status: "recorded", path: result.path, verdict: result.verdict }, true);
   }
   if (command === "recover") {

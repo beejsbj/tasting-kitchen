@@ -1,16 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://artifacts.burooj.dev/model-tasting/schemas/verdict.v1.json",
-  "title": "A judge's verdict attached beside an immutable Dish",
+  "title": "A judge's verdict attached beside an immutable Dish or No Dish",
   "description": "Append-only. The newest verdict from the highest-ranked judge stands; the owner (Burooj) outranks every automated check. Validated at runtime by lib/taste/verdicts.mjs.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "dishId", "dishHash", "judge", "verdict", "note", "decidedAt"],
+  "required": ["schemaVersion", "id", "plateId", "plateHash", "judge", "verdict", "note", "decidedAt"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "type": "string", "pattern": "^verdict_[a-zA-Z0-9_-]+$" },
-    "dishId": { "type": "string", "pattern": "^dish_[a-zA-Z0-9_-]+$" },
-    "dishHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "plateId": { "type": "string", "pattern": "^(dish|nodish)_[a-zA-Z0-9_-]+$" },
+    "plateHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
     "judge": {
       "type": "object",
       "additionalProperties": false,

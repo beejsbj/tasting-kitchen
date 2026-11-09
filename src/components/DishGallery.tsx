@@ -15,7 +15,7 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
         const effort = config?.reasoningEffort ?? dish.identity.reasoningEffort;
         const iterations = dishesFor(platesOf(registry), recipe.id, dish.recipe.hash, dish.identity.configHash, dishSkillKey(dish));
         const verdict = standingVerdict(registry.verdicts, dish);
-        const outcome = isNoDish(dish) ? `No Dish, ${CHEF_FAULT_LABELS[dish.fault.code].toLowerCase()}, ` : verdict ? `${verdict.verdict} by Burooj, ` : '';
+        const outcome = `${isNoDish(dish) ? `No Dish, ${CHEF_FAULT_LABELS[dish.fault.code].toLowerCase()}, ` : ''}${verdict ? `${verdict.verdict} by Burooj, ` : ''}`;
         const harnessEnvironment = showEnvironment ? [harnessLabel(config ? harnessKey(config) : dish.identity.harness), config && environmentName(config)].filter(Boolean).join(' · ') : '';
         const skillLabel = skillLabelFor(registry, dish);
         const iteration = iterations.findIndex(item => item.id === dish.id) + 1;

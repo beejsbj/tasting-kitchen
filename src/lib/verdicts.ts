@@ -1,4 +1,5 @@
-import type { Dish, Verdict } from "../types";
+import type { Plate, Verdict } from "../types";
+import { plateHashOf } from "./outcomes.ts";
 import { publicTextFindings } from "../../lib/taste/public-text.mjs";
 
 export const NOTE_LIMIT = 500;
@@ -17,15 +18,16 @@ export function noteProblem(note: string): string {
   return findings.length ? `The note can't be public as written (${[...new Set(findings)].join(", ")}).` : "";
 }
 
-/** Burooj's verdict on one Dish, shaped exactly as `taste verdict` writes it. */
-export function createVerdict(dish: Pick<Dish, "id" | "dishHash">, verdict: Verdict["verdict"], note: string, now = new Date()): Verdict {
+/** Burooj's verdict on one Dish or No Dish, shaped exactly as `taste verdict` writes it. */
+export function createVerdict(plate: Plate, verdict: Verdict["verdict"], note: string, now = new Date()): Verdict {
   const problem = noteProblem(note);
   if (problem) throw new Error(problem);
+  if (plate.id.startsWith("nodish_") && verdict !== "passed") throw new Error("A No Dish takes only a pass: there is nothing to fail.");
   return {
     schemaVersion: 1,
-    id: `verdict_${dish.id.slice("dish_".length)}_${stamp(now)}`,
-    dishId: dish.id,
-    dishHash: dish.dishHash,
+    id: `verdict_${plate.id}_${stamp(now)}`,
+    plateId: plate.id,
+    plateHash: plateHashOf(plate),
     judge: OWNER,
     verdict,
     note: note.trim(),
@@ -42,7 +44,7 @@ export async function localVerdictsWritable(fetcher: typeof fetch = fetch): Prom
   } catch { return false; }
 }
 
-export async function saveVerdictLocally(input: { dishId: string; verdict: Verdict["verdict"]; note: string }, fetcher: typeof fetch = fetch): Promise<Verdict> {
+export async function saveVerdictLocally(input: { plateId: string; verdict: Verdict["verdict"]; note: string }, fetcher: typeof fetch = fetch): Promise<Verdict> {
   const response = await fetcher("/api/verdicts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
   const result = await response.json() as { verdict?: Verdict; error?: { message?: string } };
   if (!response.ok || !result.verdict) throw new Error(result.error?.message ?? "The verdict could not be saved.");

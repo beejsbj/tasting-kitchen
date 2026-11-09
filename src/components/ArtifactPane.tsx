@@ -14,7 +14,7 @@ type ValidationReport = { checks: Array<{ id: string; required: boolean; descrip
  * links what is public (the trace up to the failure, the checks, any partial
  * artifact). Nothing here renders the partial artifact as if it were a Dish.
  */
-export function NoDishPane({ plate, variant }: { plate: NoDish; variant: Variant }) {
+export function NoDishPane({ plate, variant, verdict }: { plate: NoDish; variant: Variant; verdict?: Verdict }) {
   const [report, setReport] = useState<ValidationReport>();
   useEffect(() => {
     if (!plate.validation) return;
@@ -24,6 +24,7 @@ export function NoDishPane({ plate, variant }: { plate: NoDish; variant: Variant
   }, [plate]);
   const failing = report?.checks.filter((check) => check.required && !check.passed) ?? [];
   return <section className="artifact-pane artifact-pane--no-dish" data-outcome="no-dish" data-fault={plate.fault.code} aria-label={`No Dish: ${CHEF_FAULT_LABELS[plate.fault.code]}`}>
+    <VerdictMark verdict={verdict} checksFailed />
     <div className="no-dish">
       <span className="no-dish__plate" aria-hidden="true" />
       <span className="no-dish__eyebrow">No Dish</span>
@@ -77,7 +78,7 @@ function ArtifactReviewMark({ reviews }: { reviews: ArtifactReview[] }) {
 
 export function ArtifactPane({ recipe, variant, dish, reviews = [], verdict }: { recipe: Recipe; variant: Variant; dish?: Plate; reviews?: ArtifactReview[]; verdict?: Verdict }) {
   const supported = recipeSupported(recipe, variant);
-  if (isNoDish(dish)) return <NoDishPane plate={dish} variant={variant} />;
+  if (isNoDish(dish)) return <NoDishPane plate={dish} variant={variant} verdict={verdict} />;
   return <CookedPane recipe={recipe} variant={variant} dish={dish} reviews={reviews} supported={supported} verdict={verdict} />;
 }
 

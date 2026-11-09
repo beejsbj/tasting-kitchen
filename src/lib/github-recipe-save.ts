@@ -439,14 +439,15 @@ export async function saveVerdictViaGitHub({ token, branch, verdict }: { token: 
   const accessToken = safeToken(token);
   const safe = safeBranch(branch);
   const path = `verdicts/${verdict.id}.json`;
-  if (!VERDICT_FILE.test(path)) fail("The verdict id is invalid.");
+  if (!VERDICT_FILE.test(path) || !/^(?:dish|nodish)_[a-zA-Z0-9_-]+$/u.test(verdict.plateId)) fail("The verdict id is invalid.");
   const head = await readHead(accessToken, safe);
-  if (!head.tree.has(`dishes/${verdict.dishId}/dish.json`)) fail("That Dish is not in the repository branch.");
+  const manifest = verdict.plateId.startsWith("nodish_") ? `no-dishes/${verdict.plateId}/no-dish.json` : `dishes/${verdict.plateId}/dish.json`;
+  if (!head.tree.has(manifest)) fail("That Dish or No Dish is not in the repository branch.");
   if (head.tree.has(path)) fail("A verdict with this id already exists; try again.");
   const tree = [{ path, mode: "100644", type: "blob", content: `${JSON.stringify(verdict, null, 2)}\n` }];
   const createdTree = object(await api(accessToken, "/git/trees", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ base_tree: head.treeSha, tree }) }), "GitHub created tree");
   const treeSha = string(createdTree.sha, "GitHub created tree SHA");
-  const createdCommit = object(await api(accessToken, "/git/commits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `verdict: ${verdict.verdict} ${verdict.dishId}`, tree: treeSha, parents: [head.sha] }) }), "GitHub created commit");
+  const createdCommit = object(await api(accessToken, "/git/commits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `verdict: ${verdict.verdict} ${verdict.plateId}`, tree: treeSha, parents: [head.sha] }) }), "GitHub created commit");
   const commitSha = string(createdCommit.sha, "GitHub created commit SHA");
   const latestRef = object(await api(accessToken, `/git/ref/heads/${encodeURIComponent(safe)}`), "GitHub reference");
   if (string(object(latestRef.object, "GitHub reference object").sha, "GitHub reference SHA") !== head.sha) fail("The branch changed while saving; reload and try again.");

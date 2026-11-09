@@ -186,12 +186,12 @@ export type NoDish = {
 /** A Dish or a No Dish: what a cell of the counter holds. */
 export type Plate = Dish | NoDish;
 
-/** A judge's pass or fail beside a Dish. Burooj (owner) outranks every automated check. */
+/** A judge's pass or fail beside a Dish or No Dish. Burooj (owner) outranks every automated check; a No Dish takes only a pass. */
 export type Verdict = {
   schemaVersion: 1;
   id: string;
-  dishId: string;
-  dishHash: string;
+  plateId: string;
+  plateHash: string;
   judge: { kind: "owner"; name: string };
   verdict: "failed" | "passed";
   note: string;

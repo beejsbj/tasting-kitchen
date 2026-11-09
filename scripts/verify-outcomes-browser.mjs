@@ -51,7 +51,7 @@ async function fixture() {
   });
   await plate("respond-to-short-journal", classifyFailure({ chefFault: "refused" }), { turns: [{ finalMessage: null }] });
   const cursorDish = (await fs.readdir(path.join(temporary, "dishes"))).find((id) => id.startsWith("dish_fresh-product-span_cursor"));
-  await writeVerdict(temporary, { dishId: cursorDish, verdict: "failed", note: "Looks finished, but the pricing table is a screenshot of text: nothing on it can be read by a screen reader.", now: new Date("2026-11-09T10:00:00.000Z") });
+  await writeVerdict(temporary, { plateId: cursorDish, verdict: "failed", note: "Looks finished, but the pricing table is a screenshot of text: nothing on it can be read by a screen reader.", now: new Date("2026-11-09T10:00:00.000Z") });
   const { registry } = await buildRegistry({ repoRoot: temporary });
   return { temporary, registry, cursorDish };
 }
