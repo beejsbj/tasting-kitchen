@@ -56,10 +56,11 @@ async function fixture() {
   return { temporary, registry, cursorDish };
 }
 
-const { temporary, registry, cursorDish } = await fixture();
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH ?? "/usr/bin/google-chrome", args: ["--no-sandbox"] });
+let temporary, registry, cursorDish, browser;
 const errors = [];
 try {
+  ({ temporary, registry, cursorDish } = await fixture());
+  browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}), args: ["--no-sandbox"] });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   await context.route("**/data/registry.json", (route) => route.fulfill({ json: registry }));
   await context.route(/\/(?:dishes|data\/fixtures)\//u, async (route) => {
@@ -134,6 +135,6 @@ try {
   assert.deepEqual(errors, []);
   console.log("Outcome browser check passed.");
 } finally {
-  await browser.close();
-  await fs.rm(temporary, { recursive: true, force: true });
+  await browser?.close();
+  if (temporary) await fs.rm(temporary, { recursive: true, force: true });
 }

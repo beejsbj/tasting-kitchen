@@ -15,11 +15,13 @@ type ValidationReport = { checks: Array<{ id: string; required: boolean; descrip
  * artifact). Nothing here renders the partial artifact as if it were a Dish.
  */
 export function NoDishPane({ plate, variant, verdict }: { plate: NoDish; variant: Variant; verdict?: Verdict }) {
-  const [report, setReport] = useState<ValidationReport>();
+  // The report belongs to the plate it was fetched for, so a changed plate never shows the last one's checks.
+  const [loaded, setLoaded] = useState<{ id: string; report?: ValidationReport }>();
+  const report = loaded?.id === plate.id ? loaded.report : undefined;
   useEffect(() => {
     if (!plate.validation) return;
     const controller = new AbortController();
-    fetch(plateUrl(plate, plate.validation.report), { signal: controller.signal }).then((response) => response.ok ? response.json() : undefined).then(setReport).catch(() => {});
+    fetch(plateUrl(plate, plate.validation.report), { signal: controller.signal }).then((response) => response.ok ? response.json() : undefined).then((value) => { if (!controller.signal.aborted) setLoaded({ id: plate.id, report: value }); }).catch(() => {});
     return () => controller.abort();
   }, [plate]);
   const failing = report?.checks.filter((check) => check.required && !check.passed) ?? [];
@@ -84,7 +86,7 @@ export function ArtifactPane({ recipe, variant, dish, reviews = [], verdict }: {
 
 /** Burooj's verdict sits above any automated review mark: his judgment outranks it, and both stay visible. */
 function Marks({ reviews, verdict }: { reviews: ArtifactReview[]; verdict?: Verdict }) {
-  return <><VerdictMark verdict={verdict} /><ArtifactReviewMark reviews={reviews} /></>;
+  return <div className="artifact-marks"><VerdictMark verdict={verdict} /><ArtifactReviewMark reviews={reviews} /></div>;
 }
 
 function CookedPane({ recipe, variant, dish, reviews, supported, verdict }: { recipe: Recipe; variant: Variant; dish?: Dish; reviews: ArtifactReview[]; supported: boolean; verdict?: Verdict }) {

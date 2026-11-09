@@ -1040,7 +1040,10 @@ try {
   publicNoDishes = await loadNoDishes(root);
   privateNoDishes = publicCheckout ? [] : await loadPrivateNoDishes(root);
   const noDishes = [...publicNoDishes, ...privateNoDishes];
+  const seenNoDishIds = new Set();
   for (const plate of noDishes) {
+    if (seenNoDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "duplicate No Dish id");
+    seenNoDishIds.add(plate.id);
     if (dishes.has(plate.id) || allDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "id collides with a Dish");
     if (!recipeRecords.has(plate.recipe.id)) fail(`no-dishes/${plate.id}`, `unknown recipe ${plate.recipe.id}`);
   }

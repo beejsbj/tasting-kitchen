@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -7,7 +7,7 @@ import test from "node:test";
 import { computeRecipeHash, hashCanonical, loadCatalog, resolveVariant, sha256 } from "../lib/taste/catalog.mjs";
 import { claudeChefFault } from "../lib/taste/claude-code.mjs";
 import { CHEF_FAULTS, classifyFailure, KITCHEN_FAULTS, refusalIn } from "../lib/taste/faults.mjs";
-import { pathExists } from "../lib/taste/files.mjs";
+import { ArtifactContractError, pathExists, selectArtifactFiles } from "../lib/taste/files.mjs";
 import { coverage, cook } from "../lib/taste/index.mjs";
 import { loadNoDishes, publishNoDish } from "../lib/taste/no-dishes.mjs";
 import { loadVerdicts, writeVerdict } from "../lib/taste/verdicts.mjs";
@@ -98,13 +98,22 @@ test("refusal is read only from structured evidence, never from prose", () => {
   assert.equal(refusalIn([{ type: "response", status: 200, body: { choices: [{ finish_reason: "content_filter", message: { content: "" } }] } }]), false, "a route's content filter is not the model's refusal");
 });
 
-test("Claude Code tags only an exhausted turn budget or a structured refusal", () => {
+test("Claude Code tags only an exhausted turn budget or a structured refusal, and only for the requested model's own stream", () => {
   const jsonl = (...events) => events.map((event) => JSON.stringify(event)).join("\n");
-  assert.equal(claudeChefFault(jsonl({ type: "system", subtype: "init" }, { type: "result", subtype: "error_max_turns", is_error: true })), "out-of-turns");
-  assert.equal(claudeChefFault(jsonl({ type: "assistant", message: { stop_reason: "refusal" } }, { type: "result", subtype: "success" })), "refused");
-  assert.equal(claudeChefFault(jsonl({ type: "result", subtype: "error_during_execution", is_error: true })), undefined);
-  assert.equal(claudeChefFault("not json"), undefined);
-  assert.equal(claudeChefFault(undefined), undefined);
+  const model = "claude-opus-5-5";
+  const init = { type: "system", subtype: "init", model };
+  const turn = (message) => ({ type: "assistant", message: { model, ...message } });
+  assert.equal(claudeChefFault(jsonl(init, { type: "result", subtype: "error_max_turns", is_error: true }), { model }), "out-of-turns");
+  assert.equal(claudeChefFault(jsonl(init, turn({ stop_reason: "refusal" }), { type: "result", subtype: "success" }), { model }), "refused");
+  assert.equal(claudeChefFault(jsonl(init, { type: "result", subtype: "error_during_execution", is_error: true }), { model }), undefined);
+  assert.equal(claudeChefFault("not json", { model }), undefined);
+  assert.equal(claudeChefFault(undefined, { model }), undefined);
+  // Without the requested model's own init, or with another model speaking, the fault is not the requested model's.
+  assert.equal(claudeChefFault(jsonl({ type: "result", subtype: "error_max_turns", is_error: true }), { model }), undefined, "no init");
+  assert.equal(claudeChefFault(jsonl({ ...init, model: "claude-sonnet-5-5" }, { type: "result", subtype: "error_max_turns", is_error: true }), { model }), undefined, "another model's init");
+  assert.equal(claudeChefFault(jsonl(init, { ...turn({ stop_reason: "refusal" }), message: { model: "claude-sonnet-5-5", stop_reason: "refusal" } }), { model }), undefined, "another model's refusal");
+  assert.equal(claudeChefFault(jsonl(init, turn({}), { ...turn({ stop_reason: "refusal" }), parent_tool_use_id: "toolu_1", message: { model: "claude-haiku-5-5", stop_reason: "refusal" } }), { model }), undefined, "a subagent's refusal");
+  assert.equal(claudeChefFault(jsonl(init, { type: "result", subtype: "error_max_turns", is_error: true })), undefined, "no requested model to pin it on");
 });
 
 // ---------------------------------------------------------------------------
@@ -335,8 +344,10 @@ test("the No Dish loader refuses a Kitchen fault, a tampered manifest and a priv
   const rehash = (value) => { const rest = { ...value }; delete rest.noDishHash; return { ...rest, noDishHash: hashCanonical(rest) }; };
   await writeFile(file, JSON.stringify(rehash({ ...original, fault: { ...original.fault, class: "kitchen", code: "rate-limited" } })));
   await assert.rejects(loadNoDishes(root), /only a chef fault may be a No Dish/);
-  await writeFile(file, JSON.stringify({ ...original, fault: { ...original.fault, reason: "edited" } }));
+  await writeFile(file, JSON.stringify({ ...original, executedAt: "2026-11-10T00:00:00.000Z" }));
   await assert.rejects(loadNoDishes(root), /noDishHash does not match/);
+  await writeFile(file, JSON.stringify(rehash({ ...original, fault: { ...original.fault, reason: "/home/someone leaked in a message" } })));
+  await assert.rejects(loadNoDishes(root), /fixed reason for its code/);
   await writeFile(file, JSON.stringify(rehash({ ...original, visibility: "private" })));
   await assert.rejects(loadNoDishes(root), /private No Dish is stored in the public tree/);
   await writeFile(file, JSON.stringify(original));
@@ -362,4 +373,33 @@ test("Burooj can pass a No Dish the checks got wrong; a fail has nothing to atta
   await assert.rejects(buildRegistry({ repoRoot: root }), /a No Dish takes only a pass/);
   await writeFile(path.join(root, relative), JSON.stringify({ ...verdict, plateHash: `sha256:${"0".repeat(64)}` }));
   await assert.rejects(buildRegistry({ repoRoot: root }), /immutable hash/);
+});
+
+test("publishNoDish refuses a kitchen fault and a chef fault at a stage a No Dish cannot record", async (t) => {
+  const { root, catalog, recipe, variant } = await repoWithNoDish(t);
+  const attemptId = `attempt_${recipe.id}_codex-sol-high_20261109010000000_refused`;
+  const attemptDir = path.join(root, "private/runtime/attempts", attemptId);
+  const base = { repoRoot: root, catalog, recipe, variant, attemptId, attemptDir, workspace: path.join(attemptDir, "absent"), executedAt: "2026-11-09T01:00:00.000Z" };
+  await assert.rejects(publishNoDish({ ...base, fault: classifyFailure({ message: "HTTP 429" }) }), /Only a chef fault becomes a No Dish/);
+  await assert.rejects(publishNoDish({ ...base, fault: classifyFailure({ stage: "publication", chefFault: "output-contract" }) }), /execution or validation fault, not publication/);
+  assert.equal((await loadNoDishes(root)).length, 1, "nothing new was published");
+});
+
+test("only a broken output contract is the model's; a symlink or filesystem error while selecting files is Kitchen's", async (t) => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "taste-select-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  const output = { entry: "out/index.html", include: ["out/**"], limits: { maxFiles: 1, maxBytes: 10 } };
+  await assert.rejects(selectArtifactFiles(workspace, output), (error) => error instanceof ArtifactContractError && /entry is missing/.test(error.message));
+  await mkdir(path.join(workspace, "out"));
+  await writeFile(path.join(workspace, "out/index.html"), "<p>hi</p>");
+  await writeFile(path.join(workspace, "out/extra.html"), "x");
+  await assert.rejects(selectArtifactFiles(workspace, output), (error) => error instanceof ArtifactContractError && /limit is 1/.test(error.message));
+  await rm(path.join(workspace, "out/extra.html"));
+  await writeFile(path.join(workspace, "out/index.html"), "<p>this is too many bytes</p>");
+  await assert.rejects(selectArtifactFiles(workspace, output), (error) => error instanceof ArtifactContractError && /bytes; limit is 10/.test(error.message));
+  // A symlink anywhere in the workspace (an npm install's .bin links) is not the model breaking the contract.
+  await writeFile(path.join(workspace, "out/index.html"), "<p>hi</p>");
+  await mkdir(path.join(workspace, "node_modules/.bin"), { recursive: true });
+  await symlink("../pkg/cli.js", path.join(workspace, "node_modules/.bin/tool"));
+  await assert.rejects(selectArtifactFiles(workspace, output), (error) => !(error instanceof ArtifactContractError));
 });

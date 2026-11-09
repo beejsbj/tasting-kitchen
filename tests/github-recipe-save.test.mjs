@@ -272,9 +272,10 @@ test("a verdict commit refuses an unknown plate, a traversing id, an existing fi
   const now = new Date("2026-11-09T10:00:00.000Z");
   const good = createVerdict({ id: "dish_a", dishHash: HASH(1) }, "passed", "Holds up.", now);
   const requests = installVerdictMock(t, ["dishes/dish_a/dish.json", `verdicts/${good.id}.json`]);
-  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, plateId: "dish_missing" } }), /not in the repository branch/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, plateId: "dish_missing", id: "verdict_dish_missing_20261109100000000" } }), /not in the repository branch/);
   await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, id: "verdict_../../.github/workflows/x" } }), /verdict id is invalid/);
   await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, plateId: "dish_a\nco-author" } }), /verdict id is invalid/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, id: "verdict_dish_other_20261109100000000" } }), /verdict id is invalid/);
   await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: good }), /already exists/);
   assert.equal(requests.some((request) => request.init.method === "POST" || request.init.method === "PATCH"), false, "nothing is written");
 });

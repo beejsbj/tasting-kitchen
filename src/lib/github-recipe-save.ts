@@ -77,7 +77,7 @@ async function api(token: string, path: string, init: RequestInit = {}): Promise
     if (response.status === 403) fail("GitHub did not allow this action.");
     if (response.status === 404) fail("The configured repository or branch was not found.");
     if (response.status === 409 || response.status === 422) fail("The branch changed while saving; reload and try again.");
-    fail("GitHub could not complete the recipe save.");
+    fail("GitHub could not complete the save.");
   }
   try {
     return await response.json();
@@ -439,7 +439,7 @@ export async function saveVerdictViaGitHub({ token, branch, verdict }: { token: 
   const accessToken = safeToken(token);
   const safe = safeBranch(branch);
   const path = `verdicts/${verdict.id}.json`;
-  if (!VERDICT_FILE.test(path) || !/^(?:dish|nodish)_[a-zA-Z0-9_-]+$/u.test(verdict.plateId)) fail("The verdict id is invalid.");
+  if (!VERDICT_FILE.test(path) || !/^(?:dish|nodish)_[a-zA-Z0-9_-]+$/u.test(verdict.plateId) || !verdict.id.startsWith(`verdict_${verdict.plateId}_`)) fail("The verdict id is invalid.");
   const head = await readHead(accessToken, safe);
   const manifest = verdict.plateId.startsWith("nodish_") ? `no-dishes/${verdict.plateId}/no-dish.json` : `dishes/${verdict.plateId}/dish.json`;
   if (!head.tree.has(manifest)) fail("That Dish or No Dish is not in the repository branch.");

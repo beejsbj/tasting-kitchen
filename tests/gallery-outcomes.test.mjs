@@ -65,9 +65,12 @@ test('the outcome filter is URL-addressable and defaults to all', () => {
   assert.equal(readGalleryState('?outcome=no-dish').outcome, 'no-dish');
   const calls = [];
   globalThis.window = { location: { pathname: '/' }, history: { pushState: (...args) => calls.push(args), replaceState: (...args) => calls.push(args) } };
-  writeGalleryState({ ...readGalleryState(''), outcome: 'failed-by-burooj' });
-  assert.match(calls[0][2], /outcome=failed-by-burooj/u);
-  delete globalThis.window;
+  try {
+    writeGalleryState({ ...readGalleryState(''), outcome: 'failed-by-burooj' });
+    assert.match(calls[0][2], /outcome=failed-by-burooj/u);
+  } finally {
+    delete globalThis.window;
+  }
 });
 
 test('the gallery renders No Dishes in panes and on the counter, and shows the verdict above the artifact', () => {
