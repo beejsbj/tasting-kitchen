@@ -51,10 +51,22 @@ The **recipe hash** identifies what a Recipe asked at one moment. It is computed
 - execution-affecting supporting inputs and constraints (fixtures enter by their content hash);
 - tool boundaries;
 - output and validation requirements;
-- the Kitchen presentation profile; and
-- semantic runtime requirements that can change the observable result.
+- the Kitchen presentation profile;
+- semantic runtime requirements that can change the observable result; and
+- the Recipe's budget, when it declares one (see Budget below).
 
 Display metadata (title, summary, tags, lineage) does not move the hash. Any model-visible or execution-affecting edit does. There is no stored snapshot of a Recipe: a Dish records the hash it was cooked from as `recipe.hash`, and the current Recipe is simply whatever the catalog says now.
+
+### Budget
+
+A Recipe may declare a **budget**: `budget.seconds` (whole seconds, 30 to 86 400) and/or `budget.modelTurns` (1 to 10 000). Kitchen applies the same budget to every configuration and skill layer, so running past it is a fair answer to “can this model do this at all?”: a chef fault, `out-of-time` or `out-of-turns`, published as a No Dish that names the budget it ran past. A Recipe without a budget leaves every limit Kitchen's, so no time or turn limit is ever the model's fault there.
+
+- **Seconds** are wall-clock time in the execution phase only, across all of the Recipe's turns: the harness and model running. Preparation, login, identity checks, validation and publication do not count. Waits the harness itself reports are credited back: today that is Claude Code's `api_retry` events (the retry delay and any no-response wait). Codex, Cursor, Hermes, T3 and the Direct API report no such waits, so on those harnesses a throttled route spends the model's time; that is a known limitation, not a judgement.
+- **Model turns** are counted per prompt turn of the Recipe, the unit a harness can hold: Claude Code pins `--max-turns`, and the Direct API makes exactly one model turn per prompt turn. A harness that cannot hold a turn budget refuses the Recipe before anything runs.
+- Running out of time is the model's only with the harness's evidence that the requested model was serving the turn the budget stopped: Claude Code's main-thread message from the requested model, Hermes's own record of a main-loop call on the requested route, or a Codex item in the stopped turn together with the requested identity in its private rollout. Without that evidence (a route that never answered; Cursor, T3 and the Direct API, which give none yet) the stop is Kitchen's `timeout`, naming the budget.
+- With a declared time budget, Kitchen's own shorter limits (the Direct API request timeout, the T3 turn timeout) step aside. If a harness's own limit still fires first, or a harness reports a turn limit the Recipe never declared, the failure is Kitchen's `harness-limit`, privately naming the limit that fired.
+
+The budget joins the recipe hash, so changing it makes a new cell. Existing Recipes declare none.
 
 **A Dish shows what the model saw.** That claim is kept by the Dish, not by a store: at publication Kitchen copies the Recipe's public fixtures into the Dish directory (see Dish below). The prompts are already in the Dish's public trace.
 
@@ -126,14 +138,14 @@ The name says what is on the plate, not why: there is nothing to taste. That hol
 
 | Class | Public? | Codes |
 | --- | --- | --- |
-| Chef fault | Yes, as a No Dish | `checks-failed` (required checks ran and failed) · `output-contract` (artifact entry missing or over its file/byte limits; a read-only fixture or the mounted skill edited) · `refused` (structured refusal evidence: a Claude `refusal` stop reason, a chat-completions `refusal` from the requested model through its pinned upstream) · `out-of-turns` (the harness reports its turn budget spent, Claude Code's `error_max_turns`) |
-| Kitchen fault | Never; private and retryable | `auth` · `rate-limited` (including free-tier throttling) · `network` · `provider-unavailable` · `timeout` · `identity-drift` (the route served another model, tier or upstream) · `harness-changed` (a CLI or protocol Kitchen does not recognise) · `validator-error` (a required check could not run) · `preparation` · `publication` (Kitchen's own scans) · `interrupted` · `kitchen-error` |
+| Chef fault | Yes, as a No Dish | `checks-failed` (required checks ran and failed) · `output-contract` (artifact entry missing or over its file/byte limits; a read-only fixture or the mounted skill edited) · `refused` (structured refusal evidence: a Claude `refusal` stop reason, a chat-completions `refusal` from the requested model through its pinned upstream) · `out-of-turns` (the harness reports the Recipe's declared turn budget spent, Claude Code's `error_max_turns` under the `--max-turns` Kitchen pinned) · `out-of-time` (the Recipe's declared time budget ran out while the requested model was serving; see Budget) |
+| Kitchen fault | Never; private and retryable | `auth` · `rate-limited` (including free-tier throttling) · `network` · `provider-unavailable` · `timeout` · `harness-limit` (a limit the Recipe did not declare fired: a harness's own turn limit, a Kitchen request or turn timeout) · `identity-drift` (the route served another model, tier or upstream) · `harness-changed` (a CLI or protocol Kitchen does not recognise) · `validator-error` (a required check could not run) · `preparation` · `publication` (Kitchen's own scans) · `interrupted` · `kitchen-error` |
 
-A chef fault exists only where a throw site or adapter tags it from structured evidence; it is never read from an error message. Every untagged failure is a kitchen fault, so an ambiguous failure never stains the model. That is why time is not yet a chef fault: Kitchen's time limits (the Direct API request timeout, the T3 turn timeout) differ by harness and cannot tell a slow model from a hung route, so they are `timeout`, a kitchen fault. A web artifact's remote references and the public-text scan are Kitchen's publication rules, so they stay kitchen faults too.
+A chef fault exists only where a throw site or adapter tags it from structured evidence; it is never read from an error message. Every untagged failure is a kitchen fault, so an ambiguous failure never stains the model. That is why time and turns are the model's only under a budget the Recipe declared: Kitchen's own limits differ by harness and cannot tell a slow model from a hung route, so without a budget they stay kitchen faults (`timeout`, `harness-limit`). A web artifact's remote references and the public-text scan are Kitchen's publication rules, so they stay kitchen faults too.
 
 What a No Dish publishes (`no-dishes/<id>/`, served beside Dishes under the sandboxed `dishes/` path):
 
-- `no-dish.json`: recipe hash, skill layer, requested configuration (configuration hash, and for a snapshot the setup digest), execution and failure times, and `fault: { class: "chef", code, stage, reason, turn?, checks? }`, hashed as `noDishHash`;
+- `no-dish.json`: recipe hash, skill layer, requested configuration (configuration hash, and for a snapshot the setup digest), execution and failure times, and `fault: { class: "chef", code, stage, reason, turn?, checks?, budget? }` (`budget` only on `out-of-time` or `out-of-turns`, naming the one budget it ran past), hashed as `noDishHash`;
 - `validation.json`, when checks ran: every check's result;
 - `trace.json`: the prompts sent and the public-safe responses up to the failure, omitted if it cannot pass the public-text scan;
 - `artifact/`: what the model left that the output contract selects, within its limits, only if it passes the public-text scan (and, for web, the network scan); and
@@ -147,7 +159,7 @@ Raw harness output, error messages, stderr and paths never leave the private att
 
 A **verdict** is a judge's `failed` or `passed` on one plate (a Dish or a No Dish), with a short note. It sits beside the plate in `verdicts/<id>.json`, pinned to its `plateId` and `plateHash` (a Dish's `dishHash` or a No Dish's `noDishHash`), and never inside `dish.json` or `no-dish.json`. Verdicts are append-only: a changed mind is a newer verdict, and the newest from the highest-ranked judge stands.
 
-Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. A No Dish takes only a pass, so he can overrule a plate he judges good: “Passed by Burooj · checks failed” where the checks failed it, and “Passed by Burooj” beside the fault's own label where the cause was a refusal, a spent turn budget or a broken output contract; there is nothing to fail on a plate that holds nothing. A passed No Dish stays a No Dish on the counter and in the Outcome filter, with his verdict beside the fault. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
+Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. A No Dish takes only a pass, so he can overrule a plate he judges good: “Passed by Burooj · checks failed” where the checks failed it, and “Passed by Burooj” beside the fault's own label where the cause was a refusal, a spent time or turn budget or a broken output contract; there is nothing to fail on a plate that holds nothing. A passed No Dish stays a No Dish on the counter and in the Outcome filter, with his verdict beside the fault. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
 
 ### Repeat
 
@@ -319,7 +331,7 @@ Each requested configuration receives the same brief (one recipe hash). Each suc
 
 ### A configuration cannot make the Recipe
 
-The Run fails its required checks (or breaks the output contract, declines, or runs out of turns). Kitchen publishes a No Dish in that cell with the reason. Fill-missing leaves it; a Repeat tries again. Had the login expired or the provider throttled, the attempt would stay private and the cell open.
+The Run fails its required checks (or breaks the output contract, declines, or runs past the Recipe's declared time or turn budget). Kitchen publishes a No Dish in that cell with the reason. Fill-missing leaves it; a Repeat tries again. Had the login expired or the provider throttled, the attempt would stay private and the cell open.
 
 ### Burooj fails a Dish after tasting it
 
