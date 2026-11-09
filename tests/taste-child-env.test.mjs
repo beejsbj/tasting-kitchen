@@ -76,6 +76,7 @@ test("no adapter's child inherits an unknown or credential-bearing variable", ()
   assert.equal(children["claude-code clean"].TMPDIR, "/cook/tmp", "the runner's scratch directory reaches the harness");
   assert.equal(children["hermes anthropic"].CLAUDE_CONFIG_DIR, "/cook/hermes-home/claude-login");
   assert.equal(children["hermes openrouter"].OPENROUTER_API_KEY, "tk-proxy-dummy");
+  assert.match(children["hermes openrouter"].NO_PROXY, /(^|,)127\.0\.0\.1$/u, "the loopback key proxy bypasses the host proxy");
   // A replaced home takes no XDG directory from the real one; a kept home keeps them.
   for (const label of ["codex clean", "t3 → codex-cli"]) assert.equal(children[label].XDG_CONFIG_HOME, undefined, label);
   for (const label of ["codex original", "cursor", "t3 → claude-code"]) assert.equal(children[label].XDG_CONFIG_HOME, AMBIENT.XDG_CONFIG_HOME, label);
