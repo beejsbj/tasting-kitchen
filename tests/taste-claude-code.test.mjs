@@ -6,7 +6,6 @@ import test from "node:test";
 
 import { computeConfigHash, computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import {
-  ancestorInstructionExcludes,
   buildClaudeTurnArgs,
   claudeChildEnv,
   parseClaudeJsonl,
@@ -85,32 +84,30 @@ async function fakeClaude(root) {
 }
 
 test("clean and personal turn plans pin model, effort, isolation and exact resume", () => {
-  const workspace = "/srv/kitchen/private/runtime/attempts/a/workspace";
+  const workspace = "/var/tmp/tk-1000/0123456789abcdef/workspace";
   const clean = buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace, prompt: "-Cook" });
   assert.deepEqual(clean.slice(0, 8), ["-p", "--output-format", "stream-json", "--verbose", "--model", "claude-haiku-5-5", "--effort", "high"]);
   assert.ok(clean.includes("--safe-mode"));
   assert.equal(argAfter(clean, "--setting-sources"), "");
   assert.ok(clean.includes("--strict-mcp-config"));
   assert.deepEqual(JSON.parse(argAfter(clean, "--mcp-config")), { mcpServers: {} });
-  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true, includeGitInstructions: false });
+  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true });
   assert.equal(argAfter(clean, "--tools"), "Bash,Edit,Glob,Grep,Read,Write");
   assert.equal(argAfter(clean, "--permission-mode"), "bypassPermissions");
   assert.deepEqual(clean.slice(-2), ["--", "-Cook"], "a dash-leading prompt stays a prompt");
   assert.equal(clean.includes("--resume"), false);
 
-  const personal = buildClaudeTurnArgs({ variant: claudeVariant("personal"), workspace, workspaceRealPath: "/mnt/kitchen/private/runtime/attempts/a/workspace", prompt: "Correct", threadId: SESSION_ID });
+  const personal = buildClaudeTurnArgs({ variant: claudeVariant("personal"), workspace, prompt: "Correct", threadId: SESSION_ID });
   assert.equal(personal.includes("--safe-mode"), false);
   assert.equal(argAfter(personal, "--setting-sources"), "user");
   assert.equal(argAfter(personal, "--tools"), "Bash,Edit,Glob,Grep,Read,Write,Skill");
   assert.equal(argAfter(personal, "--resume"), SESSION_ID);
-  const excludes = JSON.parse(argAfter(personal, "--settings")).claudeMdExcludes;
-  for (const file of ["/srv/kitchen/AGENTS.md", "/srv/kitchen/CLAUDE.md", "/mnt/kitchen/AGENTS.md", "/AGENTS.md", "/srv/kitchen/.claude/**"]) assert.ok(excludes.includes(file), file);
-  assert.equal(excludes.some((file) => file.startsWith(`${workspace}/`)), false, "the workspace itself is not excluded");
+  // The workspace sits outside any repository, so there are no ancestor instructions to exclude.
+  assert.deepEqual(JSON.parse(argAfter(personal, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true });
 
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace, prompt: "x", threadId: "latest" }), /exact UUID/);
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace: "relative", prompt: "x" }), /absolute path/);
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean", { executionProfile: withoutEnvironment("clean") }), workspace, prompt: "x" }), /environment clean or personal/);
-  assert.deepEqual(ancestorInstructionExcludes("/a/workspace"), ["/a/CLAUDE.md", "/a/CLAUDE.local.md", "/a/AGENTS.md", "/a/.claude/**", "/CLAUDE.md", "/CLAUDE.local.md", "/AGENTS.md", "/.claude/**"]);
 });
 
 test("the child environment drops a parent Claude session and points at the attempt home", () => {
@@ -125,8 +122,8 @@ test("the child environment drops a parent Claude session and points at the atte
   assert.equal(clean.CLAUDE_CODE_DISABLE_CLAUDE_MDS, "1");
   assert.equal(clean.CLAUDE_CODE_DISABLE_AUTO_MEMORY, "1");
   assert.equal(clean.GIT_CEILING_DIRECTORIES, undefined);
-  const personal = claudeChildEnv({ variant: claudeVariant("personal"), harnessHome: "/attempt/claude-home", workspace: "/srv/a/workspace", workspaceRealPath: "/mnt/a/workspace", base });
-  assert.equal(personal.GIT_CEILING_DIRECTORIES, ["/srv/a", "/mnt/a"].join(path.delimiter));
+  const personal = claudeChildEnv({ variant: claudeVariant("personal"), harnessHome: "/attempt/claude-home", base });
+  assert.equal(personal.GIT_CEILING_DIRECTORIES, undefined);
   assert.equal(personal.CLAUDE_CODE_DISABLE_CLAUDE_MDS, undefined, "personal keeps the mirrored user CLAUDE.md");
   assert.equal(personal.ENABLE_CLAUDEAI_MCP_SERVERS, "false");
 });
@@ -216,7 +213,7 @@ test("Claude Code runs fixed turns in one session, hands the token on a descript
   for (const call of calls) {
     assert.equal(call.tokenMatches, true);
     assert.equal(call.configDir, harnessHome);
-    assert.equal(call.gitCeiling, root);
+    assert.equal(call.gitCeiling, undefined);
     assert.deepEqual(call.inherited, []);
     assert.equal(call.args.some((arg) => arg.includes(TOKEN)), false);
   }
@@ -319,8 +316,8 @@ test("a personal Claude Code Dish lands in private/dishes and a clean one in dis
   assert.equal(dish.identity.observedServiceTier, "standard");
   assert.equal(dish.visibility, undefined);
   const attemptDir = path.join(f.root, "private/runtime/attempts", clean.attemptId);
-  assert.deepEqual((await readdir(path.join(attemptDir, "claude-home"))).filter((entry) => /credential/iu.test(entry)), []);
   const requested = JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8"));
+  assert.deepEqual((await readdir(path.join(requested.cookDirectory, "claude-home"))).filter((entry) => /credential/iu.test(entry)), []);
   assert.equal(requested.execution.environment, "clean");
   assert.equal(requested.execution.setup, "none (safe mode)");
   assert.equal(requested.execution.mcpServers, "none");
@@ -331,7 +328,8 @@ test("a personal Claude Code Dish lands in private/dishes and a clean one in dis
   assert.equal(personal.status, "accepted", personal.error);
   assert.deepEqual(path.relative(f.root, personal.dishDirectory).split(path.sep).slice(0, 2), ["private", "dishes"]);
   assert.equal(JSON.parse(await readFile(path.join(personal.dishDirectory, "dish.json"), "utf8")).visibility, "private");
-  const personalHome = path.join(f.root, "private/runtime/attempts", personal.attemptId, "claude-home");
+  const personalRequest = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", personal.attemptId, "requested.json"), "utf8"));
+  const personalHome = path.join(personalRequest.cookDirectory, "claude-home");
   assert.deepEqual((await readdir(personalHome)).filter((entry) => ["CLAUDE.md", "skills"].includes(entry)).sort(), ["CLAUDE.md", "skills"]);
   assert.equal((await lstat(path.join(personalHome, "CLAUDE.md"))).isSymbolicLink(), true);
 });

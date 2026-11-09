@@ -129,9 +129,13 @@ export type Dish = {
   artifactBase: string;
   /** What the model received, from the Dish's own inputs.json. Absent for a Dish published before sidecars. */
   inputs?: { fixtures: DishInput[] };
+  /** Public notes recorded beside the Dish after it was cooked (catalog/dish-notes.json). */
+  notes?: DishNote[];
   /** The full configuration and skill source the Dish ran as, from receipt.json. */
   receipt?: { schemaVersion: 1; configuration: Configuration; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
 };
+
+export type DishNote = { id: string; text: string; link?: string };
 
 export type DishInput = { id: string; path: string; mountAs: string; public: boolean; editable: boolean; mediaType?: string; sha256: string; bytes: number; url?: string };
 
