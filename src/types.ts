@@ -33,6 +33,8 @@ export type Configuration = {
     harnessProfile?: string;
     /** An inference route other than the provider's own, such as "openrouter"; absent means the provider's own. */
     route?: string;
+    /** The OpenRouter upstream provider slug the route is pinned to, with no fallbacks. */
+    upstream?: string;
   };
 };
 

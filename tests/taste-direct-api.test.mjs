@@ -15,7 +15,7 @@ import { executeRecipe } from "../lib/taste/runner.mjs";
 const KEY = "sk-or-test-key-never-on-disk";
 const profile = {
   id: "direct-api-openrouter-v1", label: "Direct API · OpenRouter route · no harness", runtime: "linux-host", sandbox: "no-tools", approvalPolicy: "no-tools",
-  nativeWeb: "disabled", networkPolicy: "no-tools", filesystemBoundary: "no-workspace", environment: "clean", route: "openrouter",
+  nativeWeb: "disabled", networkPolicy: "no-tools", filesystemBoundary: "no-workspace", environment: "clean", route: "openrouter", upstream: "anthropic",
 };
 const direct = {
   id: "direct-api-opus-5-5-high", label: "Opus 5.5 · High · Direct API (OpenRouter)", provider: "anthropic", model: "anthropic/claude-opus-5.5",
@@ -61,6 +61,8 @@ test("Direct API configurations carry no capabilities, the OpenRouter route, and
   assert.throws(() => resolveHarnessAdapter({ ...direct, provider: "openrouter" }), /maker anthropic/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, model: "claude-opus-5-5" }), /pinned maker\/model slug/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, reasoningEffort: "max" }), /reasoning effort/);
+  assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, upstream: undefined } }), /upstream pin must be one of/);
+  assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, upstream: "together" } }), /upstream pin must be one of/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, environment: undefined } }), /environment must be clean/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, harnessPath: ["direct-api", "claude-code"] }), /cannot wrap Claude|cannot wrap claude-code/);
 });
@@ -100,6 +102,7 @@ test("a request carries the whole conversation, the pinned effort, and no tools 
   assert.equal("tools" in body, false);
   assert.equal(body.messages.some((message) => message.role === "system"), false);
   assert.deepEqual(body.transforms, []);
+  assert.deepEqual(body.provider, { only: ["anthropic"], allow_fallbacks: false, require_parameters: true });
   assert.equal(body.stream, false);
   assert.throws(() => buildDirectApiRequest({ variant: direct, messages: [{ role: "assistant", content: "b" }] }), /end with a user message/);
 });
@@ -141,6 +144,7 @@ test("two turns are one resent conversation; the served model is observed and th
   assert.equal(observed.model, "anthropic/claude-opus-5.5");
   assert.equal(observed.route, "openrouter");
   assert.deepEqual(observed.upstreamProviders, ["Anthropic"]);
+  assert.equal(observed.upstreamPin, "anthropic");
   assert.equal(observed.verifiedBy, "direct-api-response-model");
   // Production verification pins the real endpoint, so a test endpoint cannot pass it.
   await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result }), /endpoint requested https:\/\/openrouter.ai\/api\/v1\/chat\/completions/);
@@ -151,6 +155,20 @@ test("two turns are one resent conversation; the served model is observed and th
   const altered = structuredClone(result);
   altered.turns[0].finalMessage = "altered";
   await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: altered, endpoint: fake.endpoint }), /final message does not match/);
+});
+
+test("a response served by another upstream, or by none reported, fails verification", async (t) => {
+  const root = await scratch(t);
+  const serve = (provider) => fakeServer(t, (body) => ({ status: 200, body: { model: body.model, ...(provider ? { provider } : {}), choices: [{ finish_reason: "stop", message: { content: "ok" } }] } }));
+  for (const [name, provider, expected] of [["bedrock", "Amazon Bedrock", /pinned to Anthropic, served by Amazon Bedrock/], ["silent", undefined, /served by an unreported provider/]]) {
+    const fake = await serve(provider);
+    const result = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, name), env: { OPENROUTER_API_KEY: KEY }, endpoint: fake.endpoint });
+    assert.equal(result.failure, null);
+    await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint }), expected);
+    const tampered = structuredClone(result);
+    for (const turn of tampered.turns) turn.events[0].body.provider = { only: ["amazon-bedrock"] };
+    await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: tampered, endpoint: fake.endpoint }), /did not send the upstream pin anthropic/);
+  }
 });
 
 test("a substituted model, an HTTP error, or an empty reply stops the conversation without leaking the key", async (t) => {
@@ -202,6 +220,8 @@ test("a Direct API Dish publishes through the runner as a public session transcr
   const attemptDir = path.join(root, "private/runtime/attempts", run.attemptId);
   const requested = JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8"));
   assert.equal(requested.execution.route, "openrouter");
+  assert.equal(requested.execution.upstream, "anthropic");
+  assert.equal(requested.execution.upstreamPin, "anthropic");
   assert.equal(requested.execution.tools, "none");
   for (const file of await filesUnder(root)) assert.equal((await readFile(file)).includes(KEY), false, `${file} holds the key`);
 });

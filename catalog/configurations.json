@@ -844,7 +844,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -870,7 +871,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -896,7 +898,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -922,7 +925,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -948,7 +952,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "google-ai-studio"
       }
     },
     {
@@ -974,7 +979,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "xai"
       }
     },
     {
@@ -1000,7 +1006,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "meta"
       }
     },
     {
@@ -1026,7 +1033,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "moonshotai"
       }
     },
     {
@@ -1052,7 +1060,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "deepseek"
       }
     },
     {
@@ -1078,7 +1087,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "z-ai"
       }
     },
     {
@@ -1104,7 +1114,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "alibaba"
       }
     },
     {
@@ -1130,7 +1141,8 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "mistral"
       }
     },
     {
@@ -1153,7 +1165,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -1176,7 +1189,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -1199,7 +1213,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -1222,7 +1237,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "anthropic"
       }
     },
     {
@@ -1245,7 +1261,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "google-ai-studio"
       }
     },
     {
@@ -1268,7 +1285,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "xai"
       }
     },
     {
@@ -1291,7 +1309,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "moonshotai"
       }
     },
     {
@@ -1314,7 +1333,8 @@
         "networkPolicy": "no-tools",
         "filesystemBoundary": "no-workspace",
         "environment": "clean",
-        "route": "openrouter"
+        "route": "openrouter",
+        "upstream": "deepseek"
       }
     }
   ]
