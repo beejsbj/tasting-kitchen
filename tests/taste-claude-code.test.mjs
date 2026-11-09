@@ -92,7 +92,7 @@ const prompt = args.at(-1);
 const usageModels = { [requested]: { inputTokens: 5, outputTokens: 2 } };
 if (process.env.FAKE_AUX_MODEL) usageModels[process.env.FAKE_AUX_MODEL] = { inputTokens: 1, outputTokens: 1 };
 const emit = (event) => console.log(JSON.stringify(event));
-emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model: initModel, permissionMode: process.env.FAKE_PERMISSION_MODE || "bypassPermissions", claude_code_version: "2.1.312", output_style: process.env.FAKE_OUTPUT_STYLE || "default", tools, mcp_servers: servers.map((name) => ({ name, status: "connected" })), plugins: [], skills: [], agents: [] });
+emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model: initModel, permissionMode: process.env.FAKE_PERMISSION_MODE || "bypassPermissions", claude_code_version: "2.1.312", output_style: process.env.FAKE_OUTPUT_STYLE || "default", tools, mcp_servers: servers.map((name) => ({ name, status: "connected" })), ...(process.env.FAKE_NO_LISTS ? {} : { plugins: JSON.parse(process.env.FAKE_PLUGINS || "[]"), skills: JSON.parse(process.env.FAKE_SKILLS || '["code-review","simplify"]'), agents: JSON.parse(process.env.FAKE_AGENTS || '["claude","Explore","general-purpose","Plan"]') }) });
 emit({ type: "assistant", parent_tool_use_id: null, session_id: session, message: { model: process.env.FAKE_ASSISTANT_MODEL || initModel, content: [{ type: "text", text: prompt }] } });
 emit({ type: "rate_limit_event", session_id: session });
 emit({ type: "result", subtype: "success", is_error: false, result: prompt, session_id: session, usage: { input_tokens: 5, output_tokens: 2, service_tier: process.env.FAKE_TIER || "standard" }, modelUsage: usageModels });
@@ -382,6 +382,23 @@ test("Claude Code runs fixed turns in one session, hands the token on a descript
   const styled = await run({ FAKE_OUTPUT_STYLE: "Explanatory" });
   await assert.rejects(verifyClaudeIdentity({ variant, result: styled, cliVersion: styled.cliVersion }), /output style/);
 
+  // A clean session loads only what Claude Code bundles: what its init reports is the evidence (#45).
+  assert.deepEqual(observed.isolation, { evidence: "claude-code-init", agents: ["Explore", "Plan", "claude", "general-purpose"], skills: ["code-review", "simplify"], plugins: [] });
+  const outsidePlugin = await run({ FAKE_PLUGINS: JSON.stringify([{ name: "github", path: "/home/someone/.claude/plugins/cache/github", source: "github@claude-plugins-official" }]) });
+  await assert.rejects(verifyClaudeIdentity({ variant, result: outsidePlugin, cliVersion: outsidePlugin.cliVersion }), /clean Claude Code session loaded plugin github@claude-plugins-official, which is not built in/);
+  const bundledPlugin = await run({ FAKE_PLUGINS: JSON.stringify([{ name: "artifacts", path: "builtin", source: "artifacts@builtin" }]), FAKE_SKILLS: JSON.stringify(["simplify", "artifacts:make"]) });
+  assert.deepEqual((await verifyClaudeIdentity({ variant, result: bundledPlugin, cliVersion: bundledPlugin.cliVersion })).isolation.plugins, ["artifacts"], "a built-in plugin and its own skills are the harness's");
+  const outsideAgent = await run({ FAKE_AGENTS: JSON.stringify(["general-purpose", "cockpit-runner"]) });
+  await assert.rejects(verifyClaudeIdentity({ variant, result: outsideAgent, cliVersion: outsideAgent.cliVersion }), /agent cockpit-runner outside Claude Code's bundled set/);
+  const outsideSkill = await run({ FAKE_SKILLS: JSON.stringify(["simplify", "consult"]) });
+  await assert.rejects(verifyClaudeIdentity({ variant, result: outsideSkill, cliVersion: outsideSkill.cliVersion }), /skill consult outside Claude Code's bundled set/);
+  const unlisted = await run({ FAKE_NO_LISTS: "1" });
+  await assert.rejects(verifyClaudeIdentity({ variant, result: unlisted, cliVersion: unlisted.cliVersion }), /init event lacks its plugin list/);
+  // A personal session is meant to load his skills; it is held to the request, not to the bundled set.
+  const snapshotVariant = claudeVariant("snapshot");
+  const personal = await runClaudeSession({ variant: snapshotVariant, recipe, workspace, privateDir: path.join(root, "raw-personal"), harnessHome, executable, env: { ...env, FAKE_SKILLS: JSON.stringify(["consult"]), FAKE_AGENTS: JSON.stringify(["cockpit-runner"]) } });
+  assert.equal((await verifyClaudeIdentity({ variant: snapshotVariant, result: personal, cliVersion: personal.cliVersion })).isolation, undefined);
+
   const wrongFirst = await run({ FAKE_FIRST_MODEL: "claude-opus-5-5" });
   assert.match(wrongFirst.failure.message, /model mismatch/);
   assert.equal(wrongFirst.turns.length, 1, "stop before spending a second turn after a wrong first model");
@@ -455,8 +472,11 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   assert.equal(dish.identity.observedServiceTier, "standard");
   assert.equal(dish.identity.setupDigest, undefined);
   assert.equal(dish.visibility, undefined);
-  assert.equal((await readJson(path.join(clean.dishDirectory, "receipt.json"))).setup, undefined);
+  const cleanReceipt = await readJson(path.join(clean.dishDirectory, "receipt.json"));
+  assert.equal(cleanReceipt.setup, undefined);
+  assert.deepEqual(cleanReceipt.isolation, { evidence: "claude-code-init", agents: ["Explore", "Plan", "claude", "general-purpose"], skills: ["code-review", "simplify"], plugins: [] }, "the receipt shows the isolation the init proved");
   const attemptDir = path.join(f.root, "private/runtime/attempts", clean.attemptId);
+  assert.deepEqual((await readJson(path.join(attemptDir, "observed.json"))).isolation, cleanReceipt.isolation);
   const requested = await readJson(path.join(attemptDir, "requested.json"));
   // Published: the whole cook directory is gone, the clean home with it.
   assert.equal(await pathExists(requested.cookDirectory), false);

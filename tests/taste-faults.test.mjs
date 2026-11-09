@@ -101,10 +101,10 @@ test("refusal is read only from structured evidence, never from prose", () => {
 test("Claude Code tags only an exhausted turn budget or a structured refusal, and only for a stream that proves the requested Run", () => {
   const jsonl = (...events) => events.map((event) => JSON.stringify(event)).join("\n");
   const model = "claude-opus-5-5";
-  const variant = { model, executionProfile: { environment: "clean" } };
+  const variant = { model, personality: "default", serviceTier: "default", executionProfile: { environment: "clean" } };
   const sessionId = "11111111-1111-4111-8111-111111111111";
-  const init = { type: "system", subtype: "init", model, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId };
-  const options = { variant, workspaces: ["/attempt/workspace"] };
+  const init = { type: "system", subtype: "init", model, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId, claude_code_version: "2.1.312", output_style: "default", plugins: [], skills: ["simplify"], agents: ["general-purpose"] };
+  const options = { variant, workspaces: ["/attempt/workspace"], cliVersion: "claude-code 2.1.312" };
   const turn = (message) => ({ type: "assistant", message: { model, ...message } });
   const spent = { type: "result", subtype: "error_max_turns", is_error: true };
   assert.equal(claudeChefFault(jsonl(init, spent), options), "out-of-turns");
@@ -118,7 +118,7 @@ test("Claude Code tags only an exhausted turn budget or a structured refusal, an
   assert.equal(claudeChefFault(jsonl({ ...init, model: "claude-sonnet-5-5" }, spent), options), undefined, "another model's init");
   assert.equal(claudeChefFault(jsonl(init, { ...turn({ stop_reason: "refusal" }), message: { model: "claude-sonnet-5-5", stop_reason: "refusal" } }), options), undefined, "another model's refusal");
   assert.equal(claudeChefFault(jsonl(init, turn({}), { ...turn({ stop_reason: "refusal" }), parent_tool_use_id: "toolu_1", message: { model: "claude-haiku-5-5", stop_reason: "refusal" } }), options), undefined, "a subagent's refusal");
-  assert.equal(claudeChefFault(jsonl(init, spent), { workspaces: options.workspaces }), undefined, "no requested model to pin it on");
+  assert.equal(claudeChefFault(jsonl(init, spent), { workspaces: options.workspaces, cliVersion: options.cliVersion }), undefined, "no requested model to pin it on");
   // The environment checks a successful turn gets apply to a failed one too: a drifted setup is Kitchen's.
   assert.equal(claudeChefFault(jsonl({ ...init, permissionMode: "default" }, spent), options), undefined, "permission mode drifted");
   assert.equal(claudeChefFault(jsonl({ ...init, cwd: "/home/someone" }, spent), options), undefined, "ran outside the attempt workspace");
@@ -126,6 +126,15 @@ test("Claude Code tags only an exhausted turn budget or a structured refusal, an
   assert.equal(claudeChefFault(jsonl({ ...init, tools: ["Bash"] }, spent), options), undefined, "tool list drifted");
   assert.equal(claudeChefFault(jsonl(init, spent), { ...options, threadId: sessionId }), "out-of-turns", "a resume that kept its session");
   assert.equal(claudeChefFault(jsonl(init, spent), { ...options, threadId: "22222222-2222-4222-8222-222222222222" }), undefined, "a resume that silently started a new session");
+  // The metadata a successful turn is held to holds for a failed one too (the #51 leftover).
+  assert.equal(claudeChefFault(jsonl(init, spent), { ...options, cliVersion: "claude-code 2.2.0" }), undefined, "the CLI changed under the run");
+  assert.equal(claudeChefFault(jsonl(init, spent), { variant, workspaces: options.workspaces }), undefined, "no CLI version to hold the stream to");
+  assert.equal(claudeChefFault(jsonl(init, { ...spent, usage: { service_tier: "priority" } }), options), undefined, "another service tier served it");
+  assert.equal(claudeChefFault(jsonl(init, { ...spent, usage: { service_tier: "standard" } }), options), "out-of-turns", "the default tier reports as standard");
+  assert.equal(claudeChefFault(jsonl({ ...init, output_style: "Explanatory" }, spent), options), undefined, "an output style other than the requested one");
+  // And so does the clean isolation check: a session that loaded his plugin or skill proves nothing about the model.
+  assert.equal(claudeChefFault(jsonl({ ...init, plugins: [{ name: "github", path: "/x", source: "github@official" }] }, spent), options), undefined, "a plugin that is not built in");
+  assert.equal(claudeChefFault(jsonl({ ...init, skills: ["consult"] }, spent), options), undefined, "a skill outside the bundled set");
 });
 
 // ---------------------------------------------------------------------------
