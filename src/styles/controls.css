@@ -15,7 +15,7 @@
 .tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .artifact-pane { flex: 1 1 0; min-height: 0; height: auto; }
 .tasting-room--immersive .session-artifact { max-width: 76ch; margin-inline: auto; }
 .pane-label__held { color: #64748b; }
-.pane-label__total { display: none; color: #94a3b8; }
+.pane-label__total { display: none; color: #64748b; }
 .pane-label b { color: #0f172a; font-weight: 600; }
 .pane-label { max-width: calc(100% - 1.5rem); position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
 .recipe-sheet > section, .recipe-sheet > footer { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }

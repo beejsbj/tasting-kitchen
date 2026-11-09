@@ -242,7 +242,7 @@ export function compareByNote(axis: CompareAxis, held: readonly string[], differ
   const dimension = AXIS_DIMENSIONS[axis];
   const holding = held.length ? `Holding ${held.join(" · ")}` : "Same brief";
   const extra = differing.filter((item) => item !== dimension);
-  if (!differing.includes(dimension)) return `${holding} · only one ${AXIS_LABELS[axis].toLowerCase()} on the counter`;
+  if (!differing.includes(dimension)) return `${holding} · only one ${AXIS_LABELS[axis].toLowerCase()} on the counter${extra.length ? `, yet ${extra.join(", ")} differ${extra.length === 1 ? "s" : ""}` : ""}`;
   if (extra.length) return `${holding} · ${dimension} varies, and so does ${extra.join(", ")} · not an isolated comparison`;
   return `${holding} · only the ${dimension} differs${ISOLATION[dimension] ? ` · ${ISOLATION[dimension]}` : ""}`;
 }

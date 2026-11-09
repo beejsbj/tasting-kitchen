@@ -134,4 +134,5 @@ test('the compare-by note states what was held and never credits the varied axis
   const loose = differingDimensions([slot(opusHighClean), slot(catalog.find((config) => config.id === 'codex-sol-high'))]);
   assert.match(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], loose), /harness varies, and so does model, environment · not an isolated comparison$/);
   assert.match(compareByNote('effort', ['Opus 5.5'], []), /only one effort on the counter$/);
+  assert.match(compareByNote('environment', ['Opus 5.5'], ['harness']), /only one environment on the counter, yet harness differs$/);
 });

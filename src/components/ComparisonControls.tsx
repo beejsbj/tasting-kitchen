@@ -131,11 +131,14 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
     <div className="flex flex-wrap gap-1">{offers.map(({ axis, values }) => {
       // The count is how many values hold everything else still and have a Dish.
       const cooked = values.filter((item) => item.isolated && item.dishes > 0).length;
-      const label = AXIS_LABELS[axis];
-      return <KitchenButton key={axis} className="compare-axis" aria-pressed={compare === axis} disabled={values.length < 2}
-        aria-label={`Compare by ${label.toLowerCase()} · ${values.length < 2 ? `only one ${label.toLowerCase()} for this pane` : `${cooked} cooked with the rest held`}`}
-        title={values.length < 2 ? `Only one ${label.toLowerCase()} can be held against this pane` : `${cooked} of ${values.length} have a Dish with everything else held`}
-        onClick={() => compare === axis ? undefined : startComparing(axis)}>{label}<span className="compare-axis__count">{cooked}</span></KitchenButton>;
+      const label = AXIS_LABELS[axis].toLowerCase();
+      // A comparison needs a second value that holds everything else; otherwise it would open on the held pane alone.
+      const unavailable = defaultComparisonSelection(values).length < 2;
+      const why = values.length < 2 ? `only one ${label} for this pane` : `no other ${label} cooked with the rest held`;
+      return <KitchenButton key={axis} className="compare-axis" aria-pressed={compare === axis} disabled={unavailable}
+        aria-label={`Compare by ${label} · ${unavailable ? why : `${cooked} cooked with the rest held`}`}
+        title={unavailable ? `Needs a second ${label} that holds everything else; ${why}` : `${cooked} of ${values.length} have a Dish with everything else held`}
+        onClick={() => compare === axis ? undefined : startComparing(axis)}>{AXIS_LABELS[axis]}<span className="compare-axis__count">{cooked}</span></KitchenButton>;
     })}</div>
   </div>;
 
