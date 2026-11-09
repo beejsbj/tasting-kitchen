@@ -20,6 +20,11 @@ const clean = {
   harness: "hermes", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: cleanProfile,
   configHash: `sha256:${"3".repeat(64)}`,
 };
+const openRouterProfile = { id: "hermes-linux-host-clean-openrouter-v1", label: "via Hermes · clean home · OpenRouter route", ...base, environment: "clean", route: "openrouter", upstream: "google-ai-studio" };
+const viaOpenRouter = {
+  ...clean, id: "hermes-openrouter-gemini-4-argon-high-clean", label: "Gemini 4 Argon · High · via Hermes · clean (OpenRouter)",
+  provider: "google", model: "google/gemini-4-argon", executionProfile: openRouterProfile,
+};
 const personal = { ...clean, id: "hermes-haiku-5-5-high-rose", label: "Haiku 5.5 · High · via Hermes · rose profile (Anthropic)", executionProfile: personalProfile };
 
 // A fake Hermes: records its invocation, writes the session rows real Hermes writes, and emits stream-json.
@@ -30,7 +35,7 @@ import { DatabaseSync } from "node:sqlite";
 const args = process.argv.slice(2);
 if (args[0] === "--version") { console.log("Hermes Agent v9.9.9 (fake)"); console.log("Install directory: /nowhere"); process.exit(0); }
 const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
-appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: process.env.HERMES_HOME ?? null, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null }) + "\\n");
+appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: process.env.HERMES_HOME ?? null, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: process.env.OPENROUTER_API_KEY ?? null }) + "\\n");
 const profile = flag("-p");
 const home = profile ? path.join(process.env.TASTE_HERMES_ROOT, "profiles", profile) : process.env.HERMES_HOME;
 mkdirSync(home, { recursive: true });
@@ -40,9 +45,10 @@ const requested = flag("-m");
 const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || requested;
 const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
-db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, 'https://api.anthropic.com')").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"));
+const baseUrl = process.env.FAKE_BASE_URL || "https://api.anthropic.com";
+db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
 const fellBack = served !== requested;
-if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : "https://api.anthropic.com");
+if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
 if (process.env.FAKE_AUX) db.prepare("INSERT OR IGNORE INTO session_model_usage VALUES (?, 'claude-haiku-5-5', 'anthropic', 'https://api.anthropic.com', 'title', 1)").run(session);
 db.close();
 if (!profile) writeFileSync(path.join(home, "auth.json"), "{}");
@@ -284,4 +290,44 @@ test("a cooked clean Hermes Dish is public; a personal one goes to private/dishe
   }
   const personalObserved = JSON.parse(await readFile(path.join(repoRoot, "private/runtime/attempts", personalRun.attemptId, "observed.json"), "utf8"));
   assert.equal(personalObserved.harnessProfile, "rose");
+});
+
+test("the OpenRouter route pins its maker's slug, carries only the route key, and verifies the recorded OpenRouter route", async (t) => {
+  assert.doesNotThrow(() => resolveHarnessAdapter(viaOpenRouter));
+  assert.doesNotThrow(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "anthropic", model: "anthropic/claude-opus-5.5", executionProfile: { ...openRouterProfile, upstream: "anthropic" } }));
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "anthropic", model: "anthropic/claude-opus-5.5" }), /not the maker anthropic's own provider/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "openrouter" }), /provider must be the model's maker google/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, model: "~google/gemini-latest" }), /pinned maker\/model slug/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, executionProfile: { ...openRouterProfile, route: undefined } }), /route must be openrouter \(omitted\)/);
+  assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, route: "openrouter" } }), /must omit route/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, executionProfile: { ...openRouterProfile, upstream: undefined } }), /upstream pin must be one of/);
+  assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, upstream: "anthropic" } }), /must omit upstream/);
+  assert.deepEqual(buildHermesTurnArgs({ variant: viaOpenRouter, workspace: "/tmp/work", queryFile: "/tmp/q.txt" }).slice(6, 10), ["--provider", "openrouter", "-m", "google/gemini-4-argon"]);
+
+  const f = await setup(t);
+  const a = await attempt(f.root, "openrouter");
+  await assert.rejects(prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env: { ...f.env, OPENROUTER_API_KEY: "" } }), /needs OPENROUTER_API_KEY/);
+  await rm(path.join(a.attemptDir, ".git"));
+  // The route key is the only credential that survives the scrub; Anthropic's does not.
+  const env = { ...f.env, OPENROUTER_API_KEY: "sk-or-test", ANTHROPIC_API_KEY: "sk-ant-leak", FAKE_BASE_URL: "https://openrouter.ai/api/v1" };
+  await prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env });
+  const config = await readFile(path.join(a.attemptDir, "hermes-home", "config.yaml"), "utf8");
+  assert.match(config, /provider: openrouter\n {2}default: google\/gemini-4-argon/u);
+  assert.match(config, /adopt_external_logins: false/u);
+  assert.match(config, /provider_routing:\n {2}only:\n {4}- google-ai-studio\n {2}require_parameters: true\n/u);
+  const result = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env });
+  assert.equal(result.failure, null, result.failure?.message);
+  for (const call of await f.calls()) {
+    assert.equal(call.routeKey, "sk-or-test");
+    assert.equal(call.leaked, null);
+  }
+  const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: viaOpenRouter, cliVersion: result.cliVersion, result, env });
+  assert.equal(observed.route, "openrouter");
+  assert.equal(observed.endpoint, "https://openrouter.ai/api/v1");
+  assert.equal(observed.provider, "google");
+
+  const b = await attempt(f.root, "openrouter-elsewhere");
+  await prepareHermesAttempt({ variant: viaOpenRouter, cwd: b.attemptDir, env });
+  const elsewhere = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://api.anthropic.com" } });
+  assert.match(elsewhere.failure.message, /endpoint requested https:\/\/openrouter.ai\/api\/v1, observed https:\/\/api.anthropic.com/);
 });
