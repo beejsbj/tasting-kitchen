@@ -120,8 +120,12 @@ test("a profile that declares an environment accepts exactly that one, with exac
   const memoryAlwaysOn = declared("live", { memory: ["on"], connections: both });
   assert.doesNotThrow(() => match(memoryAlwaysOn, config("live", toggles)));
   assert.throws(() => match(memoryAlwaysOn, config("live", { memory: "off", connections: "off" })), /cannot honour memory off/);
-  // A harness profile belongs only to a snapshot: live is his real home, not a copy of a named profile.
-  assert.throws(() => match(declared("live", { memory: both, connections: both }), config("live", { harnessProfile: "rose", ...toggles })), /requires the snapshot environment/);
+  // A harness profile belongs to a snapshot, or to a live profile that declares it runs a named one in place.
+  assert.throws(() => match(declared("live", { memory: both, connections: both }), config("live", { harnessProfile: "otto", ...toggles })), /requires the snapshot environment/);
+  assert.doesNotThrow(() => match(declared("live", { memory: both, connections: both, harnessProfile: true }), config("live", { harnessProfile: "otto", ...toggles })));
+  // Rose is never live, whichever profile or harness would run her.
+  assert.throws(() => match(declared("live", { memory: both, connections: both, harnessProfile: true }), config("live", { harnessProfile: "rose", ...toggles })), /rose is never live/);
+  assert.throws(() => match(declared("live", { memory: both, connections: both }), config("live", { harnessProfile: "rose", ...toggles })), /rose is never live/);
   assert.throws(() => match(declared("clean"), config("mine")), /must be one of clean, snapshot, live/);
   // Absent stays absent: a profile with no environment accepts only a configuration without one.
   assert.doesNotThrow(() => match(declared(), config()));
