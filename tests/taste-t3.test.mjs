@@ -42,7 +42,8 @@ if (args[0] === "serve") {
   mkdirSync(path.dirname(runtime), { recursive: true });
   writeFileSync(runtime, JSON.stringify({ pid: process.pid }));
   log({ cmd: "serve", args, browser: process.env.T3CODE_NO_BROWSER ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, telemetry: process.env.T3CODE_TELEMETRY_ENABLED ?? null, doNotTrack: process.env.DO_NOT_TRACK ?? null, sessionEnv: [process.env.CLAUDECODE, process.env.T3_MCP_BEARER_TOKEN, process.env.CLAUDE_CODE_MESSAGING_TOKEN].filter(Boolean) });
-  process.on("SIGTERM", () => process.exit(0));
+  if (!process.env.FAKE_IGNORE_TERM) process.on("SIGTERM", () => process.exit(0));
+  else process.on("SIGTERM", () => {});
   createServer((request, response) => response.end("ok")).listen(Number(flag("--port")), "127.0.0.1");
 } else if (args[0] === "project") {
   process.exit(existsSync(runtime) ? 0 : 1);
@@ -232,7 +233,18 @@ test("a multi-turn T3 → Codex run verifies: Codex appends every turn to one ro
   assert.equal(observed.innerSessions, 1);
 });
 
-test("if the Kitchen is killed mid-run, the T3 server stops and the token-bearing settings are deleted", async (t) => {
+test("T3 → Codex verification reads every turn's model and effort, not only the last", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "codex-substituted-early");
+  await prepareT3Attempt({ variant: viaCodex, cwd: a.attemptDir, env: f.env });
+  const result = await runT3Session({ variant: viaCodex, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.t3, env: f.env });
+  const rollout = path.join(a.attemptDir, "codex-home", "sessions", "2026", "11", "08", "rollout-thread-0001.jsonl");
+  const turns = (await readFile(rollout, "utf8")).trim().split("\n");
+  await writeFile(rollout, `${[JSON.stringify({ type: "turn_context", payload: { model: "gpt-substituted", effort: "low" } }), turns[1]].join("\n")}\n`, "utf8");
+  await assert.rejects(verifyT3Identity({ codexHome: a.codexHome, variant: viaCodex, cliVersion: result.cliVersion, result }), /gpt-substituted/);
+});
+
+for (const ignoresTerm of [false, true]) test(`if the Kitchen is killed mid-run, the T3 server stops and the token-bearing settings are deleted${ignoresTerm ? " even when the server ignores TERM" : ""}`, async (t) => {
   const f = await setup(t);
   const a = await attempt(f.root, "killed");
   const settings = path.join(a.attemptDir, "t3-home", "userdata", "settings.json");
@@ -243,7 +255,7 @@ test("if the Kitchen is killed mid-run, the T3 server stops and the token-bearin
   const kitchen = path.join(f.root, "kitchen.mjs");
   const t3Module = new URL("../lib/taste/t3.mjs", import.meta.url).href;
   await writeFile(kitchen, `import { startT3Server } from ${JSON.stringify(t3Module)};
-const server = await startT3Server({ executable: ${JSON.stringify(f.t3)}, t3Home: ${JSON.stringify(path.join(a.attemptDir, "t3-home"))}, workspace: ${JSON.stringify(a.workspace)}, env: { ...process.env, FAKE_LOG: ${JSON.stringify(path.join(f.root, "calls.jsonl"))} } });
+const server = await startT3Server({ executable: ${JSON.stringify(f.t3)}, t3Home: ${JSON.stringify(path.join(a.attemptDir, "t3-home"))}, workspace: ${JSON.stringify(a.workspace)}, env: { ...process.env, FAKE_LOG: ${JSON.stringify(path.join(f.root, "calls.jsonl"))}${ignoresTerm ? ", FAKE_IGNORE_TERM: \"1\"" : ""} } });
 console.log(server.port);
 setInterval(() => {}, 1000);
 `, "utf8");
@@ -258,7 +270,7 @@ setInterval(() => {}, 1000);
   assert.equal(process.kill(pid, 0), true, "the server is up");
   assert.ok((await fetch(`http://127.0.0.1:${port}/`)).ok);
   child.kill("SIGKILL");
-  const deadline = Date.now() + 20_000;
+  const deadline = Date.now() + 30_000;
   const alive = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
   while (Date.now() < deadline && alive()) await new Promise((resolve) => setTimeout(resolve, 100));
   assert.equal(alive(), false, "the orphaned server was stopped");
