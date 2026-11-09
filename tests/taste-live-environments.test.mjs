@@ -9,7 +9,7 @@ import { buildCodexTurnArgs, codexLiveHome, runCodexSession } from "../lib/taste
 import { buildCursorTurnArgs } from "../lib/taste/cursor.mjs";
 import { NEVER_LIVE_PROFILES } from "../lib/taste/environments.mjs";
 import { compatibilityFor, getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
-import { buildHermesTurnArgs, cleanupHermesAttempt, cleanupHermesHome, hermesHomeFor, hermesProcessEnv, hermesProfileSource, prepareHermesAttempt } from "../lib/taste/hermes.mjs";
+import { assertHermesInvocation, buildHermesTurnArgs, cleanupHermesAttempt, cleanupHermesHome, hermesHomeFor, hermesProcessEnv, hermesProfileSource, prepareHermesAttempt } from "../lib/taste/hermes.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 const HOST = { runtime: "linux-host", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
@@ -313,7 +313,7 @@ import { DatabaseSync } from "node:sqlite";
 const args = process.argv.slice(2);
 if (args[0] === "--version") { console.log("Hermes Agent v9.9.9 (fake)"); process.exit(0); }
 const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
-if (args.includes("-p") || args.includes("--profile")) process.exit(64);
+if ((args.includes("-p") && flag("-p") !== "default") || args.includes("--profile")) process.exit(64);
 const home = process.env.HERMES_HOME;
 let soul = null;
 try { soul = readFileSync(path.join(home, "SOUL.md"), "utf8"); } catch {}
@@ -374,6 +374,13 @@ test("a live Hermes turn names no profile, ignores no rules, and points HERMES_H
   assert.equal(off[off.indexOf("-m") + 1], "gpt-6-luna");
   assert.equal(off[off.indexOf("-t") + 1], "file,terminal");
   for (const flag of ["--ignore-rules", "-p", "--profile", "--safe-mode", "--ignore-user-config"]) assert.equal(off.includes(flag), false, flag);
+  // `default` is HERMES_HOME at the root, so it alone pins itself with -p default; a profiles/<name> home needs no pin.
+  const pinned = buildHermesTurnArgs({ variant: hermesAs("default"), workspace: "/tmp/work", queryFile: "/tmp/q.txt" });
+  assert.deepEqual(pinned.slice(-2), ["-p", "default"]);
+  assert.doesNotThrow(() => assertHermesInvocation(pinned, hermesAs("default")));
+  assert.throws(() => assertHermesInvocation(off, hermesAs("default")), /exactly one -p default/);
+  assert.throws(() => assertHermesInvocation([...pinned.slice(0, -1), "rose"], hermesAs("default")), /exactly one -p default/);
+  assert.throws(() => assertHermesInvocation([...off, "-p", "otto"], hermesLive), /must not select a profile/);
   const on = buildHermesTurnArgs({ variant: withProfile(hermesLive, { connections: "on" }), workspace: "/tmp/work", queryFile: "/tmp/q.txt", toolsets: "file,terminal,mcp-t3,mcp-tududi" });
   assert.equal(on[on.indexOf("-t") + 1], "file,terminal,mcp-t3,mcp-tududi");
   assert.throws(() => buildHermesTurnArgs({ variant: hermesLive, workspace: "/tmp/work", queryFile: "/tmp/q.txt", toolsets: "file,terminal,mcp-t3" }), /must be file,terminal/);

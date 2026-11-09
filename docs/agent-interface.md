@@ -357,7 +357,9 @@ per-attempt `hermes-home`. The run adds a session to the profile's `state.db` (t
 may write its memory and run its plugin hooks, and issues exactly one `hermes chat --oneshot`: no
 gateway command, so a running gateway is neither stopped, restarted nor reconfigured. Hermes reads
 `active_profile` in the root whenever `HERMES_HOME` is not a `profiles/<name>` directory and then runs
-as that profile, so a live `default` Run refuses to start if `<root>/active_profile` names anything else. Identity is read
+as that profile, so a live `default` Run refuses to start if `<root>/active_profile` names anything else,
+and each of its turns passes `-p default` (the one place a profile is selected), so a switch after
+preparation cannot redirect it either. Identity is read
 from the profile's own `state.db` by session id, so a fallback provider his config would use fails the
 attempt like any other mismatch.
 
