@@ -7,7 +7,7 @@ import test from "node:test";
 
 import { computeRecipeHash, planSelection } from "../lib/taste/catalog.mjs";
 import {
-  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
+  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, observedUpstream, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
 } from "../lib/taste/direct-api.mjs";
 import { compatibilityFor, resolveHarnessAdapter, skillDeliverySupport } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -198,6 +198,16 @@ test("verification rebuilds each request from the recipe: another prompt, a syst
     await assert.rejects(verify(added), /request is not the recipe's conversation so far/);
   }
   await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint }), /requires the recipe/);
+});
+
+test("the served upstream is read from the response provider or the documented selected endpoint, and conflicts count as unobserved", () => {
+  const selected = (provider) => ({ openrouter_metadata: { endpoints: { available: [{ provider: "Other", selected: false }, { provider, selected: true }] } } });
+  assert.equal(observedUpstream({ provider: "Anthropic" }), "Anthropic");
+  assert.equal(observedUpstream(selected("Anthropic")), "Anthropic");
+  assert.equal(observedUpstream({ provider: "Anthropic", ...selected("Anthropic") }), "Anthropic");
+  assert.equal(observedUpstream({ provider: "Anthropic", ...selected("Google") }), null);
+  assert.equal(observedUpstream({ openrouter_metadata: { endpoints: { available: [{ provider: "Anthropic" }] } } }), null);
+  assert.equal(observedUpstream({}), null);
 });
 
 test("a reply that did not end normally, or a response with no HTTP status, is not accepted", async () => {
