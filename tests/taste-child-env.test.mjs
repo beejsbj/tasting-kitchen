@@ -102,3 +102,17 @@ test("acceptance checks run the model's code with the allowlisted environment, n
   const result = await runChecks(recipe, workspace, { env: { GH_TOKEN: "x", OPENROUTER_API_KEY: "y" } });
   assert.equal(result.passed, true, JSON.stringify(result.checks));
 });
+
+test("live Codex, Cursor and Hermes keep the whole environment, as he runs them", () => withAmbient(() => {
+  const live = { executionProfile: { environment: "live" } };
+  const children = {
+    cursor: cursorEnv({}, { harness: "cursor-agent", ...live }),
+    hermes: hermesProcessEnv({ variant: { harness: "hermes", executionProfile: { id: "hermes-linux-host-live-openai-codex-v1", environment: "live", harnessProfile: "default" } }, hermesHome: "/home/me/.hermes" }),
+    codex: planCodexTurn({ prompt: "x", model: "gpt-5.6-sol", reasoningEffort: "high", serviceTier: "default", workspace: "/cook/workspace", codexHome: "/home/me/.codex", artifactDir: "/cook/raw", live: { memory: "on", connections: "on" } }).env,
+  };
+  for (const [label, child] of Object.entries(children)) {
+    for (const key of ["GH_TOKEN", "OPENROUTER_API_KEY", "BWS_ACCESS_TOKEN", "SSH_AUTH_SOCK", "TK_CANARY_FUTURE_SECRET"]) assert.equal(child[key], AMBIENT[key], `${label} ${key}`);
+  }
+  assert.equal(children.hermes.HERMES_HOME, "/home/me/.hermes");
+  assert.equal(children.codex.CODEX_HOME, "/home/me/.codex");
+}));

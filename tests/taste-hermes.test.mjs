@@ -180,7 +180,7 @@ test("Hermes plans pin route, model, effort and toolsets; clean ignores rules, a
   assert.throws(() => buildHermesTurnArgs({ variant: clean, workspace: "relative", queryFile: "/tmp/q.txt" }), /absolute path/);
 });
 
-test("Hermes configurations validate model, effort, tier and the snapshot's profile name; no Hermes configuration runs live", () => {
+test("Hermes configurations validate model, effort, tier and the snapshot's profile name; rose never runs live", () => {
   assert.doesNotThrow(() => resolveHarnessAdapter(clean));
   assert.doesNotThrow(() => resolveHarnessAdapter(snapshot));
   assert.doesNotThrow(() => resolveHarnessAdapter(withToggles({ memory: "off", connections: "on" })));
@@ -188,7 +188,8 @@ test("Hermes configurations validate model, effort, tier and the snapshot's prof
   assert.throws(() => resolveHarnessAdapter({ ...clean, reasoningEffort: "adaptive" }), /reasoning effort/);
   assert.throws(() => resolveHarnessAdapter({ ...clean, serviceTier: "fast" }), /default tier/);
   assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, environment: "snapshot" } }), /environment must be clean/);
-  assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: { ...snapshotProfile, environment: "live" } }), /environment must be snapshot/);
+  assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: { ...snapshotProfile, environment: "live" } }), /rose is never live/);
+  assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: { ...snapshotProfile, harnessProfile: "otto", environment: "live" } }), /environment must be snapshot/);
   const unnamed = { ...snapshotProfile };
   delete unnamed.harnessProfile;
   assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: unnamed }), /must name the harnessProfile it copies/);
@@ -229,7 +230,7 @@ test("a Hermes child inherits only allowlisted variables; a caller's env cannot 
   assert.equal(hermesEnvironment(clean), "clean");
   assert.equal(hermesEnvironment(snapshot), "snapshot");
   const undeclared = { ...clean, executionProfile: { ...cleanProfile, environment: undefined } };
-  assert.throws(() => hermesEnvironment(undeclared), /clean or snapshot environment/);
+  assert.throws(() => hermesEnvironment(undeclared), /clean, snapshot or live environment/);
 });
 
 test("Hermes JSONL requires one init and one successful result, and an exact resume", () => {

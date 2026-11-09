@@ -13,3 +13,8 @@ if (process.env.TASTE_TEST_RUNTIME_ROOT_OWNER === undefined || !process.env.TAST
   process.env.TASTE_TEST_RUNTIME_ROOT_OWNER = String(process.pid);
   process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 }
+
+// Live runs use his real homes. A test that forgets to point them at a fake must fail on a
+// missing directory, never reach the real ~/.codex or ~/.hermes.
+if (!process.env.TASTE_CODEX_LIVE_HOME) process.env.TASTE_CODEX_LIVE_HOME = path.join(process.env.TASTE_RUNTIME_ROOT, "no-real-codex-home");
+if (!process.env.TASTE_HERMES_ROOT) process.env.TASTE_HERMES_ROOT = path.join(process.env.TASTE_RUNTIME_ROOT, "no-real-hermes-root");
