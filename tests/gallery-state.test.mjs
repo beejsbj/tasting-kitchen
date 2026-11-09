@@ -239,7 +239,7 @@ test('harness and environment labels read plainly and unknown harnesses keep the
   assert.equal(environmentLabel(hermesPersonal, false), 'Snapshot');
   assert.equal(environmentLabel(hermesQuiet), 'Snapshot · rose · no memory');
   assert.equal(environmentLabel(hermesQuiet, false), 'Snapshot · no memory', 'the toggles stay when the profile is dropped');
-  assert.equal(environmentLabel(claudeLive), 'Live');
+  assert.equal(environmentLabel(claudeLive), 'Live · connections off');
   assert.equal(environmentLabel(claudeLiveConnected), 'Live · connections on');
   assert.equal(environmentLabel(legacy), undefined);
   assert.equal(environmentName(legacy), 'Not declared');
@@ -248,7 +248,7 @@ test('harness and environment labels read plainly and unknown harnesses keep the
   assert.equal(environmentKeyLabel('snapshot:rose+no-memory+connections'), 'Snapshot · rose · no memory · connections on');
   assert.equal(configurationHeading(claudeClean, 'Opus'), 'Opus 5.5 · High · Claude Code · Clean');
   assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Snapshot · rose');
-  assert.equal(configurationHeading(claudeLive, 'Opus'), 'Opus 5.5 · High · Claude Code · Live');
+  assert.equal(configurationHeading(claudeLive, 'Opus'), 'Opus 5.5 · High · Claude Code · Live · connections off');
   assert.equal(configurationHeading(legacy, 'Sol'), 'Sol · High · Codex CLI');
 });
 
@@ -256,7 +256,7 @@ test('facets list the values present, so a single-harness catalog has nothing to
   assert.deepEqual(configurationFacets([legacy, { ...legacy, id: 'other' }]), { harnesses: [{ id: 'codex-cli', label: 'Codex CLI' }], environments: [{ id: 'undeclared', label: 'Not declared' }] });
   assert.deepEqual(configurationFacets([claudeClean, claudePersonal, hermesPersonal, hermesQuiet, claudeLive]), {
     harnesses: [{ id: 'claude-code', label: 'Claude Code' }, { id: 'hermes', label: 'Hermes' }],
-    environments: [{ id: 'clean', label: 'Clean' }, { id: 'snapshot', label: 'Snapshot' }, { id: 'snapshot:rose', label: 'Snapshot · rose' }, { id: 'snapshot:rose+no-memory', label: 'Snapshot · rose · no memory' }, { id: 'live', label: 'Live' }],
+    environments: [{ id: 'clean', label: 'Clean' }, { id: 'snapshot', label: 'Snapshot' }, { id: 'snapshot:rose', label: 'Snapshot · rose' }, { id: 'snapshot:rose+no-memory', label: 'Snapshot · rose · no memory' }, { id: 'live', label: 'Live · connections off' }],
   });
 });
 

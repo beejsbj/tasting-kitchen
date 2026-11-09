@@ -139,10 +139,21 @@ and records the digest of exactly those bytes:
 - `CLAUDE.md`, with symlinks followed, so the home holds bytes, never a link back;
 - each skill, agent, command and output style. A child that lives in a git work
   tree contributes only its tracked files (working-tree bytes, so uncommitted
-  edits count); others contribute every regular file minus `.git`. A skill such
+  edits count); **untracked files in such a repository are skipped**, so a skill
+  not yet committed reads like a plain folder, and a new file in a committed
+  skill is not copied until it is tracked. Others contribute every regular file
+  minus `.git`. At any depth, volatile files (`__pycache__`, `*.pyc`,
+  `node_modules`, `.staging`, `.last-complete-round`, `.DS_Store`) and
+  credential-looking files (`.env`, `.env.*` other than examples, `auth.json`,
+  `credentials.json`, `.credentials.json`, `.netrc`, `*.pem`, `*.key`, `id_rsa*`,
+  `id_ed25519*`) are left out, so Claude Code resyncing his account skills or
+  Python compiling a script cannot change the setup digest, and a stray secret
+  never enters a snapshot. A script keeps its owner exec bit (it is part of the
+  digest). A skill such
   as `cockpit` is a whole repository with chat logs beside it, and copying the
   directory would turn one attempt into gigabytes. A snapshot is capped at 5,000
-  files and 64 MiB and fails clearly beyond that;
+  files and 64 MiB across all of it, counted as files are read, and fails clearly
+  beyond that;
 - `settings.json` reduced to `language`, `alwaysThinkingEnabled`,
   `includeCoAuthoredBy` and `attribution`. Model, effort and permissions are
   pinned by the configuration; hooks, memory and connectors are set by Kitchen;
@@ -165,9 +176,19 @@ copy, which is deleted when the attempt ends, so writes are effectively off.
 left unset, his settings, hooks, skills and plugins load, and whatever the run
 writes (session transcripts, memory, edits under bypassed permissions) stays.
 With memory on, `autoMemoryDirectory` points at the same home-directory memory a
-snapshot copies, so a live run reads and may write his real memory. Its receipt
-notes the digest of his setup at the start, but a live Dish never groups by it:
-the run itself may have changed what it measured.
+snapshot copies, so a live run reads and may write his real memory: **live with
+memory on keeps its writes in his real home-directory memory**. That is what
+live means, and the receipt says so ("Live · writes to your real memory").
+`TASTE_CLAUDE_MEMORY_SOURCE` moves both the snapshot's source and the live
+target. Live configurations ship with connections off and are labelled "Live ·
+connections off"; a live connections-on configuration is not in the catalog yet.
+Its receipt notes the digest of his setup at the start, but a live Dish never
+groups by it: the run itself may have changed what it measured.
+
+An interrupted cook (SIGINT or SIGTERM) kills the harness's process group,
+deletes the copied setup, and records the attempt as failed at stage
+`interrupted`. A SIGKILL cannot be caught: its attempt home stays on disk until
+someone removes it.
 
 Both personal environments load only the user setting source and exclude
 instruction files in the workspace's ancestors through `claudeMdExcludes`,
@@ -247,7 +268,9 @@ rose's own sessions and run its plugin hooks against his real channels.
 Both environments use the committed Hermes environment's own entry point,
 because the `hermes` launcher would build a new dependency environment for an
 unfamiliar home. Hermes borrows the Claude Code login from
-`~/.claude/.credentials.json` (a refresh is written back there). When the
+`~/.claude/.credentials.json` (a refresh is written back there, so a Hermes
+attempt that crosses the token's expiry rotates the login his own sessions use:
+the one place a Kitchen run can write to his real `~/.claude`). When the
 attempt ends, however it ends, the runner empties the Hermes home of everything
 but `state.db` (and its WAL files), so a copied login, the soul and the memories
 do not outlive it; an allowlist of what stays covers credential files a later

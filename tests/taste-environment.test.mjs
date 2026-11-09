@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { chmod, cp, mkdtemp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 import test from "node:test";
 
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
+import { collectSetupChildren, collectSetupDirectory, collectSetupFile, createSetupBudget, setupDigest, writeSetupFiles } from "../lib/taste/environments.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { OPTIONAL_PROFILE_KEYS } from "../lib/taste/harness-adapters.mjs";
 import { cook } from "../lib/taste/index.mjs";
@@ -265,4 +266,55 @@ test("connections on cooks only with --allow-connections; a dry run says so and 
   // The stub stops before cook rebuilds the registry, so this test writes nothing into the checkout.
   await assert.rejects(cook(repoRoot, { ...base, execute: true, allowConnections: true, executePlan: async (options) => { allowed = options.allowConnections; throw new Error("stop before the registry"); } }), /stop before the registry/);
   assert.equal(allowed, true);
+});
+
+test("setup collection leaves volatile files and credential-looking files out at any depth, and keeps a script's exec bit", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-setup-collect-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const skill = path.join(root, "skills", "sample");
+  const write = async (relative, text, mode) => {
+    await mkdir(path.dirname(path.join(skill, relative)), { recursive: true });
+    await writeFile(path.join(skill, relative), text, { mode });
+  };
+  await write("SKILL.md", "skill");
+  await write("scripts/run.sh", "#!/bin/sh\n", 0o755);
+  for (const noise of ["__pycache__/x.pyc", "sub/y.pyc", ".last-complete-round", ".staging/1/part", "node_modules/a/index.js", ".env", ".env.local", "auth.json", "sub/credentials.json", "keys/server.pem", "id_ed25519"]) await write(noise, "noise");
+  await write(".env.example", "kept");
+
+  const collect = () => collectSetupChildren(path.join(root, "skills"), "skills");
+  const files = await collect();
+  assert.deepEqual(files.map((file) => file.path).sort(), ["skills/sample/.env.example", "skills/sample/SKILL.md", "skills/sample/scripts/run.sh"]);
+  assert.equal(files.find((file) => file.path.endsWith("run.sh")).executable, true);
+  const digest = setupDigest(files);
+
+  await write(".last-complete-round", "another session id");
+  await write("__pycache__/x.pyc", "other bytecode");
+  assert.equal(setupDigest(await collect()), digest, "volatile files cannot move the digest");
+  await write("scripts/run.sh", "#!/bin/sh\n", 0o644);
+  await chmod(path.join(skill, "scripts/run.sh"), 0o644);
+  assert.notEqual(setupDigest(await collect()), digest, "losing the exec bit is a different setup");
+
+  const home = path.join(root, "home");
+  await mkdir(home);
+  await writeSetupFiles(home, files);
+  assert.equal((await stat(path.join(home, "skills/sample/scripts/run.sh"))).mode & 0o777, 0o700);
+  assert.equal((await stat(path.join(home, "skills/sample/SKILL.md"))).mode & 0o777, 0o600);
+});
+
+test("one snapshot budget caps files as they are read, across every collection", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-setup-budget-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "a"));
+  await writeFile(path.join(root, "a", "one.txt"), "x");
+  const budget = createSetupBudget();
+  budget.files = 5000;
+  await assert.rejects(collectSetupDirectory(root, "a", budget), /more than 5000 files/);
+  budget.files = 0;
+  budget.bytes = 64 * 1024 * 1024;
+  await assert.rejects(collectSetupFile(path.join(root, "a", "one.txt"), "one.txt", budget), /bytes/);
+});
+
+test("the environments module loads first without the catalog having loaded", async () => {
+  const { stdout } = await promisify(execFile)(process.execPath, ["--input-type=module", "-e", `import("${path.resolve("lib/taste/environments.mjs")}").then((module) => console.log(module.ENVIRONMENT_TOGGLES.join(",")))`]);
+  assert.equal(stdout.trim(), "memory,connections");
 });

@@ -18,10 +18,12 @@ function toggleTokens({ memory, connections }: Dimensioned["executionProfile"]) 
 }
 const TOGGLE_LABELS: Record<string, string> = { "no-memory": "no memory", connections: "connections on" };
 function composeLabel(environment: string, profile: string | undefined, toggles: readonly string[]) {
-  return [ENVIRONMENTS[environment] ?? environment, profile, ...toggles.map((toggle) => TOGGLE_LABELS[toggle] ?? toggle)].filter(Boolean).join(" · ");
+  // Live never loads his connections unless the key says so; the label says which, rather than leave it to be assumed.
+  const stated = environment === "live" && !toggles.includes("connections") ? [...toggles.map((toggle) => TOGGLE_LABELS[toggle] ?? toggle), "connections off"] : toggles.map((toggle) => TOGGLE_LABELS[toggle] ?? toggle);
+  return [ENVIRONMENTS[environment] ?? environment, profile, ...stated].filter(Boolean).join(" · ");
 }
 /**
- * "Clean", "Live", "Snapshot · rose", "Snapshot · rose · no memory", "Live · connections on";
+ * "Clean", "Live · connections off", "Snapshot · rose", "Snapshot · rose · no memory", "Live · connections on";
  * undefined when the configuration predates environments. `withProfile` false drops the
  * harness profile, which belongs to its harness, but keeps the toggles.
  */

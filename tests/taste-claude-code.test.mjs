@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { chmod, lstat, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -18,6 +18,7 @@ import {
   runClaudeSession,
   verifyClaudeIdentity,
 } from "../lib/taste/claude-code.mjs";
+import { pathExists } from "../lib/taste/files.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -67,7 +68,7 @@ async function credentials(root, { expiresAt = Date.now() + 4 * 60 * 60 * 1000, 
 // --strict-mcp-config, plus claude.ai connectors unless disabled), and the
 // permission mode and working directory.
 const FAKE_CLAUDE = `#!/usr/bin/env node
-import { appendFileSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 const args = process.argv.slice(2);
 if (args[0] === "--version") { console.log(process.env.FAKE_VERSION || "2.1.312 (Claude Code)"); process.exit(0); }
 let token = "";
@@ -82,6 +83,7 @@ if (!args.includes("--strict-mcp-config") && process.env.ENABLE_CLAUDEAI_MCP_SER
 if (process.env.FAKE_EXTRA_SERVER) servers.push(process.env.FAKE_EXTRA_SERVER);
 const tools = (flagValue("--tools") || "").split(",").filter(Boolean).concat(process.env.FAKE_EXTRA_TOOL ? [process.env.FAKE_EXTRA_TOOL] : []).concat(servers.map((name) => "mcp__" + name.replace(/\\W/g, "_") + "__read"));
 appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, settings, tokenMatches: token === process.env.FAKE_EXPECTED_TOKEN, configDir: process.env.CLAUDE_CONFIG_DIR ?? null, autoMemoryOff: process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY ?? null, claudeAi: process.env.ENABLE_CLAUDEAI_MCP_SERVERS ?? null, gitCeiling: process.env.GIT_CEILING_DIRECTORIES, inherited }) + "\\n");
+if (process.env.FAKE_HANG) { writeFileSync(process.env.FAKE_HANG, String(process.pid)); setInterval(() => {}, 1000); await new Promise(() => {}); }
 const resume = args.indexOf("--resume");
 const session = resume >= 0 ? args[resume + 1] : process.env.FAKE_SESSION;
 const requested = args[args.indexOf("--model") + 1];
@@ -548,4 +550,34 @@ test("a snapshot Claude Code attempt that failed at publication recovers private
   delete requested.setup.digest;
   await writeFile(path.join(secondDir, "requested.json"), JSON.stringify(requested));
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: second.attemptId, env: f.env }), /SHA-256 setup digest/);
+});
+
+test("a killed Kitchen process stops the harness, discards the copied setup, and leaves a terminal state", async (t) => {
+  const f = await runnerFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const hangFile = path.join(f.root, "hang.pid");
+  const caseFile = path.join(f.root, "case.json");
+  await writeFile(caseFile, JSON.stringify({ root: f.root, recipe: f.recipe, catalog: f.catalog, executable: f.executable, env: { ...f.env, FAKE_HANG: hangFile }, variant: claudeVariant("snapshot") }));
+  const script = path.join(f.root, "interrupted-cook.mjs");
+  await writeFile(script, `import { readFile } from "node:fs/promises";
+import { executeRecipe } from ${JSON.stringify(path.resolve("lib/taste/runner.mjs"))};
+const c = JSON.parse(await readFile(${JSON.stringify(caseFile)}, "utf8"));
+await executeRecipe({ repoRoot: c.root, catalog: c.catalog, recipe: c.recipe, variant: c.variant, executable: c.executable, env: c.env, nonce: "killed" });
+`);
+  const runner = spawn(process.execPath, [script], { stdio: "ignore" });
+  const exited = new Promise((resolve) => runner.once("exit", (code, signal) => resolve({ code, signal })));
+  let harnessPid;
+  for (let waited = 0; waited < 200 && harnessPid === undefined; waited += 1) {
+    harnessPid = await readFile(hangFile, "utf8").then(Number, () => undefined);
+    if (harnessPid === undefined) await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  assert.ok(harnessPid, "the stand-in harness started");
+  runner.kill("SIGTERM");
+  assert.deepEqual(await exited, { code: 143, signal: null });
+  assert.throws(() => process.kill(harnessPid, 0), /ESRCH/, "the harness did not outlive the Kitchen");
+  const attemptDir = path.join(f.root, "private/runtime/attempts", (await readdir(path.join(f.root, "private/runtime/attempts")))[0]);
+  assert.equal(await pathExists(path.join(attemptDir, "claude-home")), false, "the copied setup is gone");
+  const state = JSON.parse(await readFile(path.join(attemptDir, "state.json"), "utf8"));
+  assert.equal(state.status, "failed");
+  assert.equal(state.stage, "interrupted");
 });
