@@ -143,6 +143,19 @@ test("resuming refuses another Recipe's smoke directory and leaves its results a
   assert.equal(await pathExists(survivor), true);
 });
 
+test("resuming refuses a smoke made under a different Recipe hash and leaves its results alone", async (t) => {
+  const { root, env } = await kitchen(t);
+  const first = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env });
+  assert.equal(first.passed, true, first.error);
+  const receiptPath = path.join(first.directory, "smoke.json");
+  const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+  for (const hash of ["0".repeat(64), undefined]) {
+    await writeFile(receiptPath, JSON.stringify({ ...receipt, recipe: { ...receipt.recipe, hash } }));
+    await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, resume: first.directory }), /Recipe changed since that smoke/u);
+    assert.equal(await pathExists(path.join(first.directory, "kitchen")), true, "the earlier Kitchen tree is not deleted");
+  }
+});
+
 test("resuming a smoke of the same Recipe repeats every step after the render", async (t) => {
   const { root, env } = await kitchen(t);
   const first = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env });
