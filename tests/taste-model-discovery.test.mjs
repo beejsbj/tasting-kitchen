@@ -10,6 +10,8 @@ import {
   buildTemplateConfiguration, catalogWithConfigurations, chooseEffort, chooseUpstream, CONFIGURATION_TEMPLATES, isConfigurationSpec,
   materializeConfigurations, materializedProblems, parseConfigurationSpec, resolveConfigurationSpec, servingProviders,
 } from "../lib/taste/configuration-templates.mjs";
+import { hermesRoute } from "../lib/taste/hermes.mjs";
+import { KEY_PROXY_AUTH } from "../lib/taste/key-proxy.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { cook, plan } from "../lib/taste/index.mjs";
 import { describeOpenRouterModel, discoverModels, formatDiscovery, openRouterEfforts } from "../lib/taste/model-discovery.mjs";
@@ -248,6 +250,8 @@ test("a selector resolves through discovery to existing entries, entries to mate
   assert.equal(gemma.label, "Gemma 4 31B · High · via Hermes · clean (OpenRouter)");
   assert.deepEqual(gemma.materialized, { template: "hermes-openrouter-clean", spec: "hermes:openrouter/google/gemma-4-31b-it:free@high:clean", selector: "hermes:openrouter/*@auto+free", at: "2026-11-09T12:00:00.000Z", free: true, contextLength: 262144, source: "openrouter:/api/v1/models" });
   assert.deepEqual(materializedProblems(gemma), []);
+  // A materialized OpenRouter configuration runs behind the key proxy, as a hand-written one does: Hermes never holds the key.
+  assert.equal(hermesRoute(gemma).auth, KEY_PROXY_AUTH);
 
   // A spec for a configuration already in the catalog is that entry.
   const existing = await resolveConfigurationSpec(catalog, "hermes:openrouter/anthropic/claude-opus-5.5@high", { env });
