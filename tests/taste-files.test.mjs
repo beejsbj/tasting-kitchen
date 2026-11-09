@@ -44,6 +44,26 @@ test("public tree scan permits only parent references that resolve inside the ar
   await assert.rejects(scanPublicTree(root), /path traversal/);
 });
 
+test("public tree scan permits a source import of Kitchen equipment the artifact does not ship", async (t) => {
+  // A lyric scene in source/scenes/ imports the engine it ran against as ../engine/scene;
+  // the engine is Kitchen's and is deliberately not in the delivery.
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-public-tree-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "source/scenes"), { recursive: true });
+  await writeFile(path.join(root, "source/scenes/words.ts"), "import { Scene } from '../engine/scene';\nimport { W } from \"../engine/gl\";\n");
+  await assert.doesNotReject(scanPublicTree(root));
+  await writeFile(path.join(root, "source/scenes/escape.ts"), "import x from '../../../engine/scene';\n");
+  await assert.rejects(scanPublicTree(root), /path traversal/);
+});
+
+test("public scan permits a first-line env shebang and nothing else of its shape", () => {
+  assert.deepEqual(publicTextFindings("#!/usr/bin/env node\nconsole.log(1);\n"), []);
+  assert.deepEqual(publicTextFindings("#!/usr/bin/env -S node --no-warnings\n"), []);
+  assert.ok(publicTextFindings("#!/home/user/bin/node\n").includes("absolute home path"));
+  assert.ok(publicTextFindings("#!/opt/tools/node\n").includes("absolute path"));
+  assert.ok(publicTextFindings("// run #!/usr/bin/env node\n/usr/bin/env node x\n").includes("absolute path"));
+});
+
 test("verbatim inputs relax path shapes, including regexes shaped like Windows paths, but not leaks", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-verbatim-"));
   t.after(() => rm(root, { recursive: true, force: true }));
