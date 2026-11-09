@@ -47,6 +47,11 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["class", "code", "stage", "reason"],
+      "allOf": [
+        { "if": { "properties": { "code": { "const": "out-of-time" } } }, "then": { "required": ["budget"], "properties": { "budget": { "required": ["seconds"] } } } },
+        { "if": { "properties": { "code": { "const": "out-of-turns" } } }, "then": { "properties": { "budget": { "required": ["modelTurns"] } } } },
+        { "if": { "properties": { "code": { "not": { "enum": ["out-of-time", "out-of-turns"] } } } }, "then": { "not": { "required": ["budget"] } } }
+      ],
       "properties": {
         "class": { "const": "chef" },
         "code": { "enum": ["checks-failed", "output-contract", "refused", "out-of-turns", "out-of-time"] },

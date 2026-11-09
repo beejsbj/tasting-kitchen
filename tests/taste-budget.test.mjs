@@ -10,7 +10,7 @@ import { CLAUDE_CODE_TOOLS, buildClaudeTurnArgs, claudeChefFault } from "../lib/
 import { runDirectApiSession } from "../lib/taste/direct-api.mjs";
 import { CHEF_FAULTS, classifyFailure, KITCHEN_FAULTS } from "../lib/taste/faults.mjs";
 import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
-import { loadNoDishes } from "../lib/taste/no-dishes.mjs";
+import { loadNoDishes, validateNoDish } from "../lib/taste/no-dishes.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 // ---------------------------------------------------------------------------
@@ -143,6 +143,7 @@ test("Claude Code ran out of time only with an expired budget and the requested 
   assert.equal(claudeChefFault(jsonl(init, spoke), claudeOptions), undefined, "killed by something other than the budget");
   assert.equal(claudeChefFault(jsonl({ ...init, model: "claude-sonnet-5-5" }, { ...spoke, message: { ...spoke.message, model: "claude-sonnet-5-5" } }), timedOut), undefined, "another model's Run");
   assert.equal(claudeChefFault(jsonl(init, { ...spoke, parent_tool_use_id: "toolu_1" }), timedOut), undefined, "only a subagent spoke");
+  assert.equal(claudeChefFault(jsonl(init, spoke, { type: "result", subtype: "success", is_error: false }), timedOut), undefined, "the turn had finished; only the process lingered");
 });
 
 test("Kitchen pins --max-turns only when the Recipe declares a turn budget", () => {
@@ -238,6 +239,11 @@ test("an expired time budget with the adapter's evidence is a chef fault, publis
   assert.deepEqual(manifest.fault, { class: "chef", code: "out-of-time", stage: "execution", reason: CHEF_FAULTS["out-of-time"], turn: "opening", budget: { seconds: 600 } });
   const loaded = await loadNoDishes(f.root);
   assert.equal(loaded.length, 1, "the loader accepts a budget on a budget fault");
+  const directory = path.join(f.root, "no-dishes", result.noDishId);
+  const unnamed = { ...manifest.fault };
+  delete unnamed.budget;
+  await assert.rejects(validateNoDish(directory, { ...manifest, fault: unnamed }), /out-of-time fault must name the time budget/);
+  await assert.rejects(validateNoDish(directory, { ...manifest, fault: { ...manifest.fault, budget: { modelTurns: 40 } } }), /fault\.budget must name only the seconds budget/);
 });
 
 test("an expired time budget without evidence that the requested model was serving stays Kitchen's", async (t) => {
@@ -311,7 +317,13 @@ const mode = process.env.FAKE_MODE;
 if (mode === "silent") await new Promise(() => setInterval(() => {}, 1000));
 if (mode === "retry") { emit({ type: "system", subtype: "api_retry", attempt: 1, max_retries: 10, retry_delay_ms: Number(process.env.FAKE_WAIT_MS), error_status: 429, error: "rate_limit", session_id: session }); await new Promise((resolve) => setTimeout(resolve, Number(process.env.FAKE_WAIT_MS))); }
 emit({ type: "assistant", parent_tool_use_id: null, session_id: session, message: { model, content: [{ type: "text", text: "Working on it." }] } });
-if (mode === "hang") await new Promise(() => setInterval(() => {}, 1000));
+if (mode === "hang") {
+  // A tool the model started: the budget's stop must take it down too.
+  const { spawn } = await import("node:child_process");
+  const tool = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+  appendFileSync(process.env.FAKE_LOG + ".tool", String(tool.pid));
+  await new Promise(() => setInterval(() => {}, 1000));
+}
 if (mode === "max-turns") { emit({ type: "result", subtype: "error_max_turns", is_error: true, session_id: session, num_turns: Number(flag("--max-turns") ?? 99) }); process.exit(1); }
 const prompt = args.at(-1);
 emit({ type: "result", subtype: "success", is_error: false, result: prompt, session_id: session, usage: { input_tokens: 5, output_tokens: 2, service_tier: "standard" }, modelUsage: { [model]: { inputTokens: 5, outputTokens: 2 } } });
@@ -364,6 +376,10 @@ test("Claude Code: a model still working when the time budget runs out is killed
   assert.equal(result.fault?.code, "out-of-time", result.error);
   const manifest = JSON.parse(await readFile(path.join(f.root, "no-dishes", result.noDishId, "no-dish.json"), "utf8"));
   assert.deepEqual(manifest.fault.budget, { seconds: 600 });
+  const tool = Number(await readFile(path.join(f.root, "calls.jsonl.tool"), "utf8"));
+  const alive = () => { try { process.kill(tool, 0); return true; } catch { return false; } };
+  for (let wait = 0; alive() && wait < 50; wait += 1) await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.equal(alive(), false, "the tool the harness started died with its process group");
 });
 
 test("Claude Code: a route that never answered within the budget is Kitchen's timeout", async (t) => {
@@ -391,7 +407,11 @@ const directVariant = {
   executionProfile: { id: "direct-api-openrouter-v1", label: "Direct API · OpenRouter route · no harness", runtime: "linux-host", sandbox: "no-tools", approvalPolicy: "no-tools", nativeWeb: "disabled", networkPolicy: "no-tools", filesystemBoundary: "no-workspace", environment: "clean", route: "openrouter", upstream: "anthropic" },
 };
 const directRecipe = { setup: { instructions: "Set the table." }, turns: [{ id: "make", content: "Cook" }] };
-const hangingFetch = (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+// A real request holds a socket open; this stand-in holds the event loop instead, since Node 22's AbortSignal.timeout does not.
+const hangingFetch = (_url, { signal }) => new Promise((_resolve, reject) => {
+  const socket = setInterval(() => {}, 1000);
+  signal.addEventListener("abort", () => { clearInterval(socket); reject(signal.reason); }, { once: true });
+});
 
 test("Direct API: Kitchen's own request timeout is a named harness limit; the budget's abort is not the model's", async (t) => {
   const privateDir = await mkdtemp(path.join(os.tmpdir(), "taste-budget-direct-"));

@@ -59,6 +59,7 @@ if (process.env.FAKE_HANG_AFTER_ITEM) {
     { type: "turn_context", payload: { model: process.env.FAKE_ROLLOUT_MODEL ?? "gpt-5.6-luna", effort: "high", personality: "none" } },
   ].map((record) => JSON.stringify(record)).join("\\n") + "\\n");
   console.log(JSON.stringify({ type: "item.completed", item: { id: "item_0", type: process.env.FAKE_ITEM_TYPE ?? "agent_message", text: "Working." } }));
+  if (process.env.FAKE_LINGER) console.log(JSON.stringify({ type: "turn.completed" }));
   await new Promise(() => setInterval(() => {}, 1000));
 }
 if (process.env.FAKE_EVENT) console.log(JSON.stringify(JSON.parse(process.env.FAKE_EVENT)));
@@ -358,6 +359,7 @@ test("the Recipe's time budget is the model's on Codex only when it answered and
     ["serving", {}, "out-of-time"],
     ["another model", { FAKE_ROLLOUT_MODEL: "gpt-5.6-sol" }, undefined],
     ["only an error item", { FAKE_ITEM_TYPE: "error" }, undefined],
+    ["finished, then lingered", { FAKE_LINGER: "1" }, undefined],
   ]) {
     await rm(path.join(f.codexHome, "sessions"), { recursive: true, force: true });
     // Long enough for a loaded machine to start the fake and write its rollout before the budget ends.

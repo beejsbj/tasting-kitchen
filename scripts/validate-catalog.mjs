@@ -942,6 +942,10 @@ if (verdictSchema?.properties?.verdict?.enum?.join("\0") !== VERDICT_VALUES.join
   if (Object.keys(budgetSchema).join("\0") !== BUDGET_KEYS.join("\0") || BUDGET_KEYS.some((key) => budgetSchema[key]?.minimum !== BUDGET_LIMITS[key].minimum || budgetSchema[key]?.maximum !== BUDGET_LIMITS[key].maximum)) {
     fail("catalog/recipe.schema.json", "budget keys or bounds disagree with runtime validator");
   }
+  const spentSchema = noDishSchema?.properties?.fault?.properties?.budget?.properties ?? {};
+  if (Object.keys(spentSchema).join("\0") !== BUDGET_KEYS.join("\0") || BUDGET_KEYS.some((key) => spentSchema[key]?.minimum !== BUDGET_LIMITS[key].minimum || spentSchema[key]?.maximum !== BUDGET_LIMITS[key].maximum)) {
+    fail("catalog/no-dish.schema.json", "fault.budget keys or bounds disagree with runtime validator");
+  }
 }
 if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
   fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");

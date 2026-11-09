@@ -84,6 +84,7 @@ emit({ type: "text", text: "answer" });
 if (process.env.FAKE_HANG === "after") await hang();
 if (process.env.FAKE_FAIL) emit({ type: "result", session_id: session, exit_code: 1, text: "", error: "provider exploded", tokens: {}, duration_ms: 1 });
 else emit({ type: "result", session_id: session, exit_code: 0, text: "answer to: " + query, tokens: { input: 3, output: 2, total: 5, cache_read: 0, cache_write: 0 }, duration_ms: 5 });
+if (process.env.FAKE_HANG === "linger") await hang();
 process.exit(process.env.FAKE_FAIL ? 1 : 0);
 `;
 
@@ -526,7 +527,8 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
 
 test("the Recipe's time budget stops a hung Hermes; it is the model's only when Hermes recorded the requested model serving the turn", async (t) => {
   const f = await setup(t);
-  for (const [hang, expected] of [["after", "out-of-time"], ["before", undefined]]) {
+  // "linger": the turn reported its result, then the process did not exit; the answer was complete.
+  for (const [hang, expected] of [["after", "out-of-time"], ["before", undefined], ["linger", undefined]]) {
     const a = await attempt(f.root, `budget-${hang}`);
     await prepareHermesAttempt({ variant: clean, cwd: a.attemptDir, env: f.env });
     // Long enough for a loaded machine to start the fake and record its call before the budget ends.
