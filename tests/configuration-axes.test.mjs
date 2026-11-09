@@ -1,26 +1,27 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { axisOptions, axisValue, carryComparisonSelection, compareByNote, comparisonValues, defaultComparisonSelection, MAX_PANES, modelName, snapshotOptions, toggleComparisonValue } from '../src/lib/configuration-axes.ts';
+import { axisOptions, axisValue, carryComparisonSelection, compareByNote, comparisonValues, defaultComparisonSelection, heldValueLabel, MAX_PANES, modelName, snapshotOptions, toggleComparisonValue } from '../src/lib/configuration-axes.ts';
 import { differingDimensions } from '../src/lib/configuration-label.ts';
 
 const profile = { id: 'p', label: 'p', runtime: 'linux-host', sandbox: 'danger-full-access', approvalPolicy: 'never', nativeWeb: 'disabled', networkPolicy: 'not-enforced', filesystemBoundary: 'not-a-secrecy-boundary' };
 const configuration = (id, harness, model, reasoningEffort, environment, harnessProfile, extra = {}) => ({
   id, harness, model, reasoningEffort, serviceTier: 'default', personality: 'none', capabilities: ['files', 'shell'], configHash: `sha256:${id}`,
-  executionProfile: { ...profile, ...(environment && { environment }), ...(harnessProfile && { harnessProfile }) }, ...extra,
+  executionProfile: { ...profile, ...(environment && { environment }), ...(harnessProfile && { harnessProfile }), ...(['snapshot', 'live'].includes(environment) && { memory: 'on', connections: 'off' }) }, ...extra,
 });
+const toggled = (config, toggles) => ({ ...config, id: `${config.id}-${Object.values(toggles).join('-')}`, configHash: `sha256:${config.id}-${Object.values(toggles).join('-')}`, executionProfile: { ...config.executionProfile, ...toggles } });
 const claude = (name, effort, environment) => configuration(`claude-${name}-${effort}-${environment}`, 'claude-code', `claude-${name}-5-5`, effort, environment);
-const hermes = (name, effort, environment) => configuration(`hermes-${name}-${effort}-${environment}`, 'hermes', `anthropic/claude-${name}-5.5`, effort, environment, environment === 'personal' ? 'rose' : undefined);
+const hermes = (name, effort, environment) => configuration(`hermes-${name}-${effort}-${environment}`, 'hermes', `anthropic/claude-${name}-5.5`, effort, environment, environment === 'snapshot' ? 'rose' : undefined);
 const opusHighClean = claude('opus', 'high', 'clean');
 const catalog = [
-  opusHighClean, claude('opus', 'max', 'clean'), claude('opus', 'high', 'personal'), claude('sonnet', 'high', 'clean'), claude('sonnet', 'max', 'clean'), claude('haiku', 'high', 'clean'),
-  hermes('opus', 'high', 'clean'), hermes('opus', 'high', 'personal'), hermes('sonnet', 'high', 'clean'),
+  opusHighClean, claude('opus', 'max', 'clean'), claude('opus', 'high', 'snapshot'), claude('sonnet', 'high', 'clean'), claude('sonnet', 'max', 'clean'), claude('haiku', 'high', 'clean'),
+  hermes('opus', 'high', 'clean'), hermes('opus', 'high', 'snapshot'), hermes('sonnet', 'high', 'clean'),
   configuration('codex-sol-high', 'codex-cli', 'gpt-5.6-sol', 'high'),
   configuration('cursor-composer', 'cursor-agent', 'composer-2.5[fast=false]', 'adaptive'),
 ];
 /** Dish counts per configuration id; anything absent is uncooked. */
 const counts = (entries) => (config) => entries[config.id] ?? 0;
-const cooked = counts({ 'claude-opus-high-clean': 2, 'claude-opus-max-clean': 1, 'claude-opus-high-personal': 1, 'claude-sonnet-high-clean': 1, 'claude-haiku-high-clean': 1, 'hermes-opus-high-clean': 1, 'hermes-opus-high-personal': 1, 'codex-sol-high': 1, 'cursor-composer': 1 });
+const cooked = counts({ 'claude-opus-high-clean': 2, 'claude-opus-max-clean': 1, 'claude-opus-high-snapshot': 1, 'claude-sonnet-high-clean': 1, 'claude-haiku-high-clean': 1, 'hermes-opus-high-clean': 1, 'hermes-opus-high-snapshot': 1, 'codex-sol-high': 1, 'cursor-composer': 1 });
 const byValue = (options) => Object.fromEntries(options.map((option) => [option.value, option]));
 
 test('the URL keeps up to six panes and the compare axis, and drops an unknown axis', () => {
@@ -42,7 +43,7 @@ test('the URL keeps up to six panes and the compare axis, and drops an unknown a
 test('models read plainly across harness spellings and vendors', () => {
   assert.deepEqual(['claude-opus-5-5', 'anthropic/claude-opus-5.5', 'gpt-5.6-sol', 'gpt-6-astra', 'composer-2.5[fast=false]', 'mystery'].map(modelName), ['Opus 5.5', 'Opus 5.5', 'Sol 5.6', 'Astra 6', 'Composer 2.5', 'mystery']);
   assert.equal(axisValue(hermes('opus', 'high', 'clean'), 'model'), axisValue(opusHighClean, 'model'), 'one model through two harnesses is one axis value');
-  assert.equal(axisValue(hermes('opus', 'high', 'personal'), 'environment'), 'personal:rose');
+  assert.equal(axisValue(hermes('opus', 'high', 'snapshot'), 'environment'), 'snapshot:rose');
 });
 
 test('a pane lists only cooked values and its own, marks uncooked ones, and explains impossible ones', () => {
@@ -97,9 +98,9 @@ test('compare by harness holds model, effort and environment kind, and leads wit
     ['cursor-agent', 'cursor-composer', false, false],
   ]);
   assert.deepEqual(values[2].differs.map((item) => item.axis), ['model', 'environment'], 'a value that cannot hold the rest names what else moves');
-  const personal = comparisonValues(catalog, claude('opus', 'high', 'personal'), 'harness', cooked);
-  assert.equal(personal.find((item) => item.value === 'hermes').config.id, 'hermes-opus-high-personal', 'personal pairs with personal, whatever the harness profile');
-  assert.equal(personal.find((item) => item.value === 'hermes').isolated, true);
+  const snapshot = comparisonValues(catalog, claude('opus', 'high', 'snapshot'), 'harness', cooked);
+  assert.equal(snapshot.find((item) => item.value === 'hermes').config.id, 'hermes-opus-high-snapshot', 'a snapshot pairs with a snapshot, whatever the harness profile');
+  assert.equal(snapshot.find((item) => item.value === 'hermes').isolated, true);
   assert.deepEqual(defaultComparisonSelection(values), ['claude-code', 'hermes'], 'a fresh comparison opens the isolated, cooked values');
 });
 
@@ -135,4 +136,26 @@ test('the compare-by note states what was held and never credits the varied axis
   assert.match(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], loose), /harness varies, and so does model, environment · not an isolated comparison$/);
   assert.match(compareByNote('effort', ['Opus 5.5'], []), /only one effort on the counter$/);
   assert.match(compareByNote('environment', ['Opus 5.5'], ['harness']), /only one environment on the counter, yet harness differs$/);
+});
+
+test('toggles belong to the environment: a no-memory snapshot pairs only with a no-memory snapshot across harnesses', () => {
+  const claudeQuiet = toggled(claude('opus', 'high', 'snapshot'), { memory: 'off' });
+  const hermesQuiet = toggled(hermes('opus', 'high', 'snapshot'), { memory: 'off' });
+  const withToggles = [...catalog, claudeQuiet, hermesQuiet];
+  const quietCounts = (config) => (config.id === hermesQuiet.id || config.id === claudeQuiet.id ? 1 : cooked(config));
+  assert.equal(axisValue(hermesQuiet, 'environment'), 'snapshot:rose+no-memory');
+  const values = comparisonValues(withToggles, claudeQuiet, 'harness', quietCounts);
+  assert.equal(values.find((item) => item.value === 'hermes').config.id, hermesQuiet.id);
+  const fromFull = comparisonValues([...catalog, claudeQuiet], claude('opus', 'high', 'snapshot'), 'environment', (config) => (config.id === claudeQuiet.id ? 1 : cooked(config)));
+  const quiet = fromFull.find((item) => item.label === 'Snapshot · no memory');
+  assert.equal(quiet?.config.id, claudeQuiet.id, 'memory off is its own environment value');
+  assert.equal(quiet.isolated, true, 'and comparing it holds model, harness and effort');
+});
+
+test('compare by harness from a rose pane holds the environment kind, never the harness profile', () => {
+  const rose = hermes('opus', 'high', 'snapshot');
+  assert.equal(heldValueLabel('harness', 'environment', rose), 'Snapshot', 'only the environment kind holds across harnesses');
+  assert.equal(heldValueLabel('harness', 'environment', toggled(rose, { connections: 'on' })), 'Snapshot · connections on');
+  assert.equal(heldValueLabel('effort', 'environment', rose), 'Snapshot · rose', 'within one harness the profile is held too');
+  assert.equal(heldValueLabel('harness', 'model', rose), 'Opus 5.5');
 });

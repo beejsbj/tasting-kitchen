@@ -3,7 +3,7 @@ import { AxisPicker, CookedMark, dishCountLabel, type AxisPickerAxis, type AxisP
 import { KitchenButton } from './KitchenButton';
 import { IconButton } from './ui/ViewerControls';
 import { dishSkillKey, shortHash } from '../lib/registry';
-import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, MAX_PANES, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
+import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, heldValueLabel, MAX_PANES, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
 import type { GalleryState } from '../lib/url-state';
 import type { Configuration, Dish } from '../types';
 
@@ -54,7 +54,7 @@ export function comparisonPatch(axis: CompareAxis, values: ComparisonValueView[]
 /** What a "Compare by" layout holds still, as value labels from the held pane. */
 export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis) {
   const config = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((item) => item !== axis && (item === 'model' || item === 'effort' || item === 'harness' || axisVaries(context, item) || (item === 'environment' && Boolean(anchor.config.executionProfile.environment))));
-  return [...config.map((item) => axisValueLabel(item, axisValue(anchor.config, item))), ...(context.showLayers && axis !== 'skill' ? [layerLabel(context, anchor.skillKey)] : [])];
+  return [...config.map((item) => heldValueLabel(axis, item, anchor.config)), ...(context.showLayers && axis !== 'skill' ? [layerLabel(context, anchor.skillKey)] : [])];
 }
 
 /** The axis chips for one pane: Model · Effort · Harness, then Environment, Tier, Skill and Snapshot where they vary. */

@@ -16,7 +16,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.match(html, /\/assets\//);
   assert.equal(registry.schemaVersion, 3);
   assert.equal(registry.cuisines.length, 9);
-  assert.equal(registry.configurations.length, 33);
+  assert.equal(registry.configurations.length, 39);
   assert.equal(registry.recipes.length, 17);
   assert.equal(registry.dishes.length, 27);
   assert.equal(registry.dishes.filter((dish) => dish.artifact.kind === "web").length, 20);
@@ -75,6 +75,6 @@ test("the built site publishes only active Dishes and their selected public arti
 test("the built gallery ships the harness, environment and compare-by controls", async () => {
   const assets = await readdir(path.join(root, "dist", "assets"));
   const javascript = (await Promise.all(assets.filter((filename) => filename.endsWith(".js")).map((filename) => readFile(path.join(root, "dist", "assets", filename), "utf8")))).join("\n");
-  for (const label of ["All harnesses", "All environments", "Compare by", "Held still", "Harness profile", "Claude Code", "Cursor Agent", "Personal"]) assert.match(javascript, new RegExp(label));
+  for (const label of ["All harnesses", "All environments", "Compare by", "Held still", "Harness profile", "Claude Code", "Cursor Agent", "Snapshot", "Live", "no memory", "connections on", "Setup"]) assert.match(javascript, new RegExp(label));
   assert.doesNotMatch(javascript, /Clear saved harness/);
 });

@@ -4,7 +4,7 @@ import type { Configuration } from "../types";
 type Dimensioned = Pick<Configuration, "harness" | "model" | "reasoningEffort" | "serviceTier" | "executionProfile">;
 
 const HARNESSES: Record<string, string> = { "claude-code": "Claude Code", hermes: "Hermes", "codex-cli": "Codex CLI", "cursor-agent": "Cursor Agent" };
-const ENVIRONMENTS: Record<string, string> = { clean: "Clean", personal: "Personal" };
+const ENVIRONMENTS: Record<string, string> = { clean: "Clean", snapshot: "Snapshot", live: "Live" };
 const EFFORTS: Record<string, string> = { none: "None", minimal: "Minimal", low: "Low", medium: "Medium", high: "High", xhigh: "XHigh", max: "Max", ultra: "Ultra", adaptive: "Adaptive" };
 /** Environment key of a configuration that predates the dimension. */
 export const UNDECLARED_ENVIRONMENT = "undeclared";
@@ -12,20 +12,38 @@ export const NOT_DECLARED = "Not declared";
 
 export const harnessLabel = (harness: string) => HARNESSES[harness] ?? harness;
 export const effortName = (effort: string) => EFFORTS[effort] ?? effort;
-/** "Clean", "Personal", "Personal · rose"; undefined when the configuration predates environments. */
-export function environmentLabel({ executionProfile: { environment, harnessProfile } }: Pick<Dimensioned, "executionProfile">, withProfile = true) {
-  if (!environment) return undefined;
-  return `${ENVIRONMENTS[environment] ?? environment}${withProfile && harnessProfile ? ` · ${harnessProfile}` : ""}`;
+/** Toggle tokens of a personal environment, in a fixed order: only the ones that depart from memory on, connections off. */
+function toggleTokens({ memory, connections }: Dimensioned["executionProfile"]) {
+  return [...(memory === "off" ? ["no-memory"] : []), ...(connections === "on" ? ["connections"] : [])];
+}
+const TOGGLE_LABELS: Record<string, string> = { "no-memory": "no memory", connections: "connections on" };
+function composeLabel(environment: string, profile: string | undefined, toggles: readonly string[]) {
+  return [ENVIRONMENTS[environment] ?? environment, profile, ...toggles.map((toggle) => TOGGLE_LABELS[toggle] ?? toggle)].filter(Boolean).join(" · ");
+}
+/**
+ * "Clean", "Live", "Snapshot · rose", "Snapshot · rose · no memory", "Live · connections on";
+ * undefined when the configuration predates environments. `withProfile` false drops the
+ * harness profile, which belongs to its harness, but keeps the toggles.
+ */
+export function environmentLabel({ executionProfile }: Pick<Dimensioned, "executionProfile">, withProfile = true) {
+  if (!executionProfile.environment) return undefined;
+  return composeLabel(executionProfile.environment, withProfile ? executionProfile.harnessProfile : undefined, toggleTokens(executionProfile));
 }
 /** `environmentLabel`, or "Not declared" for a configuration that declares none; for places that show the axis beside a choice. */
 export const environmentName = (config: Pick<Dimensioned, "executionProfile">, withProfile = true) => environmentLabel(config, withProfile) ?? NOT_DECLARED;
-/** Filter and URL token: "clean", "personal", "personal:rose" or "undeclared". */
-export function environmentKey({ executionProfile: { environment, harnessProfile } }: Pick<Dimensioned, "executionProfile">) {
-  return environment ? `${environment}${harnessProfile ? `:${harnessProfile}` : ""}` : UNDECLARED_ENVIRONMENT;
+/** Filter and URL token: "clean", "live", "snapshot:rose", "snapshot:rose+no-memory+connections" or "undeclared". */
+export function environmentKey({ executionProfile }: Pick<Dimensioned, "executionProfile">, withProfile = true) {
+  const { environment, harnessProfile } = executionProfile;
+  if (!environment) return UNDECLARED_ENVIRONMENT;
+  return [`${environment}${withProfile && harnessProfile ? `:${harnessProfile}` : ""}`, ...toggleTokens(executionProfile)].join("+");
 }
+/** The environment as it holds across harnesses: its kind and toggles, without a harness's own profile. */
+export const environmentKindKey = (config: Pick<Dimensioned, "executionProfile">) => environmentKey(config, false);
 export function environmentKeyLabel(key: string) {
-  const [environment, profile] = key.split(":");
-  return key === UNDECLARED_ENVIRONMENT ? NOT_DECLARED : `${ENVIRONMENTS[environment] ?? environment}${profile ? ` · ${profile}` : ""}`;
+  if (key === UNDECLARED_ENVIRONMENT) return NOT_DECLARED;
+  const [head, ...toggles] = key.split("+");
+  const [environment, profile] = head.split(":");
+  return composeLabel(environment, profile, toggles);
 }
 /** "Opus 5.5" for Claude-style ids ("claude-opus-5-5", "anthropic/claude-opus-5.5"); undefined for other models. */
 export function claudeModelName(model: string) {
@@ -40,7 +58,7 @@ export function configurationHeading(config: Dimensioned, name: string) {
 /** The harness and environment values present, in catalog order, for facets that only matter when there is a choice. */
 export function configurationFacets(configs: readonly Dimensioned[]) {
   const harnesses = [...new Set(configs.map((config) => config.harness))].map((id) => ({ id, label: harnessLabel(id) }));
-  const environments = [...new Set(configs.map(environmentKey))].map((id) => ({ id, label: environmentKeyLabel(id) }));
+  const environments = [...new Set(configs.map((config) => environmentKey(config)))].map((id) => ({ id, label: environmentKeyLabel(id) }));
   return { harnesses, environments };
 }
 
@@ -58,7 +76,7 @@ export function differingDimensions(slots: ReadonlyArray<{ config: Dimensioned &
     effort: ({ config }) => config.reasoningEffort,
     "service tier": ({ config }) => config.serviceTier,
     harness: ({ config }) => config.harness,
-    environment: ({ config }) => sameHarness ? environmentKey(config) : config.executionProfile.environment,
+    environment: ({ config }) => sameHarness ? environmentKey(config) : environmentKindKey(config),
     "skill layer": ({ skillKey }) => skillKey,
     "other settings": ({ config: { executionProfile: { runtime, sandbox, approvalPolicy, nativeWeb, networkPolicy, filesystemBoundary }, personality, capabilities } }) => JSON.stringify([runtime, sandbox, approvalPolicy, nativeWeb, networkPolicy, filesystemBoundary, personality, [...capabilities].sort()]),
   };
