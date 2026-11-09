@@ -27,12 +27,12 @@ export function harnessLabel(key: string) {
   const [layers, route] = key.split("@");
   return `${layers.split(">").map((layer) => HARNESSES[layer] ?? layer).join(" → ")}${route ? ` · ${ROUTES[route] ?? route}` : ""}`;
 }
-/** "Gemini 4 Argon" for "google/gemini-4-argon": the maker drops, the slug's words are capitalized. OpenRouter's free offering reads "(free)". */
+/** "Gemini 4 Argon" for "google/gemini-4-argon": the maker drops, the slug's words are capitalized. A `:free` offering keeps the plain name; the Free badge marks it. */
 export function slugModelName(model: string) {
-  const match = model.match(/^[a-z0-9-]+\/([a-z0-9.-]+)(:free)?$/i);
+  const match = model.match(/^[a-z0-9-]+\/([a-z0-9.-]+)(?::free)?$/i);
   if (!match) return undefined;
   const name = match[1].split("-").map((word) => MODEL_WORDS[word.toLowerCase()] ?? `${word[0].toUpperCase()}${word.slice(1)}`).join(" ");
-  return match[2] ? `${name} (free)` : name;
+  return name;
 }
 const MAKERS: Record<string, string> = {
   anthropic: "Anthropic", openai: "OpenAI", cursor: "Cursor", google: "Google", "x-ai": "xAI", meta: "Meta", "meta-llama": "Meta Llama", moonshotai: "Moonshot AI",

@@ -138,7 +138,7 @@ test("discovery lists every Hermes route with its state, the fix for a logged-ou
   assert.equal(routes.openrouter.source, "openrouter:/api/v1/models");
   assert.deepEqual(routes.openrouter.counts, { models: 7, free: 5, paid: 2 });
   const gemma = routes.openrouter.models.find((model) => model.id === "google/gemma-4-31b-it:free");
-  assert.deepEqual([gemma.free, gemma.contextLength, gemma.hermesCurated, gemma.cookable, gemma.name], [true, 262144, true, true, "Gemma 4 31B (free)"]);
+  assert.deepEqual([gemma.free, gemma.contextLength, gemma.hermesCurated, gemma.cookable, gemma.name], [true, 262144, true, true, "Gemma 4 31B"]);
   assert.deepEqual(routes.openrouter.models.find((model) => model.id === "openrouter/free").reasons, ["a router that picks another model per request"]);
   assert.match(routes.openrouter.models.find((model) => model.id === "google/lyria-3-pro-preview").reasons.join(";"), /no tool calling/);
   const text = JSON.stringify(result) + formatDiscovery(result);
@@ -245,7 +245,7 @@ test("a selector resolves through discovery to existing entries, entries to mate
   assert.deepEqual(resolution.unsupported.map((item) => item.model), ["google/lyria-3-pro-preview", "openrouter/free"]);
   assert.equal(resolution.matched, 5);
   const gemma = resolution.entries[1].configuration;
-  assert.equal(gemma.label, "Gemma 4 31B (free) · High · via Hermes · clean (OpenRouter)");
+  assert.equal(gemma.label, "Gemma 4 31B · High · via Hermes · clean (OpenRouter)");
   assert.deepEqual(gemma.materialized, { template: "hermes-openrouter-clean", spec: "hermes:openrouter/google/gemma-4-31b-it:free@high:clean", selector: "hermes:openrouter/*@auto+free", at: "2026-11-09T12:00:00.000Z", free: true, contextLength: 262144, source: "openrouter:/api/v1/models" });
   assert.deepEqual(materializedProblems(gemma), []);
 
@@ -325,7 +325,7 @@ test("an executed cook does not materialize a configuration with nothing to cook
 test("catalog validation checks a materialized record against its configuration", async () => {
   const [template] = CONFIGURATION_TEMPLATES;
   const configuration = buildTemplateConfiguration(template, {
-    model: "google/gemma-4-31b-it:free", name: "Gemma 4 31B (free)", effort: "high", upstream: "google-ai-studio", upstreamChoice: { name: "Google AI Studio", reason: "maker" },
+    model: "google/gemma-4-31b-it:free", name: "Gemma 4 31B", effort: "high", upstream: "google-ai-studio", upstreamChoice: { name: "Google AI Studio", reason: "maker" },
     materialized: { template: template.id, spec: "hermes:openrouter/google/gemma-4-31b-it:free@high:clean", at: "2026-11-09T12:00:00Z", free: true, source: "openrouter:/api/v1/models" },
   });
   assert.deepEqual(materializedProblems(configuration), []);

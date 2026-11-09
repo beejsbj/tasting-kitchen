@@ -422,7 +422,7 @@ try {
   const gemmaDish = manyRegistry.dishes.find(dish => dish.identity.configHash === gemma.configHash);
   await manyPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: gemma.id, dishes: gemmaDish.id })}`, { waitUntil: "networkidle" });
   await manyPage.getByRole("button", { name: "Models and comparison" }).click(); await settle(manyPage);
-  await manyPage.getByRole("group", { name: "Configuration 1", exact: true }).getByRole("button", { name: "Model: Gemma 4 31b It (free)" }).click(); await settle(manyPage);
+  await manyPage.getByRole("group", { name: "Configuration 1", exact: true }).getByRole("button", { name: "Model: Gemma 4 31b It" }).click(); await settle(manyPage);
   const modelOptions = manyPage.getByRole("group", { name: "Model options" });
   const modelSearch = modelOptions.getByRole("searchbox", { name: "Search model options" });
   assert.equal(await modelSearch.evaluate(node => node === document.activeElement), true, "a long model list opens on its search field");

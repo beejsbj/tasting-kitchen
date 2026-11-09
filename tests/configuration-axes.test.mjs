@@ -221,25 +221,25 @@ test('a Compare by layout is announced with what it holds', () => {
 test('long model lists group by maker, search by name, maker or id, and mark free models', async () => {
   const { groupOptions, matchesQuery, searchOptions, SEARCH_THRESHOLD } = await import('../src/lib/option-search.ts');
   const { isFreeModel, makerLabel, modelMaker } = await import('../src/lib/configuration-label.ts');
-  assert.equal(modelName('google/gemma-4-31b-it:free'), 'Gemma 4 31b It (free)');
+  assert.equal(modelName('google/gemma-4-31b-it:free'), 'Gemma 4 31b It');
   assert.equal(modelName('google/gemma-4-31b-it'), 'Gemma 4 31b It');
   assert.deepEqual(['claude-opus-5-5', 'gpt-5.6-sol', 'composer-2.5[fast=false]', 'moonshotai/kimi-k3', 'dots-studio/dots-3:free'].map(modelMaker), ['anthropic', 'openai', 'cursor', 'moonshotai', 'dots-studio']);
   assert.deepEqual(['moonshotai', 'x-ai', 'dots-studio'].map(makerLabel), ['Moonshot AI', 'xAI', 'Dots Studio']);
   assert.equal(isFreeModel({ model: 'nvidia/nemotron-3-ultra:free' }), true);
   assert.equal(isFreeModel({ model: 'stealth/crouton-alpha', materialized: { free: true } }), true);
   assert.equal(isFreeModel({ model: 'stealth/crouton-alpha' }), false);
-  assert.ok(matchesQuery('Gemma 4 31b It (free) Google google/gemma-4-31b-it:free', 'gemma free'));
+  assert.ok(matchesQuery('Gemma 4 31b It Google google/gemma-4-31b-it:free', 'gemma free'));
   assert.ok(!matchesQuery('Opus 5.5 Anthropic', 'gemma'));
   const options = [
-    { label: 'Opus 5.5', group: 'Anthropic' }, { label: 'Gemma 4 31b It (free)', group: 'Google', badge: 'Free', terms: 'google/gemma-4-31b-it:free' },
-    { label: 'Sonnet 5.5', group: 'Anthropic' }, { label: 'Nemotron 3 Ultra (free)', group: 'NVIDIA', badge: 'Free' }, { label: 'Ungrouped' },
+    { label: 'Opus 5.5', group: 'Anthropic' }, { label: 'Gemma 4 31b It', group: 'Google', badge: 'Free', terms: 'google/gemma-4-31b-it:free' },
+    { label: 'Sonnet 5.5', group: 'Anthropic' }, { label: 'Nemotron 3 Ultra', group: 'NVIDIA', badge: 'Free' }, { label: 'Ungrouped' },
   ];
   assert.deepEqual(groupOptions(options).map(({ group, options: items }) => [group, items.map((item) => item.label)]), [
-    ['Anthropic', ['Opus 5.5', 'Sonnet 5.5']], ['Google', ['Gemma 4 31b It (free)']], ['NVIDIA', ['Nemotron 3 Ultra (free)']], [undefined, ['Ungrouped']],
+    ['Anthropic', ['Opus 5.5', 'Sonnet 5.5']], ['Google', ['Gemma 4 31b It']], ['NVIDIA', ['Nemotron 3 Ultra']], [undefined, ['Ungrouped']],
   ]);
-  assert.deepEqual(searchOptions(options, 'free').map((item) => item.label), ['Gemma 4 31b It (free)', 'Nemotron 3 Ultra (free)']);
+  assert.deepEqual(searchOptions(options, 'free').map((item) => item.label), ['Gemma 4 31b It', 'Nemotron 3 Ultra']);
   assert.deepEqual(searchOptions(options, 'anthropic').map((item) => item.label), ['Opus 5.5', 'Sonnet 5.5']);
-  assert.deepEqual(searchOptions(options, 'gemma-4-31b').map((item) => item.label), ['Gemma 4 31b It (free)']);
+  assert.deepEqual(searchOptions(options, 'gemma-4-31b').map((item) => item.label), ['Gemma 4 31b It']);
   assert.equal(searchOptions(options, '  ').length, options.length);
   assert.ok(SEARCH_THRESHOLD >= 5 && SEARCH_THRESHOLD <= 12);
 });
