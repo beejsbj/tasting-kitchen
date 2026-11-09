@@ -82,8 +82,8 @@ Do not select a default model implicitly in automation. Use a discovered configu
 
 ## Internal runner adapters
 
-Cooking uses a fixed internal adapter allowlist: `codex-cli`, `cursor-agent` and
-`claude-code`.
+Cooking uses a fixed internal adapter allowlist: `codex-cli`, `cursor-agent`,
+`claude-code` and `hermes`.
 An adapter validates and copies the declared configuration and exact execution
 profile, exposes only its actually declared capabilities, plans a turn without
 side effects, prepares authentication immediately before launch, runs fresh and
@@ -164,3 +164,31 @@ organization effort cap could still lower it silently. Other models in the
 result's `modelUsage`, such as background calls, are listed as `auxiliaryModels` in the
 private `observed.json`.
 
+Hermes runs each turn as `hermes chat --query-file … --oneshot --format
+stream-json`, pinned to `--provider`, `-m`, `--reasoning` and the `file,terminal`
+toolsets (no web, browser, messaging, cron, kanban, memory or skill tools), and
+continues with `--resume <session id>`. Its stream echoes only the requested
+model, so identity is verified from the `state.db` Hermes writes: every
+main-loop call in `session_model_usage` must carry the requested model, billing
+provider and endpoint, and the session must record the requested effort. A
+fallback to another model or provider fails the attempt; auxiliary calls such as
+titles are disclosed in `observed.json`. The route is part of the execution
+profile id (`hermes-linux-host-clean-anthropic-v1`).
+
+A clean Hermes attempt gets a fresh `hermes-home/` holding only a Kitchen-written
+`config.yaml` (provider and model; no fallbacks, secrets, plugins or MCP
+servers) and runs with `--ignore-rules`, so no SOUL.md, AGENTS.md, memory or
+preloaded skill reaches the model. It uses the committed Hermes environment's
+own entry point, because the `hermes` launcher would build a new dependency
+environment for an unfamiliar home. Hermes borrows the Claude Code login from
+`~/.claude/.credentials.json` (a refresh is written back there); its copy in the
+attempt home is deleted when the session ends. A personal attempt runs as the
+named profile (`-p rose`). Pinned toolsets keep Hermes's memory and skill reviews
+from firing, but the session is still recorded in that profile's `state.db` and
+the profile's plugin hooks run, so it refuses unless
+`TASTE_ALLOW_HERMES_PROFILE_WRITES=1` is set. Both environments write an empty
+`.git` marker beside the workspace: Hermes reads every AGENTS.md from the git
+root down, and attempts live inside the Kitchen checkout. That placement still
+shows: Hermes finds Kitchen's `package.json` within six levels and gives every
+run its coding posture (a system-prompt block about editing, tests and git),
+and the working-directory path names the Recipe and configuration.
