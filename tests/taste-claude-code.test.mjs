@@ -19,7 +19,7 @@ import {
 } from "../lib/taste/claude-code.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
-import { dishIdForAttempt as dishIdFor } from "../lib/taste/publication.mjs";
+import { dishIdForAttempt as dishIdFor, publicActions } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
@@ -93,6 +93,16 @@ const usageModels = { [requested]: { inputTokens: 5, outputTokens: 2 } };
 if (process.env.FAKE_AUX_MODEL) usageModels[process.env.FAKE_AUX_MODEL] = { inputTokens: 1, outputTokens: 1 };
 const emit = (event) => console.log(JSON.stringify(event));
 emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model: initModel, permissionMode: process.env.FAKE_PERMISSION_MODE || "bypassPermissions", claude_code_version: "2.1.312", output_style: process.env.FAKE_OUTPUT_STYLE || "default", tools, mcp_servers: servers.map((name) => ({ name, status: "connected" })), ...(process.env.FAKE_NO_LISTS ? {} : { plugins: JSON.parse(process.env.FAKE_PLUGINS || "[]"), skills: JSON.parse(process.env.FAKE_SKILLS || '["code-review","simplify"]'), agents: JSON.parse(process.env.FAKE_AGENTS || '["claude","Explore","general-purpose","Plan"]') }) });
+if (process.env.FAKE_TOOL_EVENTS) {
+  const use = (id, name, input) => emit({ type: "assistant", parent_tool_use_id: null, session_id: session, message: { model: initModel, content: [{ type: "tool_use", id, name, input }] } });
+  const done = (id, isError = false) => emit({ type: "user", parent_tool_use_id: null, session_id: session, message: { role: "user", content: [{ type: "tool_result", tool_use_id: id, is_error: isError, content: "private output " + process.cwd() }] } });
+  use("toolu_1", "Write", { file_path: process.cwd() + "/output/notes.md", content: "secret body" });
+  done("toolu_1");
+  use("toolu_2", "Bash", { command: "cat " + process.env.FAKE_TOOL_EVENTS });
+  done("toolu_2", true);
+  use("toolu_3", "Read", { file_path: process.env.FAKE_TOOL_EVENTS });
+  done("toolu_3");
+}
 emit({ type: "assistant", parent_tool_use_id: null, session_id: session, message: { model: process.env.FAKE_ASSISTANT_MODEL || initModel, content: [{ type: "text", text: prompt }] } });
 emit({ type: "rate_limit_event", session_id: session });
 emit({ type: "result", subtype: "success", is_error: false, result: prompt, session_id: session, usage: { input_tokens: 5, output_tokens: 2, service_tier: process.env.FAKE_TIER || "standard" }, modelUsage: usageModels });
@@ -199,6 +209,35 @@ test("Claude Code JSONL requires one init, main-thread assistant evidence, and o
   assert.throws(() => parseClaudeJsonl(jsonl(init, assistant, { ...result, session_id: "01901234-5678-7abc-8def-0123456789ab" })), /did not match its init/);
   assert.throws(() => parseClaudeJsonl(jsonl(init, result)), /no assistant message/);
   assert.throws(() => parseClaudeJsonl("{nope"), /Invalid Claude Code JSONL/);
+});
+
+test("Claude Code tool use becomes public trace actions: kinds, statuses and workspace paths, never commands or outside paths", () => {
+  const workspace = "/var/tmp/tk-1000/abc/workspace";
+  const use = (id, name, input, parent = null) => ({ type: "assistant", parent_tool_use_id: parent, message: { model: "claude-haiku-5-5", content: [{ type: "text", text: "x" }, { type: "tool_use", id, name, input }] } });
+  const done = (id, isError) => ({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: id, ...(isError === undefined ? {} : { is_error: isError }), content: `ran in ${workspace}` }] } });
+  const actions = publicActions([
+    use("a", "Write", { file_path: `${workspace}/output/page.html`, content: "<p>secret</p>" }), done("a", false),
+    use("b", "Bash", { command: `rm -rf ${workspace}` }), done("b", true),
+    use("c", "Read", { file_path: "/home/someone/.claude/CLAUDE.md" }), done("c"),
+    use("d", "Grep", { pattern: "x", path: "src" }),
+    use("e", "mcp__tududi__create_task", { name: "private task" }), done("e", false),
+    use("f", "Edit", { file_path: `${workspace}/../escape.txt` }, "toolu_parent"),
+  ], [workspace]);
+  assert.deepEqual(actions, [
+    { event: "item.started", type: "file_change", tool: "Write", path: "output/page.html" },
+    { event: "item.completed", type: "file_change", tool: "Write", status: "completed", path: "output/page.html" },
+    { event: "item.started", type: "command_execution", tool: "Bash" },
+    { event: "item.completed", type: "command_execution", tool: "Bash", status: "failed" },
+    { event: "item.started", type: "tool_call", tool: "Read" },
+    { event: "item.completed", type: "tool_call", tool: "Read", status: "completed" },
+    { event: "item.started", type: "tool_call", tool: "Grep", path: "src" },
+    { event: "item.started", type: "mcp_tool_call" },
+    { event: "item.completed", type: "mcp_tool_call", status: "completed" },
+    { event: "item.started", type: "file_change", tool: "Edit" },
+  ]);
+  assert.equal(JSON.stringify(actions).includes("someone"), false);
+  // Codex item events keep their existing mapping.
+  assert.deepEqual(publicActions([{ type: "item.completed", item: { type: "command_execution", status: "completed", exit_code: 0, command: "ls" } }], [workspace]), [{ event: "item.completed", type: "command_execution", status: "completed", exitCode: 0 }]);
 });
 
 test("the access token is read without quoting it and must outlive the run", async (t) => {
@@ -462,8 +501,17 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   });
   const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 
-  const clean = await cook(claudeVariant("clean"), "clean");
+  const outsideFile = path.join(f.root, "outside-secret.txt");
+  const clean = await cook(claudeVariant("clean"), "clean", { env: { ...f.env, FAKE_TOOL_EVENTS: outsideFile } });
   assert.equal(clean.status, "accepted", clean.error);
+  // The public trace shows the Run's tool activity, through the same publication scan as every Dish.
+  const trace = await readFile(path.join(clean.dishDirectory, "trace.json"), "utf8");
+  assert.deepEqual(JSON.parse(trace).turns[0].actions.map((action) => [action.type, action.status ?? "started", action.path ?? null]), [
+    ["file_change", "started", "output/notes.md"], ["file_change", "completed", "output/notes.md"],
+    ["command_execution", "started", null], ["command_execution", "failed", null],
+    ["tool_call", "started", null], ["tool_call", "completed", null],
+  ]);
+  for (const leak of [f.root, "secret body", "private output", "outside-secret"]) assert.equal(trace.includes(leak), false, `trace leaks ${leak}`);
   assert.equal(path.relative(f.root, clean.dishDirectory).split(path.sep)[0], "dishes");
   const dish = await readJson(path.join(clean.dishDirectory, "dish.json"));
   assert.equal(dish.identity.harness, "claude-code");
@@ -575,6 +623,59 @@ test("a snapshot Claude Code attempt that failed at publication recovers private
   delete requested.setup.digest;
   await writeFile(path.join(secondDir, "requested.json"), JSON.stringify(requested));
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: second.attemptId, env: f.env }), /SHA-256 setup digest/);
+});
+
+test("a clean Claude Code attempt recovers by re-proving its isolation from the recorded stream, and refuses a stream that loaded his skills", async (t) => {
+  const f = await runnerFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const variant = claudeVariant("clean");
+  const blocked = async (nonce) => {
+    await mkdir(path.join(f.root, "dishes", `dish_${f.recipe.id}_${variant.id}_20261108120000000_${nonce}`), { recursive: true });
+    const cooked = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: f.env, now: new Date("2026-11-08T12:00:00.000Z"), nonce });
+    assert.equal(cooked.status, "failed");
+    assert.match(cooked.error, /already exists/);
+    await rm(path.join(f.root, "dishes", dishIdFor(cooked.attemptId)), { recursive: true });
+    return cooked;
+  };
+  const cooked = await blocked("recover");
+  const recovered = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: cooked.attemptId, env: f.env });
+  assert.equal(recovered.status, "accepted");
+  assert.equal(path.relative(f.root, recovered.dishDirectory).split(path.sep)[0], "dishes");
+  const receipt = JSON.parse(await readFile(path.join(recovered.dishDirectory, "receipt.json"), "utf8"));
+  assert.equal(receipt.isolation.evidence, "claude-code-init");
+  const attemptDir = path.join(f.root, "private/runtime/attempts", cooked.attemptId);
+  assert.deepEqual(JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8")).isolation, receipt.isolation);
+
+  // A recorded init that lists one of his skills cannot be republished as clean.
+  const tampered = await blocked("tampered");
+  const tamperedDir = path.join(f.root, "private/runtime/attempts", tampered.attemptId);
+  const events = path.join(tamperedDir, JSON.parse(await readFile(path.join(tamperedDir, "execution.json"), "utf8")).turns[0].eventsPath);
+  const lines = (await readFile(events, "utf8")).trim().split("\n").map(JSON.parse);
+  lines.find((event) => event.subtype === "init").skills.push("consult");
+  await writeFile(events, `${lines.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: tampered.attemptId, env: f.env }), /skill consult outside Claude Code's bundled set/);
+});
+
+test("--publish-personal with a Claude Code snapshot survives recovery and publishes nothing private", async (t) => {
+  const f = await runnerFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const variant = claudeVariant("snapshot");
+  await mkdir(path.join(f.root, "dishes", `dish_${f.recipe.id}_${variant.id}_20261108120000000_published`), { recursive: true });
+  const cooked = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: { ...f.env, FAKE_TOOL_EVENTS: path.join(f.env.TASTE_CLAUDE_PERSONAL_HOME, "CLAUDE.md") }, now: new Date("2026-11-08T12:00:00.000Z"), nonce: "published", publishPersonal: true });
+  assert.equal(cooked.status, "failed");
+  const attemptDir = path.join(f.root, "private/runtime/attempts", cooked.attemptId);
+  assert.equal(JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8")).publishPersonal, true);
+  await rm(path.join(f.root, "dishes", dishIdFor(cooked.attemptId)), { recursive: true });
+  const recovered = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: cooked.attemptId, env: f.env });
+  assert.equal(recovered.status, "accepted");
+  assert.equal(path.relative(f.root, recovered.dishDirectory).split(path.sep)[0], "dishes", "the Cook's choice to publish travels with the attempt");
+  const receipt = JSON.parse(await readFile(path.join(recovered.dishDirectory, "receipt.json"), "utf8"));
+  assert.equal(receipt.setup.environment, "snapshot");
+  assert.equal(receipt.isolation, undefined, "a personal Dish makes no clean isolation claim");
+  // Nothing under the published Dish names his home, the cook directory, or his setup's contents.
+  const published = await listTree(recovered.dishDirectory);
+  const text = (await Promise.all(published.map((file) => readFile(path.join(recovered.dishDirectory, file), "utf8")))).join("\n");
+  for (const leak of [f.root, f.env.TASTE_CLAUDE_PERSONAL_HOME, "# Prime", "Lead with the recommendation", "Red, green, refactor"]) assert.equal(text.includes(leak), false, `published Dish leaks ${leak}`);
 });
 
 for (const [signal, code] of [["SIGTERM", 143], ["SIGHUP", 129]]) test(`a Kitchen process killed by ${signal} stops the harness, discards the copied setup, and leaves a terminal state`, async (t) => {
