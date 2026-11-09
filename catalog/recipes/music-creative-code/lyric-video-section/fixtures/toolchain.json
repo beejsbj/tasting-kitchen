@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "film-v1",
+  "label": "Film toolchain v1",
+  "summary": "The one execution image every model and layer of a film Recipe works and is validated in: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine.",
+  "image": "tasting-kitchen/film-toolchain:v1",
+  "dockerfile": "toolchains/film/Dockerfile",
+  "base": "docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6",
+  "debianSnapshot": "20261101T000000Z",
+  "packages": [
+    "chromium",
+    "ffmpeg",
+    "python3",
+    "python3-numpy",
+    "python3-scipy",
+    "fonts-dejavu-core",
+    "fonts-liberation",
+    "fonts-noto-core",
+    "git",
+    "ca-certificates"
+  ],
+  "bun": "1.4.4",
+  "chromePath": "/usr/bin/chromium",
+  "lyricEngine": {
+    "path": "/opt/kitchen/engine",
+    "repository": "https://github.com/mexicat/pdoom-video",
+    "commit": "bdbad537a7b7af3213475651774030c47568c181",
+    "license": "MIT",
+    "patch": {
+      "skill": "lyric-music-video",
+      "path": "assets/engine.patch",
+      "sha256": "c20b33d634f5cfec98e555c3830972b4b69fe642e4cf5b19a9d4a50b4c88af4a"
+    },
+    "brand": {
+      "skill": "lyric-music-video",
+      "path": "assets/lib/brand.ts",
+      "sha256": "af3b171fb9bda806ee50ada6d5afa93e7e4bc7f4c7ae366204b2feed4854798e",
+      "overlay": "toolchains/film/engine/brand.ts",
+      "note": "The patched main.ts imports lib/brand.ts for its corner watermark. Kitchen supplies the skill's file with both handles empty, so no watermark is drawn; the briefs forbid one."
+    },
+    "fonts": {
+      "repository": "https://github.com/google/fonts",
+      "commit": "5bb28733cec313b63fbd415b574b5ae35c8aa8b8",
+      "files": [
+        {
+          "source": "ofl/bangers/Bangers-Regular.ttf",
+          "as": "kit/Bangers-Regular.ttf",
+          "sha256": "4160a7311de9342674cce9160cde9fcbb30f48190397d86ff1b70b455af65824"
+        },
+        {
+          "source": "ofl/caveat/Caveat%5Bwght%5D.ttf",
+          "as": "kit/Caveat.ttf",
+          "sha256": "0bdb6b660482d31531b3945849fba5916b3ef8695da7024a9e6b9ee3c4157988"
+        },
+        {
+          "source": "ofl/comicneue/ComicNeue-Bold.ttf",
+          "as": "kit/ComicNeue-Bold.ttf",
+          "sha256": "3e7e5fccfd7e0788f317b43312151c1bd5cf058c9697a8d83eac3939050bd61e"
+        },
+        {
+          "source": "ofl/gochihand/GochiHand-Regular.ttf",
+          "as": "kit/GochiHand-Regular.ttf",
+          "sha256": "c46b029ab4846b2935e301af0b2cf85a1d74d2858e6a33636a3e64cf3cc4696b"
+        },
+        {
+          "source": "ofl/inter/Inter%5Bopsz,wght%5D.ttf",
+          "as": "kit/Inter.ttf",
+          "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031"
+        },
+        {
+          "source": "apache/luckiestguy/LuckiestGuy-Regular.ttf",
+          "as": "kit/LuckiestGuy-Regular.ttf",
+          "sha256": "cfbdd68a039f92df51cf3721506af6242e64594c6325fe0bedbeff3fe385d980"
+        },
+        {
+          "source": "apache/permanentmarker/PermanentMarker-Regular.ttf",
+          "as": "kit/PermanentMarker-Regular.ttf",
+          "sha256": "28f82c8a7943cb8e9d599f8554da1d4fc75dbcf69b9885ad6c0611d20c6946c5"
+        },
+        {
+          "source": "ofl/rubikbubbles/RubikBubbles-Regular.ttf",
+          "as": "kit/RubikBubbles-Regular.ttf",
+          "sha256": "2171521dab2b1b3675bbb7aecd34b1c169167c360e3647dadb4939910490c974"
+        }
+      ],
+      "skillFonts": "assets/fonts/pop/*.ttf -> pop/"
+    },
+    "excluded": "The skill's world kit (assets/lib/kit.ts) and example scenes are technique, not engine: they reach a model only through the skill layer."
+  },
+  "treeHash": "sha256:bea71f9346d3c5889b40c172e7d1f7d302f04647f69af9c609b8c0596ce475a3",
+  "toolchainHash": "sha256:bf8b99f6c585d499af620c0d8693c8ae979541a40ce34220153b7c46de2ee6a1"
+}
