@@ -104,7 +104,8 @@ test("Claude Code tags only an exhausted turn budget or a structured refusal, an
   const variant = { model, executionProfile: { environment: "clean" } };
   const sessionId = "11111111-1111-4111-8111-111111111111";
   const init = { type: "system", subtype: "init", model, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId };
-  const options = { variant, workspaces: ["/attempt/workspace"] };
+  // Kitchen pinned the Recipe's turn budget, so spending it can be the model's (taste-budget covers the unpinned case).
+  const options = { variant, workspaces: ["/attempt/workspace"], turnBudget: 40 };
   const turn = (message) => ({ type: "assistant", message: { model, ...message } });
   const spent = { type: "result", subtype: "error_max_turns", is_error: true };
   assert.equal(claudeChefFault(jsonl(init, spent), options), "out-of-turns");

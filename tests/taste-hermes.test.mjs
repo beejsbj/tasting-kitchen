@@ -10,6 +10,7 @@ import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-a
 import {
   buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
+import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { KEY_PROXY_AUTH, startKeyProxy } from "../lib/taste/key-proxy.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
@@ -68,6 +69,9 @@ if (routeBase) {
 }
 appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: routeKeyEnv ?? null, routeBase: routeBaseEnv ?? null, orKey: process.env.OPENROUTER_API_KEY ?? null, goKey: process.env.OPENCODE_GO_API_KEY ?? null, upstream, configDir: process.env.CLAUDE_CONFIG_DIR ?? null, login, canaries: Object.keys(process.env).filter((key) => key.startsWith("TK_CANARY")), tmp: process.env.TMPDIR ?? null }) + "\\n");
 mkdirSync(home, { recursive: true });
+const hang = () => new Promise(() => setInterval(() => {}, 1000));
+// "before": stuck before any model call is recorded; "after": the model answered and is still working.
+if (process.env.FAKE_HANG === "before") await hang();
 const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
 const requested = flag("-m");
@@ -87,8 +91,10 @@ const emit = (event) => console.log(JSON.stringify({ ...event, timestamp: 1 }));
 emit({ type: "system", subtype: "init", model: requested, session_id: session });
 emit({ type: "tool_use", name: "read_file", input: { path: "inputs/context.txt" } });
 emit({ type: "text", text: "answer" });
+if (process.env.FAKE_HANG === "after") await hang();
 if (process.env.FAKE_FAIL) emit({ type: "result", session_id: session, exit_code: 1, text: "", error: "provider exploded", tokens: {}, duration_ms: 1 });
 else emit({ type: "result", session_id: session, exit_code: 0, text: "answer to: " + query, tokens: { input: 3, output: 2, total: 5, cache_read: 0, cache_write: 0 }, duration_ms: 5 });
+if (process.env.FAKE_HANG === "linger") await hang();
 process.exit(process.env.FAKE_FAIL ? 1 : 0);
 `;
 
@@ -529,6 +535,22 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
   await prepareHermesAttempt({ variant: viaOpenRouter, cwd: b.attemptDir, env });
   const elsewhere = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://api.anthropic.com" }, proxy });
   assert.match(elsewhere.failure.message, /endpoint requested Kitchen's key proxy to https:\/\/openrouter.ai\/api\/v1, observed https:\/\/api.anthropic.com/);
+});
+
+test("the Recipe's time budget stops a hung Hermes; it is the model's only when Hermes recorded the requested model serving the turn", async (t) => {
+  const f = await setup(t);
+  // "linger": the turn reported its result, then the process did not exit; the answer was complete.
+  for (const [hang, expected] of [["after", "out-of-time"], ["before", undefined], ["linger", undefined]]) {
+    const a = await attempt(f.root, `budget-${hang}`);
+    await prepareHermesAttempt({ variant: clean, cwd: a.attemptDir, env: f.env });
+    // Long enough for a loaded machine to start the fake and record its call before the budget ends.
+    const clock = startBudgetClock({ seconds: 3 });
+    const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_HANG: hang }, clock });
+    clock.stop();
+    assert.equal(result.failure?.chefFault, expected, hang);
+    assert.match(result.failure.message, /time budget/);
+    assert.equal(result.turns.length, 1, "the budget ends the Run, not just the turn");
+  }
 });
 
 test("every Hermes route Kitchen can keep behind its key proxy cooks through one route profile; any other route is refused with its reason", () => {

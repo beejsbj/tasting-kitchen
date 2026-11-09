@@ -513,6 +513,21 @@ test("catalog validation refuses a Dish note whose pinned hash no longer matches
   assert.match(result.stderr, /dish-notes\.json.*immutable hash/);
 });
 
+test("catalog validation accepts a well-formed Recipe budget and rejects a malformed one", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const [filename] = (await readdir(path.join(root, "catalog/recipes"), { recursive: true })).filter((name) => path.basename(name) === "recipe.json").sort();
+  const target = path.join(root, "catalog/recipes", filename);
+  const recipe = JSON.parse(await readFile(target, "utf8"));
+  await writeFile(target, JSON.stringify({ ...recipe, budget: { seconds: 5, minutes: 3 } }));
+  const malformed = validate(root);
+  assert.equal(malformed.status, 1, malformed.stderr);
+  assert.match(malformed.stderr, /budget: Recipe budget has an unknown key minutes|budget\.seconds must be an integer from 30/);
+  await writeFile(target, JSON.stringify({ ...recipe, budget: { seconds: 600, modelTurns: 40 } }));
+  const wellFormed = validate(root);
+  assert.equal(wellFormed.status, 0, wellFormed.stderr);
+});
+
 test("a Menu may declare the configurations it is cooked with: catalog ids, specs or selectors, each checked without a network call", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));
