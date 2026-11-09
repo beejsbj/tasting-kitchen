@@ -156,8 +156,9 @@ h1, h2, h3 { font-family: var(--font-display); }
 
 /* No Dish: an empty plate, not an error page. Warm and plain, never the danger red. */
 .no-dish__plate { display: block; width: 4.5rem; aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--line-bright); box-shadow: inset 0 0 0 .55rem var(--surface), inset 0 0 0 .62rem var(--line); background: var(--surface); }
-.artifact-pane--no-dish { display: grid; place-items: center; padding: var(--space-6); background: var(--viewer-ground); }
-.no-dish { max-width: 34rem; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+.artifact-pane--no-dish { display: flex; flex-direction: column; background: var(--viewer-ground); }
+/* A verdict bar sits above, like on a Dish; the plate stays centred in what is left. */
+.no-dish { max-width: 34rem; margin: auto; padding: var(--space-6); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
 .no-dish h2 { font-size: var(--text-lg); margin: 0; }
 .no-dish__eyebrow { font: 600 var(--text-xs) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mother); }
 .no-dish__reason { font-size: var(--text-md); line-height: 1.5; margin: 0; }
