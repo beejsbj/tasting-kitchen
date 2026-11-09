@@ -28,8 +28,8 @@ export function NoDishPane({ plate, variant }: { plate: NoDish; variant: Variant
       <span className="no-dish__plate" aria-hidden="true" />
       <span className="no-dish__eyebrow">No Dish</span>
       <h2>{variantTasteLabel(variant)}</h2>
-      <p className="no-dish__reason"><b>{CHEF_FAULT_LABELS[plate.fault.code]}.</b> {plate.fault.reason}</p>
-      <p className="no-dish__class">The model&rsquo;s own outcome, at the {plate.fault.stage} stage{plate.fault.turn ? `, turn ${plate.fault.turn}` : ""}. Kitchen faults never appear here.</p>
+      <p className="no-dish__reason">{plate.fault.reason}</p>
+      <p className="no-dish__class">The model&rsquo;s own outcome, at the {plate.fault.stage} stage{plate.fault.turn ? <> of turn &ldquo;{plate.fault.turn}&rdquo;</> : null}. Kitchen faults never appear here.</p>
       {failing.length > 0 && <ul className="no-dish__checks" aria-label="Required checks that failed">{failing.map((check) => <li key={check.id}><code>{check.id}</code> {check.description}{check.detail ? <small> · {check.detail}</small> : null}</li>)}</ul>}
       {!report && plate.fault.checks?.length ? <p className="no-dish__class">Failed checks: {plate.fault.checks.join(", ")}</p> : null}
       <p className="no-dish__links">
