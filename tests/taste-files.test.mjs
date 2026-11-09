@@ -62,6 +62,9 @@ test("public scan permits a first-line env shebang and nothing else of its shape
   assert.ok(publicTextFindings("#!/home/user/bin/node\n").includes("absolute home path"));
   assert.ok(publicTextFindings("#!/opt/tools/node\n").includes("absolute path"));
   assert.ok(publicTextFindings("// run #!/usr/bin/env node\n/usr/bin/env node x\n").includes("absolute path"));
+  // Only an interpreter and its flags are exempt; anything else on the line is scanned.
+  assert.ok(publicTextFindings("#!/usr/bin/env node /home/admin/.config\n").includes("absolute home path"));
+  assert.ok(publicTextFindings("#!/usr/bin/env node sk-proj1234567890abcdefghij\n").includes("credential-like token"));
 });
 
 test("verbatim inputs relax path shapes, including regexes shaped like Windows paths, but not leaks", async (t) => {
