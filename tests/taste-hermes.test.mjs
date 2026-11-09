@@ -6,11 +6,11 @@ import path from "node:path";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
-import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
-  buildHermesTurnArgs, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
+  buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
-import { startKeyProxy } from "../lib/taste/key-proxy.mjs";
+import { KEY_PROXY_AUTH, startKeyProxy } from "../lib/taste/key-proxy.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 const SESSION = "20261108_131309_66bdb7";
@@ -25,6 +25,11 @@ const clean = {
 const snapshot = { ...clean, id: "hermes-haiku-5-5-high-snapshot-rose", label: "Haiku 5.5 · High · via Hermes · rose snapshot (Anthropic)", executionProfile: snapshotProfile };
 const withToggles = (toggles) => ({ ...snapshot, id: `${snapshot.id}-${Object.values(toggles).join("-")}`, executionProfile: { ...snapshotProfile, ...toggles } });
 const openRouterProfile = { id: "hermes-linux-host-clean-openrouter-v1", label: "via Hermes · clean home · OpenRouter route", ...base, environment: "clean", route: "openrouter", upstream: "google-ai-studio" };
+// One execution profile serves every Hermes route Kitchen can keep behind its key proxy; the route is a parameter of it.
+const routeProfile = { id: "hermes-linux-host-clean-route-v1", label: "via Hermes · clean home · Hermes route", ...base, environment: "clean", route: "opencode-go" };
+const viaGo = {
+  ...clean, id: "hermes-opencode-go-glm-5-3-high-clean", label: "GLM-5.3 · High · via Hermes · clean (OpenCode Go)", provider: "z-ai", model: "glm-5.3", executionProfile: routeProfile,
+};
 const viaOpenRouter = {
   ...clean, id: "hermes-openrouter-gemini-4-argon-high-clean", label: "Gemini 4 Argon · High · via Hermes · clean (OpenRouter)",
   provider: "google", model: "google/gemini-4-argon", executionProfile: openRouterProfile,
@@ -50,13 +55,18 @@ let login = null;
 const loginFile = process.env.CLAUDE_CONFIG_DIR ? path.join(process.env.CLAUDE_CONFIG_DIR, ".credentials.json") : null;
 try { login = JSON.parse(readFileSync(loginFile, "utf8")).claudeAiOauth; } catch {}
 if (login) writeFileSync(loginFile, JSON.stringify({ claudeAiOauth: { ...login, accessToken: "rotated-by-hermes", refreshToken: "rotated-refresh" } }));
-// On the OpenRouter route, one real request through whatever base URL and key Hermes was given.
+// On a key route (OpenRouter, OpenCode Go), one real request through whatever base URL and key Hermes was given.
+// FAKE_MESSAGES plays an Anthropic Messages model, as Hermes runs one: the base loses /v1 and the key goes in x-api-key.
+const routeBaseEnv = process.env.OPENROUTER_BASE_URL || process.env.OPENCODE_GO_BASE_URL;
+const routeKeyEnv = process.env.OPENROUTER_API_KEY || process.env.OPENCODE_GO_API_KEY;
+const messages = Boolean(process.env.FAKE_MESSAGES);
+const routeBase = routeBaseEnv && messages && routeBaseEnv.endsWith("/v1") ? routeBaseEnv.slice(0, -3) : routeBaseEnv;
 let upstream = null;
-if (process.env.OPENROUTER_BASE_URL) {
-  const response = await fetch(process.env.OPENROUTER_BASE_URL + "/chat/completions", { method: "POST", headers: { authorization: "Bearer " + process.env.OPENROUTER_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ model: flag("-m") }) });
+if (routeBase) {
+  const response = await fetch(routeBase + (messages ? "/v1/messages" : "/chat/completions"), { method: "POST", headers: { ...(messages ? { "x-api-key": routeKeyEnv } : { authorization: "Bearer " + routeKeyEnv }), "content-type": "application/json" }, body: JSON.stringify({ model: flag("-m") }) });
   upstream = { status: response.status, body: await response.json() };
 }
-appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: process.env.OPENROUTER_API_KEY ?? null, routeBase: process.env.OPENROUTER_BASE_URL ?? null, upstream, configDir: process.env.CLAUDE_CONFIG_DIR ?? null, login, canaries: Object.keys(process.env).filter((key) => key.startsWith("TK_CANARY")), tmp: process.env.TMPDIR ?? null }) + "\\n");
+appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: routeKeyEnv ?? null, routeBase: routeBaseEnv ?? null, orKey: process.env.OPENROUTER_API_KEY ?? null, goKey: process.env.OPENCODE_GO_API_KEY ?? null, upstream, configDir: process.env.CLAUDE_CONFIG_DIR ?? null, login, canaries: Object.keys(process.env).filter((key) => key.startsWith("TK_CANARY")), tmp: process.env.TMPDIR ?? null }) + "\\n");
 mkdirSync(home, { recursive: true });
 const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
@@ -64,7 +74,7 @@ const requested = flag("-m");
 const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || requested;
 const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
-const baseUrl = process.env.FAKE_BASE_URL || process.env.OPENROUTER_BASE_URL || "https://api.anthropic.com";
+const baseUrl = (process.env.FAKE_BASE_URL || routeBase || "https://api.anthropic.com") + (process.env.FAKE_TRAILING_SLASH ? "/" : "");
 db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
 const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
@@ -84,17 +94,19 @@ process.exit(process.env.FAKE_FAIL ? 1 : 0);
 
 const LOGIN = `${JSON.stringify({ claudeAiOauth: { accessToken: "sk-ant-oat01-stand-in-access", refreshToken: "sk-ant-ort01-stand-in-refresh", expiresAt: Date.now() + 6 * 60 * 60 * 1000, scopes: ["user:inference"] } })}\n`;
 
-/** A stand-in OpenRouter: records the Authorization header each request arrived with. */
-async function fakeUpstream(t) {
+/** A stand-in route upstream (OpenRouter by default): records the Authorization header each request arrived with, and each request's path and key headers. */
+async function fakeUpstream(t, basePath = "/api/v1") {
   const seen = [];
+  const requests = [];
   const server = createServer((request, response) => {
     seen.push(request.headers.authorization);
+    requests.push({ url: request.url, authorization: request.headers.authorization ?? null, apiKey: request.headers["x-api-key"] ?? null });
     request.resume();
     request.on("end", () => { response.writeHead(200, { "content-type": "application/json" }); response.end(JSON.stringify({ ok: true })); });
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   t.after(() => new Promise((resolve) => server.close(resolve)));
-  return { base: `http://127.0.0.1:${server.address().port}/api/v1`, seen };
+  return { base: `http://127.0.0.1:${server.address().port}${basePath}`, seen, requests };
 }
 
 async function setup(t) {
@@ -517,4 +529,77 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
   await prepareHermesAttempt({ variant: viaOpenRouter, cwd: b.attemptDir, env });
   const elsewhere = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://api.anthropic.com" }, proxy });
   assert.match(elsewhere.failure.message, /endpoint requested Kitchen's key proxy to https:\/\/openrouter.ai\/api\/v1, observed https:\/\/api.anthropic.com/);
+});
+
+test("every Hermes route Kitchen can keep behind its key proxy cooks through one route profile; any other route is refused with its reason", () => {
+  assert.doesNotThrow(() => resolveHarnessAdapter(viaGo));
+  assert.equal(hermesRoute(viaGo).auth, KEY_PROXY_AUTH);
+  assert.equal(hermesRoute(viaGo).provider, "opencode-go");
+  // An OAuth route cannot be stood in for by a key swap, so a clean cook would have to hand Hermes the login.
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, executionProfile: { ...routeProfile, route: "nous" } }), /nous.*OAuth/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, executionProfile: { ...routeProfile, route: "gemini" } }), /gemini.*no key-proxy entry/);
+  // OpenRouter and Anthropic keep their own profiles (and hashes); the route profile does not make a second way to reach them.
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, executionProfile: { ...routeProfile, route: "openrouter" } }), /openrouter has its own execution profile/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, executionProfile: { ...routeProfile, route: undefined } }), /must name the route/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, executionProfile: { ...routeProfile, upstream: "z-ai" } }), /must omit upstream/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, model: "glm-*" }), /plain model id/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaGo, provider: "Z AI" }), /provider must be a plain maker slug/);
+  assert.deepEqual(buildHermesTurnArgs({ variant: viaGo, workspace: "/tmp/work", queryFile: "/tmp/q.txt" }).slice(6, 10), ["--provider", "opencode-go", "-m", "glm-5.3"]);
+  const config = cleanHermesConfig(viaGo);
+  assert.match(config, /provider: opencode-go\n {2}default: glm-5\.3/u);
+  assert.match(config, /adopt_external_logins: false/u);
+  assert.doesNotMatch(config, /provider_routing/u, "an OpenRouter upstream pin means nothing on another route");
+});
+
+test("a route child holds only the proxy's dummy token and loopback URL, in the variables Hermes reads for that route", () => {
+  const env = { OPENCODE_GO_API_KEY: "sk-go-real", OPENROUTER_API_KEY: "or-leak", OPENCODE_GO_BASE_URL: "https://elsewhere.example/v1" };
+  assert.throws(() => hermesProcessEnv({ variant: viaGo, hermesHome: "/tmp/attempt/hermes-home", env }), /only through Kitchen's key proxy/);
+  const child = hermesProcessEnv({ variant: viaGo, hermesHome: "/tmp/attempt/hermes-home", env, proxy: { token: "tk-proxy-dummy", baseUrl: "http://127.0.0.1:9/zen/go/v1" } });
+  assert.equal(child.OPENCODE_GO_API_KEY, "tk-proxy-dummy");
+  assert.equal(child.OPENCODE_GO_BASE_URL, "http://127.0.0.1:9/zen/go/v1");
+  assert.equal(child.OPENROUTER_API_KEY, undefined);
+  assert.equal(child.OPENROUTER_BASE_URL, undefined);
+  assert.equal(child.CLAUDE_CONFIG_DIR, undefined);
+  assert.match(child.NO_PROXY, /127\.0\.0\.1/u);
+  // The proxy forwards to the route's pinned upstream with the key from the cook command's environment, or to a loopback fake under test.
+  const { keyProxy } = getHarnessAdapter("hermes");
+  assert.deepEqual(keyProxy(viaGo, { OPENCODE_GO_API_KEY: "sk-go-real" }), { upstream: "https://opencode.ai/zen/go/v1", apiKey: "sk-go-real" });
+  assert.deepEqual(keyProxy(viaGo, { OPENCODE_GO_API_KEY: "sk-go-real", TASTE_ROUTE_UPSTREAM_OPENCODE_GO: "http://127.0.0.1:4/zen/go/v1" }), { upstream: "http://127.0.0.1:4/zen/go/v1", apiKey: "sk-go-real" });
+  assert.throws(() => keyProxy(viaGo, { OPENCODE_GO_API_KEY: "sk-go-real", TASTE_ROUTE_UPSTREAM_OPENCODE_GO: "https://evil.example/v1" }), /only name a loopback fake/);
+  assert.throws(() => keyProxy(viaGo, { OPENCODE_GO_API_KEY: "" }), /needs OPENCODE_GO_API_KEY/);
+});
+
+test("an OpenCode Go run reaches its upstream only through the key proxy and is verified by what state.db records for that route", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "go");
+  await assert.rejects(prepareHermesAttempt({ variant: viaGo, cwd: a.attemptDir, env: { ...f.env, OPENCODE_GO_API_KEY: "" } }), /needs OPENCODE_GO_API_KEY/);
+  const env = { ...f.env, OPENCODE_GO_API_KEY: "sk-go-real", OPENROUTER_API_KEY: "sk-or-leak" };
+  await prepareHermesAttempt({ variant: viaGo, cwd: a.attemptDir, env });
+  const upstream = await fakeUpstream(t, "/zen/go/v1");
+  const proxy = await startKeyProxy({ upstream: upstream.base, apiKey: "sk-go-real" });
+  t.after(() => proxy.close());
+  const result = await runHermesSession({ variant: viaGo, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env, proxy });
+  assert.equal(result.failure, null, result.failure?.message);
+  for (const call of (await f.calls()).filter((item) => item.routeBase)) {
+    assert.deepEqual([call.goKey, call.orKey, call.routeBase], [proxy.token, null, proxy.baseUrl]);
+  }
+  assert.deepEqual(upstream.requests.map((request) => [request.url, request.authorization]), [["/zen/go/v1/chat/completions", "Bearer sk-go-real"], ["/zen/go/v1/chat/completions", "Bearer sk-go-real"]]);
+  for (const file of await listTree(a.attemptDir)) assert.equal((await readFile(path.join(a.attemptDir, file))).includes("sk-go-real"), false, file);
+  const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: viaGo, cliVersion: result.cliVersion, result, env });
+  assert.deepEqual([observed.route, observed.endpoint, observed.provider, observed.model], ["opencode-go", "https://opencode.ai/zen/go/v1", "z-ai", "glm-5.3"]);
+  assert.deepEqual(observed.routeEvidence, { billingProvider: "opencode-go", endpoint: "Kitchen's key proxy to https://opencode.ai/zen/go/v1", endpointPaths: ["/zen/go/v1", "/zen/go"] });
+
+  // A Messages model (MiniMax, Qwen) records the base without /v1, sometimes with a trailing slash, and sends its key as x-api-key.
+  const b = await attempt(f.root, "go-messages");
+  await prepareHermesAttempt({ variant: viaGo, cwd: b.attemptDir, env });
+  const messages = await runHermesSession({ variant: viaGo, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_MESSAGES: "1", FAKE_TRAILING_SLASH: "1", FAKE_SESSION: "20261108_131309_77aaaa" }, proxy });
+  assert.equal(messages.failure, null, messages.failure?.message);
+  assert.deepEqual(upstream.requests.slice(2).map((request) => [request.url, request.authorization, request.apiKey]), [["/zen/go/v1/messages", null, "sk-go-real"], ["/zen/go/v1/messages", null, "sk-go-real"]]);
+  await verifyHermesIdentity({ codexHome: b.codexHome, variant: viaGo, cliVersion: messages.cliVersion, result: messages, env });
+
+  // A call recorded straight against opencode.ai went around the proxy: the identity check fails the run.
+  const c = await attempt(f.root, "go-around");
+  await prepareHermesAttempt({ variant: viaGo, cwd: c.attemptDir, env });
+  const around = await runHermesSession({ variant: viaGo, recipe, workspace: c.workspace, privateDir: c.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://opencode.ai/zen/go/v1", FAKE_SESSION: "20261108_131309_88bbbb" }, proxy });
+  assert.match(around.failure.message, /endpoint requested Kitchen's key proxy to https:\/\/opencode\.ai\/zen\/go\/v1, observed https:\/\/opencode\.ai\/zen\/go\/v1/);
 });
