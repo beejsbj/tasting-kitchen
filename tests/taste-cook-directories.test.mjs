@@ -151,6 +151,8 @@ test("the retention window is configurable; a missing root is nothing to prune",
   assert.equal(retentionMs({}), 14 * DAY);
   assert.equal(retentionMs({ TASTE_COOK_RETENTION_DAYS: "0.5" }), DAY / 2);
   assert.throws(() => retentionMs({ TASTE_COOK_RETENTION_DAYS: "soon" }), /non-negative number of days/);
+  // A blank is not zero days, and hex is not a number of days: either would delete every failed attempt.
+  for (const bad of [" ", "0x10", "1e3", "-1"]) assert.throws(() => retentionMs({ TASTE_COOK_RETENTION_DAYS: bad }), /non-negative number of days/, JSON.stringify(bad));
   assert.deepEqual((await s.prune()).removed, [], "no root yet");
   const recent = await s.attempt({ state: failedAt(1) });
   const report = await pruneCookDirectories({ repoRoot: s.repoRoot, env: { ...s.env, TASTE_COOK_RETENTION_DAYS: "0" }, now: NOW });

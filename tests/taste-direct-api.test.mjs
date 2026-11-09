@@ -7,7 +7,7 @@ import test from "node:test";
 
 import { computeRecipeHash, planSelection } from "../lib/taste/catalog.mjs";
 import {
-  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, observedUpstream, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
+  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, observedUpstream, parseDirectApiJsonl, postJson, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
 } from "../lib/taste/direct-api.mjs";
 import { compatibilityFor, resolveHarnessAdapter, skillDeliverySupport } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -113,6 +113,10 @@ test("served models match exactly or as a dated snapshot of the same slug", () =
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5-20260922"), true);
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-sonnet-5.5"), false);
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5-fast"), false);
+});
+
+test("under the test runner, the real fetch refuses a non-loopback endpoint", async () => {
+  await assert.rejects(postJson("https://openrouter.ai/api/v1/chat/completions", {}, { apiKey: KEY }), /Refusing a real request to https:\/\/openrouter\.ai/);
 });
 
 test("a missing key stops the attempt before any request", async () => {
