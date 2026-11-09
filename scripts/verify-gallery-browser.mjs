@@ -209,8 +209,11 @@ try {
   assert.ok(harnessRegistry.configurations.length >= 40, "the fixture stresses the picker with dozens of configurations");
   await harnessPage.route("**/data/registry.json", route => route.fulfill({ json: harnessRegistry }));
   await harnessPage.goto(`${base}/`, { waitUntil: "networkidle" });
-  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "the shipped catalog offers All, Claude Code, Codex CLI, Cursor Agent and Hermes");
-  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "harness facet lists all harnesses plus All");
+  // A harness value is the whole delivery path: harness path plus any declared route.
+  const harnessKeys = (configurations) => new Set(configurations.map((config) => `${(config.harnessPath ?? [config.harness]).join(">")}${config.executionProfile.route ? `@${config.executionProfile.route}` : ""}`));
+  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), harnessKeys(registry.configurations).size + 1, "the shipped catalog offers All plus each delivery path");
+  for (const label of ["Claude Code", "Codex CLI", "Cursor Agent", "Hermes", "Hermes · OpenRouter", "Direct API · OpenRouter"]) assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: label, exact: true }).count(), 1, `the harness facet offers ${label}`);
+  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), harnessKeys(harnessRegistry.configurations).size + 1, "harness facet lists all harnesses plus All");
   await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
   assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.identity.harness === "hermes").length, "only Hermes Dishes remain");
