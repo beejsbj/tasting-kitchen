@@ -10,6 +10,7 @@ import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
+import { BUDGET_KEYS, BUDGET_LIMITS, recipeBudget } from "../lib/taste/budget.mjs";
 import { CHEF_FAULTS } from "../lib/taste/faults.mjs";
 import { loadNoDishes, loadPrivateNoDishes } from "../lib/taste/no-dishes.mjs";
 import { JUDGE_RANK, loadPrivateVerdicts, loadVerdicts, VERDICT_VALUES } from "../lib/taste/verdicts.mjs";
@@ -64,7 +65,7 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes", "budget"]);
 const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
 const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source", "delivery"]);
 const allowedSkillDeliveries = new Set(["workspace", "prompt"]);
@@ -423,6 +424,9 @@ async function validateRecipe(relative, cuisines, tags, skills) {
       string(recipe.presentation.semanticRuntime.version, `${relative}.presentation.semanticRuntime.version`);
     } else if (recipe.presentation.semanticRuntime !== null) fail(`${relative}.presentation.semanticRuntime`, "must be null or an object");
   }
+
+  // The same rules the runner applies before a Cook: whole seconds and model turns, within bounds.
+  try { recipeBudget(recipe); } catch (error) { fail(`${relative}.budget`, error.message); }
 
   const expectedId = path.basename(path.dirname(relative));
   if (recipe.id !== expectedId) fail(relative, `id must match recipe directory ${expectedId}`);
@@ -931,6 +935,12 @@ if (noDishSchema?.properties?.fault?.properties?.code?.enum?.join("\0") !== Obje
 }
 if (verdictSchema?.properties?.verdict?.enum?.join("\0") !== VERDICT_VALUES.join("\0") || verdictSchema?.properties?.judge?.properties?.kind?.enum?.join("\0") !== Object.keys(JUDGE_RANK).join("\0")) {
   fail("catalog/verdict.schema.json", "verdict or judge enum disagrees with runtime validator");
+}
+{
+  const budgetSchema = recipeSchema?.properties?.budget?.properties ?? {};
+  if (Object.keys(budgetSchema).join("\0") !== BUDGET_KEYS.join("\0") || BUDGET_KEYS.some((key) => budgetSchema[key]?.minimum !== BUDGET_LIMITS[key].minimum || budgetSchema[key]?.maximum !== BUDGET_LIMITS[key].maximum)) {
+    fail("catalog/recipe.schema.json", "budget keys or bounds disagree with runtime validator");
+  }
 }
 if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
   fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");
