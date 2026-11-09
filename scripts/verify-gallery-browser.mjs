@@ -276,7 +276,8 @@ try {
   const harnessValues = harnessPage.getByRole("region", { name: "Harness values" });
   await harnessValues.getByRole("checkbox").nth(2).check(); await settle(harnessPage);
   assert.equal(await harnessPage.locator(".comparison-slot").count(), 3, "a loose value can be added");
-  assert.equal(await harnessPage.getByText(/not an isolated comparison$/).count(), 1, "and the note stops claiming isolation");
+  assert.equal(await harnessPage.locator("p:not([role=status])").filter({ hasText: /not an isolated comparison$/ }).count(), 1, "and the note stops claiming isolation");
+  assert.match(await harnessPage.locator("[role=status][aria-live=polite].sr-only").innerText(), /^Comparing 3 harnesses, holding .*; not an isolated comparison$/, "and so does the announcement");
   await harnessValues.getByRole("checkbox").nth(2).uncheck(); await settle(harnessPage);
   await save(harnessPage, "compare-by-harness-panel");
   await harnessPage.getByRole("group", { name: "Held configuration" }).getByRole("button", { name: "Effort: High" }).click();
@@ -377,7 +378,7 @@ try {
   assert.equal(await page.locator(".comparison-slot").count(), 2, "Compare should add a second pane");
   await page.getByRole("button", { name: "Models and comparison" }).click(); await settle(page);
   await page.getByRole("button", { name: "Remove configuration 2" }).click(); await settle(page);
-  assert.equal(await page.evaluate(() => document.activeElement?.closest(".compare-axis") !== null), true, "removing the last pane moves focus to Compare by");
+  assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-pane="0"] .axis-chip')), true, "removing the last pane moves focus to the pane before it");
   assert.equal(await page.locator(".comparison-slot").count(), 1, "remove should return to one pane");
   await page.goBack(); await settle(page);
   assert.equal(await page.locator(".comparison-slot").count(), 2, "Back restores the removed comparison pane");

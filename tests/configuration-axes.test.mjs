@@ -171,4 +171,5 @@ test('undeclared environments are never held across harnesses, and the note says
 test('a Compare by layout is announced with what it holds', () => {
   assert.equal(compareAnnouncement('harness', 3, ['Opus 5.5', 'High', 'Clean']), 'Comparing 3 harnesses, holding Opus 5.5 · High · Clean');
   assert.equal(compareAnnouncement('tier', 2, []), 'Comparing 2 service tiers');
+  assert.equal(compareAnnouncement('harness', 2, ['Luna 5.6'], false), 'Comparing 2 harnesses, holding Luna 5.6; not an isolated comparison', 'panes that also differ are not announced as held');
 });

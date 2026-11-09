@@ -99,13 +99,12 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
 }) {
   // Removing a pane or leaving "Compare by" unmounts the focused control; focus moves on once the new layout renders.
   const root = useRef<HTMLDivElement>(null);
-  const pending = useRef<{ panes: number; compare: CompareAxis | ''; target: 'pane' | 'compare'; index: number } | undefined>(undefined);
+  const pending = useRef<{ panes: number; compare: CompareAxis | ''; index: number } | undefined>(undefined);
   useEffect(() => {
     const wanted = pending.current;
     if (!wanted || wanted.panes !== panes.length || wanted.compare !== compare) return;
     pending.current = undefined;
-    const chip = wanted.target === 'pane' ? root.current?.querySelector<HTMLElement>(`[data-pane="${Math.min(wanted.index, panes.length - 1)}"] .axis-chip`) : undefined;
-    (chip ?? root.current?.querySelector<HTMLElement>('.compare-axis[aria-pressed="true"], .compare-axis'))?.focus();
+    (root.current?.querySelector<HTMLElement>(`[data-pane="${Math.min(wanted.index, panes.length - 1)}"] .axis-chip`) ?? root.current?.querySelector<HTMLElement>('.compare-axis'))?.focus();
   });
   const anchor = panes[0];
   if (!anchor) return null;
@@ -130,8 +129,8 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
     update({ ...current({ skills, dishes }), compare: '' });
   };
   const remove = (index: number) => {
-    // The next pane's first chip now sits at this index; when the last pane went, Compare by is the nearest control.
-    pending.current = { panes: panes.length - 1, compare: '', target: index < panes.length - 1 ? 'pane' : 'compare', index };
+    // The next pane's first chip now sits at this index; when the last pane went, the one before it is nearest.
+    pending.current = { panes: panes.length - 1, compare: '', index };
     update({ compare: '', models: panes.filter((_, i) => i !== index).map((pane) => pane.config.id), skills: tokens.filter((_, i) => i !== index), dishes: panes.filter((_, i) => i !== index).map((pane) => pane.dish?.id ?? '') });
   };
 
@@ -190,7 +189,7 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
       </section>
       {repeatGroups}
       <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>
-      <div className="mt-3 flex justify-end"><KitchenButton onClick={() => { pending.current = { panes: panes.length, compare: '', target: 'pane', index: 0 }; update({ compare: '' }); }}>Choose panes one by one</KitchenButton></div>
+      <div className="mt-3 flex justify-end"><KitchenButton onClick={() => { pending.current = { panes: panes.length, compare: '', index: 0 }; update({ compare: '' }); }}>Choose panes one by one</KitchenButton></div>
     </div>;
   }
 

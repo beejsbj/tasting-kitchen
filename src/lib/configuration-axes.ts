@@ -96,8 +96,8 @@ export function heldConfigLabels<C extends AxisConfiguration>(configs: readonly 
 }
 
 /** The polite announcement for a "Compare by" layout: "Comparing 3 harnesses, holding Opus 5.5 · High · Clean". */
-export function compareAnnouncement(axis: CompareAxis, count: number, held: readonly string[]) {
-  return `Comparing ${count} ${AXIS_PLURALS[axis]}${held.length ? `, holding ${held.join(" · ")}` : ""}`;
+export function compareAnnouncement(axis: CompareAxis, count: number, held: readonly string[], isolated = true) {
+  return `Comparing ${count} ${AXIS_PLURALS[axis]}${held.length ? `, holding ${held.join(" · ")}` : ""}${isolated ? "" : "; not an isolated comparison"}`;
 }
 
 function orderValues(axis: ConfigAxis, values: string[]) {
