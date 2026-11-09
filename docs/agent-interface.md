@@ -188,12 +188,18 @@ Kept out of the harness:
   `TERM`, `TZ`, `TMPDIR`, `XDG_RUNTIME_DIR`, the host's proxy and CA settings,
   and the XDG directories only for a harness that keeps the real home (Cursor,
   original-profile Codex, T3 → Claude Code). `GH_TOKEN`, `OPENROUTER_API_KEY`,
-  `BWS_ACCESS_TOKEN`, AWS keys, `SSH_AUTH_SOCK`, D-Bus, a parent Claude Code or T3
-  session's channels, and any name added later never arrive. Explicit variables
+  `BWS_ACCESS_TOKEN`, AWS keys, `SSH_AUTH_SOCK`, `DBUS_SESSION_BUS_ADDRESS`, a
+  parent Claude Code or T3 session's channels, and any name added later never
+  arrive. (`XDG_RUNTIME_DIR` is passed, so a program that falls back to
+  `$XDG_RUNTIME_DIR/bus` or `gnupg/` can still find those sockets: see below.)
+  Explicit variables
   a programmatic caller passes go through, minus credential-shaped names
   (`TASTE_`, `CLAUDE*`, `ANTHROPIC_`, `OPENROUTER_`, `GH_`, `AWS_`, `SSH_` and the
   like); the CLI passes none. Live Claude Code is the exception: it runs as he
-  runs `claude`, with his environment minus a parent Claude session.
+  runs `claude`, with his environment minus a parent Claude session. **A live
+  run sees every secret in the shell that started the Cook** (`GH_TOKEN`,
+  `OPENROUTER_API_KEY`, `BWS_ACCESS_TOKEN`, AWS keys, agent sockets): "live" means
+  exactly as is, and the receipt says so.
 - **Bearer keys.** Hermes on OpenRouter and Direct API run behind a
   per-attempt loopback key proxy (`lib/taste/key-proxy.mjs`). The harness gets a
   dummy token and `http://127.0.0.1:<port>/api/v1`; the proxy refuses any other
@@ -219,7 +225,11 @@ Still reachable by a model that looks (same user, so ordinary file reads):
   Cook command (the exec-time environment cannot be scrubbed afterwards);
 - the scratch T3 settings while that attempt runs, and the Claude Code access
   token in the inner Claude process's environment under T3;
-- `/proc/<pid>/environ` of the harness itself, which now holds nothing secret.
+- a D-Bus or gpg-agent socket under `XDG_RUNTIME_DIR`, which the allowlist
+  still passes (repointing or dropping it is a host-side choice);
+- for a live run, the whole shell environment (above);
+- `/proc/<pid>/environ` of the harness itself, which now holds nothing secret
+  (except a live run's).
   Yama `ptrace_scope` is 1 on the Kitchen host, so the model's shell cannot read
   its ancestors' memory.
 
