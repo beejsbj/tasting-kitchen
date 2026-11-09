@@ -136,6 +136,7 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
     runtime: "linux-host",
     workspace: "fresh-copy",
     codexHome: "fresh-per-attempt",
+    home: "inherited",
     nativeWeb: "disabled",
     networkEnforcement: "not-technically-enforced",
     hostFilesystem: "not-a-secrecy-boundary",

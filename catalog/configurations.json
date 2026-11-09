@@ -26,6 +26,31 @@
       }
     },
     {
+      "id": "codex-sol-high-clean",
+      "label": "Sol · High · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
       "id": "codex-terra-high",
       "label": "Terra · High · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
@@ -47,6 +72,31 @@
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
+      }
+    },
+    {
+      "id": "codex-terra-high-clean",
+      "label": "Terra · High · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
       }
     },
     {
@@ -74,6 +124,31 @@
       }
     },
     {
+      "id": "codex-luna-low-fast-clean",
+      "label": "Luna · Low · Fast · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "low",
+      "serviceTier": "fast",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
       "id": "codex-luna-high-fast",
       "label": "Luna · High · Fast · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
@@ -95,6 +170,31 @@
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
+      }
+    },
+    {
+      "id": "codex-luna-high-fast-clean",
+      "label": "Luna · High · Fast · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "fast",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
       }
     },
     {
@@ -122,6 +222,31 @@
       }
     },
     {
+      "id": "codex-luna-xhigh-fast-clean",
+      "label": "Luna · Extra High · Fast · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "xhigh",
+      "serviceTier": "fast",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
       "id": "codex-luna-xhigh",
       "label": "Luna · Extra High · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
@@ -143,6 +268,31 @@
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
+      }
+    },
+    {
+      "id": "codex-luna-xhigh-clean",
+      "label": "Luna · Extra High · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "codex-cli",
+      "reasoningEffort": "xhigh",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
       }
     },
     {
@@ -194,6 +344,31 @@
       }
     },
     {
+      "id": "codex-gpt-6-astra-high-clean",
+      "label": "gpt-6-astra · High · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-6-astra",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "priority",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
       "id": "codex-gpt-6-1-sol-high",
       "label": "gpt-6.1-sol · High · via Codex CLI · host-unsandboxed fallback",
       "provider": "openai",
@@ -215,6 +390,31 @@
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary"
+      }
+    },
+    {
+      "id": "codex-gpt-6-1-sol-high-clean",
+      "label": "gpt-6.1-sol · High · via Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-6.1-sol",
+      "harness": "codex-cli",
+      "reasoningEffort": "high",
+      "serviceTier": "priority",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "codex-linux-host-clean-v1",
+        "label": "via Codex CLI · clean",
+        "runtime": "linux-host",
+        "sandbox": "danger-full-access",
+        "approvalPolicy": "never",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
       }
     },
     {
