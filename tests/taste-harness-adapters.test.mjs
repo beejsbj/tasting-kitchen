@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { planSelection } from "../lib/taste/catalog.mjs";
-import { OPTIONAL_PROFILE_KEYS, assertProfileMatch, getHarnessAdapter, isPersonalEnvironment, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { computeConfigHash, planSelection } from "../lib/taste/catalog.mjs";
+import { OPTIONAL_PROFILE_KEYS, assertHarnessPath, assertProfileMatch, getHarnessAdapter, isPersonalEnvironment, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const profile = { id: "codex-linux-host-unsandboxed-v1", label: "via Codex CLI · host-unsandboxed fallback", runtime: "linux-host", sandbox: "danger-full-access", approvalPolicy: "never", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
 const variant = { id: "codex", provider: "openai", model: "gpt-5.6-sol", harness: "codex-cli", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: profile, configHash: "sha256:test" };
@@ -133,4 +133,26 @@ test("Hermes offers clean and snapshot only, and a snapshot must name the profil
   const live = { id: "claude-code-linux-host-live-v1", label: "via Claude Code · live", ...claudeBase, environment: "live", memory: "off", connections: "on" };
   assert.doesNotThrow(() => resolveHarnessAdapter(claude(live)));
   assert.throws(() => resolveHarnessAdapter(claude({ ...live, id: "claude-code-linux-host-snapshot-v1", label: "via Claude Code · snapshot", environment: "snapshot", harnessProfile: "work" })), /does not support a named harness profile/);
+});
+
+test("a harness path names layers outermost first and only an outer adapter that wraps that inner path accepts it", () => {
+  const alone = { harness: "claude-code" };
+  assert.doesNotThrow(() => assertHarnessPath(alone, { wraps: [] }));
+  assert.throws(() => assertHarnessPath(alone, { requiresInner: true }), /must name its harnessPath/);
+  const wrapper = { wraps: ["claude-code", "codex-cli"] };
+  assert.doesNotThrow(() => assertHarnessPath({ harness: "hermes", harnessPath: ["hermes", "claude-code"] }, wrapper));
+  assert.throws(() => assertHarnessPath({ harness: "hermes", harnessPath: ["claude-code"] }, wrapper), /outer and an inner/);
+  assert.throws(() => assertHarnessPath({ harness: "hermes", harnessPath: ["codex-cli", "claude-code"] }, wrapper), /start with the configuration's harness hermes/);
+  assert.throws(() => assertHarnessPath({ harness: "hermes", harnessPath: ["hermes", "nowhere"] }, wrapper), /unknown harness: nowhere/);
+  assert.throws(() => assertHarnessPath({ harness: "hermes", harnessPath: ["hermes", "hermes"] }, wrapper), /repeat/);
+  assert.throws(() => assertHarnessPath({ harness: "hermes", harnessPath: ["hermes", "cursor-agent"] }, wrapper), /cannot wrap cursor-agent/);
+});
+
+test("a harness path is part of the configuration hash only when present", () => {
+  const configuration = { provider: "anthropic", model: "claude-opus-5-5", harness: "claude-code", reasoningEffort: "high", serviceTier: "default", personality: "default", capabilities: ["files", "shell"], executionProfile: { id: "p", label: "x" } };
+  const alone = computeConfigHash(configuration);
+  assert.equal(computeConfigHash({ ...configuration, harnessPath: undefined }), alone, "absent leaves existing hashes alone");
+  const wrapped = computeConfigHash({ ...configuration, harness: "t3", harnessPath: ["t3", "claude-code"] });
+  assert.notEqual(wrapped, computeConfigHash({ ...configuration, harness: "t3" }));
+  assert.notEqual(wrapped, computeConfigHash({ ...configuration, harness: "t3", harnessPath: ["t3", "codex-cli"] }));
 });

@@ -306,12 +306,14 @@ function validateConfigurations(doc) {
   if (doc.configurations.length < 1) fail(label, "expected at least one configuration");
   const map = new Map();
   const tuples = [];
-  const allowedKeys = new Set(["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"]);
+  const requiredKeys = ["id", "label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality", "capabilities", "executionProfile"];
+  // harnessPath is present only when the harness wraps another, so existing hashes stay put.
+  const allowedKeys = new Set([...requiredKeys, "harnessPath"]);
   for (const [index, variant] of doc.configurations.entries()) {
     const item = `${label}.configurations[${index}]`;
     if (!object(variant, item)) continue;
     onlyKeys(variant, allowedKeys, item);
-    required(variant, [...allowedKeys], item);
+    required(variant, requiredKeys, item);
     string(variant.id, `${item}.id`, { pattern: IDS });
     for (const key of ["label", "provider", "model", "harness", "reasoningEffort", "serviceTier", "personality"]) string(variant[key], `${item}.${key}`);
     if (map.has(variant.id)) fail(item, `duplicate variant id ${variant.id}`);
@@ -330,7 +332,7 @@ function validateConfigurations(doc) {
     const adapterReason = adapterSupport(variant);
     if (adapterReason) fail(item, adapterReason);
     if (variant.model === "gpt-5.6-luna" && !new Set(["low", "high", "xhigh"]).has(variant.reasoningEffort)) fail(item, "unsupported Luna seed effort");
-    tuples.push([variant.provider, variant.model, variant.harness, variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
+    tuples.push([variant.provider, variant.model, variant.harness, JSON.stringify(variant.harnessPath ?? null), variant.reasoningEffort, variant.serviceTier, variant.personality, JSON.stringify(variant.executionProfile), ...(variant.capabilities ?? [])].join("\0"));
   }
   unique(tuples, `${label}.configurations configuration`);
   return map;

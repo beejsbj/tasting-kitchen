@@ -128,7 +128,7 @@ test('choosing values keeps the held pane first, the limit, and survives a new h
 test('the compare-by note states what was held and never credits the varied axis alone', () => {
   const slot = (config) => ({ config, skillKey: 'none' });
   const harness = differingDimensions([slot(opusHighClean), slot(hermes('opus', 'high', 'clean'))]);
-  assert.equal(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], harness), 'Holding Opus 5.5 · High · Clean · only the harness differs · its own prompt, tools and defaults come with it');
+  assert.equal(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], harness), 'Holding Opus 5.5 · High · Clean · only the harness differs · its own prompt, tools, route and defaults come with it');
   assert.equal(compareByNote('environment', ['Opus 5.5', 'High', 'Claude Code'], ['environment']), 'Holding Opus 5.5 · High · Claude Code · only the environment differs · what the environment adds');
   assert.equal(compareByNote('skill', ['Opus 5.5'], ['skill layer']), 'Holding Opus 5.5 · only the skill layer differs · the model still decides how to use it');
   assert.equal(compareByNote('model', ['Claude Code'], ['model']), 'Holding Claude Code · only the model differs');
@@ -158,6 +158,22 @@ test('compare by harness from a rose pane holds the environment kind, never the 
   assert.equal(heldValueLabel('harness', 'environment', toggled(rose, { connections: 'on' })), 'Snapshot · connections on');
   assert.equal(heldValueLabel('effort', 'environment', rose), 'Snapshot · rose', 'within one harness the profile is held too');
   assert.equal(heldValueLabel('harness', 'model', rose), 'Opus 5.5');
+});
+
+test('Compare by Harness lays out each delivery path of one model: alone, wrapped, routed, and with no harness', () => {
+  const routed = (id, harness, extra = {}) => configuration(id, harness, 'anthropic/claude-opus-5.5', 'high', 'clean', undefined, { ...extra, executionProfile: { ...profile, environment: 'clean', route: 'openrouter' } });
+  const direct = routed('direct-opus-high', 'direct-api', { capabilities: [] });
+  const hermesOpenRouter = routed('hermes-or-opus-high', 'hermes');
+  const t3 = configuration('t3-opus-high-clean', 't3', 'claude-opus-5-5', 'high', 'clean', undefined, { harnessPath: ['t3', 'claude-code'] });
+  const paths = [...catalog, direct, hermesOpenRouter, t3];
+  const dishes = counts({ 'claude-opus-high-clean': 1, 'hermes-opus-high-clean': 1, 'direct-opus-high': 1, 'hermes-or-opus-high': 1, 't3-opus-high-clean': 1 });
+  assert.equal(axisValue(t3, 'harness'), 't3>claude-code');
+  assert.equal(axisValue(direct, 'harness'), 'direct-api@openrouter');
+  assert.equal(axisValue(direct, 'model'), 'Opus 5.5', 'the same model through any route');
+  const values = comparisonValues(paths, opusHighClean, 'harness', dishes);
+  assert.deepEqual(values.map((item) => item.label), ['Claude Code', 'Hermes', 'Direct API · OpenRouter', 'Hermes · OpenRouter', 'T3 → Claude Code']);
+  assert.ok(values.every((item) => item.isolated), 'each path holds model, effort and environment');
+  assert.deepEqual(defaultComparisonSelection(values), ['claude-code', 'hermes', 'direct-api@openrouter', 'hermes@openrouter', 't3>claude-code']);
 });
 
 test('a pane on an uncooked service tier keeps a Tier chip so it can be moved back', () => {

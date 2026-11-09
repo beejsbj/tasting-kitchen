@@ -14,17 +14,19 @@ export type Configuration = {
   serviceTier: string;
   personality: string;
   capabilities: string[];
+  /** Layers outermost first when the harness wraps another, such as ["t3", "claude-code"]; absent when it runs alone. */
+  harnessPath?: string[];
   configHash?: string;
   historical?: boolean;
   executionProfile: {
     id: string;
     label: string;
     runtime: "linux-host";
-    sandbox: "danger-full-access";
-    approvalPolicy: "never";
+    sandbox: string;
+    approvalPolicy: string;
     nativeWeb: "disabled";
-    networkPolicy: "not-enforced";
-    filesystemBoundary: "not-a-secrecy-boundary";
+    networkPolicy: string;
+    filesystemBoundary: string;
     /** Absent on configurations that predate the dimension. */
     environment?: "clean" | "snapshot" | "live";
     /** A named harness profile a snapshot copies (such as a Hermes profile). */
@@ -33,6 +35,10 @@ export type Configuration = {
     memory?: "on" | "off";
     /** Snapshot and live only: whether his MCP servers and plugins load. */
     connections?: "on" | "off";
+    /** An inference route other than the provider's own, such as "openrouter"; absent means the provider's own. */
+    route?: string;
+    /** The OpenRouter upstream provider slug the route is pinned to, with no fallbacks. */
+    upstream?: string;
   };
 };
 
