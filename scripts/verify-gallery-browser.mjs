@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { chromium } from "playwright";
-import { galleryBrowserFixture } from "./gallery-browser-fixture.mjs";
+import { galleryBrowserFixture, withHarnessConfigurations } from "./gallery-browser-fixture.mjs";
 
 const base = process.env.TASTE_BROWSER_URL ?? "http://127.0.0.1:5177";
 const chromePath = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
@@ -133,7 +133,7 @@ try {
   assert.equal(await page.locator('.dish-group').count(), 0, 'Recipes do not split the Dish grid into sections');
   assert.equal(await page.locator('.dish-card__recipe-tag').count(), registry.dishes.length, 'each Dish presents its Recipe as a tag');
   assert.equal(await page.locator('.dish-card__recipe-tag-label').getByText('Recipe', { exact: true }).count(), registry.dishes.length, 'Recipe tags identify their role');
-  assert.equal(await page.locator('.dish-card .model-choices').count(), 0, 'cards have no model/effort selector');
+  assert.equal(await page.locator('.dish-card .axis-picker').count(), 0, 'cards have no model/effort selector');
   assert.equal(await page.locator('.dish-card').getByText('Iteration 2', { exact: true }).count(), 1, 'a Repeat is independently visible');
   for (const recipe of acceptedRecipes) {
     const recipeCards = page.locator(`.dish-card[data-recipe-id="${recipe.id}"]`);
@@ -201,6 +201,133 @@ try {
     assert.ok(await page.locator(".recipe-card").count() > 0, "family filter should leave matching Recipes on the counter");
   }
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
+
+  // Many configurations of one recipe: facets, axis chips, Compare by, notes and receipts.
+  const harnessPage = await context.newPage(); await harnessPage.setViewportSize({ width: 1280, height: 900 }); recordErrors(harnessPage, "harness");
+  const harnessRegistry = withHarnessConfigurations(registry, target.id);
+  const fixtureDishes = harnessRegistry.dishes.filter(dish => dish.id.startsWith("dish_fixture_"));
+  assert.ok(harnessRegistry.configurations.length >= 40, "the fixture stresses the picker with dozens of configurations");
+  await harnessPage.route("**/data/registry.json", route => route.fulfill({ json: harnessRegistry }));
+  await harnessPage.goto(`${base}/`, { waitUntil: "networkidle" });
+  assert.equal(await page.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 3, "the shipped catalog offers All, Codex CLI and Cursor Agent");
+  assert.equal(await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button").count(), 5, "harness facet lists all harnesses plus All");
+  await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
+  assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
+  assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.identity.harness === "hermes").length, "only Hermes Dishes remain");
+  await harnessPage.getByRole("group", { name: "Filter by environment" }).getByRole("button", { name: "Personal · rose", exact: true }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.receipt.configuration.executionProfile.harnessProfile === "rose").length, "environment narrows within the harness");
+  assert.match(await harnessPage.locator(".dish-card__environment").first().innerText(), /Hermes · Personal · rose/);
+  assert.equal(await harnessPage.getByRole("group", { name: "Active filters" }).getByRole("button").count(), 2, "each active facet has a chip");
+  await save(harnessPage, "counter-facets");
+  await harnessPage.getByRole("button", { name: "Remove Harness: Hermes filter", exact: true }).click();
+  await harnessPage.getByRole("button", { name: "Remove Environment: Personal · rose filter", exact: true }).click();
+  assert.equal(new URL(harnessPage.url()).search, "", "removing chips clears the URL filters");
+
+  const opusClean = fixtureDishes.find(dish => dish.id === "dish_fixture_claude-opus-high-clean");
+  const params = () => new URL(harnessPage.url()).searchParams;
+  const openPanel = async () => { await harnessPage.getByRole("button", { name: "Models and comparison" }).click(); await settle(harnessPage); };
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: "claude-opus-high-clean", dishes: opusClean.id })}`, { waitUntil: "networkidle" });
+  await openPanel();
+  const picker = harnessPage.getByRole("group", { name: "Configuration 1", exact: true });
+  assert.deepEqual(await picker.locator(".axis-chip").evaluateAll(chips => chips.map(chip => chip.getAttribute("aria-label"))), ["Model: Opus 5.5", "Effort: High", "Harness: Claude Code", "Environment: Clean", "Skill: Without skill"], "one pane is a compact row of axis chips");
+  await save(harnessPage, "pane-axis-chips");
+  // Keyboard: Enter opens a chip's values on the current one, arrows move, Escape returns to the chip and keeps the panel.
+  const harnessChip = picker.getByRole("button", { name: "Harness: Claude Code" });
+  await harnessChip.focus(); await harnessPage.keyboard.press("Enter"); await settle(harnessPage);
+  assert.equal(await harnessChip.getAttribute("aria-expanded"), "true");
+  const harnessOptions = harnessPage.getByRole("group", { name: "Harness options" });
+  assert.equal(await harnessOptions.getByRole("button", { name: /^Claude Code · / }).evaluate(node => node === document.activeElement), true, "the current value takes focus");
+  await harnessPage.keyboard.press("ArrowDown");
+  assert.equal(await harnessOptions.getByRole("button", { name: /^Hermes · 1 dish$/ }).evaluate(node => node === document.activeElement), true, "arrows move between reachable values");
+  assert.equal(await harnessOptions.getByRole("button", { name: /^Codex CLI · unavailable · No configuration for Opus 5\.5 · Codex CLI$/ }).isDisabled(), true, "an impossible combination is disabled with its reason");
+  await save(harnessPage, "pane-harness-values");
+  await harnessPage.keyboard.press("Escape"); await settle(harnessPage);
+  assert.equal(await harnessOptions.count(), 0, "Escape closes the value list");
+  assert.equal(await harnessChip.evaluate(node => node === document.activeElement), true, "Escape returns focus to the chip");
+  assert.equal(await picker.count(), 1, "Escape in a value list leaves the panel open");
+  await picker.getByRole("button", { name: "Effort: High" }).click();
+  await harnessPage.getByRole("group", { name: "Effort options" }).getByRole("button", { name: /^Max · / }).click(); await settle(harnessPage);
+  assert.deepEqual(params().get("models")?.split(","), ["claude-opus-max-clean"], "an effort chip moves only the effort");
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: "claude-haiku-high-clean" })}`, { waitUntil: "networkidle" });
+  await openPanel();
+  await harnessPage.getByRole("button", { name: "Effort: High" }).click();
+  assert.match(await harnessPage.getByRole("group", { name: "Effort options" }).getByRole("button", { name: /^Max · / }).getAttribute("aria-label"), /^Max · not cooked$/, "an uncooked combination is reachable and marked");
+  await harnessPage.keyboard.press("Escape"); await harnessPage.keyboard.press("Escape"); await settle(harnessPage);
+
+  // Compare by Harness holds model, effort, environment and layer, and says so.
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: "claude-opus-high-clean", dishes: opusClean.id })}`, { waitUntil: "networkidle" });
+  await openPanel();
+  await harnessPage.getByRole("button", { name: /^Compare by harness/ }).click(); await settle(harnessPage);
+  assert.equal(params().get("compare"), "harness", "the compare axis is URL-addressable");
+  assert.deepEqual(params().get("models")?.split(","), ["claude-opus-high-clean", "hermes-opus-high-clean"], "one pane per isolated, cooked harness; the held pane first");
+  assert.equal(params().get("dishes")?.split(",")[0], opusClean.id, "the held pane keeps its exact Dish");
+  assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Claude Code", "Hermes"], "panes are named by the varied value");
+  assert.match(await harnessPage.locator(".pane-label").first().innerText(), /holding Opus 5\.5 · High · Clean · Without skill/);
+  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools and defaults come with it$/;
+  assert.equal(await harnessPage.getByText(note).count(), 1, "the note states the isolation by construction");
+  const harnessValues = harnessPage.getByRole("region", { name: "Harness values" });
+  await harnessValues.getByRole("checkbox").nth(2).check(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".comparison-slot").count(), 3, "a loose value can be added");
+  assert.equal(await harnessPage.getByText(/not an isolated comparison$/).count(), 1, "and the note stops claiming isolation");
+  await harnessValues.getByRole("checkbox").nth(2).uncheck(); await settle(harnessPage);
+  await save(harnessPage, "compare-by-harness-panel");
+  await harnessPage.getByRole("group", { name: "Held configuration" }).getByRole("button", { name: "Effort: High" }).click();
+  await harnessPage.getByRole("group", { name: "Effort options" }).getByRole("button", { name: /^Max · / }).click(); await settle(harnessPage);
+  assert.deepEqual(params().get("models")?.split(","), ["claude-opus-max-clean", "hermes-opus-max-clean"], "changing a held chip re-expands every pane");
+  await harnessPage.keyboard.press("Escape"); await settle(harnessPage);
+  await save(harnessPage, "compare-by-harness");
+  await harnessPage.getByRole("button", { name: "Configuration receipts" }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".receipt dt", { hasText: "Environment" }).count(), 2);
+  assert.equal(await harnessPage.locator(".receipt dt", { hasText: "Harness profile" }).count(), 0, "a harness profile is listed only when one was used");
+  await harnessPage.keyboard.press("Escape");
+
+  // Compare by Model: four models tile 2×2; six panes is the most.
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: "claude-opus-high-clean", dishes: opusClean.id })}`, { waitUntil: "networkidle" });
+  await openPanel();
+  await harnessPage.getByRole("button", { name: /^Compare by model/ }).click(); await settle(harnessPage);
+  assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Opus 5.5", "Sonnet 5.5", "Haiku 5.5", "Fable 5.1"]);
+  const boxes = await harnessPage.locator(".comparison-slot").evaluateAll(slots => slots.map(slot => { const box = slot.getBoundingClientRect(); return [Math.round(box.x), Math.round(box.y)]; }));
+  assert.equal(new Set(boxes.map(([x]) => x)).size, 2, "four panes use two columns"); assert.equal(new Set(boxes.map(([, y]) => y)).size, 2, "and two rows");
+  await save(harnessPage, "compare-by-model-panel");
+  const modelValues = harnessPage.getByRole("region", { name: "Model values" });
+  for (let added = 0; added < 2 && await modelValues.locator("input:not(:checked):not(:disabled)").count(); added++) { await modelValues.locator("input:not(:checked):not(:disabled)").first().check(); await settle(harnessPage); }
+  if (await harnessPage.locator(".comparison-slot").count() === 6) {
+    assert.equal(params().get("models")?.split(",").length, 6, "six panes reach the URL");
+    if (await modelValues.locator("input:not(:checked)").count()) assert.equal(await harnessPage.getByText("Six panes is the most; clear one to add another.").count(), 1);
+    assert.equal(await modelValues.locator("input:not(:checked):not(:disabled)").count(), 0, "no seventh pane");
+    await save(harnessPage, "compare-six-panes");
+  }
+  await harnessPage.keyboard.press("Escape");
+
+  // Compare by Skill layer holds the configuration.
+  await openPanel();
+  await harnessPage.getByRole("button", { name: /^Compare by skill layer/ }).click(); await settle(harnessPage);
+  assert.deepEqual(params().get("models")?.split(","), ["claude-opus-high-clean", "claude-opus-high-clean"]);
+  assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Without skill", "Hand-drawn canvas animation"]);
+  assert.equal(await harnessPage.getByText(/only the skill layer differs · the model still decides how to use it$/).count(), 1);
+  await harnessPage.getByRole("button", { name: "Choose panes one by one" }).click(); await settle(harnessPage);
+  assert.equal(params().has("compare"), false, "choosing panes one by one keeps the panes and drops the axis");
+  assert.equal(await harnessPage.getByRole("group", { name: "Configuration 2", exact: true }).count(), 1);
+  await harnessPage.keyboard.press("Escape");
+
+  // A phone swipes between three or more full-width panes.
+  await harnessPage.setViewportSize({ width: 390, height: 844 });
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: "claude-opus-high-clean,claude-sonnet-high-clean,claude-haiku-high-clean,claude-fable-high-clean", skills: "none,none,none,none", compare: "model" })}`, { waitUntil: "networkidle" });
+  assert.ok(await harnessPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "the page itself does not overflow on a phone");
+  const swipe = await harnessPage.locator(".comparison-grid").evaluate(grid => ({ scroll: grid.scrollWidth, client: grid.clientWidth, widths: [...grid.children].map(slot => Math.round(slot.getBoundingClientRect().width)) }));
+  assert.ok(swipe.scroll >= swipe.client * 4 - 4 && swipe.widths.every(width => width >= swipe.client - 1), "each pane is full width in a swipeable row");
+  assert.match(await harnessPage.locator(".pane-label > span[aria-hidden=true]").first().innerText(), /^1\/4 · Opus 5\.5/, "a swiped pane says how many there are");
+  await openPanel();
+  assert.ok(await harnessPage.getByRole("dialog", { name: "Models and comparison" }).evaluate(panel => panel.getBoundingClientRect().right <= innerWidth && panel.scrollWidth <= panel.clientWidth), "the panel fits a phone");
+  await save(harnessPage, "compare-phone");
+  await harnessPage.setViewportSize({ width: 1280, height: 900 });
+
+  const roseConfig = harnessRegistry.configurations.find(config => config.id === "hermes-opus-high-personal-rose");
+  await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: roseConfig.id })}`, { waitUntil: "networkidle" });
+  await harnessPage.getByRole("button", { name: "Configuration receipts" }).click(); await settle(harnessPage);
+  assert.match(await harnessPage.locator(".receipt").innerText(), /Hermes 9\.9\.9[\s\S]*Environment\s+Personal[\s\S]*Harness profile\s+rose/);
+  await save(harnessPage, "harness-receipt");
+  await harnessPage.close();
 
   const historyBefore = await page.evaluate(() => history.length);
   await page.locator(`[data-dish-id="${targetLatest.id}"] button`).click(); await settle(page);

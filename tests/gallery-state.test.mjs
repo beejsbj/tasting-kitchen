@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
+import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
+import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, environmentName, harnessLabel } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -18,7 +19,7 @@ test('links preserve repeated configuration slots, and selected Dishes', () => {
 test('legacy domain deep links translate without emitting retired vocabulary', () => {
   assert.equal(readGalleryState('?domain=ui-visual').cuisine, 'ui-visual');
   assert.equal(readGalleryState('?view=untrusted').view, 'dishes');
-  assert.equal(readGalleryState('?models=a,b,c,d').models.length, 3);
+  assert.equal(readGalleryState('?models=a,b,c,d,e,f,g').models.length, 6, 'six panes is the most a link keeps');
 });
 
 test('Repeats share recipe hash and configuration and retain deterministic order', () => {
@@ -179,6 +180,80 @@ test('explicit Dish slots retain independent identities and unavailable Dishes s
   assert.deepEqual(slots[2].repeats, []);
   const missing = resolveRecipeSelection(registry, selectionRecipe, { models: ['current-config'], skills: [], dishes: ['deleted'] });
   assert.equal(missing.slots[0].dish, undefined);
+});
+
+test('harness and environment filters are URL-addressable and default to all', () => {
+  const calls = [];
+  globalThis.window = { location: { pathname: '/' }, history: { pushState: (...args) => calls.push(args), replaceState: (...args) => calls.push(args) } };
+  assert.equal(readGalleryState('').harness, 'all');
+  assert.equal(readGalleryState('').environment, 'all');
+  const state = readGalleryState('?harness=hermes&environment=personal:rose&tier=default');
+  assert.equal(state.harness, 'hermes');
+  assert.equal(state.environment, 'personal:rose');
+  writeGalleryState(state);
+  assert.equal(new URLSearchParams(calls[0][2].slice(1)).get('environment'), 'personal:rose');
+  assert.deepEqual(readGalleryState(calls[0][2].slice(1)), state);
+  writeGalleryState({ ...state, harness: 'all', environment: 'all' });
+  assert.equal(calls[1][2].includes('environment'), false);
+  delete globalThis.window;
+});
+
+test('model families cover Claude ids in both spellings without changing existing families', () => {
+  for (const [model, family] of [['claude-opus-5-5', 'Opus'], ['claude-sonnet-5-5', 'Sonnet'], ['claude-haiku-5-5', 'Haiku'], ['claude-fable-5-1', 'Fable'], ['anthropic/claude-opus-5.5', 'Opus'], ['anthropic/claude-sonnet-5.5', 'Sonnet'], ['anthropic/claude-fable-5.1', 'Fable']]) assert.equal(modelFamily(model), family, model);
+  for (const [model, family] of [['gpt-5.6-sol', 'Sol'], ['gpt-5.6-terra', 'Terra'], ['gpt-5.6-luna', 'Luna'], ['composer-2.5[fast=false]', 'Composer'], ['some-other-model', 'some-other-model']]) assert.equal(modelFamily(model), family, model);
+  assert.equal(claudeModelName('claude-opus-5-5'), 'Opus 5.5');
+  assert.equal(claudeModelName('anthropic/claude-opus-5.5'), 'Opus 5.5');
+  assert.equal(claudeModelName('claude-fable-5-1'), 'Fable 5.1');
+  assert.equal(claudeModelName('claude-opus-4-20250514'), undefined, 'a date suffix is not a minor version');
+  assert.equal(claudeModelName('gpt-5.6-sol'), undefined);
+});
+
+const profile = { id: 'p', label: 'p', runtime: 'linux-host', sandbox: 'danger-full-access', approvalPolicy: 'never', nativeWeb: 'disabled', networkPolicy: 'not-enforced', filesystemBoundary: 'not-a-secrecy-boundary' };
+const configuration = (id, harness, environment, harnessProfile, extra = {}) => ({
+  id, harness, model: 'claude-opus-5-5', reasoningEffort: 'high', serviceTier: 'default', personality: 'none', capabilities: ['files', 'shell'], configHash: `sha256:${id}`,
+  executionProfile: { ...profile, ...(environment && { environment }), ...(harnessProfile && { harnessProfile }) }, ...extra,
+});
+const claudeClean = configuration('claude-clean', 'claude-code', 'clean');
+const claudePersonal = configuration('claude-personal', 'claude-code', 'personal');
+const hermesPersonal = configuration('hermes-personal', 'hermes', 'personal', 'rose', { model: 'anthropic/claude-opus-5.5' });
+const legacy = configuration('legacy', 'codex-cli', undefined, undefined, { model: 'gpt-5.6-sol' });
+
+test('harness and environment labels read plainly and unknown harnesses keep their id', () => {
+  assert.deepEqual(['claude-code', 'hermes', 'codex-cli', 'cursor-agent', 'future-harness'].map(harnessLabel), ['Claude Code', 'Hermes', 'Codex CLI', 'Cursor Agent', 'future-harness']);
+  assert.equal(environmentLabel(claudeClean), 'Clean');
+  assert.equal(environmentLabel(hermesPersonal), 'Personal · rose');
+  assert.equal(environmentLabel(hermesPersonal, false), 'Personal');
+  assert.equal(environmentLabel(legacy), undefined);
+  assert.equal(environmentName(legacy), 'Not declared');
+  assert.equal(environmentName(claudeClean), 'Clean');
+  assert.deepEqual([claudeClean, hermesPersonal, legacy].map(environmentKey), ['clean', 'personal:rose', 'undeclared']);
+  assert.equal(configurationHeading(claudeClean, 'Opus'), 'Opus 5.5 · High · Claude Code · Clean');
+  assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Personal · rose');
+  assert.equal(configurationHeading(legacy, 'Sol'), 'Sol · High · Codex CLI');
+});
+
+test('facets list the values present, so a single-harness catalog has nothing to choose', () => {
+  assert.deepEqual(configurationFacets([legacy, { ...legacy, id: 'other' }]), { harnesses: [{ id: 'codex-cli', label: 'Codex CLI' }], environments: [{ id: 'undeclared', label: 'Not declared' }] });
+  assert.deepEqual(configurationFacets([claudeClean, claudePersonal, hermesPersonal]), {
+    harnesses: [{ id: 'claude-code', label: 'Claude Code' }, { id: 'hermes', label: 'Hermes' }],
+    environments: [{ id: 'clean', label: 'Clean' }, { id: 'personal', label: 'Personal' }, { id: 'personal:rose', label: 'Personal · rose' }],
+  });
+});
+
+test('the comparison note names the one dimension that differs, without crediting the harness alone', () => {
+  const slot = (config, skillKey = 'none') => ({ config, skillKey });
+  assert.deepEqual(differingDimensions([slot(claudeClean), slot(claudeClean)]), []);
+  assert.deepEqual(differingDimensions([slot(claudeClean), slot(claudePersonal)]), ['environment']);
+  assert.match(differenceNote(['environment']), /^Same brief · only the environment differs/);
+  // The same model under Hermes' own spelling, with its own profile, is still only a harness difference.
+  assert.deepEqual(differingDimensions([slot(claudePersonal), slot(hermesPersonal)]), ['harness']);
+  assert.match(differenceNote(['harness']), /^Same brief · only the harness differs · its own prompt, tools and defaults come with it/);
+  assert.deepEqual(differingDimensions([slot(hermesPersonal), slot({ ...hermesPersonal, executionProfile: { ...hermesPersonal.executionProfile, harnessProfile: 'other' } })]), ['environment']);
+  assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...claudeClean, reasoningEffort: 'max' })]), ['effort']);
+  assert.deepEqual(differingDimensions([slot(claudeClean), slot(claudeClean, 'sha256:skill')]), ['skill layer']);
+  assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...hermesPersonal, reasoningEffort: 'max' })]), ['effort', 'harness', 'environment']);
+  assert.equal(differenceNote(['effort', 'harness', 'environment']), 'Same brief · effort, harness, environment differ');
+  assert.equal(differenceNote([]), undefined);
 });
 
 test('service tier drift compares the observed tier with the requested tier, honouring the fast to priority alias', () => {
