@@ -163,7 +163,7 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
   assert.equal(JSON.parse(await readFile(path.join(result.dishDirectory, "validation.json"), "utf8")).passed, true);
 });
 
-test("a required check failure remains private and creates no dish", async (t) => {
+test("a required check failure creates no Dish; its plate is a public No Dish", async (t) => {
   const f = await fixture({ failing: true });
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const homes = [];
@@ -192,6 +192,10 @@ test("a required check failure remains private and creates no dish", async (t) =
   assert.match(result.error, /Required validation failed/);
   assert.equal(JSON.parse(await readFile(path.join(result.attemptDir, "state.json"), "utf8")).status, "failed");
   await assert.rejects(readFile(path.join(f.root, "dishes", "dish_demo-session_codex-sol-high_20260814120000000_failed", "dish.json")), /ENOENT/);
+  // A failed required check is the model's own outcome (a chef fault): it is recorded publicly, never as a Dish.
+  assert.equal(result.fault.class, "chef");
+  assert.equal(result.fault.code, "checks-failed");
+  assert.equal(result.noDishId, "nodish_demo-session_codex-sol-high_20260814120000000_failed");
 });
 
 test("a runtime root under a directory holding AGENTS.md fails closed before credentials or the model are touched", async (t) => {

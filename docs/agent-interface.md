@@ -112,6 +112,21 @@ inject an executable or adapter. Publication-only recovery selects the adapter
 from the recorded request and reconstructs evidence without launching a model;
 it needs the Recipe's current hash to equal the attempt's.
 
+Every failed attempt is classified by `lib/taste/faults.mjs` into a chef fault
+or a kitchen fault (see [the product model](product-model.md#no-dish)). An
+adapter may tag a failed turn as the model's only from structured evidence, by
+setting `failure.chefFault` (`refused`, `out-of-turns`); the runner and
+publication tag `checks-failed` and `output-contract`. Nothing else may produce
+a chef fault, and an untagged failure is a kitchen fault. A chef fault publishes
+a No Dish and counts as coverage; recovery refuses it. A new adapter that can
+see a refusal or an exhausted turn budget in its own stream should tag it the
+same way, and must not tag anything the route could have caused.
+
+`taste verdict --dish ID --failed|--passed --note TEXT` records Burooj's verdict
+beside a Dish or No Dish in `verdicts/`, then rebuilds the registry. It never
+edits the plate. A No Dish (`nodish_…`) takes only `--passed`: overruling checks
+that failed it.
+
 ### Where cooking happens
 
 The repo holds the Kitchen program; cooking happens elsewhere. Each attempt

@@ -9,10 +9,10 @@
 /* Keep session text clear of the fixed viewer dock, including while scrolling. */
 .tasting-room--immersive .artifact-pane--session { padding-right: 5rem; }
 /* Keep the review mark clear of the fixed viewer dock. When a Dish is marked, the pane label joins the flow above the pane so it can wrap without covering the mark. */
-.tasting-room--immersive .artifact-review-mark { padding-right: 5rem; }
-.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) { display: flex; flex-direction: column; }
-.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .pane-label { position: static; align-self: flex-start; margin: .75rem .75rem .5rem; }
-.tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .artifact-pane { flex: 1 1 0; min-height: 0; height: auto; }
+.tasting-room--immersive .artifact-review-mark, .tasting-room--immersive .verdict-mark { padding-right: 5rem; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark, .verdict-mark) { display: flex; flex-direction: column; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark, .verdict-mark) .pane-label { position: static; align-self: flex-start; margin: .75rem .75rem .5rem; }
+.tasting-room--immersive .comparison-slot:has(.artifact-review-mark, .verdict-mark) .artifact-pane { flex: 1 1 0; min-height: 0; height: auto; }
 .tasting-room--immersive .session-artifact { max-width: 76ch; margin-inline: auto; }
 .pane-label__held { color: #64748b; }
 .pane-label__total { display: none; color: #64748b; }

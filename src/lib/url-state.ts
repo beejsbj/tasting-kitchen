@@ -3,6 +3,8 @@ import { isCompareAxis, MAX_PANES, type CompareAxis } from "./configuration-axes
 export type GalleryState = {
   view: "dishes" | "recipes" | "menus" | "models";
   cuisine: string; origin: string; query: string; family: string; effort: string; harness: string; environment: string; tier: string; skill: string;
+  /** "all", or an Outcome: cooked, no-dish, failed-by-burooj. */
+  outcome: string;
   recipe: string; menu: string;
   models: string[]; skills: string[]; dishes: string[];
   /** The axis a "Compare by" layout varies; "" for panes chosen one by one. */
@@ -14,7 +16,7 @@ export function readGalleryState(search = window.location.search): GalleryState 
   return {
     view: view === "recipes" || view === "menus" || view === "models" ? view : "dishes",
     cuisine: query.get("cuisine") ?? query.get("domain") ?? "all",
-    origin: query.get("origin") ?? "all", query: query.get("q") ?? "", family: query.get("family") ?? "all", effort: query.get("effort") ?? "all", harness: query.get("harness") ?? "all", environment: query.get("environment") ?? "all", tier: query.get("tier") ?? "all", skill: query.get("skill") ?? "all",
+    origin: query.get("origin") ?? "all", query: query.get("q") ?? "", family: query.get("family") ?? "all", effort: query.get("effort") ?? "all", harness: query.get("harness") ?? "all", environment: query.get("environment") ?? "all", tier: query.get("tier") ?? "all", skill: query.get("skill") ?? "all", outcome: query.get("outcome") ?? "all",
     recipe: query.get("recipe") ?? "", menu: query.get("menu") ?? "",
     models: (query.get("models") ?? "").split(",").filter(Boolean).slice(0, MAX_PANES), skills: (query.get("skills") ?? "").split(",").slice(0, MAX_PANES), dishes: (query.get("dishes") ?? "").split(",").slice(0, MAX_PANES),
     compare: isCompareAxis(query.get("compare") ?? "") ? query.get("compare") as CompareAxis : "",
@@ -25,7 +27,7 @@ export function writeGalleryState(state: GalleryState, mode: "push" | "replace" 
   const query = new URLSearchParams();
   if (state.view !== "dishes") query.set("view", state.view);
   if (state.editRecipe) query.set("edit", state.editRecipe);
-  for (const key of ["cuisine", "origin", "family", "effort", "harness", "environment", "tier", "skill"] as const) if (state[key] !== "all") query.set(key, state[key]);
+  for (const key of ["cuisine", "origin", "family", "effort", "harness", "environment", "tier", "skill", "outcome"] as const) if (state[key] !== "all") query.set(key, state[key]);
   for (const key of ["recipe", "menu"] as const) if (state[key]) query.set(key, state[key]);
   if (state.query) query.set("q", state.query);
   if (state.models.length) query.set("models", state.models.join(","));

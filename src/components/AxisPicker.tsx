@@ -6,7 +6,10 @@ export type AxisPickerOption = {
   key: string;
   label: string;
   status: 'cooked' | 'uncooked' | 'impossible';
+  /** Plates in the cell: Dishes and No Dishes. */
   dishes: number;
+  /** How many of those are No Dishes. */
+  noDishes?: number;
   selected: boolean;
   /** What else moves when this value is chosen, or why it cannot be. */
   note?: string;
@@ -25,9 +28,12 @@ export function CookedMark({ status }: { status: AxisPickerOption['status'] }) {
   return <span aria-hidden="true" data-status={status} className="cooked-mark" />;
 }
 
-export function dishCountLabel(option: Pick<AxisPickerOption, 'status' | 'dishes'>) {
+export function dishCountLabel(option: Pick<AxisPickerOption, 'status' | 'dishes' | 'noDishes'>) {
   if (option.status === 'impossible') return 'unavailable';
-  return option.dishes ? `${option.dishes} ${option.dishes === 1 ? 'dish' : 'dishes'}` : 'not cooked';
+  if (!option.dishes) return 'not cooked';
+  const noDishes = option.noDishes ?? 0;
+  const dishes = option.dishes - noDishes;
+  return [dishes ? `${dishes} ${dishes === 1 ? 'dish' : 'dishes'}` : '', noDishes ? `${noDishes} no ${noDishes === 1 ? 'dish' : 'dishes'}` : ''].filter(Boolean).join(' · ');
 }
 
 /**
