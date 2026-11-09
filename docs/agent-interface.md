@@ -98,6 +98,47 @@ the allowlisted adapter has been selected; production configuration cannot
 inject an executable or adapter. Publication-only recovery selects the adapter
 from the recorded request and reconstructs evidence without launching a model;
 it needs the Recipe's current hash to equal the attempt's.
+
+### Where cooking happens
+
+The repo holds the Kitchen program; cooking happens elsewhere. Each attempt
+gets a cook directory under a runtime root outside any git tree and outside the
+checkout: `/var/tmp/tk-<uid>/<16 random hex>/`, holding `workspace/` and the
+attempt's harness homes (`codex-home/`, `home/`, `claude-home/`,
+`hermes-home/`). The name is random, so no path the model can see names the
+Recipe, configuration or model. `TASTE_RUNTIME_ROOT` overrides the root.
+
+The default is not `$XDG_STATE_HOME`: a harness user's home holds `.codex` and
+`.cursor` (and on the Kitchen host `~/.local` holds a `package.json`), so a
+root under `$HOME` fails the guard below. `/var/tmp` survives a reboot, which
+recovery needs. Because it is shared ground, the root must be a real directory
+owned by the Cook and not group- or world-writable.
+
+Before any credential or fixture is touched, and again once the workspace is
+laid out, an attempt fails closed (stage `preparation`) if the workspace or any
+directory above it up to `/`, by lexical or real path, holds `.git`,
+`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.agents`, `.claude`, `.codex`,
+`.cursor` or `package.json`. Harnesses discover instructions, skills, project
+settings and a coding posture from those names.
+
+Private evidence stays in `private/runtime/attempts/<attemptId>/`: the request,
+execution and identity records, raw turn events, and publication staging.
+`requested.json` records the `cookDirectory`; recovery reads the workspace and
+Codex home from it. Attempts from before the move have no `cookDirectory` and
+recover from their own directory. Publication copies the staged Dish beside
+its destination and renames it within that directory, so `private/` may sit on
+another filesystem.
+
+### Codex
+
+Every Codex turn gets a fresh `CODEX_HOME` holding only a link to the existing
+`auth.json`, with `--ignore-user-config` and `--ignore-rules`. The `clean`
+profile (`codex-linux-host-clean-v1`) also gives the child a fresh, empty
+`HOME` beside it and unsets the XDG directories: Codex loads user skills from
+`$HOME/.agents/skills` whatever `CODEX_HOME` says. The original profile
+(`codex-linux-host-unsandboxed-v1`) keeps the real `HOME` and declares no
+environment, so its configurations keep their hashes. Codex's own bundled
+system skills still load in `clean`: they ship with the harness.
 Codex fast-to-priority recovery is a Codex-only historical alias path.
 
 Cursor authentication preflight uses `status --format json` with a ten-second
@@ -106,6 +147,16 @@ timeout and bounded captured output. It requires the CLI’s explicit
 occurs when logged out. Account fields are discarded. This checks existing
 credential presence; it does not certify remote authentication, which must
 still succeed during execution. Recovery never runs authentication preflight.
+
+Cursor declares no environment. It could run with an isolated home: it reads
+`CURSOR_CONFIG_DIR`, but skills (`~/.cursor`, `~/.claude`, `~/.codex`,
+`~/.agents`), policy and CLI state come from `homedir()`, so it would need a
+fresh `HOME` with `auth.json` linked under `.config/cursor/`. That is not
+enough for `clean`: account-level User Rules can arrive from Cursor's server with
+the login (the stream protocol carries a `user_rules` message), and no local
+home can remove them. A borrowed `auth.json` could also rotate Burooj's own
+Cursor login. `clean` waits on evidence from a real run that the account
+contributes nothing.
 
 ### Claude Code
 
@@ -123,11 +174,6 @@ Both environments run with:
 - only `Bash`, `Edit`, `Glob`, `Grep`, `Read` and `Write`, plus `Skill` in
   `personal` (no web, subagent or scheduling tools). Network access through the shell is not blocked;
 - hooks disabled and auto-update off;
-- `includeGitInstructions: false`. Attempt workspaces sit inside the Kitchen
-  checkout, and Claude Code's git-status prompt section would otherwise give the
-  model the Kitchen's branch and recent commits. The setting also drops Claude
-  Code's built-in commit and PR guidance, which no current Recipe uses.
-  `GIT_CEILING_DIRECTORIES` stops the model's own `git` at the attempt.
 
 `clean` adds `--safe-mode` and no setting sources, and disables CLAUDE.md and
 auto-memory, so the home is empty at launch. Claude Code's built-in plugins and
@@ -137,10 +183,8 @@ offered, so bundled skills cannot be invoked.
 `personal` mirrors `CLAUDE.md`, `skills/`, `agents/`, `commands/` and
 `output-styles/` from `~/.claude` as symlinks. The links point at the real
 files and are writable: a personal Run with bypassed permissions can edit them.
-It loads only the user setting source and adds the Skill tool. Instruction files in the workspace's
-ancestors are excluded through `claudeMdExcludes`, because the Kitchen's
-`AGENTS.md` (and any above the checkout) would otherwise load as project
-memory. It does not mirror `settings.json` (today that file holds only model and
+It loads only the user setting source and adds the Skill tool. The workspace
+has no ancestor instruction files to exclude (see "Where cooking happens"). It does not mirror `settings.json` (today that file holds only model and
 effort defaults, which the configuration overrides, and push-notification
 toggles), plugins, or hooks. Session transcripts and any auto-memory a personal
 Run writes stay in the attempt home, not in `~/.claude`.
@@ -186,9 +230,7 @@ attempt home is deleted when the session ends. A personal attempt runs as the
 named profile (`-p rose`). Pinned toolsets keep Hermes's memory and skill reviews
 from firing, but the session is still recorded in that profile's `state.db` and
 the profile's plugin hooks run, so it refuses unless
-`TASTE_ALLOW_HERMES_PROFILE_WRITES=1` is set. Both environments write an empty
-`.git` marker beside the workspace: Hermes reads every AGENTS.md from the git
-root down, and attempts live inside the Kitchen checkout. That placement still
-shows: Hermes finds Kitchen's `package.json` within six levels and gives every
-run its coding posture (a system-prompt block about editing, tests and git),
-and the working-directory path names the Recipe and configuration.
+`TASTE_ALLOW_HERMES_PROFILE_WRITES=1` is set. Hermes reads every AGENTS.md from
+the git root down and gives a run its coding posture when it finds a
+`package.json` within six levels; the runtime-root guard keeps both out of a
+cook directory's ancestry.
