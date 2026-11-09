@@ -316,9 +316,12 @@ unfamiliar home. Hermes borrows the Claude Code login from
 attempt that crosses the token's expiry rotates the login his own sessions use:
 the one place a Kitchen run can write to his real `~/.claude`). When the
 attempt ends, however it ends, the runner empties the Hermes home of everything
-but `state.db` (and its WAL files), so a copied login, the soul and the memories
-do not outlive it; an allowlist of what stays covers credential files a later
-Hermes might add. A Hermes child inherits only `PATH`, `HOME`, `USER`, `LOGNAME`,
+but `state.db` (and its WAL files), so a copied login and the copied files do not
+outlive it; an allowlist of what stays covers credential files a later Hermes
+might add. `state.db` itself stays, because identity verification and recovery
+read it, and Hermes stores each session's system prompt there: a snapshot run's
+soul and memory blocks therefore remain in the cook directory's `state.db`
+(outside the repo, never published) until someone removes the directory. A Hermes child inherits only `PATH`, `HOME`, `USER`, `LOGNAME`,
 `SHELL`, locale, `TERM`, `TZ`, `TMPDIR`, `XDG_RUNTIME_DIR` and
 `CLAUDE_CONFIG_DIR` from the Kitchen's environment, so no Gemini, AWS, GitHub or
 future provider key reaches it. Hermes reads every AGENTS.md from the git root
