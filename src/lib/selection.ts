@@ -52,16 +52,18 @@ function slotForConfiguration(config: Configuration | undefined, requestedSkillK
   const anchor = configDishes.find((dish) => dish.id === selectedDishId) ?? latestDish(configDishes);
   const skillKey = requestedSkillKey ?? (anchor ? dishSkillKey(anchor) : NO_SKILL);
   const layerDishes = configDishes.filter((dish) => dishSkillKey(dish) === skillKey);
-  // Nor do Repeats mix briefs: they share the recipe hash of the Dish in view.
+  // Nor do Repeats mix briefs, or versions of his setup: they share the recipe
+  // hash, and for a snapshot the setup digest, of the Dish in view.
   const inView = layerDishes.find((dish) => dish.id === selectedDishId) ?? latestDish(layerDishes);
-  const repeats = inView ? layerDishes.filter((dish) => dish.recipe.hash === inView.recipe.hash) : [];
+  const repeats = inView ? layerDishes.filter((dish) => dish.recipe.hash === inView.recipe.hash && dish.identity.setupDigest === inView.identity.setupDigest) : [];
   return { config, skillKey, repeats, dish: inView };
 }
 
 /**
  * Resolves URL selection against the registry's Dishes of one recipe. Dishes
  * cooked from an older brief stay selectable; callers mark them with
- * `briefChanged`. Repeats share configuration, skill layer and recipe hash.
+ * `briefChanged`. Repeats share configuration, skill layer, recipe hash and,
+ * for a snapshot, setup digest.
  */
 export function resolveRecipeSelection(registry: Registry, recipe: Recipe, state: Pick<GalleryState, "models" | "skills" | "dishes">): ResolvedRecipeSelection {
   const recipeDishes = registry.dishes.filter((dish) => dish.recipe.id === recipe.id);
