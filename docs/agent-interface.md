@@ -23,11 +23,19 @@ Import `lib/taste/index.mjs` for cooking and Recipe Book authoring. The authorin
   OpenRouter's public model list. `taste models [--route ID] [--free] [--json]`.
 - `plan` and `cook` also take a configuration spec or selector as
   `configurationId` (`hermes:openrouter/<model>@<effort>[:clean]`,
-  `hermes:openrouter/*@auto+free`), with `upstream` naming the OpenRouter
-  provider when the choice is not settled by the maker or a sole provider. A
-  spec's plan carries `configurationSpec` beside the usual fields; a selector's
-  returns `{ configurationSpec, plans }` and its Cook `{ configurationSpec, cooks }`.
-  An executed Cook materializes new configurations into the catalog first.
+  `hermes:openrouter/*@auto+free`, and the same on any key route Kitchen can
+  proxy, such as `hermes:opencode-go/glm-5.3@high`), with `upstream` naming the
+  OpenRouter provider when the choice is not settled by the maker or a sole
+  provider. A spec's plan carries `configurationSpec` beside the usual fields; a
+  selector's returns `{ configurationSpec, plans }` and its Cook
+  `{ configurationSpec, cooks }`. An executed Cook materializes new
+  configurations into the catalog first.
+- With `menuId` and no `configurationId`, `plan` and `cook` use the Menu's own
+  `configurations` (ids, specs or selectors), returning
+  `{ menuId, configurations, plans }` or `{ menuId, configurations, cooks }`, one
+  entry per declared configuration. One that cannot cook is reported and does
+  not stop the rest. A Menu that declares none needs `configurationId`
+  (`--config`), and an explicit one always wins.
 - `coverage(menu, recipes, dishes, configurationHashes?, skillHashes?)` keeps the complete
   Menu denominator, measured against each member's current recipe hash, and
   reports missing cells explicitly. Skill keys are skill hashes or `"none"`.
@@ -229,14 +237,21 @@ Kept out of the harness:
   secret in the shell that started the Cook** (`GH_TOKEN`,
   `OPENROUTER_API_KEY`, `BWS_ACCESS_TOKEN`, AWS keys, agent sockets): "live" means
   exactly as is, and the receipt says so.
-- **Bearer keys.** Hermes on OpenRouter and Direct API run behind a
-  per-attempt loopback key proxy (`lib/taste/key-proxy.mjs`). The harness gets a
-  dummy token and `http://127.0.0.1:<port>/api/v1`; the proxy refuses any other
-  token or path, adds the real key, and forwards only to the pinned upstream
-  (`https://openrouter.ai/api/v1`). It lives exactly as long as the session.
-  Hermes records the proxy as its endpoint, so its identity check accepts one
-  loopback proxy URL for every call. The model could spend through the proxy
-  while its own attempt runs; it cannot carry the key away.
+- **API keys.** Hermes on OpenRouter, Hermes on every key route of the route
+  profile (OpenCode Go today), and Direct API run behind a per-attempt loopback
+  key proxy (`lib/taste/key-proxy.mjs`). The harness gets a dummy token and
+  `http://127.0.0.1:<port>/<route base path>` in the variables it reads that
+  route's key and base URL from; the proxy refuses any other token or path, adds
+  the real key in the header the token came in (a bearer token, or `x-api-key`
+  from an Anthropic Messages client), and forwards only to the pinned upstream
+  (`https://openrouter.ai/api/v1`, `https://opencode.ai/zen/go/v1`). It lives
+  exactly as long as the session. Hermes records the proxy as its endpoint, so
+  its identity check accepts one loopback proxy for every call, at a base path
+  the route records. The model could spend through the proxy while its own
+  attempt runs; it cannot carry the key away. A Hermes route whose credential
+  the proxy cannot stand in for (an OAuth login such as Nous Portal's or OpenAI
+  Codex's, or any route Kitchen has not checked) is refused for a clean Cook
+  with the reason, rather than handed the credential.
 - **The Claude login.** Claude Code receives the access token on a file
   descriptor; T3 → Claude Code in its scratch settings (deleted when the server
   stops, and by the next prune if even the supervisor was killed); Hermes as an
@@ -249,7 +264,8 @@ Still reachable by a model that looks (same user, so ordinary file reads):
 - `~/.codex/auth.json`, which Codex and T3 → Codex link into their home
   because Codex refreshes its own ChatGPT login there;
 - `~/.config/cursor/auth.json`, which Cursor uses in place;
-- `~/.hermes/.env` and any other file holding the OpenRouter key, and the
+- `~/.hermes/.env`, Hermes's `auth.json` credential pool, and any other file
+  holding the OpenRouter or a route key (`OPENCODE_GO_API_KEY`), and the
   Kitchen process's own `/proc/<pid>/environ` when the key was exported for the
   Cook command (the exec-time environment cannot be scrubbed afterwards);
 - the scratch T3 settings while that attempt runs, and the Claude Code access
@@ -467,8 +483,24 @@ model, so identity is verified from the `state.db` Hermes writes: every
 main-loop call in `session_model_usage` must carry the requested model, billing
 provider and endpoint, and the session must record the requested effort. A
 fallback to another model or provider fails the attempt; auxiliary calls such as
-titles are disclosed in `observed.json`. The route is part of the execution
-profile id (`hermes-linux-host-clean-anthropic-v1`).
+titles are disclosed in `observed.json`, and `routeEvidence` in it names what
+`state.db` had to record. The route is part of the execution profile id
+(`hermes-linux-host-clean-anthropic-v1`), or, on the route profile
+(`hermes-linux-host-clean-route-v1`), its `route` parameter.
+
+The route profile runs any key route Kitchen can keep behind its key proxy,
+listed in `lib/taste/hermes-routes.mjs` with what it needs: the upstream base
+URL, the variables Hermes reads the route's key and base URL from, and the base
+paths `state.db` records for it. That record is the identity evidence:
+`billing_provider` is the route id and `billing_base_url` is the proxy at one of
+those paths. OpenCode Go records `/zen/go/v1` for its OpenAI-style models and
+`/zen/go` for its Anthropic Messages ones (MiniMax, Qwen, Claude), with or
+without a trailing slash, as Hermes's own `state.db` showed. A route is added
+by adding an entry after checking both against Hermes's provider registry and
+its `state.db`; OpenRouter and Anthropic keep their own profiles and hashes.
+Behind the proxy, Hermes no longer sees an `opencode.ai` host, so on Anthropic
+Messages models it drops the OpenCode attribution headers it would otherwise
+add; whether OpenCode minds is unknown until the first real Cook.
 
 A clean Hermes attempt gets a fresh `hermes-home/` holding only a Kitchen-written
 `config.yaml` (provider and model; no fallbacks, secrets, plugins or MCP
@@ -538,6 +570,9 @@ token, and anything it writes back lands in the copy, so no Hermes run touches
 run. On the OpenRouter route Hermes gets `adopt_external_logins: false`, the key
 proxy's dummy token as `OPENROUTER_API_KEY`, and its loopback URL as
 `OPENROUTER_BASE_URL`, which Hermes treats as a deliberate OpenRouter mirror.
+On a key route of the route profile the same holds in that route's own
+variables (`OPENCODE_GO_API_KEY`, `OPENCODE_GO_BASE_URL`), and the key comes
+from the Cook command's environment, never from Hermes's stored credentials.
 When the attempt ends, however it ends, the runner empties the Hermes home of
 everything but `state.db` (and its WAL files), so the login copy, Hermes's own
 credential pool and the copied files do not outlive it; an allowlist of what
