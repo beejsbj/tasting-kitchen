@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifacts.burooj.dev/model-tasting/schemas/no-dish.v1.json",
+  "title": "No Dish: the public outcome of a chef fault",
+  "description": "An immutable record that a configuration was given a Recipe and could not make it. Only chef faults are ever public. Validated at runtime by lib/taste/no-dishes.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "outcome", "recipe", "executedAt", "failedAt", "identity", "fault", "validation", "publicTrace", "artifact", "noDishHash"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^nodish_[a-zA-Z0-9_-]+$" },
+    "outcome": { "const": "no-dish" },
+    "recipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "hash"],
+      "properties": { "id": { "type": "string" }, "version": { "type": "string" }, "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" } }
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "hash"],
+      "properties": { "id": { "type": "string" }, "hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" } }
+    },
+    "visibility": { "const": "private" },
+    "executedAt": { "type": "string", "format": "date-time" },
+    "failedAt": { "type": "string", "format": "date-time" },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "configHash"],
+      "properties": {
+        "variantId": { "type": "string" },
+        "provider": { "type": "string" },
+        "requestedModel": { "type": "string" },
+        "observedModel": { "type": ["string", "null"] },
+        "harness": { "type": "string" },
+        "harnessVersion": { "type": ["string", "null"] },
+        "reasoningEffort": { "type": "string" },
+        "serviceTier": { "type": "string" },
+        "configHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "catalogHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "setupDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "fault": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "code", "stage", "reason"],
+      "properties": {
+        "class": { "const": "chef" },
+        "code": { "enum": ["checks-failed", "output-contract", "refused", "out-of-turns"] },
+        "stage": { "enum": ["execution", "validation"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "turn": { "type": "string" },
+        "checks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "validation": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "object", "additionalProperties": false, "required": ["passed", "report"], "properties": { "passed": { "const": false }, "report": { "const": "validation.json" } } }
+      ]
+    },
+    "publicTrace": { "enum": [null, "trace.json"] },
+    "artifact": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "files", "treeHash", "partial"],
+          "properties": {
+            "kind": { "enum": ["web", "image", "code", "session", "document", "audio"] },
+            "entry": { "type": "string" },
+            "files": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "sha256", "bytes"], "properties": { "path": { "type": "string" }, "sha256": { "type": "string" }, "bytes": { "type": "integer", "minimum": 0 } } } },
+            "treeHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+            "partial": { "const": true }
+          }
+        }
+      ]
+    },
+    "noDishHash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  }
+}

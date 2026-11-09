@@ -32,6 +32,8 @@ TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
 
 Each Recipe gets a fresh workspace and model session. A multi-turn Recipe resumes only its own session. Known constraints belong in the initial brief; staged feedback belongs only where adaptation itself is the subject. Accepted Dishes are immutable. Failed attempts and raw traces stay private.
 
+Cook directories clean themselves up: an accepted attempt's goes as soon as its Dish is published, and a failed attempt keeps its own for `taste recover` for 14 days (`TASTE_COOK_RETENTION_DAYS`). Every Cook prunes first; `node bin/taste.mjs prune --dry-run` shows what it would remove. See [the cook directory lifecycle](agent-interface.md#cook-directory-lifecycle).
+
 See [the agent interface](agent-interface.md) for API imports, complete command semantics and error handling.
 
 ## Acceptance and taste

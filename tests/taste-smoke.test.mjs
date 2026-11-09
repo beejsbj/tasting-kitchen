@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { pathExists } from "../lib/taste/files.mjs";
 import { loadDishes } from "../lib/taste/registry.mjs";
 import { smokeRecipe } from "../lib/taste/smoke.mjs";
 import { loadToolchains, renderToolchainPin } from "../lib/taste/toolchains.mjs";
@@ -128,4 +129,24 @@ test("a failing delivery check stops the smoke before publication", async (t) =>
   assert.equal(result.passed, false);
   assert.match(result.steps.publication.error, /Required validation failed: contract/u);
   assert.equal(result.steps.registry, undefined);
+});
+
+test("resuming refuses another Recipe's smoke directory and leaves its results alone", async (t) => {
+  const { root, env } = await kitchen(t);
+  const other = await smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env });
+  assert.equal(other.passed, true, other.error);
+  const survivor = path.join(other.directory, "kitchen");
+  await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, resume: other.directory }), /is a smoke of private-film, not public-film/u);
+  assert.equal(await pathExists(survivor), true, "the other smoke's Kitchen tree is not deleted");
+  await rm(path.join(other.directory, "smoke.json"));
+  await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, resume: other.directory }), /no readable smoke\.json/u);
+  assert.equal(await pathExists(survivor), true);
+});
+
+test("resuming a smoke of the same Recipe repeats every step after the render", async (t) => {
+  const { root, env } = await kitchen(t);
+  const first = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env });
+  const again = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, resume: first.directory });
+  assert.equal(again.passed, true, again.error);
+  assert.equal(again.steps.render.reused, true);
 });

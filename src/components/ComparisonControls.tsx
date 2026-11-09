@@ -5,24 +5,28 @@ import { KitchenButton } from './KitchenButton';
 import { IconButton } from './ui/ViewerControls';
 import { dishSkillKey, shortHash } from '../lib/registry';
 import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, heldConfigLabels, MAX_PANES, showsAxis, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
-import type { ComparisonDimension } from '../lib/configuration-label';
+import { isFreeModel, makerLabel, modelMaker, type ComparisonDimension } from '../lib/configuration-label';
 import type { GalleryState } from '../lib/url-state';
-import type { Configuration, Dish } from '../types';
+import { isNoDish } from '../lib/outcomes';
+import type { Configuration, Plate } from '../types';
 
 /** A skill layer this recipe offers; `changed` marks a layer pinned by an older catalog. */
 export type LayerChoice = { token: string; key: string; label: string; changed?: boolean };
-export type Pane = { config: Configuration; skillKey: string; dish?: Dish; repeats: Dish[] };
+export type Pane = { config: Configuration; skillKey: string; dish?: Plate; repeats: Plate[] };
 export type ComparisonContext = {
   configurations: Configuration[];
-  recipeDishes: Dish[];
+  /** Dishes and No Dishes: a No Dish covers its cell, so it counts as cooked. */
+  recipeDishes: Plate[];
   layerChoices: LayerChoice[];
   showLayers: boolean;
 };
 type Patch = Partial<GalleryState>;
 
-/** Counts this recipe's Dishes for a configuration, within one skill layer when given. */
-export const dishCounter = (recipeDishes: Dish[], skillKey?: string) => (config: Configuration) =>
+/** Counts this recipe's plates (Dishes and No Dishes) for a configuration, within one skill layer when given. */
+export const dishCounter = (recipeDishes: Plate[], skillKey?: string) => (config: Configuration) =>
   recipeDishes.filter((dish) => dish.identity.configHash === config.configHash && (!skillKey || dishSkillKey(dish) === skillKey)).length;
+/** The No Dishes among them, so a count can say "1 no dish" rather than call it a Dish. */
+const noDishCounter = (recipeDishes: Plate[], skillKey?: string) => dishCounter(recipeDishes.filter(isNoDish), skillKey);
 
 const layerToken = (context: ComparisonContext, key: string) => context.showLayers ? context.layerChoices.find((choice) => choice.key === key)?.token ?? key : '';
 const layerLabel = (context: ComparisonContext, key: string) => context.layerChoices.find((choice) => choice.key === key)?.label ?? 'Without skill';
@@ -61,11 +65,15 @@ export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'confi
 /** The axis chips for one pane: Model · Effort · Harness, then Environment, Tier, Skill and Snapshot where they vary. */
 function paneAxes(context: ComparisonContext, pane: Pane, onConfig: (config: Configuration) => void, onLayer: (token: string) => void, except?: CompareAxis): AxisPickerAxis[] {
   const count = dishCounter(context.recipeDishes);
+  const noDishes = noDishCounter(context.recipeDishes);
   const shown: ConfigAxis[] = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((axis) => axis !== except && showsAxis(context.configurations, pane.config, axis, count));
   const axes: AxisPickerAxis[] = shown.map((axis) => ({
     id: axis, label: axis === 'tier' ? 'Tier' : AXIS_LABELS[axis], value: axisValueLabel(axis, axisValue(pane.config, axis)),
+    ...(axis === 'model' && isFreeModel(pane.config) ? { badge: 'Free' } : {}),
     options: axisOptions(context.configurations, pane.config, axis, count).map((option): AxisPickerOption => ({
-      key: option.value, label: option.label, status: option.status, dishes: option.dishes, selected: option.selected,
+      key: option.value, label: option.label, status: option.status, dishes: option.dishes, noDishes: option.config ? noDishes(option.config) : 0, selected: option.selected,
+      // Hundreds of models stay findable: grouped by maker, searchable by id, free ones marked.
+      ...(axis === 'model' ? { group: makerLabel(modelMaker(option.value)), terms: option.value, ...(isFreeModel(option.config ?? { model: option.value }) ? { badge: 'Free' } : {}) } : {}),
       note: option.reason ?? (option.changes.length ? `also → ${option.changes.map((change) => change.label).join(' · ')}` : option.config?.historical ? 'preserved configuration' : undefined),
       onSelect: () => option.config && onConfig(option.config),
     })),
@@ -73,13 +81,13 @@ function paneAxes(context: ComparisonContext, pane: Pane, onConfig: (config: Con
   if (context.showLayers && except !== 'skill') {
     axes.push({ id: 'skill', label: 'Skill', value: layerLabel(context, pane.skillKey), options: context.layerChoices.map((choice) => {
       const dishes = context.recipeDishes.filter((dish) => dish.identity.configHash === pane.config.configHash && dishSkillKey(dish) === choice.key).length;
-      return { key: choice.key, label: choice.label, status: dishes ? 'cooked' : 'uncooked', dishes, selected: choice.key === pane.skillKey, onSelect: () => onLayer(choice.token) };
+      return { key: choice.key, label: choice.label, status: dishes ? 'cooked' : 'uncooked', dishes, noDishes: noDishCounter(context.recipeDishes, choice.key)(pane.config), selected: choice.key === pane.skillKey, onSelect: () => onLayer(choice.token) };
     }) });
   }
   const snapshots = snapshotOptions(context.configurations, pane.config);
   if (snapshots.length > 1) axes.push({ id: 'snapshot', label: 'Snapshot', value: pane.config.historical ? `Preserved · ${shortHash(pane.config.configHash ?? pane.config.id)}` : 'Current', options: snapshots.map((config) => {
     const dishes = count(config);
-    return { key: config.id, label: config.historical ? `Preserved · ${shortHash(config.configHash ?? config.id)}` : config.id, status: dishes ? 'cooked' : 'uncooked', dishes, selected: config.id === pane.config.id, onSelect: () => onConfig(config) };
+    return { key: config.id, noDishes: noDishes(config), label: config.historical ? `Preserved · ${shortHash(config.configHash ?? config.id)}` : config.id, status: dishes ? 'cooked' : 'uncooked', dishes, selected: config.id === pane.config.id, onSelect: () => onConfig(config) };
   }) });
   return axes;
 }
@@ -183,7 +191,7 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
             <input type="checkbox" checked={checked} disabled={disabled} onChange={() => update(comparisonPatch(compare, values, toggleComparisonValue(selection, item.value, held, order), panes[0].dish?.id))} />
             <CookedMark status={status} />
             <span className="compare-value__label">{item.label}{item.held ? <small>held pane</small> : !item.isolated ? <small>also differs · {item.differs.join(' · ')}</small> : null}</span>
-            <span className="axis-option__count">{dishCountLabel({ status, dishes: item.dishes })}</span>
+            <span className="axis-option__count">{dishCountLabel({ status, dishes: item.dishes, noDishes: noDishCounter(context.recipeDishes, compare === 'skill' ? item.value : panes[0].skillKey)(item.config) })}</span>
           </label></li>;
         })}</ul>
         {full && values.length > selection.length && <p className="mt-1 text-xs text-slate-500">Six panes is the most; clear one to add another.</p>}

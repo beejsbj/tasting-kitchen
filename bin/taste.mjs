@@ -4,26 +4,29 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, discoverModels, evaluateDishWithJev, formatDiscovery, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, prune, recover, verdict } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note", "harness", "route", "upstream"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed", "free"]);
 
 const commandFlags = {
   help: new Set(),
   validate: new Set(["public-checkout"]),
   discover: new Set(),
+  models: new Set(["harness", "route", "free"]),
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
-  plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
+  plan: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
   "compare-rubrics": new Set(["experiment", "output"]),
   "build-registry": new Set(["output"]),
   recover: new Set(["attempt"]),
+  verdict: new Set(["dish", "failed", "passed", "note"]),
+  prune: new Set(["dry-run"]),
 };
 
 class UsageError extends Error {
@@ -86,7 +89,7 @@ function selection(options) {
   const configurationId = options.config ?? options.variant;
   if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { configurationId, ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { configurationId, ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -118,10 +121,11 @@ function help() {
 
 Usage:
   taste discover [--json]
+  taste models [--harness hermes] [--route ID] [--free] [--json]
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
+  taste plan --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -129,11 +133,20 @@ Usage:
   taste validate [--public-checkout] [--json]
   taste build-registry [--output PATH]
   taste recover --attempt ID
+  taste verdict --dish ID --failed|--passed --note TEXT
+  taste prune [--dry-run]
 
+  models lists every route Hermes is set up for and the models on it, free ones marked, from Hermes's own caches and OpenRouter's public model list. It reads only.
+  A SPEC names a model on a configuration template: hermes:openrouter/google/gemma-4-31b-it:free@high[:clean]. If the catalog holds no
+  configuration with that hash, the first executed cook materializes one into catalog/configurations.json. A SELECTOR names many:
+  'hermes:openrouter/*@auto+free' is every free OpenRouter model Hermes can cook, each at high or its own default effort. Plan shows what it resolves to.
+  --upstream names the OpenRouter provider to pin when the maker's own does not serve a model and more than one provider does.
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
+  Prune removes the cook directories of accepted attempts, of failed attempts older than TASTE_COOK_RETENTION_DAYS (14 by default), and orphans; every Cook prunes first.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
+  A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it. --dish may also name a No Dish (nodish_…), which takes only --passed: Burooj overruling checks that failed it.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
@@ -162,6 +175,10 @@ async function main() {
     return;
   }
   if (command === "discover") return print(await discover(repoRoot), true);
+  if (command === "models") {
+    const result = await discoverModels({ harness: options.harness ?? "hermes", route: options.route ?? null, free: options.free === true });
+    return options.json ? print(result, true) : print(formatDiscovery(result));
+  }
   if (command === "inspect") return print(await inspect(repoRoot, inspectSelection(options)), true);
   if (command === "list") {
     const recipes = listRecipes(await loadCatalog(repoRoot), filterFrom(options));
@@ -210,6 +227,14 @@ async function main() {
     const result = await buildRegistry({ repoRoot, basePath: process.env.TASTE_BASE_PATH ?? "/", ...(output ? { output } : {}) });
     return print({ status: "built", output: path.relative(repoRoot, result.output), dishes: result.registry.dishes.length }, true);
   }
+  if (command === "verdict") {
+    if (!options.dish) throw new UsageError("verdict requires --dish ID");
+    if (Boolean(options.failed) === Boolean(options.passed)) throw new UsageError("verdict requires exactly one of --failed or --passed");
+    if (!options.note) throw new UsageError("verdict requires --note TEXT");
+    const result = await verdict(repoRoot, { plateId: options.dish, verdict: options.failed ? "failed" : "passed", note: options.note });
+    return print({ status: "recorded", path: result.path, verdict: result.verdict }, true);
+  }
+  if (command === "prune") return print(await prune(repoRoot, { dryRun: options["dry-run"] === true }), true);
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
     return print(await recover(repoRoot, { attemptId: options.attempt }), true);

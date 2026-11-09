@@ -71,17 +71,23 @@ test("executing a Menu hands a fake runner only supported, uncovered cells and w
   await cp(path.join(repoRoot, "dishes"), path.join(root, "dishes"), { recursive: true });
   const [menu] = (await loadMenus(root)).filter((candidate) => candidate.id === "fresh-visual-ui");
   let received;
+  const order = [];
   const result = await cook(root, {
     configurationId: "codex-sol-high",
     menuId: "fresh-visual-ui",
     intent: "fill-missing",
     execute: true,
     env: { TASTE_ALLOW_MODEL_RUNS: "1" },
+    // Every executed Cook prunes the runtime root before its first attempt.
+    pruneCookDirectories: async (options) => { order.push(["prune", options.repoRoot]); return { removed: [{}], kept: [], settled: [], errors: [] }; },
     executePlan: async ({ plan }) => {
+      order.push(["cook"]);
       received = plan;
       return { results: [], accepted: [], failed: [], unsupported: plan.unsupported };
     },
   });
+  assert.deepEqual(order, [["prune", root], ["cook"]]);
+  assert.deepEqual(result.pruned, { removed: 1, kept: 0, settled: 0, errors: [] });
   assert.equal(result.menuRevision, undefined);
   const catalog = await loadCatalog(root);
   const existing = await loadDishes(root);

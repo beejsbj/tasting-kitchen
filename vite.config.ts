@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Connect } from "vite";
 import { recipeBookMiddleware } from './lib/taste/recipe-book.mjs';
+import { verdictMiddleware } from './lib/taste/verdicts.mjs';
 
 // Local servers keep votes in browser storage; hosted deployments supply the API.
 const localVoteFallback: Connect.NextHandleFunction = (request, response, next) => {
@@ -40,6 +41,8 @@ export default defineConfig({
     configureServer(server) {
       server.middlewares.use(localVoteFallback);
       server.middlewares.use(recipeBookMiddleware(process.cwd()));
+      // Burooj's verdicts write beside Dishes from local development, loopback same-origin only.
+      server.middlewares.use(verdictMiddleware(process.cwd()));
       server.middlewares.use(artifactHeaders);
     },
     configurePreviewServer(server) {

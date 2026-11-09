@@ -7,7 +7,7 @@ import test from "node:test";
 
 import { computeRecipeHash, planSelection } from "../lib/taste/catalog.mjs";
 import {
-  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, observedUpstream, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
+  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, observedUpstream, parseDirectApiJsonl, postJson, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
 } from "../lib/taste/direct-api.mjs";
 import { compatibilityFor, resolveHarnessAdapter, skillDeliverySupport } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -113,6 +113,10 @@ test("served models match exactly or as a dated snapshot of the same slug", () =
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5-20260922"), true);
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-sonnet-5.5"), false);
   assert.equal(directApiModelsEquivalent("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5-fast"), false);
+});
+
+test("under the test runner, the real fetch refuses a non-loopback endpoint", async () => {
+  await assert.rejects(postJson("https://openrouter.ai/api/v1/chat/completions", {}, { apiKey: KEY }), /Refusing a real request to https:\/\/openrouter\.ai/);
 });
 
 test("a missing key stops the attempt before any request", async () => {
@@ -251,10 +255,12 @@ test("a Direct API Dish publishes through the runner as a public session transcr
   };
   cooked.recipeHash = computeRecipeHash(cooked, cooked.fixtureHashes);
   const catalog = { catalogHash: `sha256:${"4".repeat(64)}`, recipes: [cooked] };
-  const env = { OPENROUTER_API_KEY: KEY };
+  // The runner's key proxy forwards to the loopback fake; the session itself only ever holds the proxy's dummy token.
+  const env = { OPENROUTER_API_KEY: KEY, TASTE_OPENROUTER_UPSTREAM: fake.endpoint.replace(/\/chat\/completions$/u, "") };
+  let sessionProxy;
   const run = await executeRecipe({
     repoRoot: root, catalog, recipe: cooked, variant: direct, env, nonce: "direct",
-    runSession: (options) => runDirectApiSession({ ...options, endpoint: fake.endpoint }),
+    runSession: (options) => { sessionProxy = options.proxy; return runDirectApiSession(options); },
     verifyIdentity: (options) => verifyDirectApiIdentity({ ...options, endpoint: fake.endpoint }),
   });
   assert.equal(run.status, "accepted", run.error);
@@ -270,5 +276,9 @@ test("a Direct API Dish publishes through the runner as a public session transcr
   assert.equal(requested.execution.upstream, "anthropic");
   assert.equal(requested.execution.upstreamPin, "anthropic");
   assert.equal(requested.execution.tools, "none");
+  assert.equal(requested.execution.providerAuth, "kitchen-key-proxy");
+  assert.match(sessionProxy.token, /^tk-proxy-[a-f0-9]{48}$/u);
+  assert.deepEqual(fake.requests.map((request) => request.authorization), [`Bearer ${KEY}`, `Bearer ${KEY}`], "the proxy added the key upstream");
+  assert.equal(fake.requests[0].url, "/api/v1/chat/completions");
   for (const file of await filesUnder(root)) assert.equal((await readFile(file)).includes(KEY), false, `${file} holds the key`);
 });

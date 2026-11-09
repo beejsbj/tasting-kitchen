@@ -6,7 +6,7 @@ This document defines the target model for Tasting Kitchen. It is the source of 
 
 ## Product claim
 
-Tasting Kitchen gives requested model configurations the same Recipe—one prompt or prompt chain—and preserves their results for human inspection.
+Tasting Kitchen gives requested model configurations the same Recipe—one prompt or prompt chain—and preserves their results for human inspection: what each configuration made, and where it could not make it.
 
 It helps a person develop an impression of recurring tendencies or “fingerprints.” It does not rank models or claim that observed differences were caused solely by the model.
 
@@ -19,7 +19,10 @@ Skill is an optional layer a Recipe can be cooked through
 Cook(Menu, model configurations, skill layer)
   -> one Run per selected Recipe (at its current recipe hash) × requested configuration × skill layer
   -> each successful accepted Run produces one immutable Dish
-Tasting presents matching Dishes through Recipe, Menu, Cuisine, and model views
+  -> each Run that fails by the model's own doing (a chef fault) produces one immutable No Dish
+  -> a Run that fails by Kitchen's doing (a kitchen fault) stays private and retryable
+Tasting presents matching Dishes and No Dishes through Recipe, Menu, Cuisine, and model views
+Burooj's verdict attaches beside a Dish or a No Dish and outranks the automated checks
 ```
 
 ## Canonical vocabulary
@@ -86,7 +89,7 @@ The system must not silently choose between reuse and new execution.
 
 One private operational attempt to execute one Recipe at its current recipe hash with one exact requested model configuration.
 
-A Run may fail or be rejected without producing a public Dish. A successful, accepted Run produces exactly one Dish. Raw/private execution evidence remains outside the public artifact boundary.
+A successful, accepted Run produces exactly one Dish. A failed Run is classified as exactly one of a **chef fault** or a **kitchen fault** (see No Dish below): a chef fault produces exactly one No Dish; a kitchen fault produces nothing public. Raw/private execution evidence remains outside the public artifact boundary either way, and the attempt's private `state.json` records the class, reason code and plain reason.
 
 Run is operational language, not a public gallery entity.
 
@@ -112,6 +115,39 @@ Two sidecars sit beside `dish.json` and are **not** part of `dish.json` or `dish
 Both are written at publication. Dishes published earlier were backfilled once from the frozen records that preceded this model (`scripts/backfill-dish-sidecars.mjs`). The validator re-hashes every public input and checks that the receipt reproduces `identity.configHash`. When a Dish's recipe hash is still the Recipe's current hash, the validator and registry build also require `inputs.json` to list exactly that Recipe's fixtures; an older hash cannot be re-derived, so its inputs rest on their own hashes and the public scan. Published inputs are scanned for leaks (home paths, file URLs, credentials, private identifiers); only the relative-import and route-shaped path rules are relaxed for these verbatim bytes. A Dish with no sidecar still validates; the gallery then falls back to the Recipe's current fixtures and says so.
 
 **Catalog changed.** When a Dish's configuration hash or skill hash is no longer in the catalog (a configuration was edited, a skill pin moved), the receipts say “catalog changed”. The Dish is neither hidden nor failed; its own `receipt.json` still says exactly what it ran as, and the gallery rebuilds the old configuration from it so the Dish stays selectable.
+
+### No Dish
+
+A **No Dish** is the public plate of a chef fault: the configuration was given the Recipe and could not make it. The counter shows what each configuration made *and* where it could not, so “can this model do this at all?” is visible rather than inferred from an absence.
+
+The name says what is on the plate, not why: there is nothing to taste. That holds for every chef fault, where “Burnt” would claim the model ruined something it never tried (a refusal) and “Sent back” is a diner's act, kept for Burooj's verdict below. It is distinct on the counter but not shaming: an empty plate, in the warm accent, never the danger colour.
+
+**Fairness rule.** Only the model's own doing becomes public:
+
+| Class | Public? | Codes |
+| --- | --- | --- |
+| Chef fault | Yes, as a No Dish | `checks-failed` (required checks ran and failed) · `output-contract` (artifact entry missing or over its file/byte limits; a read-only fixture or the mounted skill edited) · `refused` (structured refusal evidence: a Claude `refusal` stop reason, a chat-completions `refusal` from the requested model through its pinned upstream) · `out-of-turns` (the harness reports its turn budget spent, Claude Code's `error_max_turns`) |
+| Kitchen fault | Never; private and retryable | `auth` · `rate-limited` (including free-tier throttling) · `network` · `provider-unavailable` · `timeout` · `identity-drift` (the route served another model, tier or upstream) · `harness-changed` (a CLI or protocol Kitchen does not recognise) · `validator-error` (a required check could not run) · `preparation` · `publication` (Kitchen's own scans) · `interrupted` · `kitchen-error` |
+
+A chef fault exists only where a throw site or adapter tags it from structured evidence; it is never read from an error message. Every untagged failure is a kitchen fault, so an ambiguous failure never stains the model. That is why time is not yet a chef fault: Kitchen's time limits (the Direct API request timeout, the T3 turn timeout) differ by harness and cannot tell a slow model from a hung route, so they are `timeout`, a kitchen fault. A web artifact's remote references and the public-text scan are Kitchen's publication rules, so they stay kitchen faults too.
+
+What a No Dish publishes (`no-dishes/<id>/`, served beside Dishes under the sandboxed `dishes/` path):
+
+- `no-dish.json`: recipe hash, skill layer, requested configuration (configuration hash, and for a snapshot the setup digest), execution and failure times, and `fault: { class: "chef", code, stage, reason, turn?, checks? }`, hashed as `noDishHash`;
+- `validation.json`, when checks ran: every check's result;
+- `trace.json`: the prompts sent and the public-safe responses up to the failure, omitted if it cannot pass the public-text scan;
+- `artifact/`: what the model left that the output contract selects, within its limits, only if it passes the public-text scan (and, for web, the network scan); and
+- the same `inputs.json`/`inputs/` and `receipt.json` sidecars as a Dish.
+
+Raw harness output, error messages, stderr and paths never leave the private attempt. A No Dish is immutable, attaches to recipe hash × configuration × skill layer exactly like a Dish, and is private under `private/no-dishes/` for exactly the Runs whose Dish would be private. It **counts as coverage**: fill-missing never retries it, and only a deliberate Repeat cooks that cell again (a Repeat may then produce a Dish beside it in the same Repeat group). A Recipe with only No Dishes is still on the counter.
+
+**Recovery** republishes a kitchen fault Kitchen can complete without the model (a publication failure, the Codex fast-tier alias). It refuses every chef fault, so it can never turn one into a Dish; any other kitchen fault leaves the cell open for fill-missing.
+
+### Verdict
+
+A **verdict** is a judge's `failed` or `passed` on one plate (a Dish or a No Dish), with a short note. It sits beside the plate in `verdicts/<id>.json`, pinned to its `plateId` and `plateHash` (a Dish's `dishHash` or a No Dish's `noDishHash`), and never inside `dish.json` or `no-dish.json`. Verdicts are append-only: a changed mind is a newer verdict, and the newest from the highest-ranked judge stands.
+
+Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. A No Dish takes only a pass, so he can overrule a plate he judges good: “Passed by Burooj · checks failed” where the checks failed it, and “Passed by Burooj” beside the fault's own label where the cause was a refusal, a spent turn budget or a broken output contract; there is nothing to fail on a plate that holds nothing. A passed No Dish stays a No Dish on the counter and in the Outcome filter, with his verdict beside the fault. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
 
 ### Repeat
 
@@ -143,8 +179,8 @@ The same model used through two harnesses represents two configurations and does
 **Environment** is a configuration dimension inside the execution profile (`executionProfile.environment`). It says what a harness brings beyond its own defaults:
 
 - `clean` starts the harness from an empty home: no user instructions, skills, memory, hooks or MCP servers. Only the harness itself shapes the Run.
-- `snapshot` starts the harness from a throwaway, deterministic copy of Burooj's setup for that harness, made per attempt: instructions, soul, skills, memories, chosen settings, and for a harness with named profiles the one named by `executionProfile.harnessProfile` (such as Hermes `rose`). The copied bytes hash to a **setup digest** the Dish records as `identity.setupDigest`. Kitchen never writes to the real setup: the one exception is a Hermes run refreshing the borrowed Claude Code login, which is written back to `~/.claude/.credentials.json`. What the model does with its own tools is outside that promise.
-- `live` runs in his real home exactly as it is, writes included. It is offered only where Kitchen can run the harness as he does without harm to anything but that home: Claude Code, never Hermes.
+- `snapshot` starts the harness from a throwaway, deterministic copy of Burooj's setup for that harness, made per attempt: instructions, soul, skills, memories, chosen settings, and for a harness with named profiles the one named by `executionProfile.harnessProfile` (such as Hermes `rose`). The copied bytes hash to a **setup digest** the Dish records as `identity.setupDigest`. Kitchen never writes to the real setup: a Hermes run borrows the Claude Code login as an access-token copy inside its throwaway home, so a refresh can never reach `~/.claude/.credentials.json`. What the model does with its own tools is outside that promise.
+- `live` runs in his real home exactly as it is, writes included. It is offered for every harness where that means something: Claude Code, Codex CLI, Cursor Agent, and Hermes for a named profile (`default`, `otto`; never `rose`). It is not offered for T3, where live would mean his real app and his real threads.
 
 A personal environment (snapshot or live) states two toggles, both execution-affecting and so part of the configuration hash:
 
@@ -159,18 +195,26 @@ Why these choices hold:
 - **The digest belongs to the Dish, not the configuration.** His setup changes between Cooks without anyone editing the catalog. A configuration names *how* to build the copy; the digest names *what* the copy held. Two snapshot Dishes are Repeats only when their digests match, and fill-missing treats a snapshot cell as covered only by a Dish whose digest matches his setup as it is now, just as an edited brief uncovers a cell. The gallery cannot read his setup, so its Menu coverage counts any snapshot Dish, whatever its digest: accepted for now, and fill-missing is the check that compares digests.
 - **A live Dish never groups by digest.** Its receipt notes the digest at the start, but a live Run may change what it measured, so the number cannot name what the model saw.
 - **Toggles are configuration, not receipt.** Turning memory or connections off changes what the model receives, so it is a different requested configuration, never a Repeat, and the comparison “memory on versus off” is an environment comparison.
-- **Hermes is never live.** A live Hermes run would record itself in the profile's own sessions and run its plugin hooks against his real channels; a snapshot of the profile gives the same tasting without those writes.
+- **Live writes to the real home, and every receipt says so.** A live Claude Code run keeps its transcripts and memory in `~/.claude`; Codex keeps its session rollouts, history and logs in `~/.codex`; Cursor its chats and CLI state in `~/.cursor`; Hermes its session database, memory writes and plugin hooks in the named profile. None of that is rolled back: it is what live means, and the Dish is private until the Cook publishes it.
+- **Rose is never live.** A live Hermes `rose` run would record itself in her own sessions and run her plugin hooks against her channels. `harnessProfile: "rose"` is refused in every live configuration at validation (a snapshot of her gives the same tasting without those writes), and the Hermes adapter refuses it again if a hand-built configuration reaches it.
+- **A toggle the harness cannot switch is not offered.** Codex honours both toggles (its memory settings and its plugins, apps and MCP servers can each be switched off by name). Cursor has no switch for its memory, and `--approve-mcps` does not keep his own MCP servers or plugins from loading, so live Cursor offers memory `on` and connections `on` only (and so executes only with `--allow-connections`). Hermes has no switch for memory alone, so live Hermes offers memory `on` only; its `connections` decides whether the model is given the profile's MCP toolsets, and it cannot stop those servers or the profile's plugins from starting.
 - **Connections need an explicit flag at execution, not in the catalog.** Declaring the configuration is harmless; running it can act in the world. The flag puts the consequence at the moment of spending.
 
-Clean, snapshot and live are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the environment adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. Every Run cooks outside the Kitchen repo, in an opaque directory that no project instructions reach (see [the agent interface](agent-interface.md#where-cooking-happens)). Claude Code declares clean, snapshot and live; Hermes declares clean and snapshot. Codex declares `clean` for a fresh `CODEX_HOME` and `HOME`; its original configurations declare none and keep the real home. Cursor declares none: account-level rules can reach it from the server with the login. A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
+Clean, snapshot and live are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the environment adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. Every Run cooks outside the Kitchen repo, in an opaque directory that no project instructions reach (see [the agent interface](agent-interface.md#where-cooking-happens)). Claude Code declares clean, snapshot and live; Hermes declares clean, snapshot and (for non-rose named profiles) live. Codex declares `clean` for a fresh `CODEX_HOME` and `HOME` and `live` for his real ones; its original configurations declare none and keep the real home. Cursor's original configurations declare none (account-level rules can reach it from the server with the login) and are left, with their hashes, as they are; new Cursor configurations may declare `live`. T3 declares only clean. A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
 
 Dishes cooked before the move ran inside the Kitchen repo. Each carries a public note beside it in `catalog/dish-notes.json`, shown in its receipt, saying what the harness could see there ([#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A note pins the Dish's hash and never changes the Dish.
 
 **Route** is the inference path between harness and model. It is declared in the execution profile (`executionProfile.route`, such as `openrouter`) only when it is not the provider's own, so existing configurations keep their hashes. A configuration on a declared route names the model by that route's id (`anthropic/claude-opus-5.5` on OpenRouter), and its `provider` stays the model's maker. The same model through Hermes on the Anthropic route and on the OpenRouter route are two configurations; comparing them shows what the route changes.
 
-**Upstream pin.** OpenRouter forwards a model to whichever host it picks, which would blur a comparison. Every OpenRouter configuration therefore pins its upstream in the execution profile (`executionProfile.upstream`, an OpenRouter provider slug such as `anthropic`, `xai` or `alibaba`), and the pin must be the model maker's own provider. Direct API sends `provider: {only: [slug], allow_fallbacks: false, require_parameters: true}`; Hermes sends `provider_routing: {only: [slug], require_parameters: true}`, which has no fallback switch (`only` with one slug leaves nothing to fall back to). The pin is part of the configuration hash and is frozen in `requested.json`. Direct API verification fails the Dish unless every response reports that provider (top-level `provider` or the selected endpoint in `openrouter_metadata`, and the two must agree), and the run stops at the first turn that does not. The pin names a provider, not one endpoint: a provider with several endpoints (Anthropic's standard and fast, Moonshot's two Kimi endpoints) reports one name for all of them, so the pin cannot tell them apart. Hermes does not record the upstream in the evidence this adapter reads, so there the pin is enforced by the request and not observed.
+**Upstream pin.** OpenRouter forwards a model to whichever host it picks, which would blur a comparison. Every OpenRouter configuration therefore pins its upstream in the execution profile (`executionProfile.upstream`, an OpenRouter provider slug such as `anthropic`, `xai` or `alibaba`). The pin is the model maker's own provider when that provider serves the model. When it does not (most free models are served by one host that is not their maker, such as `atlas-cloud` for a Dots model), the provider is chosen deliberately and the configuration records why in `upstreamChoice: { name, reason }`: `maker` (the maker's own provider under its own slug, such as `nvidia`), `sole-provider` (the only provider OpenRouter lists for the model), or `named` (Burooj named it with `--upstream` among several). `name` is the provider name OpenRouter reports, which Direct API verifies. A configuration without `upstreamChoice` must pin a maker's own provider from Kitchen's table. `upstreamChoice` is provenance and not hashed: the request is the same either way. Direct API sends `provider: {only: [slug], allow_fallbacks: false, require_parameters: true}`; Hermes sends `provider_routing: {only: [slug], require_parameters: true}`, which has no fallback switch (`only` with one slug leaves nothing to fall back to). The pin is part of the configuration hash and is frozen in `requested.json`. Direct API verification fails the Dish unless every response reports that provider (top-level `provider` or the selected endpoint in `openrouter_metadata`, and the two must agree), and the run stops at the first turn that does not. The pin names a provider, not one endpoint: a provider with several endpoints (Anthropic's standard and fast, Moonshot's two Kimi endpoints) reports one name for all of them, so the pin cannot tell them apart. Hermes does not record the upstream in the evidence this adapter reads, so there the pin is enforced by the request and not observed.
 
-**Harness path** names a harness that wraps another, outermost first (`harnessPath: ["t3", "claude-code"]` is T3 wrapping Claude Code with its own system prompt and tools). The outer layer is the configuration's `harness`, and only an adapter that declares it can wrap that inner path accepts it. A path is part of the configuration hash when present; a harness that runs alone has none. T3 is the first outer layer: each attempt starts its own throwaway T3 server (`t3 serve --base-dir` inside the attempt, on a loopback port, with Kitchen-written settings that enable only the wrapped provider), so no thread or project reaches the T3 app Burooj uses. The wrapped harness runs in a fresh per-attempt home, and its own session files there are the identity evidence. The scratch server runs under a supervisor tied to the Kitchen process, so if the Kitchen dies the server stops and its token-bearing settings are deleted. For Claude Code the access token (never the refresh token) sits in that settings file and in the inner harness's environment while the attempt runs, so the model's own shell could read it; that is within `not-a-secrecy-boundary`. T3's own tool surface (its MCP tools, a project clone, Claude's Agent tool) stays available, so T3 is `nativeWeb: not-enforced`, and it declares no delegation capability, so Recipes that need delegation are not offered to it.
+OpenRouter's free offering of a model is its own slug with a `:free` suffix (`google/gemma-4-31b-it:free`), and so its own model and configuration; no other `:variant` suffix and no floating `~` alias is accepted.
+
+**Configuration templates.** Hermes reaches hundreds of models; writing each configuration by hand does not scale, and guessing one at cook time would lose precision. A template fixes everything but the model and its effort: harness, route, environment, execution profile and effort policy (`hermes-openrouter-clean`, `hermes-anthropic-clean`). A **spec** names one model on a template, `hermes:openrouter/google/gemma-4-31b-it:free@high[:clean]`. It resolves to exactly the configuration a hand-written entry would be, hashed the same way: if the catalog already holds that hash the spec *is* that entry, and otherwise the first executed Cook **materializes** it into `catalog/configurations.json`, marked `materialized: { template, spec, selector?, at, free?, contextLength?, source }`. The catalog stays the one place configurations live, so Dishes, Repeats and receipts are as exact as for any other. A configuration with nothing to cook is not materialized; a dry run writes nothing. `materialized` is provenance and not hashed.
+
+A **selector** names many models on a template with a `*` pattern and `+filters`: `hermes:openrouter/*@auto+free` is every zero-priced OpenRouter model Hermes can cook. `plan` and `cook` resolve it through discovery at plan time and show what it resolved to: the configurations already in the catalog, those that would be materialized, and the models it matched but cannot cook, with the reason (no tool calling, a floating router, an effort the model does not take, no provider to pin without `--upstream`). With `--intent fill-missing` and a Menu, a selector covers a Menu for every free model without listing them. `auto` effort is `high` where the model takes it, else the model's own default, else its highest; an explicit effort a model does not publish leaves that model unsupported. Discovery (`taste models`) reads Hermes's own caches and credential states and OpenRouter's free public metadata, never a secret and never by running Hermes.
+
+**Harness path** names a harness that wraps another, outermost first (`harnessPath: ["t3", "claude-code"]` is T3 wrapping Claude Code with its own system prompt and tools). The outer layer is the configuration's `harness`, and only an adapter that declares it can wrap that inner path accepts it. A path is part of the configuration hash when present; a harness that runs alone has none. T3 is the first outer layer: each attempt starts its own throwaway T3 server (`t3 serve --base-dir` inside the attempt, on a loopback port, with Kitchen-written settings that enable only the wrapped provider), so no thread or project reaches the T3 app Burooj uses. The wrapped harness runs in a fresh per-attempt home, and its own session files there are the identity evidence. The scratch server runs under a supervisor tied to the Kitchen process, so if the Kitchen dies the server stops and its token-bearing settings are deleted. For Claude Code the access token (never the refresh token) sits in that settings file and in the inner harness's environment while the attempt runs, so the model's own shell could read it; that is within `not-a-secrecy-boundary`. If even the supervisor is killed, the next Cook's prune deletes the settings and T3's secret store ([what the model can reach](agent-interface.md#what-the-model-can-reach)). T3's own tool surface (its MCP tools, a project clone, Claude's Agent tool) stays available, so T3 is `nativeWeb: not-enforced`, and it declares no delegation capability, so Recipes that need delegation are not offered to it.
 
 **Direct API** (`direct-api`) is the baseline with no harness: the model is called over HTTP with no system prompt, no tools and no workspace, and a staged Recipe is a real conversation because every turn resends the whole exchange so far. Every harness is measured against it. It serves only Recipes that need no capabilities, mount no files and produce a session transcript, so `compatibilityFor` excludes the rest.
 
@@ -226,7 +270,7 @@ The site is the Tasting surface; the CLI is the v1 cooking surface.
 
 The public site supports:
 
-- a Dishes counter that groups every visible Dish and Repeat beneath its Recipe, with model/thinking filters;
+- a Dishes counter that groups every visible Dish, No Dish and Repeat beneath its Recipe, with model/thinking filters and an outcome filter (Cooked · No Dish · Failed by Burooj);
 - a separate Recipe Book at `?view=recipes` for current authored definitions;
 - Recipe detail pages containing all matching models, configurations, and Repeats, where each pane is chosen axis by axis (model, effort, harness, environment, and tier or skill layer where they vary) and “Compare by” holds the first pane still while laying out one pane per value of a single axis, up to six;
 - model and configuration facets on the Dishes counter;
@@ -239,7 +283,7 @@ The Dishes counter shows each Dish separately, grouped under its Recipe, with a 
 
 Local development exposes `GET /api/recipes` and optimistic `PATCH /api/recipes/:id` with an `expectedHash`; saves replace the recipe source and edited public fixtures coherently. Production serves the active public source text from `public/data/recipe-book.json`; its static sidecar is read-only, while the separate hosted GitHub flow can save current definitions.
 
-A Menu appears publicly only when every Recipe on it is on the public counter (has at least one accepted Dish somewhere). It need not have complete coverage from any single model or configuration.
+A Menu appears publicly only when every Recipe on it is on the public counter (has at least one accepted Dish or No Dish somewhere). It need not have complete coverage from any single model or configuration.
 
 The owner-only Cook button remains outside the public site. Recipe editing is available through the Book; hosted repository saves require an owner-supplied GitHub fine-grained token with repository Contents read/write access. The token is held in browser memory and sent only to `api.github.com`; saves make one atomic commit to the configured branch with conflict protection. No model cook is started by a save.
 
@@ -252,7 +296,7 @@ Examples for a 12-Recipe Menu:
 - `Luna · all efforts · all harnesses — 12/12 represented`
 - `Sol · high · Codex — 9/12 represented`
 
-Missing cells remain visible, and populated cells may contain several Repeats.
+Missing cells remain visible, and populated cells may contain several Repeats. A No Dish represents its cell: the configuration was given the Recipe and could not make it, which is coverage, not a gap.
 
 Family-level `12/12` means complete family coverage. It does not mean configuration was held constant.
 
@@ -272,6 +316,18 @@ Dishes cooked from different recipe hashes may be browsed together, but they are
 ### The same Recipe across several models
 
 Each requested configuration receives the same brief (one recipe hash). Each successful Run yields a Dish. The Recipe detail page presents the Dishes together.
+
+### A configuration cannot make the Recipe
+
+The Run fails its required checks (or breaks the output contract, declines, or runs out of turns). Kitchen publishes a No Dish in that cell with the reason. Fill-missing leaves it; a Repeat tries again. Had the login expired or the provider throttled, the attempt would stay private and the cell open.
+
+### Burooj fails a Dish after tasting it
+
+The Dish passed every required check. He records a failed verdict with a note; the pane and card lead with “Failed by Burooj” and still say the checks passed. The Dish and its hash are unchanged.
+
+### Burooj passes a No Dish
+
+The checks failed a plate he thinks is good. He records a passed verdict with a note; the pane leads with “Passed by Burooj · checks failed” and the No Dish, its fault and its hash are unchanged.
 
 ### The same configuration repeats a Recipe
 
@@ -310,7 +366,7 @@ The correction instruction is part of the Recipe's prompt chain and is held cons
 - **Domain** — replaced by Cuisine.
 - **Flight** — retired; it ambiguously meant a Recipe set, execution batch, or displayed sample set.
 - **Collection** — retired; model and configuration are ordinary filter facets over Dishes.
-- **Chef** — informal prose only.
+- **Chef** — informal prose, and the name of a fault class (chef fault, kitchen fault). Never a schema entity or a substitute for Model.
 - **Oven / Appliance** — infrastructure metaphors only.
 - **Personal environment** — replaced by `snapshot` and `live`, which make different claims about what the model saw. “Personal” survives only as the word for both together (private by default, `--publish-personal`).
 
