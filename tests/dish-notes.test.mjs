@@ -38,10 +38,13 @@ test("dish notes pin an exact Dish hash and stay public-safe", () => {
   assert.throws(() => indexDishNotes(doc(note({ dishes: [] })), dishes), /at least one Dish/);
 });
 
+const COOKED_IN_REPO_BEFORE = "2026-11-09T00:00:00Z";
+
 test("the shipped notes disclose every Codex and Cursor Dish cooked inside the Kitchen repo", async () => {
   const published = await loadDishes(root);
   const notes = await loadDishNotes(root, { dishes: published });
-  const affected = published.filter((dish) => ["codex-cli", "cursor-agent"].includes(dish.identity.harness));
+  // Dishes cooked after the move out of the repo carry no such note, so the check is bounded to the historical ones.
+  const affected = published.filter((dish) => ["codex-cli", "cursor-agent"].includes(dish.identity.harness) && dish.executedAt < COOKED_IN_REPO_BEFORE);
   assert.ok(affected.length > 0);
   for (const dish of affected) assert.equal(notes.get(dish.id)?.length, 1, dish.id);
   const kitchenAgents = [...notes].filter(([, items]) => items.some((item) => item.id === "codex-saw-kitchen-agents-md")).map(([id]) => id).sort();
