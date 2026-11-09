@@ -117,7 +117,7 @@ owned by the Cook and not group- or world-writable.
 Before any credential or fixture is touched, and again once the workspace is
 laid out, an attempt fails closed (stage `preparation`) if the workspace or any
 directory above it up to `/`, by lexical or real path, holds `.git`,
-`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.agents`, `.claude`, `.codex`,
+`AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.agents`, `.claude`, `.codex`,
 `.cursor` or `package.json`. Harnesses discover instructions, skills, project
 settings and a coding posture from those names.
 
