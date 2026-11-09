@@ -46,7 +46,8 @@ test("the shipped notes disclose every Codex and Cursor Dish cooked inside the K
   // Dishes cooked after the move out of the repo carry no such note, so the check is bounded to the historical ones.
   const affected = published.filter((dish) => ["codex-cli", "cursor-agent"].includes(dish.identity.harness) && dish.executedAt < COOKED_IN_REPO_BEFORE);
   assert.ok(affected.length > 0);
-  for (const dish of affected) assert.equal(notes.get(dish.id)?.length, 1, dish.id);
+  const disclosures = { "codex-cli": ["codex-saw-kitchen-agents-md", "codex-saw-personal-skills"], "cursor-agent": ["cursor-real-home"] };
+  for (const dish of affected) assert.ok(notes.get(dish.id)?.some((item) => disclosures[dish.identity.harness].includes(item.id)), dish.id);
   const kitchenAgents = [...notes].filter(([, items]) => items.some((item) => item.id === "codex-saw-kitchen-agents-md")).map(([id]) => id).sort();
   assert.deepEqual(kitchenAgents, [
     "dish_analyze-brain-dump_codex-luna-xhigh_20260911040943677_dd1c687c",
@@ -57,7 +58,9 @@ test("the shipped notes disclose every Codex and Cursor Dish cooked inside the K
     "dish_support-long-journal_codex-luna-xhigh_20260911040850711_99095fa4",
     "dish_support-short-journal_codex-luna-xhigh_20260911040544083_a3f5ef14",
   ]);
-  for (const dish of published.filter((item) => !affected.includes(item))) assert.equal(notes.has(dish.id), false, dish.id);
+  for (const dish of published.filter((item) => !affected.includes(item))) {
+    assert.equal((notes.get(dish.id) ?? []).some((item) => Object.values(disclosures).flat().includes(item.id)), false, dish.id);
+  }
 });
 
 test("a Dish's receipt renders its notes with a link to the issue", async () => {
