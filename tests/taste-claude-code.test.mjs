@@ -552,7 +552,7 @@ test("a snapshot Claude Code attempt that failed at publication recovers private
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: second.attemptId, env: f.env }), /SHA-256 setup digest/);
 });
 
-test("a killed Kitchen process stops the harness, discards the copied setup, and leaves a terminal state", async (t) => {
+for (const [signal, code] of [["SIGTERM", 143], ["SIGHUP", 129]]) test(`a Kitchen process killed by ${signal} stops the harness, discards the copied setup, and leaves a terminal state`, async (t) => {
   const f = await runnerFixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const hangFile = path.join(f.root, "hang.pid");
@@ -572,8 +572,8 @@ await executeRecipe({ repoRoot: c.root, catalog: c.catalog, recipe: c.recipe, va
     if (harnessPid === undefined) await new Promise((resolve) => setTimeout(resolve, 50));
   }
   assert.ok(harnessPid, "the stand-in harness started");
-  runner.kill("SIGTERM");
-  assert.deepEqual(await exited, { code: 143, signal: null });
+  runner.kill(signal);
+  assert.deepEqual(await exited, { code, signal: null });
   assert.throws(() => process.kill(harnessPid, 0), /ESRCH/, "the harness did not outlive the Kitchen");
   const attemptDir = path.join(f.root, "private/runtime/attempts", (await readdir(path.join(f.root, "private/runtime/attempts")))[0]);
   assert.equal(await pathExists(path.join(attemptDir, "claude-home")), false, "the copied setup is gone");

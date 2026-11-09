@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import test from "node:test";
 
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
-import { collectSetupChildren, collectSetupDirectory, collectSetupFile, createSetupBudget, setupDigest, writeSetupFiles } from "../lib/taste/environments.mjs";
+import { collectSetupChildren, collectSetupDirectory, collectSetupFile, createSetupBudget, setupDigest, setupSummary, writeSetupFiles } from "../lib/taste/environments.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { OPTIONAL_PROFILE_KEYS } from "../lib/taste/harness-adapters.mjs";
 import { cook } from "../lib/taste/index.mjs";
@@ -286,6 +286,7 @@ test("setup collection leaves volatile files and credential-looking files out at
   assert.deepEqual(files.map((file) => file.path).sort(), ["skills/sample/.env.example", "skills/sample/SKILL.md", "skills/sample/scripts/run.sh"]);
   assert.equal(files.find((file) => file.path.endsWith("run.sh")).executable, true);
   const digest = setupDigest(files);
+  const entryDigest = setupSummary(files)[0].digest;
 
   await write(".last-complete-round", "another session id");
   await write("__pycache__/x.pyc", "other bytecode");
@@ -293,6 +294,7 @@ test("setup collection leaves volatile files and credential-looking files out at
   await write("scripts/run.sh", "#!/bin/sh\n", 0o644);
   await chmod(path.join(skill, "scripts/run.sh"), 0o644);
   assert.notEqual(setupDigest(await collect()), digest, "losing the exec bit is a different setup");
+  assert.notEqual(setupSummary(await collect())[0].digest, entryDigest, "and the receipt's entry digest shows it too");
 
   const home = path.join(root, "home");
   await mkdir(home);
