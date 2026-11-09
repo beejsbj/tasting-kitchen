@@ -214,13 +214,13 @@ try {
   await harnessPage.getByRole("group", { name: "Filter by harness" }).getByRole("button", { name: "Hermes", exact: true }).click(); await settle(harnessPage);
   assert.equal(new URL(harnessPage.url()).searchParams.get("harness"), "hermes", "the harness facet is URL-addressable");
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.identity.harness === "hermes").length, "only Hermes Dishes remain");
-  await harnessPage.getByRole("group", { name: "Filter by environment" }).getByRole("button", { name: "Personal · rose", exact: true }).click(); await settle(harnessPage);
+  await harnessPage.getByRole("group", { name: "Filter by environment" }).getByRole("button", { name: "Snapshot · rose", exact: true }).click(); await settle(harnessPage);
   assert.equal(await harnessPage.locator(".dish-card").count(), fixtureDishes.filter(dish => dish.receipt.configuration.executionProfile.harnessProfile === "rose").length, "environment narrows within the harness");
-  assert.match(await harnessPage.locator(".dish-card__environment").first().innerText(), /Hermes · Personal · rose/);
+  assert.match(await harnessPage.locator(".dish-card__environment").first().innerText(), /Hermes · Snapshot · rose/);
   assert.equal(await harnessPage.getByRole("group", { name: "Active filters" }).getByRole("button").count(), 2, "each active facet has a chip");
   await save(harnessPage, "counter-facets");
   await harnessPage.getByRole("button", { name: "Remove Harness: Hermes filter", exact: true }).click();
-  await harnessPage.getByRole("button", { name: "Remove Environment: Personal · rose filter", exact: true }).click();
+  await harnessPage.getByRole("button", { name: "Remove Environment: Snapshot · rose filter", exact: true }).click();
   assert.equal(new URL(harnessPage.url()).search, "", "removing chips clears the URL filters");
 
   const opusClean = fixtureDishes.find(dish => dish.id === "dish_fixture_claude-opus-high-clean");
@@ -322,10 +322,10 @@ try {
   await save(harnessPage, "compare-phone");
   await harnessPage.setViewportSize({ width: 1280, height: 900 });
 
-  const roseConfig = harnessRegistry.configurations.find(config => config.id === "hermes-opus-high-personal-rose");
+  const roseConfig = harnessRegistry.configurations.find(config => config.id === "hermes-opus-high-snapshot-rose");
   await harnessPage.goto(`${base}/?${new URLSearchParams({ recipe: target.id, models: roseConfig.id })}`, { waitUntil: "networkidle" });
   await harnessPage.getByRole("button", { name: "Configuration receipts" }).click(); await settle(harnessPage);
-  assert.match(await harnessPage.locator(".receipt").innerText(), /Hermes 9\.9\.9[\s\S]*Environment\s+Personal[\s\S]*Harness profile\s+rose/);
+  assert.match(await harnessPage.locator(".receipt").innerText(), /Hermes 9\.9\.9[\s\S]*Environment\s+Snapshot[\s\S]*Harness profile\s+rose[\s\S]*Setup\s+copy 55555555[\s\S]*Memory\s+on[\s\S]*Connections\s+off/);
   await save(harnessPage, "harness-receipt");
   await harnessPage.close();
 
