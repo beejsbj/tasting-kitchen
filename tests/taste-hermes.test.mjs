@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -7,22 +7,26 @@ import test from "node:test";
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
-  PERSONAL_WRITES_ENV, buildHermesTurnArgs, hermesEnvironment, hermesProcessEnv, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
+  buildHermesTurnArgs, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 const SESSION = "20261108_131309_66bdb7";
 const base = { runtime: "linux-host", sandbox: "disabled", approvalPolicy: "yolo", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
 const cleanProfile = { id: "hermes-linux-host-clean-anthropic-v1", label: "via Hermes · clean home · Anthropic route", ...base, environment: "clean" };
-const personalProfile = { id: "hermes-linux-host-personal-anthropic-v1", label: "via Hermes · personal profile · Anthropic route", ...base, environment: "personal", harnessProfile: "rose" };
+const snapshotProfile = { id: "hermes-linux-host-snapshot-anthropic-v1", label: "via Hermes · profile snapshot · Anthropic route", ...base, environment: "snapshot", harnessProfile: "rose", memory: "on", connections: "off" };
 const clean = {
   id: "hermes-haiku-5-5-high-clean", label: "Haiku 5.5 · High · via Hermes · clean (Anthropic)", provider: "anthropic", model: "claude-haiku-5-5",
   harness: "hermes", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: cleanProfile,
   configHash: `sha256:${"3".repeat(64)}`,
 };
-const personal = { ...clean, id: "hermes-haiku-5-5-high-rose", label: "Haiku 5.5 · High · via Hermes · rose profile (Anthropic)", executionProfile: personalProfile };
+const snapshot = { ...clean, id: "hermes-haiku-5-5-high-snapshot-rose", label: "Haiku 5.5 · High · via Hermes · rose snapshot (Anthropic)", executionProfile: snapshotProfile };
+const withToggles = (toggles) => ({ ...snapshot, id: `${snapshot.id}-${Object.values(toggles).join("-")}`, executionProfile: { ...snapshotProfile, ...toggles } });
 
-// A fake Hermes: records its invocation, writes the session rows real Hermes writes, and emits stream-json.
+// A fake Hermes: records its invocation and the soul its home holds, writes the
+// session rows real Hermes writes (plus a borrowed login and a credential file a
+// later Hermes might add), and emits stream-json. It refuses -p: Kitchen never
+// runs a profile in place.
 const FAKE = `#!/usr/bin/env node
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -30,9 +34,11 @@ import { DatabaseSync } from "node:sqlite";
 const args = process.argv.slice(2);
 if (args[0] === "--version") { console.log("Hermes Agent v9.9.9 (fake)"); console.log("Install directory: /nowhere"); process.exit(0); }
 const flag = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
-appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: process.env.HERMES_HOME ?? null, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null }) + "\\n");
-const profile = flag("-p");
-const home = profile ? path.join(process.env.TASTE_HERMES_ROOT, "profiles", profile) : process.env.HERMES_HOME;
+if (args.includes("-p")) process.exit(64);
+const home = process.env.HERMES_HOME;
+let soul = null;
+try { soul = readFileSync(path.join(home, "SOUL.md"), "utf8"); } catch {}
+appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null }) + "\\n");
 mkdirSync(home, { recursive: true });
 const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
@@ -45,7 +51,8 @@ const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : "https://api.anthropic.com");
 if (process.env.FAKE_AUX) db.prepare("INSERT OR IGNORE INTO session_model_usage VALUES (?, 'claude-haiku-5-5', 'anthropic', 'https://api.anthropic.com', 'title', 1)").run(session);
 db.close();
-if (!profile) writeFileSync(path.join(home, "auth.json"), "{}");
+writeFileSync(path.join(home, "auth.json"), "{}");
+writeFileSync(path.join(home, ".anthropic_oauth.json"), "{}");
 const query = readFileSync(flag("--query-file"), "utf8");
 const emit = (event) => console.log(JSON.stringify({ ...event, timestamp: 1 }));
 emit({ type: "system", subtype: "init", model: requested, session_id: session });
@@ -66,12 +73,51 @@ async function setup(t) {
   await mkdir(claudeDir);
   await writeFile(path.join(claudeDir, ".credentials.json"), "{}\n");
   const hermesRoot = path.join(root, "hermes-root");
-  await mkdir(path.join(hermesRoot, "profiles", "rose"), { recursive: true });
-  await writeFile(path.join(hermesRoot, "profiles", "rose", "config.yaml"), "model: {}\n");
+  await fakeRose(root, path.join(hermesRoot, "profiles", "rose"));
   const log = path.join(root, "calls.jsonl");
   const env = { FAKE_LOG: log, FAKE_SESSION: SESSION, CLAUDE_CONFIG_DIR: claudeDir, TASTE_HERMES_ROOT: hermesRoot };
   const calls = async () => (await readFile(log, "utf8")).trim().split("\n").map((line) => JSON.parse(line));
   return { root, executable, env, calls, hermesRoot };
+}
+
+/** A stand-in rose profile: soul by symlink, skills, memories, plugins, secrets and gateway state Kitchen must leave behind. */
+async function fakeRose(root, rose) {
+  await mkdir(path.join(rose, "skills", "tududi"), { recursive: true });
+  await mkdir(path.join(rose, "memories"), { recursive: true });
+  await mkdir(path.join(rose, "plugins", "journal"), { recursive: true });
+  await mkdir(path.join(rose, "sessions"), { recursive: true });
+  const soul = path.join(root, "rose-soul.md");
+  await writeFile(soul, "I am Rose.\n");
+  await symlink(soul, path.join(rose, "SOUL.md"));
+  await writeFile(path.join(rose, ".no-bundled-skills"), "kept off\n");
+  await writeFile(path.join(rose, "skills", "tududi", "SKILL.md"), "---\nname: tududi\n---\nTasks.\n");
+  await writeFile(path.join(rose, "memories", "MEMORY.md"), "Burooj cooks on Sundays.\n");
+  await writeFile(path.join(rose, "memories", "USER.md"), "Prefers plain answers.\n");
+  await writeFile(path.join(rose, "memories", "MEMORY.md.lock"), "");
+  await writeFile(path.join(rose, "plugins", "journal", "plugin.yaml"), "name: journal\n");
+  await writeFile(path.join(rose, ".env"), "TELEGRAM_TOKEN=never-copied\n");
+  await writeFile(path.join(rose, "auth.json"), "{\"secret\":\"never-copied\"}\n");
+  await writeFile(path.join(rose, "sessions", "old.json"), "{}\n");
+  await writeFile(path.join(rose, "config.yaml"), [
+    "model:", "  provider: anthropic", "  default: claude-opus-5-5",
+    "fallback_providers:", "  - provider: openai-codex", "    model: gpt-6-astra",
+    "secrets:", "  command:", "    enabled: true", "    command: /home/me/.local/bin/bjs-env hermes-rose",
+    "memory:", "  provider: honcho", "  memory_char_limit: 2200",
+    "agent:", "  reasoning_effort: medium", "  reasoning_overrides:", "    claude-haiku-5-5: low",
+    "platforms:", "  telegram:", "    extra: {}", "discord:", "  require_mention: true", "cron:", "  mirror_delivery: true",
+    "plugins:", "  enabled: [journal]", "mcp_servers:", "  tududi:", "    command: /usr/bin/python3", "    args: [mcp.py]",
+    "skills:", "  auto_load: [./tududi]", "_config_version: 50", "",
+  ].join("\n"));
+}
+
+async function listTree(root, relative = "") {
+  const entries = [];
+  for (const name of (await readdir(path.join(root, relative))).sort()) {
+    const child = relative ? `${relative}/${name}` : name;
+    if ((await lstat(path.join(root, child))).isDirectory()) entries.push(...await listTree(root, child));
+    else entries.push(child);
+  }
+  return entries;
 }
 
 async function attempt(root, name) {
@@ -82,43 +128,62 @@ async function attempt(root, name) {
 
 const recipe = { setup: { instructions: "Set the table." }, turns: [{ id: "make", content: "Cook" }, { id: "correct", content: "Correct" }] };
 
-test("Hermes plans pin route, model, effort and toolsets; clean ignores rules, personal selects its profile", () => {
+test("Hermes plans pin route, model, effort and toolsets; clean ignores rules, a snapshot keeps its copied profile and never selects one", () => {
   const fresh = buildHermesTurnArgs({ variant: clean, workspace: "/tmp/work", queryFile: "/tmp/q.txt" });
   assert.deepEqual(fresh, ["chat", "--query-file", "/tmp/q.txt", "--oneshot", "--format", "stream-json", "--provider", "anthropic", "-m", "claude-haiku-5-5",
     "--reasoning", "high", "-t", "file,terminal", "--yolo", "--source", "tool", "--in", "/tmp/work", "--ignore-rules"]);
   const resumed = buildHermesTurnArgs({ variant: clean, workspace: "/tmp/work", queryFile: "/tmp/q.txt", threadId: SESSION });
   assert.equal(resumed[resumed.indexOf("--resume") + 1], SESSION);
-  const mine = buildHermesTurnArgs({ variant: personal, workspace: "/tmp/work", queryFile: "/tmp/q.txt" });
-  assert.deepEqual(mine.slice(0, 3), ["-p", "rose", "chat"]);
+  const mine = buildHermesTurnArgs({ variant: snapshot, workspace: "/tmp/work", queryFile: "/tmp/q.txt" });
+  assert.equal(mine[0], "chat");
+  assert.equal(mine.includes("-p"), false, "a snapshot is a copied home, never -p rose");
   assert.equal(mine.includes("--ignore-rules"), false);
+  assert.throws(() => buildHermesTurnArgs({ variant: snapshot, workspace: "/tmp/work", queryFile: "/tmp/q.txt", toolsets: "file,terminal,mcp-tududi" }), /must be file,terminal, not/);
+  const connected = buildHermesTurnArgs({ variant: withToggles({ connections: "on" }), workspace: "/tmp/work", queryFile: "/tmp/q.txt", toolsets: "file,terminal,mcp-tududi" });
+  assert.equal(connected[connected.indexOf("-t") + 1], "file,terminal,mcp-tududi");
+  assert.throws(() => buildHermesTurnArgs({ variant: withToggles({ connections: "on" }), workspace: "/tmp/work", queryFile: "/tmp/q.txt", toolsets: "file,terminal,web" }), /plus MCP toolsets/);
   assert.throws(() => buildHermesTurnArgs({ variant: clean, workspace: "/tmp/work", queryFile: "/tmp/q.txt", threadId: "latest; rm" }), /exact Hermes session id/);
   assert.throws(() => buildHermesTurnArgs({ variant: clean, workspace: "relative", queryFile: "/tmp/q.txt" }), /absolute path/);
 });
 
-test("Hermes configurations validate model, effort, tier and the personal profile name", () => {
+test("Hermes configurations validate model, effort, tier and the snapshot's profile name; no Hermes configuration runs live", () => {
   assert.doesNotThrow(() => resolveHarnessAdapter(clean));
-  assert.doesNotThrow(() => resolveHarnessAdapter(personal));
+  assert.doesNotThrow(() => resolveHarnessAdapter(snapshot));
+  assert.doesNotThrow(() => resolveHarnessAdapter(withToggles({ memory: "off", connections: "on" })));
   assert.throws(() => resolveHarnessAdapter({ ...clean, model: "gpt-6-luna" }), /Anthropic model/);
   assert.throws(() => resolveHarnessAdapter({ ...clean, reasoningEffort: "adaptive" }), /reasoning effort/);
   assert.throws(() => resolveHarnessAdapter({ ...clean, serviceTier: "fast" }), /default tier/);
-  assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, environment: "personal" } }), /environment must be clean/);
-  const unnamed = { ...personalProfile };
+  assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, environment: "snapshot" } }), /environment must be clean/);
+  assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: { ...snapshotProfile, environment: "live" } }), /environment must be snapshot/);
+  const unnamed = { ...snapshotProfile };
   delete unnamed.harnessProfile;
-  assert.throws(() => resolveHarnessAdapter({ ...personal, executionProfile: unnamed }), /must name its harnessProfile/);
+  assert.throws(() => resolveHarnessAdapter({ ...snapshot, executionProfile: unnamed }), /must name the harnessProfile it copies/);
 });
 
-test("a caller's env cannot bring back a credential or a Hermes home, and the environment must be declared", () => {
-  const env = { ANTHROPIC_API_KEY: "sk-leak", HERMES_HOME: "/real/.hermes", OPENROUTER_API_KEY: "or-leak", FAKE_LOG: "/tmp/log" };
-  const processEnv = hermesProcessEnv({ variant: clean, hermesHome: "/tmp/attempt/hermes-home", env });
-  assert.equal(processEnv.ANTHROPIC_API_KEY, undefined);
-  assert.equal(processEnv.OPENROUTER_API_KEY, undefined);
-  assert.equal(processEnv.HERMES_HOME, "/tmp/attempt/hermes-home");
-  assert.equal(processEnv.FAKE_LOG, "/tmp/log");
-  assert.equal(hermesProcessEnv({ variant: personal, hermesHome: "/x", env }).HERMES_HOME, undefined);
+test("a Hermes child inherits only allowlisted variables; a caller's env cannot bring back a credential or a Hermes home", () => {
+  const saved = { ...process.env };
+  process.env.GEMINI_API_KEY = "gm-leak";
+  process.env.AWS_SECRET_ACCESS_KEY = "aws-leak";
+  process.env.GITHUB_TOKEN = "gh-leak";
+  process.env.SOME_FUTURE_PROVIDER_KEY = "future-leak";
+  try {
+    const env = { ANTHROPIC_API_KEY: "sk-leak", HERMES_HOME: "/real/.hermes", OPENROUTER_API_KEY: "or-leak", XAI_API_KEY: "x-leak", FAKE_LOG: "/tmp/log" };
+    for (const variant of [clean, snapshot]) {
+      hermesEnvironment(variant);
+      const processEnv = hermesProcessEnv({ hermesHome: "/tmp/attempt/hermes-home", env });
+      for (const key of ["ANTHROPIC_API_KEY", "OPENROUTER_API_KEY", "XAI_API_KEY", "GEMINI_API_KEY", "AWS_SECRET_ACCESS_KEY", "GITHUB_TOKEN", "SOME_FUTURE_PROVIDER_KEY"]) assert.equal(processEnv[key], undefined, key);
+      assert.equal(processEnv.HERMES_HOME, "/tmp/attempt/hermes-home");
+      assert.equal(processEnv.HERMES_DISABLE_LAZY_INSTALLS, "1");
+      assert.equal(processEnv.FAKE_LOG, "/tmp/log");
+      assert.equal(processEnv.PATH, process.env.PATH);
+    }
+  } finally {
+    for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
+  }
   assert.equal(hermesEnvironment(clean), "clean");
-  assert.equal(hermesEnvironment(personal), "personal");
+  assert.equal(hermesEnvironment(snapshot), "snapshot");
   const undeclared = { ...clean, executionProfile: { ...cleanProfile, environment: undefined } };
-  assert.throws(() => hermesEnvironment(undeclared), /clean or personal environment/);
+  assert.throws(() => hermesEnvironment(undeclared), /clean or snapshot environment/);
 });
 
 test("Hermes JSONL requires one init and one successful result, and an exact resume", () => {
@@ -203,29 +268,68 @@ test("Hermes stops on a silent fallback, a different recorded effort, or a faile
   await assert.rejects(access(path.join(failed.attemptDir, "hermes-home", "auth.json")), /ENOENT/, "the borrowed login is removed after a failure too");
 });
 
-test("personal Hermes refuses without explicit consent to profile writes and needs an existing profile", async (t) => {
+test("a snapshot copies the named profile's soul, skills and memories into a throwaway home, with an allowlisted config and a stable digest", async (t) => {
   const f = await setup(t);
-  const a = await attempt(f.root, "refused");
-  const withoutConsent = { ...f.env };
-  const saved = process.env[PERSONAL_WRITES_ENV];
-  delete process.env[PERSONAL_WRITES_ENV];
-  t.after(() => { if (saved !== undefined) process.env[PERSONAL_WRITES_ENV] = saved; });
-  await assert.rejects(prepareHermesAttempt({ variant: personal, cwd: a.attemptDir, env: withoutConsent }), /Refusing a personal Hermes run.*state\.db/);
-  const b = await attempt(f.root, "missing-profile");
-  const ghost = { ...personal, executionProfile: { ...personalProfile, harnessProfile: "ghost" } };
-  await assert.rejects(prepareHermesAttempt({ variant: ghost, cwd: b.attemptDir, env: { ...f.env, [PERSONAL_WRITES_ENV]: "1" } }), /profile ghost does not exist/);
-  const c = await attempt(f.root, "no-login");
-  await assert.rejects(prepareHermesAttempt({ variant: clean, cwd: c.attemptDir, env: { ...f.env, CLAUDE_CONFIG_DIR: path.join(f.root, "nowhere") } }), /borrows the Claude Code login/);
+  const rose = path.join(f.hermesRoot, "profiles", "rose");
+  const a = await attempt(f.root, "snapshot");
+  const { setup: record } = await prepareHermesAttempt({ variant: snapshot, cwd: a.attemptDir, env: f.env });
+  const home = path.join(a.attemptDir, "hermes-home");
+  assert.deepEqual(await listTree(home), [".no-bundled-skills", "SOUL.md", "config.yaml", "memories/MEMORY.md", "memories/USER.md", "skills/tududi/SKILL.md"]);
+  assert.equal(await readFile(path.join(home, "SOUL.md"), "utf8"), "I am Rose.\n", "the soul's bytes, not a link to them");
+  const config = JSON.parse(await readFile(path.join(home, "config.yaml"), "utf8"));
+  assert.deepEqual(config, {
+    _config_version: 50,
+    auth: { adopt_external_logins: true },
+    memory: { memory_char_limit: 2200, memory_enabled: true, provider: "", user_profile_enabled: true },
+    model: { default: "claude-haiku-5-5", provider: "anthropic" },
+    skills: { auto_load: ["./tududi"] },
+  });
+  const configText = await readFile(path.join(home, "config.yaml"), "utf8");
+  assert.doesNotMatch(configText, /secrets|bjs-env|fallback|telegram|discord|cron|mcp_servers|plugins|honcho/u, "no secrets helper, fallback route, platform, gateway or connection");
+  assert.equal(record.environment, "snapshot");
+  assert.equal(record.harnessProfile, "rose");
+  assert.equal(record.toolsets, "file,terminal");
+  assert.match(record.digest, /^sha256:[a-f0-9]{64}$/);
+  assert.equal(await currentHermesSetupDigest({ variant: snapshot, env: f.env }), record.digest);
+
+  // Memory off: no memories copied, Hermes memory and user profile disabled.
+  const b = await attempt(f.root, "no-memory");
+  const noMemory = await prepareHermesAttempt({ variant: withToggles({ memory: "off" }), cwd: b.attemptDir, env: f.env });
+  assert.equal((await listTree(path.join(b.attemptDir, "hermes-home"))).some((entry) => entry.startsWith("memories/")), false);
+  const quiet = JSON.parse(await readFile(path.join(b.attemptDir, "hermes-home", "config.yaml"), "utf8"));
+  assert.equal(quiet.memory.memory_enabled, false);
+  assert.equal(quiet.memory.user_profile_enabled, false);
+  assert.notEqual(noMemory.setup.digest, record.digest);
+
+  // Connections on: MCP servers and plugins travel, and their toolsets join file and terminal.
+  const c = await attempt(f.root, "connected");
+  const connected = await prepareHermesAttempt({ variant: withToggles({ connections: "on" }), cwd: c.attemptDir, env: f.env });
+  const connectedConfig = JSON.parse(await readFile(path.join(c.attemptDir, "hermes-home", "config.yaml"), "utf8"));
+  assert.deepEqual(Object.keys(connectedConfig.mcp_servers), ["tududi"]);
+  assert.deepEqual(connectedConfig.plugins.enabled, ["journal"]);
+  assert.ok((await listTree(path.join(c.attemptDir, "hermes-home"))).includes("plugins/journal/plugin.yaml"));
+  assert.equal(connected.setup.toolsets, "file,terminal,mcp-tududi");
+
+  // His soul changes, the digest moves; the real profile is never written.
+  const before = await listTree(rose);
+  await writeFile(path.join(rose, "SOUL.md"), "I am Rose, revised.\n");
+  assert.notEqual(await currentHermesSetupDigest({ variant: snapshot, env: f.env }), record.digest);
+  assert.deepEqual(await listTree(rose), before);
+
+  const ghost = await attempt(f.root, "ghost");
+  await assert.rejects(prepareHermesAttempt({ variant: { ...snapshot, executionProfile: { ...snapshotProfile, harnessProfile: "ghost" } }, cwd: ghost.attemptDir, env: f.env }), /no readable config\.yaml/);
+  const noLogin = await attempt(f.root, "no-login");
+  await assert.rejects(prepareHermesAttempt({ variant: clean, cwd: noLogin.attemptDir, env: { ...f.env, CLAUDE_CONFIG_DIR: path.join(f.root, "nowhere") } }), /borrows the Claude Code login/);
 });
 
-test("clean runs use the committed Hermes environment's own entry point unless an executable is pinned", async (t) => {
+test("runs use the committed Hermes environment's own entry point unless an executable is pinned", async (t) => {
   const f = await setup(t);
   const venv = path.join(f.hermesRoot, "installs", "abc", "environments", "gen", "venv");
   await mkdir(path.join(venv, "bin"), { recursive: true });
   await writeFile(path.join(venv, "bin", "hermes"), "#!/bin/sh\n");
   await writeFile(path.join(f.hermesRoot, "installs", "abc", "facts.json"), JSON.stringify({ packages: { venv: { environment: venv } } }));
   assert.equal(await resolveHermesRuntime({ variant: clean, env: f.env }), path.join(venv, "bin", "hermes"));
-  assert.equal(await resolveHermesRuntime({ variant: personal, env: f.env }), "hermes");
+  assert.equal(await resolveHermesRuntime({ variant: snapshot, env: f.env }), path.join(venv, "bin", "hermes"), "a snapshot's fresh home needs the committed environment too");
   assert.equal(await resolveHermesRuntime({ variant: clean, executable: "/opt/hermes", env: f.env }), "/opt/hermes");
   await rm(path.join(f.hermesRoot, "installs"), { recursive: true });
   await assert.rejects(resolveHermesRuntime({ variant: clean, env: f.env }), /found 0/);
@@ -249,7 +353,7 @@ async function kitchen(root) {
   return { recipe: cooked, catalog: { catalogHash: `sha256:${"4".repeat(64)}`, recipes: [cooked] } };
 }
 
-test("a cooked clean Hermes Dish is public; a personal one goes to private/dishes and runs as its profile", async (t) => {
+test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dishes, runs in its copied home and names its setup digest", async (t) => {
   const f = await setup(t);
   const repoRoot = path.join(f.root, "repo");
   const { recipe: cooked, catalog } = await kitchen(repoRoot);
@@ -264,24 +368,45 @@ test("a cooked clean Hermes Dish is public; a personal one goes to private/dishe
   assert.equal(requested.execution.toolsets, "file,terminal");
   const observed = JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8"));
   assert.equal(observed.environment, "clean");
-  await assert.rejects(access(path.join(attemptDir, "hermes-home", "auth.json")), /ENOENT/);
+  assert.deepEqual(await readdir(path.join(attemptDir, "hermes-home")), ["state.db"], "only the session database outlives the session");
   const dish = JSON.parse(await readFile(path.join(cleanRun.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.observedModel, "claude-haiku-5-5");
   assert.equal(dish.identity.harnessVersion, "Hermes Agent v9.9.9 (fake)");
+  assert.equal(dish.identity.setupDigest, undefined);
   assert.equal("visibility" in dish, false);
 
-  const personalRun = await executeRecipe({ repoRoot, catalog, recipe: cooked, variant: personal, executable: f.executable, env: { ...f.env, [PERSONAL_WRITES_ENV]: "1" }, nonce: "rose" });
-  assert.equal(personalRun.status, "accepted", personalRun.error);
-  assert.equal(path.relative(repoRoot, personalRun.dishDirectory).split(path.sep).slice(0, 2).join("/"), "private/dishes");
-  const personalDish = JSON.parse(await readFile(path.join(personalRun.dishDirectory, "dish.json"), "utf8"));
-  assert.equal(personalDish.visibility, "private");
-  const personalCalls = (await f.calls()).filter((call) => call.args[0] === "-p");
-  assert.equal(personalCalls.length, 2);
-  for (const call of personalCalls) {
-    assert.deepEqual(call.args.slice(0, 2), ["-p", "rose"]);
-    assert.equal(call.home, null, "a personal run inherits no HERMES_HOME");
+  const rose = path.join(f.hermesRoot, "profiles", "rose");
+  const roseBefore = await listTree(rose);
+  const snapshotRun = await executeRecipe({ repoRoot, catalog, recipe: cooked, variant: snapshot, executable: f.executable, env: f.env, nonce: "rose" });
+  assert.equal(snapshotRun.status, "accepted", snapshotRun.error);
+  assert.equal(path.relative(repoRoot, snapshotRun.dishDirectory).split(path.sep).slice(0, 2).join("/"), "private/dishes");
+  const snapshotDish = JSON.parse(await readFile(path.join(snapshotRun.dishDirectory, "dish.json"), "utf8"));
+  assert.equal(snapshotDish.visibility, "private");
+  const snapshotAttempt = path.join(repoRoot, "private/runtime/attempts", snapshotRun.attemptId);
+  const snapshotRequest = JSON.parse(await readFile(path.join(snapshotAttempt, "requested.json"), "utf8"));
+  assert.equal(snapshotDish.identity.setupDigest, snapshotRequest.setup.digest);
+  const receipt = JSON.parse(await readFile(path.join(snapshotRun.dishDirectory, "receipt.json"), "utf8"));
+  assert.equal(receipt.setup.digest, snapshotDish.identity.setupDigest);
+  assert.equal(receipt.setup.harnessProfile, "rose");
+  const snapshotCalls = (await f.calls()).filter((call) => call.home === path.join(snapshotAttempt, "hermes-home"));
+  assert.equal(snapshotCalls.length, 2);
+  for (const call of snapshotCalls) {
+    assert.equal(call.args.includes("-p"), false);
     assert.equal(call.args.includes("--ignore-rules"), false);
+    assert.equal(call.soul, "I am Rose.\n", "the run sees the copied soul");
   }
-  const personalObserved = JSON.parse(await readFile(path.join(repoRoot, "private/runtime/attempts", personalRun.attemptId, "observed.json"), "utf8"));
-  assert.equal(personalObserved.harnessProfile, "rose");
+  // The copy and the borrowed login are gone; the real profile is untouched.
+  assert.deepEqual(await readdir(path.join(snapshotAttempt, "hermes-home")), ["state.db"]);
+  assert.deepEqual(await listTree(rose), roseBefore);
+  const snapshotObserved = JSON.parse(await readFile(path.join(snapshotAttempt, "observed.json"), "utf8"));
+  assert.equal(snapshotObserved.environment, "snapshot");
+  assert.equal(snapshotObserved.harnessProfile, "rose");
+
+  // Connections on: refused without the flag; with it, the MCP toolset reaches the run.
+  const connected = withToggles({ connections: "on" });
+  await assert.rejects(executeRecipe({ repoRoot, catalog, recipe: cooked, variant: connected, executable: f.executable, env: f.env, nonce: "refused" }), /--allow-connections/);
+  const connectedRun = await executeRecipe({ repoRoot, catalog, recipe: cooked, variant: connected, executable: f.executable, env: f.env, nonce: "connected", allowConnections: true });
+  assert.equal(connectedRun.status, "accepted", connectedRun.error);
+  const lastCall = (await f.calls()).at(-1);
+  assert.equal(lastCall.args[lastCall.args.indexOf("-t") + 1], "file,terminal,mcp-tududi");
 });

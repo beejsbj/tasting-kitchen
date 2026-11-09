@@ -268,31 +268,6 @@
       }
     },
     {
-      "id": "claude-code-opus-5-5-high-personal",
-      "label": "Opus 5.5 · High · via Claude Code · personal",
-      "provider": "anthropic",
-      "model": "claude-opus-5-5",
-      "harness": "claude-code",
-      "reasoningEffort": "high",
-      "serviceTier": "default",
-      "personality": "default",
-      "capabilities": [
-        "files",
-        "shell"
-      ],
-      "executionProfile": {
-        "id": "claude-code-linux-host-personal-v1",
-        "label": "via Claude Code · personal",
-        "runtime": "linux-host",
-        "sandbox": "disabled",
-        "approvalPolicy": "bypass-permissions",
-        "nativeWeb": "disabled",
-        "networkPolicy": "not-enforced",
-        "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal"
-      }
-    },
-    {
       "id": "claude-code-sonnet-5-5-high-clean",
       "label": "Sonnet 5.5 · High · via Claude Code · clean",
       "provider": "anthropic",
@@ -340,31 +315,6 @@
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "clean"
-      }
-    },
-    {
-      "id": "claude-code-sonnet-5-5-high-personal",
-      "label": "Sonnet 5.5 · High · via Claude Code · personal",
-      "provider": "anthropic",
-      "model": "claude-sonnet-5-5",
-      "harness": "claude-code",
-      "reasoningEffort": "high",
-      "serviceTier": "default",
-      "personality": "default",
-      "capabilities": [
-        "files",
-        "shell"
-      ],
-      "executionProfile": {
-        "id": "claude-code-linux-host-personal-v1",
-        "label": "via Claude Code · personal",
-        "runtime": "linux-host",
-        "sandbox": "disabled",
-        "approvalPolicy": "bypass-permissions",
-        "nativeWeb": "disabled",
-        "networkPolicy": "not-enforced",
-        "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal"
       }
     },
     {
@@ -418,31 +368,6 @@
       }
     },
     {
-      "id": "claude-code-haiku-5-5-high-personal",
-      "label": "Haiku 5.5 · High · via Claude Code · personal",
-      "provider": "anthropic",
-      "model": "claude-haiku-5-5",
-      "harness": "claude-code",
-      "reasoningEffort": "high",
-      "serviceTier": "default",
-      "personality": "default",
-      "capabilities": [
-        "files",
-        "shell"
-      ],
-      "executionProfile": {
-        "id": "claude-code-linux-host-personal-v1",
-        "label": "via Claude Code · personal",
-        "runtime": "linux-host",
-        "sandbox": "disabled",
-        "approvalPolicy": "bypass-permissions",
-        "nativeWeb": "disabled",
-        "networkPolicy": "not-enforced",
-        "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal"
-      }
-    },
-    {
       "id": "claude-code-fable-5-1-high-clean",
       "label": "Fable 5.1 · High · via Claude Code · clean",
       "provider": "anthropic",
@@ -493,8 +418,89 @@
       }
     },
     {
-      "id": "claude-code-fable-5-1-high-personal",
-      "label": "Fable 5.1 · High · via Claude Code · personal",
+      "id": "claude-code-opus-5-5-high-snapshot",
+      "label": "Opus 5.5 · High · via Claude Code · snapshot",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-sonnet-5-5-high-snapshot",
+      "label": "Sonnet 5.5 · High · via Claude Code · snapshot",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-haiku-5-5-high-snapshot",
+      "label": "Haiku 5.5 · High · via Claude Code · snapshot",
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-fable-5-1-high-snapshot",
+      "label": "Fable 5.1 · High · via Claude Code · snapshot",
       "provider": "anthropic",
       "model": "claude-fable-5-1",
       "harness": "claude-code",
@@ -506,15 +512,125 @@
         "shell"
       ],
       "executionProfile": {
-        "id": "claude-code-linux-host-personal-v1",
-        "label": "via Claude Code · personal",
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
         "runtime": "linux-host",
         "sandbox": "disabled",
         "approvalPolicy": "bypass-permissions",
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal"
+        "environment": "snapshot",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-opus-5-5-high-snapshot-no-memory",
+      "label": "Opus 5.5 · High · via Claude Code · snapshot · no memory",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "memory": "off",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-opus-5-5-high-snapshot-connections",
+      "label": "Opus 5.5 · High · via Claude Code · snapshot · connections on",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-snapshot-v1",
+        "label": "via Claude Code · snapshot",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "memory": "on",
+        "connections": "on"
+      }
+    },
+    {
+      "id": "claude-code-opus-5-5-high-live",
+      "label": "Opus 5.5 · High · via Claude Code · live",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-live-v1",
+        "label": "via Claude Code · live",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "live",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "claude-code-sonnet-5-5-high-live",
+      "label": "Sonnet 5.5 · High · via Claude Code · live",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "harness": "claude-code",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "claude-code-linux-host-live-v1",
+        "label": "via Claude Code · live",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "bypass-permissions",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "live",
+        "memory": "on",
+        "connections": "off"
       }
     },
     {
@@ -718,8 +834,8 @@
       }
     },
     {
-      "id": "hermes-opus-5-5-high-rose",
-      "label": "Opus 5.5 · High · via Hermes · rose profile (Anthropic)",
+      "id": "hermes-opus-5-5-high-snapshot-rose",
+      "label": "Opus 5.5 · High · via Hermes · rose snapshot (Anthropic)",
       "provider": "anthropic",
       "model": "claude-opus-5-5",
       "harness": "hermes",
@@ -731,21 +847,23 @@
         "shell"
       ],
       "executionProfile": {
-        "id": "hermes-linux-host-personal-anthropic-v1",
-        "label": "via Hermes · personal profile · Anthropic route",
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
         "runtime": "linux-host",
         "sandbox": "disabled",
         "approvalPolicy": "yolo",
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal",
-        "harnessProfile": "rose"
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "on",
+        "connections": "off"
       }
     },
     {
-      "id": "hermes-sonnet-5-5-high-rose",
-      "label": "Sonnet 5.5 · High · via Hermes · rose profile (Anthropic)",
+      "id": "hermes-sonnet-5-5-high-snapshot-rose",
+      "label": "Sonnet 5.5 · High · via Hermes · rose snapshot (Anthropic)",
       "provider": "anthropic",
       "model": "claude-sonnet-5-5",
       "harness": "hermes",
@@ -757,21 +875,23 @@
         "shell"
       ],
       "executionProfile": {
-        "id": "hermes-linux-host-personal-anthropic-v1",
-        "label": "via Hermes · personal profile · Anthropic route",
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
         "runtime": "linux-host",
         "sandbox": "disabled",
         "approvalPolicy": "yolo",
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal",
-        "harnessProfile": "rose"
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "on",
+        "connections": "off"
       }
     },
     {
-      "id": "hermes-haiku-5-5-high-rose",
-      "label": "Haiku 5.5 · High · via Hermes · rose profile (Anthropic)",
+      "id": "hermes-haiku-5-5-high-snapshot-rose",
+      "label": "Haiku 5.5 · High · via Hermes · rose snapshot (Anthropic)",
       "provider": "anthropic",
       "model": "claude-haiku-5-5",
       "harness": "hermes",
@@ -783,21 +903,23 @@
         "shell"
       ],
       "executionProfile": {
-        "id": "hermes-linux-host-personal-anthropic-v1",
-        "label": "via Hermes · personal profile · Anthropic route",
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
         "runtime": "linux-host",
         "sandbox": "disabled",
         "approvalPolicy": "yolo",
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal",
-        "harnessProfile": "rose"
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "on",
+        "connections": "off"
       }
     },
     {
-      "id": "hermes-fable-5-1-high-rose",
-      "label": "Fable 5.1 · High · via Hermes · rose profile (Anthropic)",
+      "id": "hermes-fable-5-1-high-snapshot-rose",
+      "label": "Fable 5.1 · High · via Hermes · rose snapshot (Anthropic)",
       "provider": "anthropic",
       "model": "claude-fable-5-1",
       "harness": "hermes",
@@ -809,16 +931,74 @@
         "shell"
       ],
       "executionProfile": {
-        "id": "hermes-linux-host-personal-anthropic-v1",
-        "label": "via Hermes · personal profile · Anthropic route",
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
         "runtime": "linux-host",
         "sandbox": "disabled",
         "approvalPolicy": "yolo",
         "nativeWeb": "disabled",
         "networkPolicy": "not-enforced",
         "filesystemBoundary": "not-a-secrecy-boundary",
-        "environment": "personal",
-        "harnessProfile": "rose"
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "on",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "hermes-opus-5-5-high-snapshot-rose-no-memory",
+      "label": "Opus 5.5 · High · via Hermes · rose snapshot · no memory (Anthropic)",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "off",
+        "connections": "off"
+      }
+    },
+    {
+      "id": "hermes-opus-5-5-high-snapshot-rose-connections",
+      "label": "Opus 5.5 · High · via Hermes · rose snapshot · connections on (Anthropic)",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-snapshot-anthropic-v1",
+        "label": "via Hermes · profile snapshot · Anthropic route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "snapshot",
+        "harnessProfile": "rose",
+        "memory": "on",
+        "connections": "on"
       }
     }
   ]

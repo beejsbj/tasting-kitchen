@@ -358,19 +358,18 @@ test("recovery checks the recorded environment against the configuration, and re
     return f;
   };
   // The current configuration has no environment, so a manifest that recorded one is not the same request.
-  for (const record of [{ environment: "personal" }, { environment: "clean" }, { harnessProfile: "rose" }]) {
+  for (const record of [{ environment: "snapshot" }, { environment: "clean" }, { harnessProfile: "rose" }, { memory: "off" }]) {
     const f = await prepare(record);
-    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /execution profile (environment|harnessProfile) does not match/, JSON.stringify(record));
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /execution profile (environment|harnessProfile|memory) does not match/, JSON.stringify(record));
   }
-  // With the entry gone, the recorded environment rebuilds a personal configuration whose hash matches what was requested.
-  // The adapter then refuses it by design (no profile declares personal yet), not with a hash mismatch.
-  const f = await prepare({ environment: "personal", harnessProfile: "rose" });
-  const personal = configurationFromRequest(JSON.parse(await readFile(path.join(f.attemptDir, "requested.json"), "utf8")));
-  assert.equal(personal.executionProfile.environment, "personal");
-  assert.equal(personal.executionProfile.harnessProfile, "rose");
+  // With the entry gone, the recorded environment and toggles rebuild a snapshot configuration whose hash matches what was requested.
+  // The adapter then refuses it by design (the Codex profile declares no environment), not with a hash mismatch.
+  const f = await prepare({ environment: "snapshot", harnessProfile: "rose", memory: "off", connections: "on" });
+  const snapshot = configurationFromRequest(JSON.parse(await readFile(path.join(f.attemptDir, "requested.json"), "utf8")));
+  assert.deepEqual(["environment", "harnessProfile", "memory", "connections"].map((key) => snapshot.executionProfile[key]), ["snapshot", "rose", "off", "on"]);
   const requestedFile = path.join(f.attemptDir, "requested.json");
   const requested = JSON.parse(await readFile(requestedFile, "utf8"));
-  requested.identity.configHash = computeConfigHash(personal);
+  requested.identity.configHash = computeConfigHash(snapshot);
   await json(requestedFile, requested);
   f.catalog.variants = [];
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /declares no environment/);

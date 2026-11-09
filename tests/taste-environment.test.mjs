@@ -60,33 +60,49 @@ async function finalize(f, variant, attemptId, options = {}) {
   });
 }
 
-test("a personal Dish lands in private/dishes unless the Cook publishes it deliberately; clean and legacy Dishes stay public", async (t) => {
+const DIGEST = `sha256:${"a".repeat(64)}`;
+const toggles = { memory: "on", connections: "off" };
+const snapshotSetup = (variant, digest = DIGEST) => ({ environment: "snapshot", harnessProfile: variant.executionProfile.harnessProfile, memory: variant.executionProfile.memory, connections: variant.executionProfile.connections, digest, entries: [] });
+
+test("snapshot and live Dishes land in private/dishes unless the Cook publishes them deliberately; clean and legacy Dishes stay public", async (t) => {
   const f = await recipeFixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
-  const personal = configuration({ environment: "personal", harnessProfile: "rose" });
+  const snapshot = configuration({ environment: "snapshot", harnessProfile: "rose", ...toggles });
+  const live = configuration({ environment: "live", ...toggles });
 
-  const kept = await finalize(f, personal, "attempt_kept_private");
+  const kept = await finalize(f, snapshot, "attempt_kept_private", { setup: snapshotSetup(snapshot) });
   assert.equal(kept.dishDirectory, path.join(f.root, "private/dishes", kept.dishId));
-  assert.equal(JSON.parse(await readFile(path.join(kept.dishDirectory, "dish.json"), "utf8")).visibility, "private");
+  const keptDish = JSON.parse(await readFile(path.join(kept.dishDirectory, "dish.json"), "utf8"));
+  assert.equal(keptDish.visibility, "private");
+  assert.equal(keptDish.identity.setupDigest, DIGEST, "the digest is part of the immutable manifest");
+  assert.equal(JSON.parse(await readFile(path.join(kept.dishDirectory, "receipt.json"), "utf8")).setup.digest, DIGEST);
   assert.equal(await pathExists(path.join(f.root, "dishes", kept.dishId)), false);
+  const liveKept = await finalize(f, live, "attempt_live_private", { setup: { environment: "live", memory: "on", connections: "off", home: "real", digestAtStart: DIGEST } });
+  assert.equal(liveKept.dishDirectory, path.join(f.root, "private/dishes", liveKept.dishId));
+  assert.equal(JSON.parse(await readFile(path.join(liveKept.dishDirectory, "dish.json"), "utf8")).identity.setupDigest, undefined, "live never groups by digest");
 
-  const published = await finalize(f, personal, "attempt_published", { publishPersonal: true });
+  const published = await finalize(f, snapshot, "attempt_published", { publishPersonal: true, setup: snapshotSetup(snapshot) });
   assert.equal(published.dishDirectory, path.join(f.root, "dishes", published.dishId));
   assert.equal("visibility" in JSON.parse(await readFile(path.join(published.dishDirectory, "dish.json"), "utf8")), false);
 
-  // The publish choice is meaningless for anything but personal.
+  // A snapshot without its setup record, or with one for a different configuration, cannot publish.
+  await assert.rejects(finalize(f, snapshot, "attempt_no_setup"), /must record its setup/);
+  await assert.rejects(finalize(f, snapshot, "attempt_wrong_setup", { setup: { ...snapshotSetup(snapshot), memory: "off" } }), /memory does not match/);
+
+  // The publish choice is meaningless for anything but snapshot and live.
   for (const [name, extra] of [["clean", { environment: "clean" }], ["legacy", {}]]) {
     const result = await finalize(f, configuration(extra), `attempt_${name}`);
     assert.equal(result.dishDirectory, path.join(f.root, "dishes", result.dishId), name);
   }
 });
 
-test("cook refuses --publish-personal for a non-personal configuration as a usage error", async () => {
-  // The real catalog's configurations are all legacy (no environment), so none is personal.
+test("cook refuses --publish-personal and --allow-connections where they mean nothing, as usage errors", async () => {
+  // The real catalog's first configuration is legacy Codex (no environment), so it is neither personal nor connected.
   const config = JSON.parse(await readFile(path.join(repoRoot, "catalog/configurations.json"), "utf8"));
   const id = (config.configurations ?? config.variants ?? config)[0].id;
   const base = { config: id, configurationId: id, variantId: id, intent: "fill-missing" };
-  await assert.rejects(cook(repoRoot, { ...base, publishPersonal: true }), (error) => error.code === "INVALID_ARGUMENT" && /--publish-personal applies only to .*personal/.test(error.message));
+  await assert.rejects(cook(repoRoot, { ...base, publishPersonal: true }), (error) => error.code === "INVALID_ARGUMENT" && /--publish-personal applies only to .*snapshot or live/.test(error.message));
+  await assert.rejects(cook(repoRoot, { ...base, allowConnections: true }), (error) => error.code === "INVALID_ARGUMENT" && /--allow-connections applies only/.test(error.message));
 
   const { stdout, stderr } = await execFileAsync("node", ["bin/taste.mjs", "cook", "--config", id, "--intent", "fill-missing", "--publish-personal", "--json"], { cwd: repoRoot }).catch((error) => error);
   assert.equal(stdout ?? "", "");
@@ -94,11 +110,11 @@ test("cook refuses --publish-personal for a non-personal configuration as a usag
   assert.equal(JSON.parse(stderr).error.code, "INVALID_ARGUMENT");
 });
 
-test("the attempt manifest records environment, harnessProfile and the publish choice, and recovery rebuilds the same configuration hash from them", () => {
+test("the attempt manifest records environment, harnessProfile, toggles and the publish choice, and recovery rebuilds the same configuration hash from them", () => {
   const adapter = { requestedExecution: () => ({ codexHome: "fresh-per-attempt" }) };
   const recipe = { id: "demo", version: "1.0.0", recipeHash: "sha256:r", fixtureHashes: {}, harness: {} };
   const catalog = { catalogHash: "sha256:c" };
-  for (const [extra, publish] of [[{ environment: "personal", harnessProfile: "rose" }, true], [{ environment: "personal" }, false], [{ environment: "clean" }, false], [{}, false]]) {
+  for (const [extra, publish] of [[{ environment: "snapshot", harnessProfile: "rose", ...toggles }, true], [{ environment: "live", memory: "off", connections: "on" }, false], [{ environment: "clean" }, false], [{}, false]]) {
     const original = configuration(extra);
     const requested = requestedManifest(catalog, recipe, original, adapter, "attempt_x", "2026-11-08T12:00:00.000Z", null, publish);
     assert.equal(requested.publishPersonal, publish);
@@ -137,22 +153,28 @@ test("validate-catalog accepts only string environment keys, and rejects any env
   assert.match(await withProfile({ environment: 7 }), /executionProfile\.environment/);
   assert.match(await withProfile({ harnessProfile: 7 }), /executionProfile\.harnessProfile/);
   assert.match(await withProfile({ environment: "clean" }), /declares no environment/);
-  assert.match(await withProfile({ environment: "personal", harnessProfile: "rose" }), /declares no environment/);
+  assert.match(await withProfile({ environment: "snapshot", harnessProfile: "rose", ...toggles }), /declares no environment/);
+  assert.match(await withProfile({ environment: "personal" }), /must be one of clean, snapshot, live/);
+  assert.match(await withProfile({ memory: 1 }), /executionProfile\.memory/);
   assert.match(await withProfile({ colour: "red" }), /colour/);
 });
 
-test("owner validation accepts a private Dish of a public Recipe only when its receipt records a personal configuration", async (t) => {
+test("owner validation accepts a private Dish of a public Recipe only when its receipt records a snapshot or live configuration, and binds a snapshot's digest", async (t) => {
   const { scratch, validate } = await scratchCatalog(t);
   const [dishId] = await readdir(path.join(scratch, "dishes"));
   const publicDirectory = path.join(scratch, "dishes", dishId);
   const privateDirectory = path.join(scratch, "private/dishes", dishId);
-  const keepPrivate = async (environment) => {
+  // Each case starts from the untouched public Dish, so no case inherits another's edits.
+  const pristine = path.join(scratch, "pristine-dish");
+  await cp(publicDirectory, pristine, { recursive: true });
+  const keepPrivate = async (environment, { digest, setup } = {}) => {
     await rm(path.join(scratch, "private"), { recursive: true, force: true });
     await mkdir(path.dirname(privateDirectory), { recursive: true });
-    await cp(publicDirectory, privateDirectory, { recursive: true });
+    await cp(pristine, privateDirectory, { recursive: true });
     const receiptFile = path.join(privateDirectory, "receipt.json");
     const receipt = JSON.parse(await readFile(receiptFile, "utf8"));
-    if (environment) receipt.configuration.executionProfile.environment = environment;
+    if (environment) Object.assign(receipt.configuration.executionProfile, { environment }, environment === "clean" ? {} : toggles);
+    if (setup) receipt.setup = setup;
     receipt.configuration.configHash = computeConfigHash(receipt.configuration);
     await writeFile(receiptFile, `${JSON.stringify(receipt, null, 2)}\n`);
     const dishFile = path.join(privateDirectory, "dish.json");
@@ -160,14 +182,21 @@ test("owner validation accepts a private Dish of a public Recipe only when its r
     delete dish.dishHash;
     dish.visibility = "private";
     dish.identity.configHash = receipt.configuration.configHash;
+    if (digest) dish.identity.setupDigest = digest;
     await writeFile(dishFile, `${JSON.stringify({ ...dish, dishHash: hashCanonical(dish) }, null, 2)}\n`);
     await rm(publicDirectory, { recursive: true });
     const output = await validate();
-    await cp(privateDirectory, publicDirectory, { recursive: true });
+    await cp(pristine, publicDirectory, { recursive: true });
     return output;
   };
   // Without the private/ tree, owner mode reports unrelated missing-provenance errors; only the storage rule matters here.
-  assert.doesNotMatch(await keepPrivate("personal"), /Dish storage does not match Recipe visibility/);
+  const liveSetup = { environment: "live", memory: "on", connections: "off", digestAtStart: DIGEST };
+  assert.doesNotMatch(await keepPrivate("live", { setup: liveSetup }), /Dish storage does not match Recipe visibility|setup/);
+  const snapshotReceipt = { environment: "snapshot", memory: "on", connections: "off", digest: DIGEST, entries: [] };
+  assert.doesNotMatch(await keepPrivate("snapshot", { digest: DIGEST, setup: snapshotReceipt }), /Dish storage does not match Recipe visibility|setup/);
+  assert.match(await keepPrivate("snapshot", { setup: snapshotReceipt }), /identity\.setupDigest/);
+  assert.match(await keepPrivate("snapshot", { digest: `sha256:${"b".repeat(64)}`, setup: snapshotReceipt }), /setup digest does not match identity\.setupDigest/);
+  assert.match(await keepPrivate("live"), /a live Dish must record its setup/);
   assert.match(await keepPrivate("clean"), /Dish storage does not match Recipe visibility/);
   assert.match(await keepPrivate(undefined), /Dish storage does not match Recipe visibility/);
 });

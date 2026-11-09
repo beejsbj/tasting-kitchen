@@ -66,36 +66,71 @@ test("adapters expose pure fresh and exact-resume turn plans", () => {
   assert.equal(resumedCursor[resumedCursor.indexOf("--resume") + 1], UUID);
 });
 
-test("a shipped profile declares no environment, so Codex and Cursor reject clean and personal until they implement them", () => {
+test("a shipped profile declares no environment, so Codex and Cursor reject clean, snapshot and live until they implement them", () => {
   const withProfile = (extra) => ({ ...variant, executionProfile: { ...profile, ...extra } });
   assert.doesNotThrow(() => resolveHarnessAdapter(variant));
   assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "clean" })), /declares no environment/);
-  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "personal", harnessProfile: "rose" })), /declares no environment/);
-  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "mine" })), /environment must be one of/);
-  assert.throws(() => resolveHarnessAdapter(withProfile({ harnessProfile: "rose" })), /requires the personal environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "snapshot", harnessProfile: "rose", memory: "on", connections: "off" })), /declares no environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "live", memory: "on", connections: "off" })), /declares no environment/);
+  // The retired value is refused outright, not mistaken for either personal environment.
+  assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "personal" })), /environment must be one of clean, snapshot, live/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ harnessProfile: "rose" })), /requires the snapshot environment/);
+  assert.throws(() => resolveHarnessAdapter(withProfile({ memory: "on" })), /applies only to the snapshot and live environments/);
   assert.throws(() => resolveHarnessAdapter(withProfile({ id: "unknown-profile" })), /profile\.id must be one of/);
   const cursorProfile = { id: "cursor-linux-host-unsandboxed-v1", label: "via Cursor Agent · host-unsandboxed", runtime: "linux-host", sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
   const cursor = { ...variant, provider: "cursor", model: "composer-2.5[fast=false]", harness: "cursor-agent", reasoningEffort: "adaptive", personality: "default" };
   assert.doesNotThrow(() => resolveHarnessAdapter({ ...cursor, executionProfile: cursorProfile }));
   assert.throws(() => resolveHarnessAdapter({ ...cursor, executionProfile: { ...cursorProfile, environment: "clean" } }), /declares no environment/);
-  assert.equal(isPersonalEnvironment(withProfile({ environment: "personal" })), true);
+  // Snapshot and live both carry his setup; clean and undeclared do not.
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "snapshot" })), true);
+  assert.equal(isPersonalEnvironment(withProfile({ environment: "live" })), true);
   assert.equal(isPersonalEnvironment(withProfile({ environment: "clean" })), false);
   assert.equal(isPersonalEnvironment(variant), false);
 });
 
-test("a profile that declares an environment accepts exactly that one; harnessProfile needs personal", () => {
-  const declared = (environment) => ({ ...profile, ...(environment ? { environment } : {}) });
+test("a profile that declares an environment accepts exactly that one, with exactly the toggles it can honour", () => {
+  const both = ["on", "off"];
+  const declared = (environment, offers) => ({ ...profile, ...(environment ? { environment } : {}), ...(offers ? { offers } : {}) });
+  const config = (environment, extra = {}) => ({ ...profile, ...(environment ? { environment } : {}), ...extra });
+  const toggles = { memory: "on", connections: "off" };
   const match = (expected, candidate) => assertProfileMatch("test-harness", expected, candidate);
-  assert.ok(OPTIONAL_PROFILE_KEYS.includes("environment") && OPTIONAL_PROFILE_KEYS.includes("harnessProfile"));
-  assert.doesNotThrow(() => match(declared("clean"), declared("clean")));
-  assert.throws(() => match(declared("clean"), declared("personal")), /environment must be clean \(got personal\)/);
-  assert.throws(() => match(declared("clean"), declared()), /environment must be clean \(omitted\)/);
-  assert.throws(() => match(declared("clean"), { ...declared("clean"), harnessProfile: "rose" }), /requires the personal environment/);
-  assert.doesNotThrow(() => match(declared("personal"), { ...declared("personal"), harnessProfile: "rose" }));
-  assert.throws(() => match(declared("personal"), { ...declared("personal"), harnessProfile: "../rose" }), /plain profile name/);
-  assert.throws(() => match(declared("personal"), declared("clean")), /environment must be personal/);
-  assert.throws(() => match(declared("clean"), declared("mine")), /must be one of clean, personal/);
+  for (const key of ["environment", "harnessProfile", "memory", "connections"]) assert.ok(OPTIONAL_PROFILE_KEYS.includes(key), key);
+  assert.doesNotThrow(() => match(declared("clean"), config("clean")));
+  assert.throws(() => match(declared("clean"), config("snapshot", toggles)), /environment must be clean \(got snapshot\)/);
+  assert.throws(() => match(declared("clean"), config()), /environment must be clean \(omitted\)/);
+  assert.throws(() => match(declared("clean"), config("clean", { harnessProfile: "rose" })), /requires the snapshot environment/);
+  // Clean has no memory or connections to switch.
+  assert.throws(() => match(declared("clean"), config("clean", { memory: "off" })), /memory applies only to the snapshot and live/);
+  const snapshot = declared("snapshot", { memory: both, connections: both });
+  assert.doesNotThrow(() => match(snapshot, config("snapshot", { harnessProfile: "rose", ...toggles })));
+  assert.doesNotThrow(() => match(snapshot, config("snapshot", { memory: "off", connections: "on" })));
+  assert.throws(() => match(snapshot, config("snapshot", { harnessProfile: "../rose", ...toggles })), /plain profile name/);
+  assert.throws(() => match(snapshot, config("snapshot", { connections: "off" })), /must set memory to on or off/);
+  assert.throws(() => match(snapshot, config("snapshot", { memory: true, connections: "off" })), /must set memory to on or off/);
+  assert.throws(() => match(snapshot, config("clean")), /environment must be snapshot/);
+  // A harness that cannot switch something off does not offer that combination.
+  const memoryAlwaysOn = declared("live", { memory: ["on"], connections: both });
+  assert.doesNotThrow(() => match(memoryAlwaysOn, config("live", toggles)));
+  assert.throws(() => match(memoryAlwaysOn, config("live", { memory: "off", connections: "off" })), /cannot honour memory off/);
+  // A harness profile belongs only to a snapshot: live is his real home, not a copy of a named profile.
+  assert.throws(() => match(declared("live", { memory: both, connections: both }), config("live", { harnessProfile: "rose", ...toggles })), /requires the snapshot environment/);
+  assert.throws(() => match(declared("clean"), config("mine")), /must be one of clean, snapshot, live/);
   // Absent stays absent: a profile with no environment accepts only a configuration without one.
-  assert.doesNotThrow(() => match(declared(), declared()));
-  assert.throws(() => match(declared(), declared("clean")), /declares no environment/);
+  assert.doesNotThrow(() => match(declared(), config()));
+  assert.throws(() => match(declared(), config("clean")), /declares no environment/);
+});
+
+test("Hermes offers clean and snapshot only, and a snapshot must name the profile it copies; Claude Code offers live but no harness profile", () => {
+  const hermesBase = { runtime: "linux-host", sandbox: "disabled", approvalPolicy: "yolo", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
+  const hermes = (executionProfile) => ({ id: "h", provider: "anthropic", model: "claude-opus-5-5", harness: "hermes", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile });
+  const snapshot = { id: "hermes-linux-host-snapshot-anthropic-v1", label: "via Hermes · profile snapshot · Anthropic route", ...hermesBase, environment: "snapshot", memory: "on", connections: "off" };
+  assert.doesNotThrow(() => resolveHarnessAdapter(hermes({ ...snapshot, harnessProfile: "rose" })));
+  assert.throws(() => resolveHarnessAdapter(hermes(snapshot)), /must name the harnessProfile it copies/);
+  assert.throws(() => resolveHarnessAdapter(hermes({ ...snapshot, id: "hermes-linux-host-live-anthropic-v1", harnessProfile: "rose", environment: "live" })), /profile\.id must be one of/);
+  assert.throws(() => resolveHarnessAdapter(hermes({ ...snapshot, id: "hermes-linux-host-personal-anthropic-v1", environment: "personal" })), /profile\.id must be one of/);
+  const claudeBase = { runtime: "linux-host", sandbox: "disabled", approvalPolicy: "bypass-permissions", nativeWeb: "disabled", networkPolicy: "not-enforced", filesystemBoundary: "not-a-secrecy-boundary" };
+  const claude = (executionProfile) => ({ id: "c", provider: "anthropic", model: "claude-opus-5-5", harness: "claude-code", reasoningEffort: "high", serviceTier: "default", personality: "default", capabilities: ["files", "shell"], executionProfile });
+  const live = { id: "claude-code-linux-host-live-v1", label: "via Claude Code · live", ...claudeBase, environment: "live", memory: "off", connections: "on" };
+  assert.doesNotThrow(() => resolveHarnessAdapter(claude(live)));
+  assert.throws(() => resolveHarnessAdapter(claude({ ...live, id: "claude-code-linux-host-snapshot-v1", label: "via Claude Code · snapshot", environment: "snapshot", harnessProfile: "work" })), /does not support a named harness profile/);
 });
