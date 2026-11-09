@@ -1,4 +1,5 @@
 import type { AxisSet, Configuration, Dish, Recipe, Registry, TasteObservation, Variant } from "../types";
+import { slugModelFamily } from "./configuration-label.ts";
 
 export async function loadRegistry(): Promise<Registry> {
   const response = await fetch(`${import.meta.env.BASE_URL}data/registry.json`, { cache: "no-cache" });
@@ -28,12 +29,15 @@ export function comparisonConfigurations(registry: Pick<Registry, "configuration
 /**
  * Whether a Dish's observed service tier departs from the tier it requested.
  * serviceTier is stored as the observed value, so it cannot be the baseline.
- * Codex records a requested fast tier as priority; that alias is not drift.
+ * Codex records a requested fast tier as priority, and Claude Code reports a default tier as
+ * standard; neither alias is drift.
  */
 export function serviceTierDrift(identity: Pick<Dish["identity"], "serviceTier" | "requestedServiceTier" | "observedServiceTier">) {
   if (!identity.observedServiceTier) return false;
   const requested = identity.requestedServiceTier ?? identity.serviceTier;
-  return requested === "fast" ? identity.observedServiceTier !== "priority" : identity.observedServiceTier !== requested;
+  if (requested === "fast") return identity.observedServiceTier !== "priority";
+  if (requested === "default" && identity.observedServiceTier === "standard") return false;
+  return identity.observedServiceTier !== requested;
 }
 export function recipeSupported(recipe: Recipe, variant: Variant) {
   return recipe.harness.capabilities.every((capability) => variant.capabilities.includes(capability));
@@ -98,6 +102,6 @@ export function artifactUrl(dish: Dish, path = dish.artifact.entry) {
 export function shortHash(hash: string) { return hash.replace("sha256:", "").slice(0, 8); }
 export function modelFamily(model: string) {
   if (/composer-?2\.5/i.test(model)) return "Composer";
-  const named = model.match(/(?:^|-)(astra|sol|terra|luna|fable)(?:-|$)/i)?.[1];
-  return named ? named[0].toUpperCase() + named.slice(1) : model;
+  const named = model.match(/(?:^|-)(astra|sol|terra|luna|fable|opus|sonnet|haiku)(?:-|$)/i)?.[1];
+  return named ? named[0].toUpperCase() + named.slice(1) : slugModelFamily(model) ?? model;
 }

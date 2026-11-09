@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -10,6 +10,7 @@ import { copyTree, pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { configurationFromRequest, recoverAttempt } from "../lib/taste/recovery.mjs";
 import { applySkillToRecipe, loadSkills } from "../lib/taste/skills.mjs";
+import { otherFilesystem } from "./support/filesystems.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -267,6 +268,44 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(await pathExists(`${poison}.invoked`), false);
 });
 
+test("recovery finds the workspace and Codex home in the recorded cook directory outside the repo", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const runtime = await mkdtemp(path.join(await otherFilesystem() ?? os.tmpdir(), "taste-cook-"));
+  t.after(() => rm(runtime, { recursive: true, force: true }));
+  const cookDirectory = path.join(runtime, "0123456789abcdef");
+  for (const name of ["workspace", "codex-home"]) {
+    await cp(path.join(f.attemptDir, name), path.join(cookDirectory, name), { recursive: true });
+    await rm(path.join(f.attemptDir, name), { recursive: true });
+  }
+  const workspace = path.join(cookDirectory, "workspace");
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), `Finished [index.html](${path.join(workspace, "index.html")}).`);
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  await json(requestedFile, { ...requested, cookDirectory, workspace: "workspace/" });
+
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  assert.equal(result.status, "accepted");
+  const trace = await readFile(path.join(result.dishDirectory, "trace.json"), "utf8");
+  assert.match(trace, /artifact\/index\.html/);
+  assert.equal(trace.includes(runtime), false);
+  const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
+  assert.equal(observed.rolloutPath, `codex-home/sessions/2026/08/14/rollout-${THREAD_ID}.jsonl`);
+  assert.equal(await pathExists(path.join(f.attemptDir, "public-staging")), false);
+  assert.equal((await stat(result.dishDirectory)).isDirectory(), true);
+});
+
+test("recovery refuses an unsafe or missing cook directory", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "..", "escape") });
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /unsafe cook directory/);
+  await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "gone", "0123456789abcdef") });
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /workspace is missing.*\/var\/tmp.*clean/s);
+});
+
 test("recovery records the attempted catalog hash, not the live catalog's", async (t) => {
   const attempted = `sha256:${"a".repeat(64)}`;
   const f = await recoveryFixture();
@@ -358,19 +397,18 @@ test("recovery checks the recorded environment against the configuration, and re
     return f;
   };
   // The current configuration has no environment, so a manifest that recorded one is not the same request.
-  for (const record of [{ environment: "personal" }, { environment: "clean" }, { harnessProfile: "rose" }]) {
+  for (const record of [{ environment: "snapshot" }, { environment: "clean" }, { harnessProfile: "rose" }, { memory: "off" }]) {
     const f = await prepare(record);
-    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /execution profile (environment|harnessProfile) does not match/, JSON.stringify(record));
+    await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /execution profile (environment|harnessProfile|memory) does not match/, JSON.stringify(record));
   }
-  // With the entry gone, the recorded environment rebuilds a personal configuration whose hash matches what was requested.
-  // The adapter then refuses it by design (no profile declares personal yet), not with a hash mismatch.
-  const f = await prepare({ environment: "personal", harnessProfile: "rose" });
-  const personal = configurationFromRequest(JSON.parse(await readFile(path.join(f.attemptDir, "requested.json"), "utf8")));
-  assert.equal(personal.executionProfile.environment, "personal");
-  assert.equal(personal.executionProfile.harnessProfile, "rose");
+  // With the entry gone, the recorded environment and toggles rebuild a snapshot configuration whose hash matches what was requested.
+  // The adapter then refuses it by design (the Codex profile declares no environment), not with a hash mismatch.
+  const f = await prepare({ environment: "snapshot", harnessProfile: "rose", memory: "off", connections: "on" });
+  const snapshot = configurationFromRequest(JSON.parse(await readFile(path.join(f.attemptDir, "requested.json"), "utf8")));
+  assert.deepEqual(["environment", "harnessProfile", "memory", "connections"].map((key) => snapshot.executionProfile[key]), ["snapshot", "rose", "off", "on"]);
   const requestedFile = path.join(f.attemptDir, "requested.json");
   const requested = JSON.parse(await readFile(requestedFile, "utf8"));
-  requested.identity.configHash = computeConfigHash(personal);
+  requested.identity.configHash = computeConfigHash(snapshot);
   await json(requestedFile, requested);
   f.catalog.variants = [];
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /declares no environment/);

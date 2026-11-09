@@ -96,6 +96,7 @@ One immutable accepted artifact and public-safe receipt produced by a successful
 
 - recipe hash (`recipe.hash`);
 - requested and observed configuration identity, with the configuration hash (`identity.configHash`);
+- for a snapshot environment, the setup digest of the copy it ran with (`identity.setupDigest`);
 - skill layer, if any (`skill: { id, hash }`);
 - artifact and its content hash;
 - execution time; and
@@ -106,7 +107,7 @@ Accepted Dishes are never overwritten or rebound to a later brief. Reviews and o
 Two sidecars sit beside `dish.json` and are **not** part of `dish.json` or `dishHash`, so a manifest stays byte-identical whether or not it has them:
 
 - `inputs.json` and `inputs/` — what the model received. `inputs.json` lists each fixture's `path`, `sha256`, `bytes` and `mountAs`; `inputs/<mountAs>` holds the bytes of every public fixture. A private fixture appears in `inputs.json` by hash and size only, never as bytes.
-- `receipt.json` — the full configuration object the Dish ran as and, for a skill layer, its source pin (repository, commit, path), entry, delivery mode, effective workspace mount path when applicable, and tree hash.
+- `receipt.json` — the full configuration object the Dish ran as; for a snapshot or live Dish, its `setup` (environment, toggles, digest, a per-entry summary that names top-level entries but never files below them, and the MCP servers and plugins the harness reported loading); and for a skill layer, its source pin (repository, commit, path), entry, delivery mode, effective workspace mount path when applicable, and tree hash.
 
 Both are written at publication. Dishes published earlier were backfilled once from the frozen records that preceded this model (`scripts/backfill-dish-sidecars.mjs`). The validator re-hashes every public input and checks that the receipt reproduces `identity.configHash`. When a Dish's recipe hash is still the Recipe's current hash, the validator and registry build also require `inputs.json` to list exactly that Recipe's fixtures; an older hash cannot be re-derived, so its inputs rest on their own hashes and the public scan. Published inputs are scanned for leaks (home paths, file URLs, credentials, private identifiers); only the relative-import and route-shaped path rules are relaxed for these verbatim bytes. A Dish with no sidecar still validates; the gallery then falls back to the Recipe's current fixtures and says so.
 
@@ -117,8 +118,9 @@ Both are written at publication. Dishes published earlier were backfilled once f
 A derived relationship, not a separate entity. Dishes are Repeats when they share:
 
 - the same recipe hash;
-- the same exact requested model configuration; and
-- the same skill layer, including the absence of one.
+- the same exact requested model configuration;
+- the same skill layer, including the absence of one; and
+- for a snapshot, the same setup digest.
 
 Repeat groups are ordered deterministically by execution time and then Dish ID. They require no stored `repeatIndex`, group identifier, or mutable counter.
 
@@ -138,12 +140,41 @@ The exact requested configuration remains part of Dish identity and Repeat group
 
 The same model used through two harnesses represents two configurations and does not form a Repeat. A harness brings its own system prompt, tools and defaults; that difference is part of what is tasted, and Kitchen never attributes it to the model alone.
 
-**Environment** is a configuration dimension inside the execution profile (`executionProfile.environment`):
+**Environment** is a configuration dimension inside the execution profile (`executionProfile.environment`). It says what a harness brings beyond its own defaults:
 
 - `clean` starts the harness from an empty home: no user instructions, skills, memory, hooks or MCP servers. Only the harness itself shapes the Run.
-- `personal` loads Burooj's own setup for that harness, optionally a named harness profile (`executionProfile.harnessProfile`, such as a Hermes profile). It tastes the model as he actually works with it.
+- `snapshot` starts the harness from a throwaway, deterministic copy of Burooj's setup for that harness, made per attempt: instructions, soul, skills, memories, chosen settings, and for a harness with named profiles the one named by `executionProfile.harnessProfile` (such as Hermes `rose`). The copied bytes hash to a **setup digest** the Dish records as `identity.setupDigest`. Kitchen never writes to the real setup: the one exception is a Hermes run refreshing the borrowed Claude Code login, which is written back to `~/.claude/.credentials.json`. What the model does with its own tools is outside that promise.
+- `live` runs in his real home exactly as it is, writes included. It is offered only where Kitchen can run the harness as he does without harm to anything but that home: Claude Code, never Hermes.
 
-Clean and personal are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the setup adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. The current Codex and Cursor configurations declare no environment, because neither harness yet isolates its home: Codex cooks run inside the Kitchen repo, and Cursor runs with the real home directory (see [#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
+A personal environment (snapshot or live) states two toggles, both execution-affecting and so part of the configuration hash:
+
+- `memory` (`on` or `off`) loads his memories and leaves the harness's memory feature active, or omits them and disables it. In a snapshot, writes land in the copy and are discarded with it.
+- `connections` (`on` or `off`) loads his MCP servers and plugins, or excludes them. With connections on, the model can act in the world (send mail, edit Linear issues) under bypassed permissions, so such a configuration executes only when the Cook passes `--allow-connections`. Kitchen records which servers and plugins the harness reported loading.
+
+A harness offers only the toggle values it can honour; a combination it cannot switch off is not offered. For Claude Code and Hermes, [agent-interface.md](agent-interface.md#claude-code) lists exactly what each environment and toggle loads and withholds.
+
+Why these choices hold:
+
+- **Snapshot and live are different claims, so they are different environments.** A snapshot says “this version of his setup”, reproducibly; live says “his setup as it stood when the Run began, and whatever the Run did to it”. Folding them into one `personal` value would let a Dish claim reproducibility it does not have.
+- **The digest belongs to the Dish, not the configuration.** His setup changes between Cooks without anyone editing the catalog. A configuration names *how* to build the copy; the digest names *what* the copy held. Two snapshot Dishes are Repeats only when their digests match, and fill-missing treats a snapshot cell as covered only by a Dish whose digest matches his setup as it is now, just as an edited brief uncovers a cell. The gallery cannot read his setup, so its Menu coverage counts any snapshot Dish, whatever its digest: accepted for now, and fill-missing is the check that compares digests.
+- **A live Dish never groups by digest.** Its receipt notes the digest at the start, but a live Run may change what it measured, so the number cannot name what the model saw.
+- **Toggles are configuration, not receipt.** Turning memory or connections off changes what the model receives, so it is a different requested configuration, never a Repeat, and the comparison “memory on versus off” is an environment comparison.
+- **Hermes is never live.** A live Hermes run would record itself in the profile's own sessions and run its plugin hooks against his real channels; a snapshot of the profile gives the same tasting without those writes.
+- **Connections need an explicit flag at execution, not in the catalog.** Declaring the configuration is harmless; running it can act in the world. The flag puts the consequence at the moment of spending.
+
+Clean, snapshot and live are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the environment adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. Every Run cooks outside the Kitchen repo, in an opaque directory that no project instructions reach (see [the agent interface](agent-interface.md#where-cooking-happens)). Claude Code declares clean, snapshot and live; Hermes declares clean and snapshot. Codex declares `clean` for a fresh `CODEX_HOME` and `HOME`; its original configurations declare none and keep the real home. Cursor declares none: account-level rules can reach it from the server with the login. A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
+
+Dishes cooked before the move ran inside the Kitchen repo. Each carries a public note beside it in `catalog/dish-notes.json`, shown in its receipt, saying what the harness could see there ([#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A note pins the Dish's hash and never changes the Dish.
+
+**Route** is the inference path between harness and model. It is declared in the execution profile (`executionProfile.route`, such as `openrouter`) only when it is not the provider's own, so existing configurations keep their hashes. A configuration on a declared route names the model by that route's id (`anthropic/claude-opus-5.5` on OpenRouter), and its `provider` stays the model's maker. The same model through Hermes on the Anthropic route and on the OpenRouter route are two configurations; comparing them shows what the route changes.
+
+**Upstream pin.** OpenRouter forwards a model to whichever host it picks, which would blur a comparison. Every OpenRouter configuration therefore pins its upstream in the execution profile (`executionProfile.upstream`, an OpenRouter provider slug such as `anthropic`, `xai` or `alibaba`), and the pin must be the model maker's own provider. Direct API sends `provider: {only: [slug], allow_fallbacks: false, require_parameters: true}`; Hermes sends `provider_routing: {only: [slug], require_parameters: true}`, which has no fallback switch (`only` with one slug leaves nothing to fall back to). The pin is part of the configuration hash and is frozen in `requested.json`. Direct API verification fails the Dish unless every response reports that provider (top-level `provider` or the selected endpoint in `openrouter_metadata`, and the two must agree), and the run stops at the first turn that does not. The pin names a provider, not one endpoint: a provider with several endpoints (Anthropic's standard and fast, Moonshot's two Kimi endpoints) reports one name for all of them, so the pin cannot tell them apart. Hermes does not record the upstream in the evidence this adapter reads, so there the pin is enforced by the request and not observed.
+
+**Harness path** names a harness that wraps another, outermost first (`harnessPath: ["t3", "claude-code"]` is T3 wrapping Claude Code with its own system prompt and tools). The outer layer is the configuration's `harness`, and only an adapter that declares it can wrap that inner path accepts it. A path is part of the configuration hash when present; a harness that runs alone has none. T3 is the first outer layer: each attempt starts its own throwaway T3 server (`t3 serve --base-dir` inside the attempt, on a loopback port, with Kitchen-written settings that enable only the wrapped provider), so no thread or project reaches the T3 app Burooj uses. The wrapped harness runs in a fresh per-attempt home, and its own session files there are the identity evidence. The scratch server runs under a supervisor tied to the Kitchen process, so if the Kitchen dies the server stops and its token-bearing settings are deleted. For Claude Code the access token (never the refresh token) sits in that settings file and in the inner harness's environment while the attempt runs, so the model's own shell could read it; that is within `not-a-secrecy-boundary`. T3's own tool surface (its MCP tools, a project clone, Claude's Agent tool) stays available, so T3 is `nativeWeb: not-enforced`, and it declares no delegation capability, so Recipes that need delegation are not offered to it.
+
+**Direct API** (`direct-api`) is the baseline with no harness: the model is called over HTTP with no system prompt, no tools and no workspace, and a staged Recipe is a real conversation because every turn resends the whole exchange so far. Every harness is measured against it. It serves only Recipes that need no capabilities, mount no files and produce a session transcript, so `compatibilityFor` excludes the rest.
+
+The gallery reads harness path and declared route together as the harness value, so “Compare by Harness” for one model lays out Claude Code, Hermes · OpenRouter, Direct API · OpenRouter and T3 → Claude Code side by side.
 
 ### Skill and skill hash
 
@@ -197,7 +228,7 @@ The public site supports:
 
 - a Dishes counter that groups every visible Dish and Repeat beneath its Recipe, with model/thinking filters;
 - a separate Recipe Book at `?view=recipes` for current authored definitions;
-- Recipe detail pages containing all matching models, configurations, and Repeats;
+- Recipe detail pages containing all matching models, configurations, and Repeats, where each pane is chosen axis by axis (model, effort, harness, environment, and tier or skill layer where they vary) and “Compare by” holds the first pane still while laying out one pane per value of a single axis, up to six;
 - model and configuration facets on the Dishes counter;
 - Cuisine filtering; and
 - Menu views with explicit coverage.
@@ -248,7 +279,7 @@ An explicit Repeat-intent Cook creates another Run. Its Dish joins the Repeat gr
 
 ### One model through different harnesses
 
-The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Holding the model, effort and environment constant while changing only the harness is the closest Kitchen gets to isolating a harness; the receipts still say what else each harness supplied.
+The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Holding the model, effort and environment constant while changing only the harness is the closest Kitchen gets to isolating a harness; the receipts still say what else each harness supplied. “Compare by Harness” on the Recipe page builds exactly that layout; a harness that cannot hold the other axes is offered only as a marked, non-isolated pane, and the comparison note then stops claiming isolation.
 
 ### A Recipe in several Menus
 
@@ -281,6 +312,7 @@ The correction instruction is part of the Recipe's prompt chain and is held cons
 - **Collection** — retired; model and configuration are ordinary filter facets over Dishes.
 - **Chef** — informal prose only.
 - **Oven / Appliance** — infrastructure metaphors only.
+- **Personal environment** — replaced by `snapshot` and `live`, which make different claims about what the model saw. “Personal” survives only as the word for both together (private by default, `--publish-personal`).
 
 ## V1 boundary
 

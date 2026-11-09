@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, evaluateDishWithJev, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal"]);
+const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections"]);
 
 const commandFlags = {
   help: new Set(),
@@ -17,7 +17,7 @@ const commandFlags = {
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
   plan: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "publish-personal"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
@@ -121,7 +121,7 @@ Usage:
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
   taste plan --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--publish-personal] [--json]
+  taste cook --config ID [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -132,6 +132,8 @@ Usage:
 
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
+  --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
+  --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
 --variant is accepted as a compatibility alias for --config.`;
@@ -169,7 +171,7 @@ async function main() {
   if (command === "cook") {
     if (!options.intent || !["fill-missing", "repeat"].includes(options.intent)) throw new UsageError("cook requires --intent fill-missing or --intent repeat");
     if (options.execute && process.env.TASTE_ALLOW_MODEL_RUNS !== "1") throw new UsageError("Refusing model execution: set TASTE_ALLOW_MODEL_RUNS=1 as an explicit paid-run acknowledgement");
-    const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.codex, publishPersonal: options["publish-personal"] === true });
+    const result = await cook(repoRoot, { ...selection(options), intent: options.intent, execute: options.execute, executable: options.executable ?? options.codex, publishPersonal: options["publish-personal"] === true, allowConnections: options["allow-connections"] === true });
     if (result.failed?.length) process.exitCode = 1;
     return print(result, true);
   }

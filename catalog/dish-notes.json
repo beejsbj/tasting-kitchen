@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "notes": [
+    {
+      "id": "codex-saw-kitchen-agents-md",
+      "text": "Cooked inside the Kitchen repo. Codex loaded the Kitchen's AGENTS.md, which says what the journal Recipes taste, and the index of Burooj's personal skills from his home directory. The working directory's path also named the Recipe and configuration.",
+      "link": "https://github.com/beejsbj/tasting-kitchen/issues/35",
+      "dishes": [
+        {
+          "id": "dish_analyze-brain-dump_codex-luna-xhigh_20260911040943677_dd1c687c",
+          "dishHash": "sha256:52a2e64cbd797309b95d8a35f6c212d505bcb1dc545b8d4371da0d725a06bf66"
+        },
+        {
+          "id": "dish_challenge-long-journal_codex-luna-xhigh_20260911040908705_d3c28e28",
+          "dishHash": "sha256:c881366d3c8023d21991ea88ecde52ba8b6afbec5cce9bf8e7069bb24d47dc2c"
+        },
+        {
+          "id": "dish_challenge-short-journal_codex-luna-xhigh_20260911040554290_11f29d19",
+          "dishHash": "sha256:e1e1996986712a59d792cc89d02b12c249e408cf3e3ab1ad6f161ff1008c5bbb"
+        },
+        {
+          "id": "dish_respond-to-long-journal_codex-luna-xhigh_20260911040830869_c23f5932",
+          "dishHash": "sha256:2a29832ad5356a38c7de1cd147edfd71ad387f3b21b697a918ec7470e4396ed3"
+        },
+        {
+          "id": "dish_respond-to-short-journal_codex-luna-xhigh_20260911040530539_3b35bd7b",
+          "dishHash": "sha256:5c22dd468085268048c66c447e5accb44be20a7b3feaf913e8620524b299efd5"
+        },
+        {
+          "id": "dish_support-long-journal_codex-luna-xhigh_20260911040850711_99095fa4",
+          "dishHash": "sha256:7db3db6fc23e21fdb321b2fe24985bd64f9b65bb95912cec957be85505e33fc4"
+        },
+        {
+          "id": "dish_support-short-journal_codex-luna-xhigh_20260911040544083_a3f5ef14",
+          "dishHash": "sha256:2fc2871be53f6e70d01adbf566c44cb50a8708251c317071424df7ae321d00e3"
+        }
+      ]
+    },
+    {
+      "id": "codex-saw-personal-skills",
+      "text": "Cooked inside the Kitchen repo with the real home directory. Codex loaded the index of Burooj's personal skills from his home directory, and the working directory's path named the Recipe and configuration. The Kitchen's AGENTS.md did not exist yet.",
+      "link": "https://github.com/beejsbj/tasting-kitchen/issues/35",
+      "dishes": [
+        {
+          "id": "dish_extend-conduit-design-system_codex-luna-xhigh_20260906234308634_008f475e",
+          "dishHash": "sha256:0d7d423a1b34deaa94cc692ddbc29fa3ccf21144a6e730fa99188a09465c49cb"
+        },
+        {
+          "id": "dish_extend-emotitone-design-system_codex-luna-xhigh_20260907004148418_f6f4c7c9",
+          "dishHash": "sha256:6c4e9271ad158ce4ce5d82f8937e0566769a13193cc690ce001a34d85a09f41c"
+        },
+        {
+          "id": "dish_extend-qrng-design-system_codex-luna-xhigh_20260907000051604_9b702340",
+          "dishHash": "sha256:695c30111cbb8473874896d574085648dafb92230692faeb94767ff64c550718"
+        },
+        {
+          "id": "dish_fresh-editorial-second-life_codex-luna-xhigh_20260906230245519_992d2c1c",
+          "dishHash": "sha256:68744eaa1d5b277134205c58154adaed35a1da7afd7e744bf5144837d13419fe"
+        },
+        {
+          "id": "dish_fresh-interaction-paper-echo_codex-luna-xhigh_20260906231527851_67821e90",
+          "dishHash": "sha256:1837b2c4a618881182d3c2ee296e3f03b6dd8801cc1a0866cccb58ed67db786c"
+        },
+        {
+          "id": "dish_fresh-product-span_codex-luna-xhigh_20260906224623944_77b8387a",
+          "dishHash": "sha256:cbfd83bb88a75fa5e46873b1b1672ac27ec68640e8bef85e7caec83894c56383"
+        },
+        {
+          "id": "dish_fresh-system-hem_codex-luna-xhigh_20260906232727988_d6b36aac",
+          "dishHash": "sha256:849814d2ad6539d1b6370c780d5c64020964101ab8238843ca70ea5abddc52df"
+        },
+        {
+          "id": "dish_permission-ladder-publish_codex-luna-high-fast_20260814221413912_2419c18e",
+          "dishHash": "sha256:3e447f9da60c8aa407efc276641352a4427cc34f55e2b56fcdcb05ccfab95385"
+        },
+        {
+          "id": "dish_permission-ladder-publish_codex-luna-low-fast_20260814220556053_912abada",
+          "dishHash": "sha256:cb60edd83d18658580783e94bdce34e123409d8df33adbedfd7fc4347db58981"
+        },
+        {
+          "id": "dish_permission-ladder-publish_codex-luna-xhigh-fast_20260814222832641_bdff0a89",
+          "dishHash": "sha256:5ccb4384a5c54027898a6115d242ff57fb3bfb21d8c9699f4a7656344e4a4ad6"
+        },
+        {
+          "id": "dish_permission-ladder-publish_codex-sol-high_20260814214953107_254ced58",
+          "dishHash": "sha256:6b5c67f5e760e92335286554df68af5104ebcf091c5aed5c5afc7f393ca876ea"
+        },
+        {
+          "id": "dish_permission-ladder-publish_codex-terra-high_20260814215616597_4dc91aee",
+          "dishHash": "sha256:8b9df36cc1a82f53c547ce614dff9765ad830d3478817a9167f5699bc8ee9982"
+        },
+        {
+          "id": "dish_responsive-product-launch_codex-luna-high-fast_20260814205016371_0601510c",
+          "dishHash": "sha256:2a5a2a825cdf6145ed1d27af558050e7b5f4301ceb9aaa946deb89c14b6b13fa"
+        },
+        {
+          "id": "dish_responsive-product-launch_codex-luna-low-fast_20260814203845551_8dae0759",
+          "dishHash": "sha256:b657e9e2eab76436adb02a21d56d4a1270d68d3c9d52db5fc4353f816a5b5fcd"
+        },
+        {
+          "id": "dish_responsive-product-launch_codex-luna-xhigh-fast_20260814205742023_7031dcd0",
+          "dishHash": "sha256:8744953e8db9b52a814b7a15119d89b2294bd30509de9cbab205aca4a5a2ca8b"
+        },
+        {
+          "id": "dish_responsive-product-launch_codex-sol-high_20260814200923790_c1b11b6e",
+          "dishHash": "sha256:ca873a27c67749997a7948bca7fa65b5d91e612a0de3124b6515d6aabbd2d0fc"
+        },
+        {
+          "id": "dish_responsive-product-launch_codex-terra-high_20260814203253795_66cae181",
+          "dishHash": "sha256:42c7f42ada14af46796cdb740731d7dac4de58ee8cb721d4c0923ba0e99cea05"
+        },
+        {
+          "id": "dish_shared-result-ritual_codex-luna-high-fast_20260814220636250_bd85143a",
+          "dishHash": "sha256:0ddd921b0edf6b2227a935be6ee252df547e7a636236476012d79375975474b8"
+        },
+        {
+          "id": "dish_shared-result-ritual_codex-luna-low-fast_20260814220358467_a9f754a7",
+          "dishHash": "sha256:de473c6a0dd22c0aa583283a280246b1a350e8e8e6f848c611868a5d420f8008"
+        },
+        {
+          "id": "dish_shared-result-ritual_codex-luna-xhigh-fast_20260814221457904_cb96324d",
+          "dishHash": "sha256:f2f520f171419d2f1c883b4d3ba3c75749c135e8813cc9168c5237fe8ee49099"
+        },
+        {
+          "id": "dish_shared-result-ritual_codex-sol-high_20260814214115725_5f0353cb",
+          "dishHash": "sha256:6cd3f299ef42f781d0ac94275e6cfb7e687e78a272e1bb1fac06e7a893386030"
+        },
+        {
+          "id": "dish_shared-result-ritual_codex-terra-high_20260814215047426_c82000ae",
+          "dishHash": "sha256:a0d77cd05e3a4edb42b1028cc64679f64837ebfba8384f9952114d5db8c47a4b"
+        },
+        {
+          "id": "dish_standard-developer-homepage_codex-luna-xhigh_20260907000705018_d80f0a18",
+          "dishHash": "sha256:5388fe3ab406df135e246611758d3b1e828542f67d4c9573f2136c72bad8133a"
+        },
+        {
+          "id": "dish_standard-developer-portfolio_codex-luna-xhigh_20260907000033345_5b4e2d41",
+          "dishHash": "sha256:dec916cd0f1e6b04f515926d62a95e43acc122469b042f6c088f6fe7cdc2ae77"
+        },
+        {
+          "id": "dish_standard-service-business_codex-luna-xhigh_20260906234308631_762f7198",
+          "dishHash": "sha256:d7f5b7ff1f02fcc69d962a47aa87640f156edac327fbae3c4347d5bdc1a77604"
+        }
+      ]
+    },
+    {
+      "id": "cursor-real-home",
+      "text": "Cooked inside the Kitchen repo with Burooj's own Cursor home, so his Cursor settings, rules and skills may have shaped the run, and the working directory's path named the Recipe and configuration.",
+      "link": "https://github.com/beejsbj/tasting-kitchen/issues/35",
+      "dishes": [
+        {
+          "id": "dish_extend-conduit-design-system_cursor-composer-2-5_20260907182504688_b999d00c",
+          "dishHash": "sha256:74254d18474c8cd4e3ec32b3390296fd7fe2c47a708fad13a0027e47130e1ebd"
+        },
+        {
+          "id": "dish_extend-emotitone-design-system_cursor-composer-2-5_20260907182608879_e32cc173",
+          "dishHash": "sha256:b7246a45ef94bd5d814fb11581a66dde97e7776af857c1986e859dd17c9dca11"
+        },
+        {
+          "id": "dish_extend-qrng-design-system_cursor-composer-2-5_20260907182706146_66383a31",
+          "dishHash": "sha256:254702d72eabdeae25ca03fc82462fe8689a54498a53e75636bb80659f38395c"
+        },
+        {
+          "id": "dish_fresh-editorial-second-life_cursor-composer-2-5_20260907182834641_7d9d0c2a",
+          "dishHash": "sha256:fd98b55d1efceef5092aa63b887e53c1e43f51ec66b45d219afc287a7dc69ecb"
+        },
+        {
+          "id": "dish_fresh-interaction-paper-echo_cursor-composer-2-5_20260907182953481_eda5dbf5",
+          "dishHash": "sha256:e02e755c3a11faeeb2e35e60cb97c6826f2105f77cade37acfc2ba993f22965b"
+        },
+        {
+          "id": "dish_fresh-product-span_cursor-composer-2-5_20260907183104864_52ebf551",
+          "dishHash": "sha256:b7ae2f7756229f0a965824ab78c06ea69294a5dfd86b492b14338cb5e1099ffb"
+        },
+        {
+          "id": "dish_fresh-system-hem_cursor-composer-2-5_20260907183253453_892137a3",
+          "dishHash": "sha256:d751f7ccb56ae89e8a8dde742fc4090ce1121560e7e487d53efa29a9f58f0355"
+        },
+        {
+          "id": "dish_standard-developer-homepage_cursor-composer-2-5_20260907183347837_fa324924",
+          "dishHash": "sha256:cc1e13d2d206d83b47c28d17bbc594c620c2655c3915a81f92c54a27eb12ffdb"
+        },
+        {
+          "id": "dish_standard-developer-portfolio_cursor-composer-2-5_20260907183451480_8dc6f97f",
+          "dishHash": "sha256:7fa0236353c82e1c6b8b3b967afa76e615a0757e0baca0a7d68a50c81cdd74fb"
+        },
+        {
+          "id": "dish_standard-service-business_cursor-composer-2-5_20260907183547226_1284e701",
+          "dishHash": "sha256:5c2c07ab4451ef674eeaa729e82e405b4bef7ae1dea834b27d3e68b2127627f4"
+        }
+      ]
+    }
+  ]
+}

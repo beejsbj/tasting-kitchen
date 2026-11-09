@@ -1,19 +1,23 @@
 import { artifactUrl, briefChanged, dishesFor, dishSkillKey, modelFamily, shortHash, skillLabelFor } from '../lib/registry';
 import { effortLabel } from '../lib/effort-label';
+import { configurationFacets, environmentName, harnessKey, harnessLabel } from '../lib/configuration-label';
 import type { Dish, Recipe, Registry } from '../types';
 
 export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: Registry; recipes: Recipe[]; dishes: Dish[]; onOpen: (recipe: Recipe, dish: Dish) => void }) {
+  const facets = configurationFacets(registry.configurations);
+  const showEnvironment = facets.harnesses.length > 1 || facets.environments.length > 1;
   const entries = recipes.flatMap(recipe => dishesFor(dishes, recipe.id).reverse().map(dish => ({ recipe, dish })));
   return <div className="recipe-grid dish-grid" aria-label="Dishes">{entries.map(({ recipe, dish }) => {
         const config = registry.configurations.find(item => item.configHash === dish.identity.configHash);
         const model = modelFamily(config?.model ?? dish.identity.requestedModel);
         const effort = config?.reasoningEffort ?? dish.identity.reasoningEffort;
         const iterations = dishesFor(registry.dishes, recipe.id, dish.recipe.hash, dish.identity.configHash, dishSkillKey(dish));
+        const harnessEnvironment = showEnvironment ? [harnessLabel(config ? harnessKey(config) : dish.identity.harness), config && environmentName(config)].filter(Boolean).join(' · ') : '';
         const skillLabel = skillLabelFor(registry, dish);
         const iteration = iterations.findIndex(item => item.id === dish.id) + 1;
         const date = new Date(dish.executedAt).toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         return <article className="recipe-card dish-card" key={dish.id} data-dish-id={dish.id} data-recipe-id={recipe.id}>
-          <button className="recipe-card__open" onClick={() => onOpen(recipe, dish)} aria-label={`Open ${recipe.title}, ${model}, ${effort} effort, ${skillLabel.toLowerCase()}, iteration ${iteration}, ${date}`}>
+          <button className="recipe-card__open" onClick={() => onOpen(recipe, dish)} aria-label={`Open ${recipe.title}, ${model}, ${effort} effort, ${harnessEnvironment ? `${harnessEnvironment}, ` : ''}${skillLabel.toLowerCase()}, iteration ${iteration}, ${date}`}>
             <div className="recipe-card__preview" aria-hidden="true" inert>
               {dish.artifact.preview ? <img src={artifactUrl(dish, dish.artifact.preview)} alt="" loading="lazy" /> : dish.artifact.kind === 'web'
                 ? <iframe src={artifactUrl(dish)} title={`${recipe.title} preview`} tabIndex={-1} loading="lazy" sandbox="allow-scripts" />
@@ -24,6 +28,7 @@ export function DishGallery({ registry, recipes, dishes, onOpen }: { registry: R
                 <span className="dish-card__recipe-tag"><span className="dish-card__recipe-tag-label">Recipe</span><span>{recipe.title}</span></span>
               </span>
               <span className="recipe-card__title"><span>{model} <span className="dish-card__effort" title={`${effort} reasoning effort`}>{effortLabel(effort)}</span></span><span aria-hidden="true">↗</span></span>
+              {harnessEnvironment && <span className="dish-card__environment">{harnessEnvironment}</span>}
               <span className="dish-card__metadata"><span>Iteration {iteration}</span>{(dish.skill || recipe.skills) && <span className="dish-card__skill" title={dish.skill ? `Skill layer ${dish.skill.id} · ${shortHash(dish.skill.hash)}` : 'No skill layer was mounted'}>{skillLabel}</span>}<time dateTime={dish.executedAt}>{date}</time></span>
               <span className="dish-card__revision" title={dish.recipe.hash}>Recipe v{dish.recipe.version} · {shortHash(dish.recipe.hash)}{briefChanged(dish, recipe) && <span className="dish-card__changed" title="The recipe's brief was edited after this Dish was cooked"> · brief changed since this Dish</span>}</span>
             </span>
