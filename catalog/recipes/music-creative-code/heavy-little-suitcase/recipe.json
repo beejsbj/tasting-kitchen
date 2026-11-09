@@ -61,6 +61,14 @@
         "public": true,
         "editable": false,
         "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
       }
     ]
   },
@@ -71,6 +79,9 @@
       "hand-drawn",
       "procedural"
     ]
+  },
+  "toolchain": {
+    "id": "film-v1"
   },
   "turns": [
     {

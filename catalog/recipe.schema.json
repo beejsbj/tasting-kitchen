@@ -203,6 +203,15 @@
         "modelTurns": { "description": "Model turns each prompt turn may take. Only harnesses that can hold it accept the Recipe.", "type": "integer", "minimum": 1, "maximum": 10000 }
       }
     },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "engineMount": { "$ref": "#/$defs/relativePath" }
+      }
+    },
     "variation": { "type": "string", "maxLength": 500 },
     "supersedes": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
   },

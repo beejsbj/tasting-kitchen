@@ -1,0 +1,6 @@
+*
+!catalog/toolchains/film/toolchain.json
+!catalog/toolchains/film/install-engine.mjs
+!catalog/toolchains/film/engine/brand.ts
+!catalog/skills/lyric-music-video/files
+!catalog/skills/lyric-music-video/files/**

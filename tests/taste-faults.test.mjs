@@ -414,9 +414,12 @@ test("only a broken output contract is the model's; a symlink or filesystem erro
   await rm(path.join(workspace, "out/extra.html"));
   await writeFile(path.join(workspace, "out/index.html"), "<p>this is too many bytes</p>");
   await assert.rejects(selectArtifactFiles(workspace, output), (error) => error instanceof ArtifactContractError && /bytes; limit is 10/.test(error.message));
-  // A symlink anywhere in the workspace (an npm install's .bin links) is not the model breaking the contract.
+  // Equipment the delivery never includes (an npm install's .bin links, a mounted engine's dependencies) is not walked.
   await writeFile(path.join(workspace, "out/index.html"), "<p>hi</p>");
   await mkdir(path.join(workspace, "node_modules/.bin"), { recursive: true });
   await symlink("../pkg/cli.js", path.join(workspace, "node_modules/.bin/tool"));
+  assert.deepEqual((await selectArtifactFiles(workspace, output)).files, ["out/index.html"]);
+  // A symlink inside what the Recipe delivers is not the model breaking the contract either: Kitchen refuses it as its own fault.
+  await symlink("index.html", path.join(workspace, "out/alias.html"));
   await assert.rejects(selectArtifactFiles(workspace, output), (error) => !(error instanceof ArtifactContractError));
 });
