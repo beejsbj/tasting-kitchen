@@ -387,7 +387,7 @@ test("a live Hermes turn names no profile, ignores no rules, and points HERMES_H
   const env = hermesProcessEnv({ variant: hermesLive, hermesHome: f.profiles.otto, env: { HERMES_HOME: "/elsewhere", ANTHROPIC_API_KEY: "leak" } });
   assert.equal(env.HERMES_HOME, f.profiles.otto);
   assert.equal(env.HERMES_DISABLE_LAZY_INSTALLS, undefined, "his real home is not a fresh one");
-  assert.equal(env.ANTHROPIC_API_KEY, undefined);
+  assert.equal(env.ANTHROPIC_API_KEY, "leak", "live keeps the whole environment, as he runs hermes");
 });
 
 test("a live Hermes run writes to the real profile, empties nothing, and never touches a sibling profile or its gateway", async (t) => {
@@ -423,7 +423,8 @@ test("a live Hermes run writes to the real profile, empties nothing, and never t
   assert.equal(requested.execution.hermesHome, "real-profile");
   assert.equal(requested.execution.providerAuth, "profile-own-login");
   assert.equal(requested.setup.home, "real");
-  assert.deepEqual(await readdir(requested.cookDirectory), ["workspace"], "no throwaway Hermes home exists");
+  // The accepted attempt's cook directory is gone; while it ran its Hermes home was the profile itself (call.home above).
+  await assert.rejects(readdir(requested.cookDirectory), /ENOENT/u);
   const dish = JSON.parse(await readFile(path.join(run.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.setupDigest, undefined);
   assert.equal(dish.identity.observedModel, "gpt-6-luna");

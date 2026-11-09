@@ -99,6 +99,8 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
   t.after(() => rm(f.root, { recursive: true, force: true }));
   let usedCodexHome;
   let usedWorkspace;
+  let usedEnv;
+  let during;
   const result = await executeRecipe({
     repoRoot: f.root,
     catalog: f.catalog,
@@ -107,9 +109,11 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
     now: new Date("2026-08-14T12:00:00.000Z"),
     nonce: "fixed",
     authPath: f.authPath,
-    runSession: async ({ codexHome, workspace }) => {
+    runSession: async ({ codexHome, workspace, env }) => {
       usedCodexHome = codexHome;
       usedWorkspace = workspace;
+      usedEnv = env;
+      during = { home: await readdir(codexHome), link: await readlink(path.join(codexHome, "auth.json")), mode: (await stat(codexHome)).mode & 0o777 };
       return fakeSession();
     },
     verifyIdentity: observed,
@@ -123,9 +127,12 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
   assert.equal(usedCodexHome, path.join(cookDirectory, "codex-home"));
   assert.equal(path.relative(f.root, usedWorkspace).startsWith(".."), true);
   for (const name of [f.recipe.id, f.variant.id, f.variant.model]) assert.equal(usedWorkspace.includes(name), false, `workspace path names ${name}`);
-  assert.deepEqual(await readdir(usedCodexHome), ["auth.json"]);
-  assert.equal(await readlink(path.join(usedCodexHome, "auth.json")), f.authPath);
-  assert.equal((await stat(usedCodexHome)).mode & 0o777, 0o700);
+  assert.deepEqual(during, { home: ["auth.json"], link: f.authPath, mode: 0o700 });
+  // The harness's temp files live in the cook directory too.
+  assert.equal(usedEnv.TMPDIR, path.join(cookDirectory, "tmp"));
+  // Published: the cook directory and its owner record are gone.
+  await assert.rejects(stat(cookDirectory), /ENOENT/);
+  await assert.rejects(stat(path.join(path.dirname(cookDirectory), ".owners", `${path.basename(cookDirectory)}.json`)), /ENOENT/);
   const requested = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "requested.json"), "utf8"));
   assert.equal(requested.cookDirectory, cookDirectory);
   assert.deepEqual(requested.execution, {
@@ -179,6 +186,7 @@ test("a required check failure remains private and creates no dish", async (t) =
   assert.equal(result.status, "failed");
   assert.equal(retry.status, "failed");
   assert.notEqual(homes[0], homes[1]);
+  // A failed attempt keeps its cook directory for recovery.
   assert.deepEqual(await readdir(homes[0]), ["auth.json"]);
   assert.deepEqual(await readdir(homes[1]), ["auth.json"]);
   assert.match(result.error, /Required validation failed/);
@@ -204,7 +212,7 @@ test("a runtime root under a directory holding AGENTS.md fails closed before cre
   assert.ok(result.error.includes(path.join(outer, "AGENTS.md")));
   const state = JSON.parse(await readFile(path.join(result.attemptDir, "state.json"), "utf8"));
   assert.equal(state.stage, "preparation");
-  const [cook] = await readdir(path.join(outer, "runtime"));
+  const [cook] = (await readdir(path.join(outer, "runtime"))).filter((name) => /^[a-f0-9]{16}$/u.test(name));
   assert.deepEqual(await readdir(path.join(outer, "runtime", cook)), [], "no harness home or workspace was prepared");
   await assert.rejects(stat(path.join(f.root, "dishes")), /ENOENT/);
 });
@@ -221,15 +229,15 @@ test("cooking and publication work when the workspace, private/ and dishes/ sit 
   await symlink(remote, path.join(f.root, "private"));
   const runtime = await mkdtemp(path.join(os.tmpdir(), "taste-runtime-xdev-"));
   t.after(() => rm(runtime, { recursive: true, force: true }));
-  let usedWorkspace;
+  let workspaceDevice;
   const result = await executeRecipe({
     repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant, nonce: "xdev", authPath: f.authPath,
     env: { TASTE_RUNTIME_ROOT: runtime },
-    runSession: async ({ workspace }) => { usedWorkspace = workspace; return fakeSession(); }, verifyIdentity: observed,
+    runSession: async ({ workspace }) => { workspaceDevice = (await stat(workspace)).dev; return fakeSession(); }, verifyIdentity: observed,
   });
   assert.equal(result.status, "accepted", result.error);
   const attemptDir = path.join(f.root, "private/runtime/attempts", result.attemptId);
-  assert.notEqual((await stat(usedWorkspace)).dev, (await stat(attemptDir)).dev);
+  assert.notEqual(workspaceDevice, (await stat(attemptDir)).dev);
   assert.notEqual((await stat(attemptDir)).dev, (await stat(result.dishDirectory)).dev);
   assert.equal(JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8")).status, "accepted");
   assert.deepEqual((await readdir(path.join(f.root, "dishes"))).filter((name) => name.startsWith(".")), [], "no publishing leftovers");
