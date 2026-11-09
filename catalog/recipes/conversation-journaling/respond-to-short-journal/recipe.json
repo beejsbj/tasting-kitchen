@@ -15,6 +15,14 @@
     "clarification"
   ],
   "kind": "session",
+  "skills": {
+    "optional": true,
+    "layers": [
+      "prime-orientation",
+      "friedrich-niche",
+      "journal-prompter"
+    ]
+  },
   "harness": {
     "workspace": "read",
     "web": "disabled",
