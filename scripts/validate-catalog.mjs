@@ -5,7 +5,7 @@ import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
-import { materializedProblems } from "../lib/taste/configuration-templates.mjs";
+import { isConfigurationSpec, materializedProblems, parseConfigurationSpec, templateFor } from "../lib/taste/configuration-templates.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
@@ -946,8 +946,10 @@ if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedRevi
 }
 
 // A Menu is a plain list of recipe ids; nothing else checks them before they reach coverage and the registry.
-const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes"]);
-async function validateMenus(recipeRecords, cuisines) {
+// It may also declare the configurations it is cooked with: catalog ids, or specs and selectors whose template exists.
+// Checking a spec reads no network: discovery runs at plan time, not here.
+const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes", "configurations"]);
+async function validateMenus(recipeRecords, cuisines, variants) {
   let entries = [];
   try { entries = await readdir(path.join(root, "catalog/menus"), { withFileTypes: true }); }
   catch (error) { if (error.code !== "ENOENT") throw error; }
@@ -973,6 +975,18 @@ async function validateMenus(recipeRecords, cuisines) {
       unique(menu.recipes, `${relative}.recipes`);
       for (const recipeId of menu.recipes) if (!recipeRecords.has(recipeId)) fail(relative, `unknown recipe ${recipeId}`);
     }
+    if (menu.configurations !== undefined && array(menu.configurations, `${relative}.configurations`, { min: 1 })) {
+      unique(menu.configurations, `${relative}.configurations`);
+      menu.configurations.forEach((entry, index) => {
+        if (typeof entry !== "string") return fail(relative, `configurations[${index}] must be a string`);
+        if (!isConfigurationSpec(entry)) {
+          if (!variants.has(entry)) fail(relative, `unknown configuration ${entry}`);
+          return;
+        }
+        try { templateFor(parseConfigurationSpec(entry)); }
+        catch (error) { fail(relative, `configurations[${index}]: ${error.message}`); }
+      });
+    }
   }
 }
 
@@ -994,7 +1008,7 @@ for (const relative of recipeFiles.sort()) {
   recipeRecords.set(record.recipe.id, record);
 }
 
-await validateMenus(recipeRecords, cuisines);
+await validateMenus(recipeRecords, cuisines, variants);
 
 if (!publicCheckout) await validateProvenance(recipeRecords);
 

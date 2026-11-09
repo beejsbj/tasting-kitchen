@@ -87,9 +87,10 @@ function filterFrom(options) {
 function selection(options) {
   if (options.config && options.variant && options.config !== options.variant) throw new UsageError("--config and legacy --variant disagree");
   const configurationId = options.config ?? options.variant;
-  if (!configurationId) throw new UsageError("--config is required (legacy --variant is accepted)");
+  // A Menu that declares its configurations needs no --config; the library says so if it declares none.
+  if (!configurationId && !options.menu) throw new UsageError("--config is required unless --menu names a Menu that declares its configurations (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { configurationId, ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { ...(configurationId ? { configurationId } : {}), ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -124,8 +125,8 @@ Usage:
   taste models [--harness hermes] [--route ID] [--free] [--json]
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook --config ID|SPEC|SELECTOR [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
+  taste plan [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
+  taste cook [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -140,6 +141,8 @@ Usage:
   A SPEC names a model on a configuration template: hermes:openrouter/google/gemma-4-31b-it:free@high[:clean]. If the catalog holds no
   configuration with that hash, the first executed cook materializes one into catalog/configurations.json. A SELECTOR names many:
   'hermes:openrouter/*@auto+free' is every free OpenRouter model Hermes can cook, each at high or its own default effort. Plan shows what it resolves to.
+  Any key route Kitchen can keep behind its key proxy cooks the same way (hermes:opencode-go/glm-5.3@high); taste models says which routes can.
+  --config may be left out with --menu when the Menu declares its configurations; an explicit --config wins.
   --upstream names the OpenRouter provider to pin when the maker's own does not serve a model and more than one provider does.
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
