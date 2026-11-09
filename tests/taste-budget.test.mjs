@@ -333,8 +333,9 @@ test("Claude Code: with no declared budget, exhausted turns are Kitchen's harnes
 test("Claude Code: a model still working when the time budget runs out is killed and gets a No Dish", async (t) => {
   const f = await claudeFixture(t, { seconds: 600 });
   const started = Date.now();
-  const result = await f.run({ FAKE_MODE: "hang" }, { budgetClock: quickClock(0.5) });
-  assert.ok(Date.now() - started < 10_000, "the hung harness was killed");
+  // Generous enough that a loaded machine still starts the fake and hears it speak before the budget ends.
+  const result = await f.run({ FAKE_MODE: "hang" }, { budgetClock: quickClock(2) });
+  assert.ok(Date.now() - started < 20_000, "the hung harness was killed");
   assert.equal(result.fault?.code, "out-of-time", result.error);
   const manifest = JSON.parse(await readFile(path.join(f.root, "no-dishes", result.noDishId, "no-dish.json"), "utf8"));
   assert.deepEqual(manifest.fault.budget, { seconds: 600 });
@@ -342,18 +343,18 @@ test("Claude Code: a model still working when the time budget runs out is killed
 
 test("Claude Code: a route that never answered within the budget is Kitchen's timeout", async (t) => {
   const f = await claudeFixture(t, { seconds: 600 });
-  const result = await f.run({ FAKE_MODE: "silent" }, { budgetClock: quickClock(0.5) });
+  const result = await f.run({ FAKE_MODE: "silent" }, { budgetClock: quickClock(1) });
   assert.deepEqual({ class: result.fault.class, code: result.fault.code }, { class: "kitchen", code: "timeout" });
   assert.equal(result.noDishId, undefined);
 });
 
 test("Claude Code: a reported rate-limit wait is credited back to the model", async (t) => {
   const f = await claudeFixture(t, { seconds: 600 });
-  // Without the credit, the 1.2 s wait would spend a 0.6 s budget twice over.
-  const result = await f.run({ FAKE_MODE: "retry", FAKE_WAIT_MS: "1200" }, { budgetClock: quickClock(0.6) });
+  // Without the credit, the 3 s wait alone would spend the 2 s budget; startup gets the rest.
+  const result = await f.run({ FAKE_MODE: "retry", FAKE_WAIT_MS: "3000" }, { budgetClock: quickClock(2) });
   assert.equal(result.status, "accepted", result.error);
   const execution = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "execution.json"), "utf8"));
-  assert.equal(execution.budget.creditedMs, 2400, "one wait per turn");
+  assert.equal(execution.budget.creditedMs, 6000, "one wait per turn");
   assert.equal(execution.budget.expired, false);
 });
 

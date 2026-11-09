@@ -529,7 +529,8 @@ test("the Recipe's time budget stops a hung Hermes; it is the model's only when 
   for (const [hang, expected] of [["after", "out-of-time"], ["before", undefined]]) {
     const a = await attempt(f.root, `budget-${hang}`);
     await prepareHermesAttempt({ variant: clean, cwd: a.attemptDir, env: f.env });
-    const clock = startBudgetClock({ seconds: 0.5 });
+    // Long enough for a loaded machine to start the fake and record its call before the budget ends.
+    const clock = startBudgetClock({ seconds: 3 });
     const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_HANG: hang }, clock });
     clock.stop();
     assert.equal(result.failure?.chefFault, expected, hang);
