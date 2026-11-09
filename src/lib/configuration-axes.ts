@@ -1,5 +1,5 @@
 import type { Configuration } from "../types";
-import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessKey, harnessLabel, slugModelName, UNDECLARED_ENVIRONMENT, UNDECLARED_ENVIRONMENTS, UNDECLARED_ENVIRONMENTS_NOTE, type ComparisonDimension } from "./configuration-label.ts";
+import { claudeModelName, effortName, environmentKey, environmentKeyLabel, environmentKindKey, harnessKey, harnessLabel, slugModelName, UNDECLARED_ENVIRONMENTS, UNDECLARED_ENVIRONMENTS_NOTE, type ComparisonDimension } from "./configuration-label.ts";
 
 /**
  * A configuration seen as independent axes. A pane is the combination of one
@@ -70,10 +70,11 @@ export function axisValueLabel(axis: ConfigAxis, value: string) {
 
 /**
  * Whether two configurations share an axis value. A harness profile belongs to
- * its harness, so across different harnesses the environment kind is what holds.
+ * its harness, so across different harnesses the environment kind and its
+ * toggles are what holds.
  */
 function sameOn(a: AxisConfiguration, b: AxisConfiguration, axis: ConfigAxis) {
-  if (axis === "environment" && a.harness !== b.harness) return (a.executionProfile.environment ?? UNDECLARED_ENVIRONMENT) === (b.executionProfile.environment ?? UNDECLARED_ENVIRONMENT);
+  if (axis === "environment" && a.harness !== b.harness) return environmentKindKey(a) === environmentKindKey(b);
   return axisValue(a, axis) === axisValue(b, axis);
 }
 
@@ -96,7 +97,7 @@ export function showsAxis<C extends AxisConfiguration>(configs: readonly C[], cu
  */
 export function heldConfigLabels<C extends AxisConfiguration>(configs: readonly C[], anchor: C, axis: CompareAxis, dishCount: (config: C) => number, differing: readonly ComparisonDimension[] = []) {
   const held = (["model", "effort", "harness", "environment", "tier"] as const).filter((item) => item !== axis && (item === "model" || item === "effort" || item === "harness" || (item === "tier" ? showsAxis(configs, anchor, item, dishCount) : showsAxis(configs, anchor, item, dishCount) || Boolean(anchor.executionProfile.environment))));
-  return held.filter((item) => !(item === "environment" && (differing.includes(UNDECLARED_ENVIRONMENTS) || (axis === "harness" && !anchor.executionProfile.environment))) && !differing.includes(AXIS_DIMENSIONS[item])).map((item) => axisValueLabel(item, axisValue(anchor, item)));
+  return held.filter((item) => !(item === "environment" && (differing.includes(UNDECLARED_ENVIRONMENTS) || (axis === "harness" && !anchor.executionProfile.environment))) && !differing.includes(AXIS_DIMENSIONS[item])).map((item) => heldValueLabel(axis, item, anchor));
 }
 
 /** The polite announcement for a "Compare by" layout: "Comparing 3 harnesses, holding Opus 5.5 · High · Clean". */
@@ -257,6 +258,17 @@ export function toggleComparisonValue(selection: readonly string[], value: strin
   if (value === held) return [...selection];
   const next = selection.includes(value) ? selection.filter((item) => item !== value) : selection.length >= max ? [...selection] : [...selection, value];
   return [held, ...order.filter((item) => item !== held && next.includes(item))];
+}
+
+/**
+ * The label a "Compare by" layout shows for an axis it holds still. Across
+ * harnesses only the environment kind and its toggles hold; a harness profile
+ * such as rose stays with its harness, so a rose pane compared by harness holds
+ * "Snapshot", not "Snapshot · rose".
+ */
+export function heldValueLabel(compareAxis: CompareAxis, axis: ConfigAxis, config: AxisConfiguration) {
+  if (axis === "environment" && compareAxis === "harness") return environmentKeyLabel(environmentKindKey(config));
+  return axisValueLabel(axis, axisValue(config, axis));
 }
 
 const ISOLATION: Partial<Record<ComparisonDimension, string>> = {

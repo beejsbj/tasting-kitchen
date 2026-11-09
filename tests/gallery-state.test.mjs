@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
-import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, environmentName, harnessKey, harnessLabel, slugModelName } from '../src/lib/configuration-label.ts';
+import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentKeyLabel, environmentLabel, environmentName, harnessKey, harnessLabel, slugModelName } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -86,6 +86,15 @@ test('an older-brief Dish stays selectable under its recipe', () => {
   const resolved = resolveRecipeSelection(selectionRegistry([oldDish]), selectionRecipe, { models: ['current-config'], dishes: ['old-dish'] });
   assert.equal(resolved.slots[0].dish.id, 'old-dish');
   assert.equal(briefChanged(resolved.slots[0].dish, selectionRecipe), true);
+});
+
+test('snapshot Repeats share a setup digest: a Dish of an earlier setup is its own group', () => {
+  const snap = (id, digest, executedAt) => ({ ...selectionDish(id, 'current', 'sha256:current', executedAt), identity: { configHash: 'sha256:current', setupDigest: digest } });
+  const registry = selectionRegistry([snap('first', 'sha256:setup-a', '2026-01-01T00:00:00Z'), snap('second', 'sha256:setup-a', '2026-01-02T00:00:00Z'), snap('edited', 'sha256:setup-b', '2026-01-03T00:00:00Z')]);
+  const latest = resolveRecipeSelection(registry, selectionRecipe, { models: ['current-config'], dishes: [] });
+  assert.deepEqual(latest.slots[0].repeats.map((dish) => dish.id), ['edited'], 'the newest setup stands alone');
+  const earlier = resolveRecipeSelection(registry, selectionRecipe, { models: ['current-config'], dishes: ['first'] });
+  assert.deepEqual(earlier.slots[0].repeats.map((dish) => dish.id), ['first', 'second']);
 });
 
 test('Repeats do not mix briefs', () => {
@@ -187,11 +196,11 @@ test('harness and environment filters are URL-addressable and default to all', (
   globalThis.window = { location: { pathname: '/' }, history: { pushState: (...args) => calls.push(args), replaceState: (...args) => calls.push(args) } };
   assert.equal(readGalleryState('').harness, 'all');
   assert.equal(readGalleryState('').environment, 'all');
-  const state = readGalleryState('?harness=hermes&environment=personal:rose&tier=default');
+  const state = readGalleryState('?harness=hermes&environment=snapshot:rose&tier=default');
   assert.equal(state.harness, 'hermes');
-  assert.equal(state.environment, 'personal:rose');
+  assert.equal(state.environment, 'snapshot:rose');
   writeGalleryState(state);
-  assert.equal(new URLSearchParams(calls[0][2].slice(1)).get('environment'), 'personal:rose');
+  assert.equal(new URLSearchParams(calls[0][2].slice(1)).get('environment'), 'snapshot:rose');
   assert.deepEqual(readGalleryState(calls[0][2].slice(1)), state);
   writeGalleryState({ ...state, harness: 'all', environment: 'all' });
   assert.equal(calls[1][2].includes('environment'), false);
@@ -214,29 +223,40 @@ const configuration = (id, harness, environment, harnessProfile, extra = {}) => 
   executionProfile: { ...profile, ...(environment && { environment }), ...(harnessProfile && { harnessProfile }) }, ...extra,
 });
 const claudeClean = configuration('claude-clean', 'claude-code', 'clean');
-const claudePersonal = configuration('claude-personal', 'claude-code', 'personal');
-const hermesPersonal = configuration('hermes-personal', 'hermes', 'personal', 'rose', { model: 'anthropic/claude-opus-5.5' });
+const toggles = (memory, connections) => ({ memory, connections });
+const withProfile = (config, extra) => ({ ...config, executionProfile: { ...config.executionProfile, ...extra } });
+const claudePersonal = withProfile(configuration('claude-snapshot', 'claude-code', 'snapshot'), toggles('on', 'off'));
+const hermesPersonal = withProfile(configuration('hermes-snapshot', 'hermes', 'snapshot', 'rose', { model: 'anthropic/claude-opus-5.5' }), toggles('on', 'off'));
+const hermesQuiet = withProfile(hermesPersonal, { memory: 'off' });
+const claudeLive = withProfile(configuration('claude-live', 'claude-code', 'live'), toggles('on', 'off'));
+const claudeLiveConnected = withProfile(claudeLive, { connections: 'on' });
 const legacy = configuration('legacy', 'codex-cli', undefined, undefined, { model: 'gpt-5.6-sol' });
 
 test('harness and environment labels read plainly and unknown harnesses keep their id', () => {
   assert.deepEqual(['claude-code', 'hermes', 'codex-cli', 'cursor-agent', 'future-harness'].map(harnessLabel), ['Claude Code', 'Hermes', 'Codex CLI', 'Cursor Agent', 'future-harness']);
   assert.equal(environmentLabel(claudeClean), 'Clean');
-  assert.equal(environmentLabel(hermesPersonal), 'Personal · rose');
-  assert.equal(environmentLabel(hermesPersonal, false), 'Personal');
+  assert.equal(environmentLabel(hermesPersonal), 'Snapshot · rose');
+  assert.equal(environmentLabel(hermesPersonal, false), 'Snapshot');
+  assert.equal(environmentLabel(hermesQuiet), 'Snapshot · rose · no memory');
+  assert.equal(environmentLabel(hermesQuiet, false), 'Snapshot · no memory', 'the toggles stay when the profile is dropped');
+  assert.equal(environmentLabel(claudeLive), 'Live · connections off');
+  assert.equal(environmentLabel(claudeLiveConnected), 'Live · connections on');
   assert.equal(environmentLabel(legacy), undefined);
   assert.equal(environmentName(legacy), 'Not declared');
   assert.equal(environmentName(claudeClean), 'Clean');
-  assert.deepEqual([claudeClean, hermesPersonal, legacy].map(environmentKey), ['clean', 'personal:rose', 'undeclared']);
+  assert.deepEqual([claudeClean, hermesPersonal, hermesQuiet, claudeLiveConnected, legacy].map((config) => environmentKey(config)), ['clean', 'snapshot:rose', 'snapshot:rose+no-memory', 'live+connections', 'undeclared']);
+  assert.equal(environmentKeyLabel('snapshot:rose+no-memory+connections'), 'Snapshot · rose · no memory · connections on');
   assert.equal(configurationHeading(claudeClean, 'Opus'), 'Opus 5.5 · High · Claude Code · Clean');
-  assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Personal · rose');
+  assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Snapshot · rose');
+  assert.equal(configurationHeading(claudeLive, 'Opus'), 'Opus 5.5 · High · Claude Code · Live · connections off');
   assert.equal(configurationHeading(legacy, 'Sol'), 'Sol · High · Codex CLI');
 });
 
 test('facets list the values present, so a single-harness catalog has nothing to choose', () => {
   assert.deepEqual(configurationFacets([legacy, { ...legacy, id: 'other' }]), { harnesses: [{ id: 'codex-cli', label: 'Codex CLI' }], environments: [{ id: 'undeclared', label: 'Not declared' }] });
-  assert.deepEqual(configurationFacets([claudeClean, claudePersonal, hermesPersonal]), {
+  assert.deepEqual(configurationFacets([claudeClean, claudePersonal, hermesPersonal, hermesQuiet, claudeLive]), {
     harnesses: [{ id: 'claude-code', label: 'Claude Code' }, { id: 'hermes', label: 'Hermes' }],
-    environments: [{ id: 'clean', label: 'Clean' }, { id: 'personal', label: 'Personal' }, { id: 'personal:rose', label: 'Personal · rose' }],
+    environments: [{ id: 'clean', label: 'Clean' }, { id: 'snapshot', label: 'Snapshot' }, { id: 'snapshot:rose', label: 'Snapshot · rose' }, { id: 'snapshot:rose+no-memory', label: 'Snapshot · rose · no memory' }, { id: 'live', label: 'Live · connections off' }],
   });
 });
 
@@ -249,6 +269,8 @@ test('the comparison note names the one dimension that differs, without creditin
   assert.deepEqual(differingDimensions([slot(claudePersonal), slot(hermesPersonal)]), ['harness']);
   assert.match(differenceNote(['harness']), /^Same brief · only the harness differs · its own prompt, tools, route and defaults come with it/);
   assert.deepEqual(differingDimensions([slot(hermesPersonal), slot({ ...hermesPersonal, executionProfile: { ...hermesPersonal.executionProfile, harnessProfile: 'other' } })]), ['environment']);
+  // Across harnesses a toggle still counts: memory off against memory on is an environment difference too.
+  assert.deepEqual(differingDimensions([slot(claudePersonal), slot(hermesQuiet)]), ['harness', 'environment']);
   assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...claudeClean, reasoningEffort: 'max' })]), ['effort']);
   assert.deepEqual(differingDimensions([slot(claudeClean), slot(claudeClean, 'sha256:skill')]), ['skill layer']);
   assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...hermesPersonal, reasoningEffort: 'max' })]), ['effort', 'harness', 'environment']);

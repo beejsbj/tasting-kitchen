@@ -44,12 +44,20 @@ export async function galleryBrowserFixture(context) {
 /**
  * Many Claude configurations on one recipe, as the catalog will hold once the
  * Claude Code and Hermes adapters land: four models × two efforts × two
- * harnesses × two environments, beside the shipped Codex and Cursor ones.
- * Haiku at Max and Fable through Hermes' personal setup stay uncooked, and two
+ * harnesses × two environments (clean and a snapshot of his setup), beside the
+ * shipped Codex and Cursor ones. Haiku at Max and Fable through Hermes' rose
+ * snapshot stay uncooked, and two
  * configurations also have a Dish through the recipe's hand-drawn skill layer.
  * Each synthetic Dish replays an existing artifact of `recipeId`; served only
  * to browser checks.
  */
+const FIXTURE_SETUP_DIGEST = `sha256:${'5'.repeat(64)}`;
+/** The receipt setup of a fixture snapshot Dish; undefined for clean ones. */
+function snapshotSetup({ executionProfile: { environment, harnessProfile } }) {
+  if (environment !== 'snapshot') return undefined;
+  return { environment, ...(harnessProfile && { harnessProfile }), memory: 'on', connections: 'off', digest: FIXTURE_SETUP_DIGEST, entries: [{ entry: 'SOUL.md', files: 1, bytes: 10, digest: FIXTURE_SETUP_DIGEST }] };
+}
+
 export function withHarnessConfigurations(registry, recipeId) {
   const base = registry.configurations[0];
   const source = registry.dishes.find(dish => dish.recipe.id === recipeId && dish.artifact.kind === 'web');
@@ -57,21 +65,21 @@ export function withHarnessConfigurations(registry, recipeId) {
   const models = [['opus', '5-5', '5.5'], ['sonnet', '5-5', '5.5'], ['haiku', '5-5', '5.5'], ['fable', '5-1', '5.1']];
   const setups = models.flatMap(([name, dashed, dotted]) => ['high', 'max'].flatMap(effort => [
     [`claude-${name}-${effort}-clean`, 'claude-code', `claude-${name}-${dashed}`, effort, 'clean'],
-    [`claude-${name}-${effort}-personal`, 'claude-code', `claude-${name}-${dashed}`, effort, 'personal'],
+    [`claude-${name}-${effort}-snapshot`, 'claude-code', `claude-${name}-${dashed}`, effort, 'snapshot'],
     [`hermes-${name}-${effort}-clean`, 'hermes', `anthropic/claude-${name}-${dotted}`, effort, 'clean'],
-    [`hermes-${name}-${effort}-personal-rose`, 'hermes', `anthropic/claude-${name}-${dotted}`, effort, 'personal', 'rose'],
+    [`hermes-${name}-${effort}-snapshot-rose`, 'hermes', `anthropic/claude-${name}-${dotted}`, effort, 'snapshot', 'rose'],
   ]));
   const configurations = setups.map(([id, harness, model, reasoningEffort, environment, harnessProfile]) => ({
     ...base, id, harness, model, provider: 'anthropic', reasoningEffort, serviceTier: 'default', label: id, configHash: `sha256:fixture-${id}`,
-    executionProfile: { ...base.executionProfile, id: `${harness}-${environment}-fixture`, label: `via ${harness}`, environment, ...(harnessProfile && { harnessProfile }) },
+    executionProfile: { ...base.executionProfile, id: `${harness}-${environment}-fixture`, label: `via ${harness}`, environment, ...(harnessProfile && { harnessProfile }), ...(environment === 'snapshot' && { memory: 'on', connections: 'off' }) },
   }));
-  const uncooked = id => /^claude-haiku-max|^hermes-haiku-max|^hermes-fable-.*-personal/u.test(id);
+  const uncooked = id => /^claude-haiku-max|^hermes-haiku-max|^hermes-fable-.*-snapshot/u.test(id);
   const cooked = configurations.filter(configuration => !uncooked(configuration.id));
   const dish = (configuration, index, layer) => ({
     ...source, artifact: { ...source.artifact, preview: FIXTURE_PREVIEW }, id: `dish_fixture_${configuration.id}${layer ? '_hand-drawn' : ''}`, executedAt: `2099-02-01T${String(index % 24).padStart(2, '0')}:${layer ? '00' : '30'}:00.000Z`, dishHash: `sha256:fixture-dish-${configuration.id}${layer ? '-hand-drawn' : ''}`,
-    identity: { ...source.identity, variantId: configuration.id, harness: configuration.harness, harnessVersion: '9.9.9', requestedModel: configuration.model, observedModel: configuration.model, reasoningEffort: configuration.reasoningEffort, serviceTier: 'default', configHash: configuration.configHash },
+    identity: { ...source.identity, variantId: configuration.id, harness: configuration.harness, harnessVersion: '9.9.9', requestedModel: configuration.model, observedModel: configuration.model, reasoningEffort: configuration.reasoningEffort, serviceTier: 'default', configHash: configuration.configHash, ...(snapshotSetup(configuration) && { setupDigest: FIXTURE_SETUP_DIGEST }) },
     ...(layer ? { skill: { id: skill.id, hash: skill.skillHash } } : { skill: undefined }),
-    receipt: { ...source.receipt, configuration },
+    receipt: { ...source.receipt, configuration, ...(snapshotSetup(configuration) && { setup: snapshotSetup(configuration) }) },
   });
   const layered = skill ? cooked.filter(configuration => ['claude-opus-high-clean', 'claude-sonnet-high-clean'].includes(configuration.id)) : [];
   const dishes = [...cooked.map((configuration, index) => dish(configuration, index)), ...layered.map((configuration, index) => dish(configuration, index, true))];

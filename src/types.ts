@@ -28,9 +28,13 @@ export type Configuration = {
     networkPolicy: string;
     filesystemBoundary: string;
     /** Absent on configurations that predate the dimension. */
-    environment?: "clean" | "personal";
-    /** A named harness profile (such as a Hermes profile); only with the personal environment. */
+    environment?: "clean" | "snapshot" | "live";
+    /** A named harness profile a snapshot copies (such as a Hermes profile). */
     harnessProfile?: string;
+    /** Snapshot and live only: whether his memories load. */
+    memory?: "on" | "off";
+    /** Snapshot and live only: whether his MCP servers and plugins load. */
+    connections?: "on" | "off";
     /** An inference route other than the provider's own, such as "openrouter"; absent means the provider's own. */
     route?: string;
     /** The OpenRouter upstream provider slug the route is pinned to, with no fallbacks. */
@@ -114,6 +118,8 @@ export type Dish = {
     observedServiceTier?: string;
     configHash: string;
     catalogHash?: string;
+    /** Which version of his setup a snapshot Dish saw; snapshot Repeats share it. */
+    setupDigest?: string;
   };
   status: "accepted";
   artifact: {
@@ -132,7 +138,20 @@ export type Dish = {
   /** Public notes recorded beside the Dish after it was cooked (catalog/dish-notes.json). */
   notes?: DishNote[];
   /** The full configuration and skill source the Dish ran as, from receipt.json. */
-  receipt?: { schemaVersion: 1; configuration: Configuration; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
+  receipt?: { schemaVersion: 1; configuration: Configuration; setup?: SetupReceipt; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
+};
+
+/** What a snapshot or live Dish's receipt says about the setup it ran with. */
+export type SetupReceipt = {
+  environment: "snapshot" | "live";
+  harnessProfile?: string;
+  memory: "on" | "off";
+  connections: "on" | "off";
+  digest?: string;
+  digestAtStart?: string;
+  entries?: Array<{ entry: string; files: number; bytes: number; digest: string }>;
+  toolsets?: string;
+  loaded?: { mcpServers: string[]; plugins: string[] };
 };
 
 export type DishNote = { id: string; text: string; link?: string };

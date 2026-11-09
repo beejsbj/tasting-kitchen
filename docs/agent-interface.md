@@ -166,28 +166,91 @@ configuration's `--model` and `--effort`, and resumes later turns with
 (`claude-home/`). Inherited `CLAUDE*` and `ANTHROPIC*` variables are dropped, so
 a parent Claude Code session cannot pass on its effort or credentials.
 
-Both environments run with:
+Every environment runs with:
 
-- an empty MCP config under `--strict-mcp-config`, and claude.ai connectors
-  disabled. Burooj's MCP servers reach Gmail, Calendar, Linear and tududi, and
-  a Run with bypassed permissions must not cause external side effects;
 - only `Bash`, `Edit`, `Glob`, `Grep`, `Read` and `Write`, plus `Skill` in
-  `personal` (no web, subagent or scheduling tools). Network access through the shell is not blocked;
-- hooks disabled and auto-update off;
+  `snapshot` and `live` (no web, subagent or scheduling tools). Network access
+  through the shell is not blocked;
+- auto-update off;
 
-`clean` adds `--safe-mode` and no setting sources, and disables CLAUDE.md and
-auto-memory, so the home is empty at launch. Claude Code's built-in plugins and
-bundled skill list still load: they ship with the harness. The Skill tool is not
-offered, so bundled skills cannot be invoked.
+`clean` adds `--safe-mode` and no setting sources, disables hooks, CLAUDE.md,
+auto-memory and claude.ai connectors, and pins an empty MCP config under
+`--strict-mcp-config`, so the home is empty at launch. Claude Code's built-in
+plugins and bundled skill list still load: they ship with the harness. The Skill
+tool is not offered, so bundled skills cannot be invoked.
 
-`personal` mirrors `CLAUDE.md`, `skills/`, `agents/`, `commands/` and
-`output-styles/` from `~/.claude` as symlinks. The links point at the real
-files and are writable: a personal Run with bypassed permissions can edit them.
-It loads only the user setting source and adds the Skill tool. The workspace
-has no ancestor instruction files to exclude (see "Where cooking happens"). It does not mirror `settings.json` (today that file holds only model and
-effort defaults, which the configuration overrides, and push-notification
-toggles), plugins, or hooks. Session transcripts and any auto-memory a personal
-Run writes stay in the attempt home, not in `~/.claude`.
+`snapshot` copies a bounded slice of `~/.claude` into the fresh attempt home
+and records the digest of exactly those bytes:
+
+- `CLAUDE.md`, with symlinks followed, so the home holds bytes, never a link back;
+- each skill, agent, command and output style. A child that lives in a git work
+  tree contributes only its tracked files (working-tree bytes, so uncommitted
+  edits count); **untracked files in such a repository are skipped**, so a skill
+  not yet committed reads like a plain folder, and a new file in a committed
+  skill is not copied until it is tracked. Others contribute every regular file
+  minus `.git`. At any depth, volatile files (`__pycache__`, `*.pyc`,
+  `node_modules`, `.staging`, `.last-complete-round`, `.DS_Store`) and
+  credential-looking files (`.env`, `.env.*` other than examples, `auth.json`,
+  `credentials.json`, `.credentials.json`, `.netrc`, `*.pem`, `*.key`, `id_rsa*`,
+  `id_ed25519*`), and links that point at one, are left out, so Claude Code resyncing his account skills or
+  Python compiling a script cannot change the setup digest, and a stray secret
+  never enters a snapshot. A script keeps its owner exec bit (it is part of the
+  digest). A skill such
+  as `cockpit` is a whole repository with chat logs beside it, and copying the
+  directory would turn one attempt into gigabytes. A snapshot is capped at 5,000
+  files and 64 MiB across all of it, counted as files are read, and fails clearly
+  beyond that;
+- `settings.json` reduced to `language`, `alwaysThinkingEnabled`,
+  `includeCoAuthoredBy` and `attribution`. Model, effort and permissions are
+  pinned by the configuration; hooks, memory and connectors are set by Kitchen;
+  the rest of his file is about his terminal;
+- with memory on, the memory he builds from his home directory
+  (`~/.claude/projects/<home>/memory`, overridable with
+  `TASTE_CLAUDE_MEMORY_SOURCE`) into `memory/`. Claude Code keys auto-memory by
+  project, and an attempt workspace is a fresh project with none, so
+  `autoMemoryDirectory` points the run at the copy;
+- with connections on, his user-scoped `mcpServers` from `~/.claude.json`
+  (written to `mcp.json` and passed by path, so no server secret enters argv) and
+  his plugin installation state. claude.ai connectors (Gmail, Calendar, Linear and
+  the rest) come with his account and are enabled too.
+
+Never the credential file. A snapshot runs with hooks disabled (they are scripts
+that can write anywhere) and `autoDreamEnabled: false`. Memory writes land in the
+copy, which is deleted when the attempt ends, so writes are effectively off.
+
+`live` runs in his real `~/.claude` exactly as he does: `CLAUDE_CONFIG_DIR` is
+left unset, his settings, hooks, skills and plugins load, and whatever the run
+writes (session transcripts, memory, edits under bypassed permissions) stays.
+With memory on, `autoMemoryDirectory` points at the same home-directory memory a
+snapshot copies, so a live run reads and may write his real memory: **live with
+memory on keeps its writes in his real home-directory memory**. That is what
+live means, and the receipt says so ("Live · writes to your real memory").
+`TASTE_CLAUDE_MEMORY_SOURCE` moves both the snapshot's source and the live
+target. Live configurations ship with connections off and are labelled "Live ·
+connections off"; a live connections-on configuration is not in the catalog yet.
+Its receipt notes the digest of his setup at the start, but a live Dish never
+groups by it: the run itself may have changed what it measured.
+
+An interrupted cook (SIGINT or SIGTERM) kills the harness's process group,
+deletes the copied setup, and records the attempt as failed at stage
+`interrupted`. A SIGKILL cannot be caught: its home stays in the cook directory
+until someone removes it.
+
+Both personal environments load only the user setting source. The workspace has
+no ancestor instruction files to exclude (see "Where cooking happens").
+
+The toggles map to Claude Code as follows:
+
+| Toggle | On | Off |
+| --- | --- | --- |
+| memory | `autoMemoryDirectory` at the copied (snapshot) or real (live) home memory | `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and `autoMemoryEnabled: false`: no memory read or written |
+| connections | snapshot: copied servers via `--mcp-config` without `--strict-mcp-config`, plus claude.ai connectors; live: his config as it is | empty MCP set under `--strict-mcp-config`, claude.ai connectors disabled, and in live each of his enabled plugins switched off |
+
+Verification compares Claude Code's own `system/init` event with the request:
+permission mode `bypassPermissions`, the attempt workspace as `cwd`, exactly the
+requested built-in tools, and with connections off no MCP server or `mcp__`
+tool. The MCP servers and plugins it reports are recorded in `observed.json` and,
+by name, in the Dish receipt.
 
 Authentication reuses the existing claude.ai login. The access token is read
 from `~/.claude/.credentials.json` (`TASTE_CLAUDE_CREDENTIALS_PATH` overrides it)
@@ -222,15 +285,46 @@ profile id (`hermes-linux-host-clean-anthropic-v1`).
 A clean Hermes attempt gets a fresh `hermes-home/` holding only a Kitchen-written
 `config.yaml` (provider and model; no fallbacks, secrets, plugins or MCP
 servers) and runs with `--ignore-rules`, so no SOUL.md, AGENTS.md, memory or
-preloaded skill reaches the model. It uses the committed Hermes environment's
-own entry point, because the `hermes` launcher would build a new dependency
-environment for an unfamiliar home. Hermes borrows the Claude Code login from
-`~/.claude/.credentials.json` (a refresh is written back there); its copy in the
-attempt home is deleted when the session ends. A personal attempt runs as the
-named profile (`-p rose`). Pinned toolsets keep Hermes's memory and skill reviews
-from firing, but the session is still recorded in that profile's `state.db` and
-the profile's plugin hooks run, so it refuses unless
-`TASTE_ALLOW_HERMES_PROFILE_WRITES=1` is set. Hermes reads every AGENTS.md from
-the git root down and gives a run its coding posture when it finds a
-`package.json` within six levels; the runtime-root guard keeps both out of a
-cook directory's ancestry.
+preloaded skill reaches the model.
+
+A snapshot attempt copies a named profile (`rose`) into the same kind of
+throwaway home, read from the root Kitchen names (`TASTE_HERMES_ROOT`, default
+`~/.hermes`), so the copy and the identity reader share one root: `SOUL.md`
+(bytes, not the link), `.no-bundled-skills`, `skills/`, and with memory on
+`memories/MEMORY.md` and `USER.md`. Its `config.yaml` is written from an
+allowlist of the profile's: the pinned route and model, `memory.memory_enabled`
+and `user_profile_enabled` from the toggle (with his character limits, and no
+external memory provider), `skills.auto_load`, and with connections on his
+`mcp_servers` and `plugins` (and `plugins/` itself). Secrets helpers, fallback
+providers, reasoning overrides, platforms, gateways, cron and display settings
+stay behind, as do `auth.json`, `.env`, sessions and the profile's `state.db`.
+With connections on, each copied server's `mcp-<name>` toolset joins
+`file,terminal`; plugin hooks run but plugin toolsets are not added. The run
+never selects a profile (`-p`) and keeps the copied soul (no `--ignore-rules`).
+Kitchen never runs a Hermes profile live: a live run would record itself in
+rose's own sessions and run its plugin hooks against his real channels.
+
+| Toggle | On | Off |
+| --- | --- | --- |
+| memory | `memories/` copied; memory and user profile enabled | nothing copied; `memory_enabled` and `user_profile_enabled` false |
+| connections | `mcp_servers`, `plugins` and `plugins/` copied; `mcp-<server>` toolsets added | none of them; `-t file,terminal` |
+
+Both environments use the committed Hermes environment's own entry point,
+because the `hermes` launcher would build a new dependency environment for an
+unfamiliar home. Hermes borrows the Claude Code login from
+`~/.claude/.credentials.json` (a refresh is written back there, so a Hermes
+attempt that crosses the token's expiry rotates the login his own sessions use:
+the one place a Kitchen run can write to his real `~/.claude`). When the
+attempt ends, however it ends, the runner empties the Hermes home of everything
+but `state.db` (and its WAL files), so a copied login and the copied files do not
+outlive it; an allowlist of what stays covers credential files a later Hermes
+might add. `state.db` itself stays, because identity verification and recovery
+read it, and Hermes stores each session's system prompt there: a snapshot run's
+soul and memory blocks therefore remain in the cook directory's `state.db`
+(outside the repo, never published) until someone removes the directory. A Hermes child inherits only `PATH`, `HOME`, `USER`, `LOGNAME`,
+`SHELL`, locale, `TERM`, `TZ`, `TMPDIR`, `XDG_RUNTIME_DIR` and
+`CLAUDE_CONFIG_DIR` from the Kitchen's environment, so no Gemini, AWS, GitHub or
+future provider key reaches it. Hermes reads every AGENTS.md from the git root
+down and gives a run its coding posture when it finds a `package.json` within
+six levels; the runtime-root guard keeps both out of a cook directory's
+ancestry.

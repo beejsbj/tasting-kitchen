@@ -3,6 +3,7 @@ import { access, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
+import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
@@ -77,7 +78,7 @@ const CHECK_KEYS = new Set(["id", "type", "required", "description", "target", "
 
 const DISH_KEYS = new Set(["schemaVersion", "id", "recipe", "skill", "visibility", "executedAt", "finalizedAt", "identity", "status", "artifact", "validation", "publicTrace", "dishHash"]);
 const DISH_RECIPE_KEYS = new Set(["id", "version", "hash"]);
-const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "requestedServiceTier", "observedServiceTier", "configHash", "catalogHash"]);
+const IDENTITY_KEYS = new Set(["variantId", "provider", "requestedModel", "observedModel", "harness", "harnessVersion", "reasoningEffort", "serviceTier", "requestedServiceTier", "observedServiceTier", "configHash", "catalogHash", "setupDigest"]);
 const ARTIFACT_KEYS = new Set(["kind", "entry", "preview", "treeHash", "files"]);
 const ARTIFACT_FILE_KEYS = new Set(["path", "sha256", "bytes"]);
 const DISH_VALIDATION_KEYS = new Set(["passed", "report"]);
@@ -690,6 +691,7 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
       } else if (dish.identity.requestedServiceTier === undefined && !serviceTiersMatch(requestedTier, observedTier)) {
         fail(relative, "identity service tier does not match the requested tier");
       }
+      validateSetupReceipt(receipt, configuration, dish, relative, receiptRelative);
     }
     if (receipt && (dish.skill || receipt.skill != null)) {
       try {
@@ -701,11 +703,33 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
   }
 }
 
-// A personal-environment Dish of a public Recipe is kept private unless the Cook published it, so private
+// A snapshot or live Dish of a public Recipe is kept private unless the Cook published it, so private
 // storage is also valid when the Dish's own receipt records a personal configuration.
 async function hasPersonalReceipt(dishDirectory) {
   const receiptPath = path.join(dishDirectory, RECEIPT_MANIFEST);
-  return await exists(receiptPath) && (await json(path.relative(root, receiptPath)))?.configuration?.executionProfile?.environment === "personal";
+  return await exists(receiptPath) && PERSONAL_ENVIRONMENTS.includes((await json(path.relative(root, receiptPath)))?.configuration?.executionProfile?.environment);
+}
+
+const SETUP_RECEIPT_KEYS = new Set(["environment", "harnessProfile", "memory", "connections", "digest", "digestAtStart", "entries", "toolsets", "loaded"]);
+// A snapshot Dish names the setup it saw in identity.setupDigest (part of dishHash); its receipt must agree,
+// and only a snapshot carries one. A receipt's setup summary must match the recorded configuration.
+function validateSetupReceipt(receipt, configuration, dish, relative, receiptRelative) {
+  const environment = configuration.executionProfile?.environment;
+  const digest = dish.identity.setupDigest;
+  if (environment === "snapshot") {
+    string(digest, `${relative}.identity.setupDigest`, { pattern: SHA256 });
+    if (receipt.setup?.digest !== digest) fail(receiptRelative, "setup digest does not match identity.setupDigest");
+  } else if (digest !== undefined) fail(relative, "identity.setupDigest belongs only to a snapshot Dish");
+  if (receipt.setup === undefined) {
+    if (PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, `a ${environment} Dish must record its setup`);
+    return;
+  }
+  if (!object(receipt.setup, `${receiptRelative}.setup`)) return;
+  onlyKeys(receipt.setup, SETUP_RECEIPT_KEYS, `${receiptRelative}.setup`);
+  if (!PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, "only a snapshot or live Dish records a setup");
+  for (const key of ["environment", "harnessProfile", "memory", "connections"]) {
+    if (receipt.setup[key] !== configuration.executionProfile?.[key]) fail(receiptRelative, `setup.${key} does not match the recorded configuration`);
+  }
 }
 
 async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {

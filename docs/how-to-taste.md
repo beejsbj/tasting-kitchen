@@ -28,7 +28,7 @@ TASTE_ALLOW_MODEL_RUNS=1 node bin/taste.mjs cook \
   --menu visual-ui --config codex-sol-high --intent fill-missing --execute --json
 ```
 
-`fill-missing` reuses accepted results for the current recipe hash, requested configuration and skill layer. `repeat` creates a new attempt even when that cell already has a Dish. `--skill ID` mounts one catalog skill into the workspace; omit it to cook without a skill, which is a layer of its own. Cooking is dry by default; the execution flag and environment opt-in are both required for paid model runs.
+`fill-missing` reuses accepted results for the current recipe hash, requested configuration and skill layer, and for a snapshot configuration only a Dish whose setup digest matches his setup as it is now. `repeat` creates a new attempt even when that cell already has a Dish. `--skill ID` mounts one catalog skill into the workspace; omit it to cook without a skill, which is a layer of its own. Cooking is dry by default; the execution flag and environment opt-in are both required for paid model runs. A snapshot or live Dish stays under `private/dishes/` unless the Cook passes `--publish-personal`, and a configuration with connections on executes only with `--allow-connections`.
 
 Each Recipe gets a fresh workspace and model session. A multi-turn Recipe resumes only its own session. Known constraints belong in the initial brief; staged feedback belongs only where adaptation itself is the subject. Accepted Dishes are immutable. Failed attempts and raw traces stay private.
 
