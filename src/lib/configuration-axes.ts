@@ -1,5 +1,5 @@
 import type { Configuration } from "../types";
-import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessLabel, UNDECLARED_ENVIRONMENT, type ComparisonDimension } from "./configuration-label.ts";
+import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessLabel, UNDECLARED_ENVIRONMENT, UNDECLARED_ENVIRONMENTS, UNDECLARED_ENVIRONMENTS_NOTE, type ComparisonDimension } from "./configuration-label.ts";
 
 /**
  * A configuration seen as independent axes. A pane is the combination of one
@@ -22,6 +22,7 @@ export const COMPARE_AXES: readonly CompareAxis[] = ["model", "effort", "harness
 export const AXIS_LABELS: Record<CompareAxis, string> = { model: "Model", effort: "Effort", harness: "Harness", environment: "Environment", tier: "Service tier", skill: "Skill layer" };
 /** The comparison-note dimension each axis isolates. */
 export const AXIS_DIMENSIONS: Record<CompareAxis, ComparisonDimension> = { model: "model", effort: "effort", harness: "harness", environment: "environment", tier: "service tier", skill: "skill layer" };
+const AXIS_PLURALS: Record<CompareAxis, string> = { model: "models", effort: "efforts", harness: "harnesses", environment: "environments", tier: "service tiers", skill: "skill layers" };
 /** The most panes a comparison lays out; the URL keeps no more. */
 export const MAX_PANES = 6;
 
@@ -71,6 +72,32 @@ export function axisValueLabel(axis: ConfigAxis, value: string) {
 function sameOn(a: AxisConfiguration, b: AxisConfiguration, axis: ConfigAxis) {
   if (axis === "environment" && a.harness !== b.harness) return (a.executionProfile.environment ?? UNDECLARED_ENVIRONMENT) === (b.executionProfile.environment ?? UNDECLARED_ENVIRONMENT);
   return axisValue(a, axis) === axisValue(b, axis);
+}
+
+/**
+ * Whether a pane shows a chip for an axis. Model, effort and harness always
+ * do; environment and tier only when the recipe offers a choice, or when the
+ * pane sits on a value nothing was cooked with, so it can always be moved back.
+ */
+export function showsAxis<C extends AxisConfiguration>(configs: readonly C[], current: C, axis: ConfigAxis, dishCount: (config: C) => number) {
+  if (axis !== "environment" && axis !== "tier") return true;
+  return cookedValues(configs, axis, dishCount, [axisValue(current, axis)]).length > 1;
+}
+
+/**
+ * What a "Compare by" layout holds still, as value labels from the held pane.
+ * An environment is listed once the recipe offers a choice of them or the pane
+ * declares one, but never when it is undeclared across harnesses: nothing says
+ * two undeclared configurations share an environment.
+ */
+export function heldConfigLabels<C extends AxisConfiguration>(configs: readonly C[], anchor: C, axis: CompareAxis, dishCount: (config: C) => number) {
+  const held = (["model", "effort", "harness", "environment", "tier"] as const).filter((item) => item !== axis && (item === "model" || item === "effort" || item === "harness" || (item === "tier" ? showsAxis(configs, anchor, item, dishCount) : showsAxis(configs, anchor, item, dishCount) || Boolean(anchor.executionProfile.environment))));
+  return held.filter((item) => !(item === "environment" && axis === "harness" && !anchor.executionProfile.environment)).map((item) => axisValueLabel(item, axisValue(anchor, item)));
+}
+
+/** The polite announcement for a "Compare by" layout: "Comparing 3 harnesses, holding Opus 5.5 · High · Clean". */
+export function compareAnnouncement(axis: CompareAxis, count: number, held: readonly string[]) {
+  return `Comparing ${count} ${AXIS_PLURALS[axis]}${held.length ? `, holding ${held.join(" · ")}` : ""}`;
 }
 
 function orderValues(axis: ConfigAxis, values: string[]) {
@@ -241,7 +268,8 @@ const ISOLATION: Partial<Record<ComparisonDimension, string>> = {
 export function compareByNote(axis: CompareAxis, held: readonly string[], differing: readonly ComparisonDimension[]) {
   const dimension = AXIS_DIMENSIONS[axis];
   const holding = held.length ? `Holding ${held.join(" · ")}` : "Same brief";
-  const extra = differing.filter((item) => item !== dimension);
+  const extra = differing.filter((item) => item !== dimension && item !== UNDECLARED_ENVIRONMENTS);
+  if (differing.includes(UNDECLARED_ENVIRONMENTS)) return `${holding} · ${dimension} varies${extra.length ? `, and so does ${extra.join(", ")}` : ""} · ${UNDECLARED_ENVIRONMENTS_NOTE} · not an isolated comparison`;
   if (!differing.includes(dimension)) return `${holding} · only one ${AXIS_LABELS[axis].toLowerCase()} on the counter${extra.length ? `, yet ${extra.join(", ")} differ${extra.length === 1 ? "s" : ""}` : ""}`;
   if (extra.length) return `${holding} · ${dimension} varies, and so does ${extra.join(", ")} · not an isolated comparison`;
   return `${holding} · only the ${dimension} differs${ISOLATION[dimension] ? ` · ${ISOLATION[dimension]}` : ""}`;
