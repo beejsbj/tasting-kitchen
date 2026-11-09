@@ -15,7 +15,7 @@ import { latestDish, resolveRecipeSelection, selectionForDish, skillTokenForDish
 import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, briefChanged, catalogChanges, dishesFor, dishSkillKey, loadRegistry, modelFamily, NO_SKILL, reviewsForDish, shortHash, serviceTierDrift, skillLabelFor } from "./lib/registry";
 import { configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentName, harnessLabel } from "./lib/configuration-label";
-import { compareByNote, MAX_PANES } from "./lib/configuration-axes";
+import { compareAnnouncement, compareByNote, MAX_PANES } from "./lib/configuration-axes";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
 import { readDishVotes, saveDishVotes, syncDishVotes, voteFor, writeDishVote, type DishVote, type VoteMode } from './lib/dish-votes';
@@ -120,14 +120,14 @@ export default function App() {
     const paneValues = requested ? slots.map((slot) => valueOf(slot, requested)) : [];
     const compare = requested && new Set(paneValues).size === slots.length && slots.every((slot, index) => offered.find((item) => item.value === paneValues[index])?.config.id === slot.config.id) ? requested : "";
     const comparisonNote = slots.some((slot) => !slot.dish) ? "Incomplete coverage for these settings" : briefHashes.size > 1 ? "These Dishes were cooked from different versions of the brief" : drift ? "Observed configuration drift — inspect receipts"
-      : compare ? compareByNote(compare, heldLabels(context, slots[0], compare), differing) : differenceNote(differing) ?? (harnessVersions.size > 1 ? "Same brief · harness versions differ" : "Same brief · inspect configuration receipts");
+      : compare ? compareByNote(compare, heldLabels(context, slots[0], compare, differing), differing) : differenceNote(differing) ?? (harnessVersions.size > 1 ? "Same brief · harness versions differ" : "Same brief · inspect configuration receipts");
     /** In a "Compare by" layout a pane is named by its value of the varied axis; the first also says what is held. */
     const compareValues = compare ? comparisonValuesFor(context, slots[0], compare) : [];
     const paneLabel = (slot: (typeof slots)[number], index: number) => {
       const full = `${configurationHeading(slot.config, modelFamily(slot.config.model))}${showLayers ? ` · ${slot.dish ? skillLabelFor(registry, slot.dish) : layerChoices.find((choice) => choice.key === slot.skillKey)?.label ?? 'Without skill'}` : ''}`;
       if (!compare) return <>{index + 1}<span className="pane-label__total" aria-hidden="true">/{slots.length}</span> · {full}</>;
       const value = compareValues.find((item) => item.value === valueOf(slot, compare));
-      return <><span className="sr-only">{index + 1} · {full}</span><span aria-hidden="true">{index + 1}<span className="pane-label__total">/{slots.length}</span> · <b>{value?.label ?? full}</b>{value && !value.isolated && <> · also {value.differs.join(' · ')}</>}{index === 0 && <span className="pane-label__held"> · holding {heldLabels(context, slots[0], compare).join(' · ')}</span>}</span></>;
+      return <><span className="sr-only">{index + 1} · {full}</span><span aria-hidden="true">{index + 1}<span className="pane-label__total">/{slots.length}</span> · <b>{value?.label ?? full}</b>{value && !value.isolated && <> · also {value.differs.join(' · ')}</>}{index === 0 && <span className="pane-label__held"> · holding {heldLabels(context, slots[0], compare, differing).join(' · ')}</span>}</span></>;
     };
     const columns = slots.length <= 3 ? Math.max(1, slots.length) : slots.length === 4 ? 2 : 3;
     const rows = Math.ceil(Math.max(1, slots.length) / columns);
@@ -152,6 +152,7 @@ export default function App() {
     };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
+      <p className="sr-only" role="status" aria-live="polite">{compare ? compareAnnouncement(compare, slots.length, heldLabels(context, slots[0], compare, differing), !differing.includes('undeclared environments') && compareValues.every((item) => item.isolated || !slots.some((slot) => valueOf(slot, compare) === item.value))) : ''}</p>
       <section className="comparison-grid" data-panes={slots.length} style={{ "--columns": columns, "--rows": rows, "--panes": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
         {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
           {slots.length > 1 && <div className="pane-label">{paneLabel(slots[index], index)}</div>}
