@@ -1,4 +1,4 @@
-import type { Recipe, RecipeTurn } from "../types";
+import type { Recipe, RecipeTurn, Verdict } from "../types";
 import type { RecipeBookEntry, RecipeEdits, RecipeInput } from "./recipe-book";
 
 const API_ORIGIN = "https://api.github.com";
@@ -426,4 +426,30 @@ export async function saveRecipeViaGitHub({ token, branch, entry, updates }: { t
   if (string(object(latestRef.object, "GitHub reference object").sha, "GitHub reference SHA") !== current.head.sha) fail("The branch changed while saving; reload and try again.");
   await api(accessToken, `/git/refs/heads/${encodeURIComponent(safe)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sha: commitSha, force: false }) });
   return publicEntry(next, current.sourcePath, nextSource, nextFixtures, entry.dishCount);
+}
+
+const VERDICT_FILE = /^verdicts\/verdict_[a-zA-Z0-9_-]+\.json$/u;
+
+/**
+ * Commit one verdict beside its Dish as `verdicts/<id>.json`, in one commit,
+ * with the same branch-conflict protection as recipe saves. A verdict file is
+ * never overwritten: a changed mind is a newer verdict.
+ */
+export async function saveVerdictViaGitHub({ token, branch, verdict }: { token: string; branch: string; verdict: Verdict }): Promise<{ commitSha: string; path: string }> {
+  const accessToken = safeToken(token);
+  const safe = safeBranch(branch);
+  const path = `verdicts/${verdict.id}.json`;
+  if (!VERDICT_FILE.test(path)) fail("The verdict id is invalid.");
+  const head = await readHead(accessToken, safe);
+  if (!head.tree.has(`dishes/${verdict.dishId}/dish.json`)) fail("That Dish is not in the repository branch.");
+  if (head.tree.has(path)) fail("A verdict with this id already exists; try again.");
+  const tree = [{ path, mode: "100644", type: "blob", content: `${JSON.stringify(verdict, null, 2)}\n` }];
+  const createdTree = object(await api(accessToken, "/git/trees", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ base_tree: head.treeSha, tree }) }), "GitHub created tree");
+  const treeSha = string(createdTree.sha, "GitHub created tree SHA");
+  const createdCommit = object(await api(accessToken, "/git/commits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `verdict: ${verdict.verdict} ${verdict.dishId}`, tree: treeSha, parents: [head.sha] }) }), "GitHub created commit");
+  const commitSha = string(createdCommit.sha, "GitHub created commit SHA");
+  const latestRef = object(await api(accessToken, `/git/ref/heads/${encodeURIComponent(safe)}`), "GitHub reference");
+  if (string(object(latestRef.object, "GitHub reference object").sha, "GitHub reference SHA") !== head.sha) fail("The branch changed while saving; reload and try again.");
+  await api(accessToken, `/git/refs/heads/${encodeURIComponent(safe)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sha: commitSha, force: false }) });
+  return { commitSha, path };
 }
