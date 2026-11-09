@@ -62,7 +62,7 @@ async function kitchen(t) {
   await json(path.join(root, "catalog/cuisines.json"), { schemaVersion: 1, cuisines: [{ id: "film", label: "Film", description: "Films.", order: 10 }] });
   await json(path.join(root, "catalog/tags.json"), { schemaVersion: 1, tags: ["motion"] });
   await json(path.join(root, "catalog/configurations.json"), { schemaVersion: 1, configurations: [] });
-  await json(path.join(root, "toolchains/film/toolchain.json"), { schemaVersion: 1, id: "film-v1", image: "kitchen/film:test" });
+  await json(path.join(root, "catalog/toolchains/film/toolchain.json"), { schemaVersion: 1, id: "film-v1", image: "kitchen/film:test" });
   const [toolchain] = await loadToolchains(root);
   for (const recipe of [filmRecipe("public-film"), filmRecipe("private-film", { visibility: "private", privateFixture: true })]) {
     const directory = path.join(root, "catalog/recipes/film", recipe.id);

@@ -47,6 +47,7 @@ mkdirSync(path.join(fonts, "pop"), { recursive: true });
 for (const name of readdirSync(pop).filter((file) => file.endsWith(".ttf")).sort()) copyFileSync(path.join(pop, name), path.join(fonts, "pop", name));
 
 run(["bun", "install", "--frozen-lockfile"], path.join(destination, "app"));
+run(["bun", "pm", "cache", "rm"], path.join(destination, "app"));
 // The engine is supplied as plain files; its provenance is engine.json, not a Git history.
 rmSync(path.join(destination, ".git"), { recursive: true, force: true });
 

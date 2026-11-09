@@ -2,12 +2,12 @@
 # works in, and that Kitchen validates and plays back with. Every input is
 # pinned in toolchain.json; tests/taste-toolchain.test.mjs keeps them in step.
 # Build from the repository root:
-#   docker build -f toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
+#   docker build -f catalog/toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
 FROM docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6
 
 ARG DEBIAN_SNAPSHOT=20261101T000000Z
 ARG BUN_VERSION=1.4.4
-COPY toolchains/film/toolchain.json /opt/kitchen/toolchain.json
+COPY catalog/toolchains/film/toolchain.json /opt/kitchen/toolchain.json
 
 # Debian packages come from one dated snapshot, so a rebuild resolves the same versions.
 RUN rm -f /etc/apt/sources.list.d/debian.sources \
@@ -22,11 +22,11 @@ RUN rm -f /etc/apt/sources.list.d/debian.sources \
  && npm install -g "bun@${BUN_VERSION}" \
  && npm cache clean --force
 
-COPY toolchains/film/install-engine.mjs /opt/kitchen/install-engine.mjs
-COPY toolchains/film/engine/brand.ts /opt/kitchen/brand.ts
+COPY catalog/toolchains/film/install-engine.mjs /opt/kitchen/install-engine.mjs
+COPY catalog/toolchains/film/engine/brand.ts /opt/kitchen/brand.ts
 COPY catalog/skills/lyric-music-video/files /opt/kitchen/lyric-skill
 RUN node /opt/kitchen/install-engine.mjs /opt/kitchen/toolchain.json /opt/kitchen/lyric-skill /opt/kitchen/brand.ts /opt/kitchen/engine \
- && rm -rf /opt/kitchen/lyric-skill /root/.bun/install/cache \
+ && rm -rf /opt/kitchen/lyric-skill \
  && chmod -R a+rX /opt/kitchen \
  && { node --version; python3 --version; chromium --version; ffmpeg -version | head -1; bun --version; } > /opt/kitchen/versions.txt
 

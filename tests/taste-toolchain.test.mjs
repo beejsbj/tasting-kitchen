@@ -17,7 +17,7 @@ import {
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const film = JSON.parse(await readFile(path.join(repoRoot, "toolchains/film/toolchain.json"), "utf8"));
+const film = JSON.parse(await readFile(path.join(repoRoot, "catalog/toolchains/film/toolchain.json"), "utf8"));
 const lyricSkill = path.join(repoRoot, "catalog/skills/lyric-music-video/files");
 
 test("the film Dockerfile builds exactly what toolchain.json pins", async () => {
@@ -30,7 +30,7 @@ test("the film Dockerfile builds exactly what toolchain.json pins", async () => 
   for (const tool of ["chromium", "ffmpeg", "python3"]) assert(film.packages.includes(tool), `${tool} is in the image`);
   assert.equal(film.chromePath, "/usr/bin/chromium");
   // The build context is an allowlist; every file the Dockerfile copies must be in it.
-  const ignore = await readFile(path.join(repoRoot, "toolchains/film/Dockerfile.dockerignore"), "utf8");
+  const ignore = await readFile(path.join(repoRoot, "catalog/toolchains/film/Dockerfile.dockerignore"), "utf8");
   for (const copied of dockerfile.matchAll(/^COPY (\S+) /gmu)) {
     const source = copied[1];
     assert(ignore.split("\n").some((line) => line === `!${source}` || line === `!${source}/**`), `${source} is in the build context`);
@@ -40,7 +40,7 @@ test("the film Dockerfile builds exactly what toolchain.json pins", async () => 
 test("the lyric engine pin matches the skill's own engine.patch and brand bytes", async () => {
   const engine = film.lyricEngine;
   assert.equal(engine.patch.skill, "lyric-music-video");
-  assert.equal(sha256(await readFile(path.join(lyricSkill, engine.patch.path))), engine.patch.sha256, "engine.patch moved: re-pin toolchains/film/toolchain.json");
+  assert.equal(sha256(await readFile(path.join(lyricSkill, engine.patch.path))), engine.patch.sha256, "engine.patch moved: re-pin catalog/toolchains/film/toolchain.json");
   assert.match(engine.commit, /^[a-f0-9]{40}$/u);
   // The skill's setup script names the upstream commit its patch was made against.
   const setup = await readFile(path.join(lyricSkill, "scripts/new-project.sh"), "utf8");
@@ -57,12 +57,12 @@ test("the lyric engine pin matches the skill's own engine.patch and brand bytes"
 test("a toolchain hash binds its pin and every build file", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-toolchain-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await mkdir(path.join(root, "toolchains/film"), { recursive: true });
-  await writeFile(path.join(root, "toolchains/film/toolchain.json"), JSON.stringify({ schemaVersion: 1, id: "film-v1", image: "kitchen/film:v1" }));
-  await writeFile(path.join(root, "toolchains/film/Dockerfile"), "FROM scratch\n");
+  await mkdir(path.join(root, "catalog/toolchains/film"), { recursive: true });
+  await writeFile(path.join(root, "catalog/toolchains/film/toolchain.json"), JSON.stringify({ schemaVersion: 1, id: "film-v1", image: "kitchen/film:v1" }));
+  await writeFile(path.join(root, "catalog/toolchains/film/Dockerfile"), "FROM scratch\n");
   const [first] = await loadToolchains(root);
   assert.equal(first.id, "film-v1");
-  await writeFile(path.join(root, "toolchains/film/Dockerfile"), "FROM scratch\nRUN true\n");
+  await writeFile(path.join(root, "catalog/toolchains/film/Dockerfile"), "FROM scratch\nRUN true\n");
   const [second] = await loadToolchains(root);
   assert.notEqual(second.toolchainHash, first.toolchainHash);
   assert(!renderToolchainPin(second).includes(root), "the pin carries no host path");

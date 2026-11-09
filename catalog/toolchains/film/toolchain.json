@@ -4,7 +4,7 @@
   "label": "Film toolchain v1",
   "summary": "The one execution image every model and layer of a film Recipe works and is validated in: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine.",
   "image": "tasting-kitchen/film-toolchain:v1",
-  "dockerfile": "toolchains/film/Dockerfile",
+  "dockerfile": "catalog/toolchains/film/Dockerfile",
   "base": "docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6",
   "debianSnapshot": "20261101T000000Z",
   "packages": [
@@ -35,7 +35,7 @@
       "skill": "lyric-music-video",
       "path": "assets/lib/brand.ts",
       "sha256": "af3b171fb9bda806ee50ada6d5afa93e7e4bc7f4c7ae366204b2feed4854798e",
-      "overlay": "toolchains/film/engine/brand.ts",
+      "overlay": "catalog/toolchains/film/engine/brand.ts",
       "note": "The patched main.ts imports lib/brand.ts for its corner watermark. Kitchen supplies the skill's file with both handles empty, so no watermark is drawn; the briefs forbid one."
     },
     "fonts": {

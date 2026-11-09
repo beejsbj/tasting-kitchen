@@ -77,7 +77,7 @@ matched; a uniform trim is reported, not failed.
 ## Before Ready
 
 1. **Done for `heavy-little-suitcase` and `lyric-video-section`:** the pinned
-   film toolchain (`toolchains/film/`, see below), smoke render, validator,
+   film toolchain (`catalog/toolchains/film/`, see below), smoke render, validator,
    sanitization and gallery playback, proven with Kitchen-made references.
 2. **Done:** the patched lyric engine at `engine/`, assembled in the image
    from the skill's own `engine.patch` (sha-checked) at the pinned upstream
@@ -95,7 +95,7 @@ matched; a uniform trim is reported, not failed.
 
 ## Film toolchain
 
-`toolchains/film/toolchain.json` pins the image: a digest-pinned Node 22 base,
+`catalog/toolchains/film/toolchain.json` pins the image: a digest-pinned Node 22 base,
 one dated Debian snapshot for Chromium, FFmpeg, Python 3 (NumPy, SciPy) and
 fonts, Bun, and the lyric engine (upstream commit, `engine.patch` and brand
 hashes, Google Fonts commit and per-file hashes). The skill's `brand.ts` is
@@ -108,7 +108,7 @@ its `toolchain` fixture, so editing the image moves the recipe hash. Command
 checks of such a Recipe run in the image, offline and read-only.
 
 ```sh
-docker build -f toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
+docker build -f catalog/toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
 node scripts/pin-toolchain.mjs            # after any toolchain edit; --check to verify
 node scripts/smoke-recipe.mjs heavy-little-suitcase
 node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine render
