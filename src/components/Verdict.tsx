@@ -55,7 +55,7 @@ export function VerdictControl({ plate, standing, onSaved }: { plate: Plate; sta
   }
   return <div className="verdict-control">
     <h2 className="mb-1 text-base font-semibold">Your verdict</h2>
-    {standing ? <p className="text-xs text-slate-600"><b>{VERDICT_LABEL[standing.verdict]}</b> · {new Date(standing.decidedAt).toLocaleDateString()} · {standing.note}</p> : <p className="text-xs text-slate-600">No verdict yet. {noDish ? 'The checks failed this No Dish; your pass would overrule them.' : 'The automated checks passed this Dish.'}</p>}
+    {standing ? <p className="text-xs text-slate-600"><b>{VERDICT_LABEL[standing.verdict]}</b> · {new Date(standing.decidedAt).toLocaleDateString()} · {standing.note}</p> : <p className="text-xs text-slate-600">No verdict yet. {noDish ? (plate.fault.code === 'checks-failed' ? 'The checks failed this No Dish; your pass would overrule them.' : `This No Dish is the model's own outcome (${plate.fault.code}); your pass would overrule it.`) : 'The automated checks passed this Dish.'}</p>}
     <form onSubmit={save} className="mt-3 flex flex-col gap-2">
       <div role="radiogroup" aria-label="Verdict" className="flex gap-1">
         {(noDish ? ['passed'] as const : ['failed', 'passed'] as const).map((value) => <label key={value} className="verdict-choice" data-choice={value}><input type="radio" name="verdict" value={value} checked={choice === value} onChange={() => setChoice(value)} />{value === 'failed' ? 'Failed' : 'Passed'}</label>)}

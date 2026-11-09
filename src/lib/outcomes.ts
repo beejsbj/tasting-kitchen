@@ -58,6 +58,11 @@ export function noDishLabel(plate: NoDish) {
   return `No Dish · ${CHEF_FAULT_LABELS[plate.fault.code] ?? plate.fault.code}${plate.fault.checks?.length ? ` (${plate.fault.checks.join(", ")})` : ""}`;
 }
 
+/** What Burooj's pass reads as beside the fault: "checks failed" only where checks failed, else the fault's own label. */
+export function passedNoDishLabel(plate: NoDish) {
+  return plate.fault.code === "checks-failed" ? `Passed by Burooj · checks failed · ${noDishLabel(plate)}` : `Passed by Burooj · ${noDishLabel(plate)}`;
+}
+
 /** "1 dish", "2 dishes · 1 no dish", "1 no dish". */
 export function plateCountLabel(plates: Plate[]) {
   const dishes = plates.filter(isDish).length;
