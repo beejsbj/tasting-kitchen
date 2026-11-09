@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, cp, mkdtemp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { chmod, cp, mkdtemp, mkdir, readFile, readdir, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -280,10 +280,13 @@ test("setup collection leaves volatile files and credential-looking files out at
   await write("scripts/run.sh", "#!/bin/sh\n", 0o755);
   for (const noise of ["__pycache__/x.pyc", "sub/y.pyc", ".last-complete-round", ".staging/1/part", "node_modules/a/index.js", ".env", ".env.local", "auth.json", "sub/credentials.json", "keys/server.pem", "id_ed25519"]) await write(noise, "noise");
   await write(".env.example", "kept");
+  await writeFile(path.join(root, ".credentials.json"), "secret");
+  await symlink(path.join(root, ".credentials.json"), path.join(skill, "notes.md"));
 
   const collect = () => collectSetupChildren(path.join(root, "skills"), "skills");
   const files = await collect();
   assert.deepEqual(files.map((file) => file.path).sort(), ["skills/sample/.env.example", "skills/sample/SKILL.md", "skills/sample/scripts/run.sh"]);
+  assert.equal(files.some((file) => file.path.endsWith("notes.md")), false, "a link to a credential file is a credential file");
   assert.equal(files.find((file) => file.path.endsWith("run.sh")).executable, true);
   const digest = setupDigest(files);
   const entryDigest = setupSummary(files)[0].digest;

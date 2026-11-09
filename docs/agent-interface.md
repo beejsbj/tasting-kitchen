@@ -146,7 +146,7 @@ and records the digest of exactly those bytes:
   `node_modules`, `.staging`, `.last-complete-round`, `.DS_Store`) and
   credential-looking files (`.env`, `.env.*` other than examples, `auth.json`,
   `credentials.json`, `.credentials.json`, `.netrc`, `*.pem`, `*.key`, `id_rsa*`,
-  `id_ed25519*`) are left out, so Claude Code resyncing his account skills or
+  `id_ed25519*`), and links that point at one, are left out, so Claude Code resyncing his account skills or
   Python compiling a script cannot change the setup digest, and a stray secret
   never enters a snapshot. A script keeps its owner exec bit (it is part of the
   digest). A skill such
