@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
-import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, environmentName, harnessLabel } from '../src/lib/configuration-label.ts';
+import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentLabel, environmentName, harnessKey, harnessLabel, slugModelName } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
@@ -272,4 +272,26 @@ test('the main artifact pane receives its Dish reviews, not an empty list', () =
   const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
   assert.doesNotMatch(app, /<ArtifactPane[^>]*reviews=\{\[\]\}/u);
   assert.match(app, /<ArtifactPane[^>]*reviews=\{reviewsForDish\(registry\.reviews, dish\)\}/u);
+});
+
+const viaRoute = (id, harness, model, extra = {}) => configuration(id, harness, 'clean', undefined, { model, ...extra, executionProfile: { ...profile, environment: 'clean', route: 'openrouter' } });
+const directOpus = viaRoute('direct-opus', 'direct-api', 'anthropic/claude-opus-5.5', { capabilities: [] });
+const hermesRouted = viaRoute('hermes-routed', 'hermes', 'anthropic/claude-opus-5.5');
+const t3Claude = configuration('t3-claude', 't3', 'clean', undefined, { harnessPath: ['t3', 'claude-code'] });
+
+test('a harness key carries the path and a declared route; labels read them plainly', () => {
+  assert.deepEqual([claudeClean, legacy, directOpus, hermesRouted, t3Claude].map(harnessKey), ['claude-code', 'codex-cli', 'direct-api@openrouter', 'hermes@openrouter', 't3>claude-code']);
+  assert.deepEqual(['direct-api@openrouter', 'hermes@openrouter', 't3>claude-code', 't3>codex-cli', 'direct-api'].map(harnessLabel), ['Direct API · OpenRouter', 'Hermes · OpenRouter', 'T3 → Claude Code', 'T3 → Codex CLI', 'Direct API']);
+  assert.equal(configurationHeading(directOpus, 'Opus'), 'Opus 5.5 · High · Direct API · OpenRouter · Clean');
+  assert.equal(configurationHeading(t3Claude, 'Opus'), 'Opus 5.5 · High · T3 → Claude Code · Clean');
+  assert.deepEqual(configurationFacets([claudeClean, hermesRouted, directOpus, t3Claude]).harnesses.map((facet) => facet.label), ['Claude Code', 'Hermes · OpenRouter', 'Direct API · OpenRouter', 'T3 → Claude Code']);
+  assert.deepEqual(differingDimensions([claudeClean, directOpus].map((config) => ({ config, skillKey: 'none' }))), ['harness', 'other settings'], 'the same model through another delivery path differs by harness');
+  assert.deepEqual(differingDimensions([claudeClean, t3Claude].map((config) => ({ config, skillKey: 'none' }))), ['harness']);
+});
+
+test('maker/slug models read as their family and name', () => {
+  assert.deepEqual(['google/gemini-4-argon', 'x-ai/grok-4.7', 'deepseek/deepseek-v4-pro-0813', 'z-ai/glm-5.3', 'qwen/qwen3.8-max-0902', 'moonshotai/kimi-k3.1-pro'].map(modelFamily), ['Gemini', 'Grok', 'DeepSeek', 'GLM', 'Qwen', 'Kimi']);
+  assert.equal(modelFamily('anthropic/claude-opus-5.5'), 'Opus', 'a Claude slug keeps its Claude family');
+  assert.deepEqual(['google/gemini-4-argon', 'deepseek/deepseek-v4-pro-0813', 'z-ai/glm-5.3', 'meta/muse-wonder'].map(slugModelName), ['Gemini 4 Argon', 'DeepSeek V4 Pro 0813', 'GLM 5.3', 'Muse Wonder']);
+  assert.equal(slugModelName('gpt-5.6-sol'), undefined);
 });

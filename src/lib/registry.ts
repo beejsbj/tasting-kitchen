@@ -1,4 +1,5 @@
 import type { AxisSet, Configuration, Dish, Recipe, Registry, TasteObservation, Variant } from "../types";
+import { slugModelFamily } from "./configuration-label.ts";
 
 export async function loadRegistry(): Promise<Registry> {
   const response = await fetch(`${import.meta.env.BASE_URL}data/registry.json`, { cache: "no-cache" });
@@ -102,5 +103,5 @@ export function shortHash(hash: string) { return hash.replace("sha256:", "").sli
 export function modelFamily(model: string) {
   if (/composer-?2\.5/i.test(model)) return "Composer";
   const named = model.match(/(?:^|-)(astra|sol|terra|luna|fable|opus|sonnet|haiku)(?:-|$)/i)?.[1];
-  return named ? named[0].toUpperCase() + named.slice(1) : model;
+  return named ? named[0].toUpperCase() + named.slice(1) : slugModelFamily(model) ?? model;
 }

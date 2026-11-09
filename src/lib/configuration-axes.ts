@@ -1,5 +1,5 @@
 import type { Configuration } from "../types";
-import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessLabel, UNDECLARED_ENVIRONMENT, type ComparisonDimension } from "./configuration-label.ts";
+import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harnessKey, harnessLabel, slugModelName, UNDECLARED_ENVIRONMENT, type ComparisonDimension } from "./configuration-label.ts";
 
 /**
  * A configuration seen as independent axes. A pane is the combination of one
@@ -7,7 +7,7 @@ import { claudeModelName, effortName, environmentKey, environmentKeyLabel, harne
  * value of that one. Kept free of registry/runtime imports (beyond the label
  * module) so node's type-stripping test runner can load it.
  */
-export type AxisConfiguration = Pick<Configuration, "id" | "model" | "harness" | "reasoningEffort" | "serviceTier" | "executionProfile"> & Partial<Pick<Configuration, "configHash" | "historical">>;
+export type AxisConfiguration = Pick<Configuration, "id" | "model" | "harness" | "reasoningEffort" | "serviceTier" | "executionProfile"> & Partial<Pick<Configuration, "configHash" | "historical" | "harnessPath">>;
 
 /**
  * Configuration axes in rank order. Changing one axis on a pane may move the
@@ -32,10 +32,12 @@ export function isCompareAxis(value: string): value is CompareAxis {
   return (COMPARE_AXES as readonly string[]).includes(value);
 }
 
-/** "Opus 5.5", "Sol 5.6", "Astra 6", "Composer 2.5"; the raw id when nothing reads plainly. */
+/** "Opus 5.5", "Sol 5.6", "Astra 6", "Composer 2.5", "Gemini 4 Argon"; the raw id when nothing reads plainly. */
 export function modelName(model: string) {
   const claude = claudeModelName(model);
   if (claude) return claude;
+  const slug = slugModelName(model);
+  if (slug) return slug;
   const gpt = model.match(/^gpt-(\d+(?:\.\d+)?)-([a-z]+)$/i);
   if (gpt) return `${gpt[2][0].toUpperCase()}${gpt[2].slice(1)} ${gpt[1]}`;
   const composer = model.match(/^composer-?(\d+(?:\.\d+)?)/i);
@@ -47,7 +49,8 @@ export function modelName(model: string) {
 export function axisValue(config: AxisConfiguration, axis: ConfigAxis): string {
   switch (axis) {
     case "model": return claudeModelName(config.model) ?? config.model;
-    case "harness": return config.harness;
+    // The whole delivery path: a wrapped harness or another route is another harness value.
+    case "harness": return harnessKey(config);
     case "environment": return environmentKey(config);
     case "effort": return config.reasoningEffort;
     case "tier": return config.serviceTier;

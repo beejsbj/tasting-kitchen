@@ -14,21 +14,25 @@ export type Configuration = {
   serviceTier: string;
   personality: string;
   capabilities: string[];
+  /** Layers outermost first when the harness wraps another, such as ["t3", "claude-code"]; absent when it runs alone. */
+  harnessPath?: string[];
   configHash?: string;
   historical?: boolean;
   executionProfile: {
     id: string;
     label: string;
     runtime: "linux-host";
-    sandbox: "danger-full-access";
-    approvalPolicy: "never";
+    sandbox: string;
+    approvalPolicy: string;
     nativeWeb: "disabled";
-    networkPolicy: "not-enforced";
-    filesystemBoundary: "not-a-secrecy-boundary";
+    networkPolicy: string;
+    filesystemBoundary: string;
     /** Absent on configurations that predate the dimension. */
     environment?: "clean" | "personal";
     /** A named harness profile (such as a Hermes profile); only with the personal environment. */
     harnessProfile?: string;
+    /** An inference route other than the provider's own, such as "openrouter"; absent means the provider's own. */
+    route?: string;
   };
 };
 

@@ -136,3 +136,19 @@ test('the compare-by note states what was held and never credits the varied axis
   assert.match(compareByNote('effort', ['Opus 5.5'], []), /only one effort on the counter$/);
   assert.match(compareByNote('environment', ['Opus 5.5'], ['harness']), /only one environment on the counter, yet harness differs$/);
 });
+
+test('Compare by Harness lays out each delivery path of one model: alone, wrapped, routed, and with no harness', () => {
+  const routed = (id, harness, extra = {}) => configuration(id, harness, 'anthropic/claude-opus-5.5', 'high', 'clean', undefined, { ...extra, executionProfile: { ...profile, environment: 'clean', route: 'openrouter' } });
+  const direct = routed('direct-opus-high', 'direct-api', { capabilities: [] });
+  const hermesOpenRouter = routed('hermes-or-opus-high', 'hermes');
+  const t3 = configuration('t3-opus-high-clean', 't3', 'claude-opus-5-5', 'high', 'clean', undefined, { harnessPath: ['t3', 'claude-code'] });
+  const paths = [...catalog, direct, hermesOpenRouter, t3];
+  const dishes = counts({ 'claude-opus-high-clean': 1, 'hermes-opus-high-clean': 1, 'direct-opus-high': 1, 'hermes-or-opus-high': 1, 't3-opus-high-clean': 1 });
+  assert.equal(axisValue(t3, 'harness'), 't3>claude-code');
+  assert.equal(axisValue(direct, 'harness'), 'direct-api@openrouter');
+  assert.equal(axisValue(direct, 'model'), 'Opus 5.5', 'the same model through any route');
+  const values = comparisonValues(paths, opusHighClean, 'harness', dishes);
+  assert.deepEqual(values.map((item) => item.label), ['Claude Code', 'Hermes', 'Direct API · OpenRouter', 'Hermes · OpenRouter', 'T3 → Claude Code']);
+  assert.ok(values.every((item) => item.isolated), 'each path holds model, effort and environment');
+  assert.deepEqual(defaultComparisonSelection(values), ['claude-code', 'hermes', 'direct-api@openrouter', 'hermes@openrouter', 't3>claude-code']);
+});
