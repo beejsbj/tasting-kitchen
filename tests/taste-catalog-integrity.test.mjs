@@ -15,6 +15,8 @@ async function makeValidationRepository() {
   await cp(path.join(projectRoot, "catalog"), path.join(root, "catalog"), { recursive: true });
   await cp(path.join(projectRoot, "dishes"), path.join(root, "dishes"), { recursive: true });
   await cp(path.join(projectRoot, "reviews"), path.join(root, "reviews"), { recursive: true });
+  // These tests rewrite Dish manifests on purpose; the notes beside them pin the shipped hashes.
+  await rm(path.join(root, "catalog", "dish-notes.json"), { force: true });
   return root;
 }
 
@@ -493,4 +495,20 @@ test("catalog validation rejects malformed Menu documents", async (t) => {
     assert.equal(result.status, 1, `${name} should fail validation`);
     assert.match(result.stderr, expected, name);
   }
+});
+
+test("catalog validation refuses a Dish note whose pinned hash no longer matches its Dish", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const [dishId] = (await readdir(path.join(root, "dishes"))).sort();
+  const { dishHash } = JSON.parse(await readFile(path.join(root, "dishes", dishId, "dish.json"), "utf8"));
+  const notesPath = path.join(root, "catalog", "dish-notes.json");
+  const notes = (hash) => ({ schemaVersion: 1, notes: [{ id: "seen", text: "Cooked inside the Kitchen repo.", dishes: [{ id: dishId, dishHash: hash }] }] });
+  await writeFile(notesPath, JSON.stringify(notes(dishHash)));
+  let result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+  await writeFile(notesPath, JSON.stringify(notes(`sha256:${"0".repeat(64)}`)));
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /dish-notes\.json.*immutable hash/);
 });

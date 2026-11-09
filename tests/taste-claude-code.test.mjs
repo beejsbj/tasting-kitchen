@@ -8,7 +8,6 @@ import { promisify } from "node:util";
 
 import { computeConfigHash, computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import {
-  ancestorInstructionExcludes,
   buildClaudeTurnArgs,
   claudeChildEnv,
   currentClaudeSetupDigest,
@@ -106,21 +105,21 @@ async function fakeClaude(root) {
 }
 
 test("clean, snapshot and live turn plans pin model, effort, isolation, toggles and exact resume", () => {
-  const workspace = "/srv/kitchen/private/runtime/attempts/a/workspace";
-  const harnessHome = "/srv/kitchen/private/runtime/attempts/a/claude-home";
+  const workspace = "/var/tmp/tk-1000/0123456789abcdef/workspace";
+  const harnessHome = "/var/tmp/tk-1000/0123456789abcdef/claude-home";
   const clean = buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace, harnessHome, prompt: "-Cook" });
   assert.deepEqual(clean.slice(0, 8), ["-p", "--output-format", "stream-json", "--verbose", "--model", "claude-haiku-5-5", "--effort", "high"]);
   assert.ok(clean.includes("--safe-mode"));
   assert.equal(argAfter(clean, "--setting-sources"), "");
   assert.ok(clean.includes("--strict-mcp-config"));
   assert.deepEqual(JSON.parse(argAfter(clean, "--mcp-config")), { mcpServers: {} });
-  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true, includeGitInstructions: false });
+  assert.deepEqual(JSON.parse(argAfter(clean, "--settings")), { disableAllHooks: true, disableClaudeAiConnectors: true });
   assert.equal(argAfter(clean, "--tools"), "Bash,Edit,Glob,Grep,Read,Write");
   assert.equal(argAfter(clean, "--permission-mode"), "bypassPermissions");
   assert.deepEqual(clean.slice(-2), ["--", "-Cook"], "a dash-leading prompt stays a prompt");
   assert.equal(clean.includes("--resume"), false);
 
-  const snapshot = buildClaudeTurnArgs({ variant: claudeVariant("snapshot"), workspace, workspaceRealPath: "/mnt/kitchen/private/runtime/attempts/a/workspace", harnessHome, prompt: "Correct", threadId: SESSION_ID });
+  const snapshot = buildClaudeTurnArgs({ variant: claudeVariant("snapshot"), workspace, harnessHome, prompt: "Correct", threadId: SESSION_ID });
   assert.equal(snapshot.includes("--safe-mode"), false);
   assert.equal(argAfter(snapshot, "--setting-sources"), "user");
   assert.equal(argAfter(snapshot, "--tools"), "Bash,Edit,Glob,Grep,Read,Write,Skill");
@@ -131,9 +130,8 @@ test("clean, snapshot and live turn plans pin model, effort, isolation, toggles 
   assert.equal(snapshotSettings.autoDreamEnabled, false);
   assert.equal(snapshotSettings.autoMemoryDirectory, path.join(harnessHome, "memory"), "memory reads and writes the copy");
   assert.equal(snapshotSettings.disableClaudeAiConnectors, true);
-  const excludes = snapshotSettings.claudeMdExcludes;
-  for (const file of ["/srv/kitchen/AGENTS.md", "/srv/kitchen/CLAUDE.md", "/mnt/kitchen/AGENTS.md", "/AGENTS.md", "/srv/kitchen/.claude/**"]) assert.ok(excludes.includes(file), file);
-  assert.equal(excludes.some((file) => file.startsWith(`${workspace}/`)), false, "the workspace itself is not excluded");
+  // The workspace sits outside any repository, so there are no ancestor instructions to exclude.
+  assert.equal("claudeMdExcludes" in snapshotSettings, false);
 
   const noMemory = JSON.parse(argAfter(buildClaudeTurnArgs({ variant: claudeVariant("snapshot", {}, { memory: "off" }), workspace, harnessHome, prompt: "x" }), "--settings"));
   assert.equal(noMemory.autoMemoryEnabled, false);
@@ -155,7 +153,6 @@ test("clean, snapshot and live turn plans pin model, effort, isolation, toggles 
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace, prompt: "x", threadId: "latest" }), /exact UUID/);
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean"), workspace: "relative", prompt: "x" }), /absolute path/);
   assert.throws(() => buildClaudeTurnArgs({ variant: claudeVariant("clean", { executionProfile: withoutEnvironment("clean") }), workspace, prompt: "x" }), /environment clean, snapshot or live/);
-  assert.deepEqual(ancestorInstructionExcludes("/a/workspace"), ["/a/CLAUDE.md", "/a/CLAUDE.local.md", "/a/AGENTS.md", "/a/.claude/**", "/CLAUDE.md", "/CLAUDE.local.md", "/AGENTS.md", "/.claude/**"]);
 });
 
 test("the child environment drops a parent Claude session, points at the right home, and carries the toggles", () => {
@@ -170,8 +167,8 @@ test("the child environment drops a parent Claude session, points at the right h
   assert.equal(clean.CLAUDE_CODE_DISABLE_CLAUDE_MDS, "1");
   assert.equal(clean.CLAUDE_CODE_DISABLE_AUTO_MEMORY, "1");
   assert.equal(clean.GIT_CEILING_DIRECTORIES, undefined);
-  const snapshot = claudeChildEnv({ variant: claudeVariant("snapshot"), harnessHome: "/attempt/claude-home", workspace: "/srv/a/workspace", workspaceRealPath: "/mnt/a/workspace", base });
-  assert.equal(snapshot.GIT_CEILING_DIRECTORIES, ["/srv/a", "/mnt/a"].join(path.delimiter));
+  const snapshot = claudeChildEnv({ variant: claudeVariant("snapshot"), harnessHome: "/attempt/claude-home", base });
+  assert.equal(snapshot.GIT_CEILING_DIRECTORIES, undefined);
   assert.equal(snapshot.CLAUDE_CONFIG_DIR, "/attempt/claude-home");
   assert.equal(snapshot.CLAUDE_CODE_DISABLE_CLAUDE_MDS, undefined, "a snapshot keeps the copied user CLAUDE.md");
   assert.equal(snapshot.CLAUDE_CODE_DISABLE_AUTO_MEMORY, undefined, "memory on");
@@ -341,7 +338,7 @@ test("Claude Code runs fixed turns in one session, hands the token on a descript
   for (const call of calls) {
     assert.equal(call.tokenMatches, true);
     assert.equal(call.configDir, harnessHome);
-    assert.equal(call.gitCeiling, root);
+    assert.equal(call.gitCeiling, undefined);
     assert.deepEqual(call.inherited, []);
     assert.equal(call.args.some((arg) => arg.includes(TOKEN)), false);
   }
@@ -459,8 +456,8 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   assert.equal(dish.visibility, undefined);
   assert.equal((await readJson(path.join(clean.dishDirectory, "receipt.json"))).setup, undefined);
   const attemptDir = path.join(f.root, "private/runtime/attempts", clean.attemptId);
-  assert.deepEqual((await readdir(path.join(attemptDir, "claude-home"))).filter((entry) => /credential/iu.test(entry)), []);
   const requested = await readJson(path.join(attemptDir, "requested.json"));
+  assert.deepEqual((await readdir(path.join(requested.cookDirectory, "claude-home"))).filter((entry) => /credential/iu.test(entry)), []);
   assert.equal(requested.execution.environment, "clean");
   assert.equal(requested.execution.setup, "none (safe mode)");
   assert.equal(requested.execution.mcpServers, "none");
@@ -481,9 +478,9 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   assert.deepEqual(receipt.setup.loaded, { mcpServers: [], plugins: [] });
   assert.deepEqual(receipt.setup.entries.map((entry) => entry.entry), ["CLAUDE.md", "memory", "settings.json", "skills"]);
   // The copy is discarded once the attempt ends; the digest is what remains of it.
-  assert.equal(await readdir(path.join(f.root, "private/runtime/attempts", snapshot.attemptId, "claude-home")).catch(() => "gone"), "gone");
+  assert.equal(await readdir(path.join(snapshotRequest.cookDirectory, "claude-home")).catch(() => "gone"), "gone");
   const snapshotCall = (await readFile(f.env.FAKE_LOG, "utf8")).trim().split("\n").map(JSON.parse).at(-1);
-  assert.equal(snapshotCall.configDir, path.join(f.root, "private/runtime/attempts", snapshot.attemptId, "claude-home"));
+  assert.equal(snapshotCall.configDir, path.join(snapshotRequest.cookDirectory, "claude-home"));
 
   // Live: his real home (here the stand-in), nothing copied, no digest on the Dish.
   const live = await cook(claudeVariant("live"), "live");
@@ -576,7 +573,8 @@ await executeRecipe({ repoRoot: c.root, catalog: c.catalog, recipe: c.recipe, va
   assert.deepEqual(await exited, { code, signal: null });
   assert.throws(() => process.kill(harnessPid, 0), /ESRCH/, "the harness did not outlive the Kitchen");
   const attemptDir = path.join(f.root, "private/runtime/attempts", (await readdir(path.join(f.root, "private/runtime/attempts")))[0]);
-  assert.equal(await pathExists(path.join(attemptDir, "claude-home")), false, "the copied setup is gone");
+  const { cookDirectory } = JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8"));
+  assert.equal(await pathExists(path.join(cookDirectory, "claude-home")), false, "the copied setup is gone");
   const state = JSON.parse(await readFile(path.join(attemptDir, "state.json"), "utf8"));
   assert.equal(state.status, "failed");
   assert.equal(state.stage, "interrupted");

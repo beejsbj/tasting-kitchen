@@ -66,7 +66,7 @@ test("adapters expose pure fresh and exact-resume turn plans", () => {
   assert.equal(resumedCursor[resumedCursor.indexOf("--resume") + 1], UUID);
 });
 
-test("a shipped profile declares no environment, so Codex and Cursor reject clean, snapshot and live until they implement them", () => {
+test("the original Codex and Cursor profiles declare no environment, so they reject clean, snapshot and live", () => {
   const withProfile = (extra) => ({ ...variant, executionProfile: { ...profile, ...extra } });
   assert.doesNotThrow(() => resolveHarnessAdapter(variant));
   assert.throws(() => resolveHarnessAdapter(withProfile({ environment: "clean" })), /declares no environment/);
@@ -86,6 +86,14 @@ test("a shipped profile declares no environment, so Codex and Cursor reject clea
   assert.equal(isPersonalEnvironment(withProfile({ environment: "live" })), true);
   assert.equal(isPersonalEnvironment(withProfile({ environment: "clean" })), false);
   assert.equal(isPersonalEnvironment(variant), false);
+});
+
+test("Codex offers a clean profile beside its original one; it accepts exactly clean", () => {
+  const cleanProfile = { ...profile, id: "codex-linux-host-clean-v1", label: "via Codex CLI · clean", environment: "clean" };
+  assert.doesNotThrow(() => resolveHarnessAdapter({ ...variant, executionProfile: cleanProfile }));
+  assert.throws(() => resolveHarnessAdapter({ ...variant, executionProfile: { ...cleanProfile, environment: undefined } }), /environment must be clean \(omitted\)/);
+  assert.throws(() => resolveHarnessAdapter({ ...variant, executionProfile: { ...cleanProfile, environment: "snapshot" } }), /environment must be clean \(got snapshot\)/);
+  assert.throws(() => resolveHarnessAdapter({ ...variant, executionProfile: { ...cleanProfile, sandbox: "workspace-write" } }), /sandbox must be danger-full-access/);
 });
 
 test("a profile that declares an environment accepts exactly that one, with exactly the toggles it can honour", () => {

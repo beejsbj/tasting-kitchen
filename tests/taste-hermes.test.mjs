@@ -214,7 +214,8 @@ test("clean Hermes runs both turns in one fresh home, resumes exactly, verifies 
   const config = await readFile(path.join(a.attemptDir, "hermes-home", "config.yaml"), "utf8");
   assert.match(config, /provider: anthropic\n {2}default: claude-haiku-5-5/u);
   assert.doesNotMatch(config, /fallback|secrets|plugins|mcp/u);
-  await access(path.join(a.attemptDir, ".git"));
+  // Cooking happens outside any repository, so no .git marker is written.
+  await assert.rejects(access(path.join(a.attemptDir, ".git")), /ENOENT/);
   const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_AUX: "1" } });
   assert.equal(result.failure, null);
   assert.equal(result.threadId, SESSION);
@@ -374,7 +375,7 @@ test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dish
   assert.equal(requested.execution.toolsets, "file,terminal");
   const observed = JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8"));
   assert.equal(observed.environment, "clean");
-  assert.deepEqual(await readdir(path.join(attemptDir, "hermes-home")), ["state.db"], "only the session database outlives the session");
+  assert.deepEqual(await readdir(path.join(requested.cookDirectory, "hermes-home")), ["state.db"], "only the session database outlives the session");
   const dish = JSON.parse(await readFile(path.join(cleanRun.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.observedModel, "claude-haiku-5-5");
   assert.equal(dish.identity.harnessVersion, "Hermes Agent v9.9.9 (fake)");
@@ -394,7 +395,7 @@ test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dish
   const receipt = JSON.parse(await readFile(path.join(snapshotRun.dishDirectory, "receipt.json"), "utf8"));
   assert.equal(receipt.setup.digest, snapshotDish.identity.setupDigest);
   assert.equal(receipt.setup.harnessProfile, "rose");
-  const snapshotCalls = (await f.calls()).filter((call) => call.home === path.join(snapshotAttempt, "hermes-home"));
+  const snapshotCalls = (await f.calls()).filter((call) => call.home === path.join(snapshotRequest.cookDirectory, "hermes-home"));
   assert.equal(snapshotCalls.length, 2);
   for (const call of snapshotCalls) {
     assert.equal(call.args.includes("-p"), false);
@@ -402,7 +403,7 @@ test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dish
     assert.equal(call.soul, "I am Rose.\n", "the run sees the copied soul");
   }
   // The copy and the borrowed login are gone; the real profile is untouched.
-  assert.deepEqual(await readdir(path.join(snapshotAttempt, "hermes-home")), ["state.db"]);
+  assert.deepEqual(await readdir(path.join(snapshotRequest.cookDirectory, "hermes-home")), ["state.db"]);
   assert.deepEqual(await listTree(rose), roseBefore);
   const snapshotObserved = JSON.parse(await readFile(path.join(snapshotAttempt, "observed.json"), "utf8"));
   assert.equal(snapshotObserved.environment, "snapshot");
@@ -432,7 +433,6 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
   const f = await setup(t);
   const a = await attempt(f.root, "openrouter");
   await assert.rejects(prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env: { ...f.env, OPENROUTER_API_KEY: "" } }), /needs OPENROUTER_API_KEY/);
-  await rm(path.join(a.attemptDir, ".git"));
   // The route key is the only credential that survives the scrub; Anthropic's does not.
   const env = { ...f.env, OPENROUTER_API_KEY: "sk-or-test", ANTHROPIC_API_KEY: "sk-ant-leak", FAKE_BASE_URL: "https://openrouter.ai/api/v1" };
   await prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env });

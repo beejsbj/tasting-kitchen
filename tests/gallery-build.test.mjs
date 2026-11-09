@@ -4,6 +4,18 @@ import path from "node:path";
 import test from "node:test";
 
 const root = path.resolve(import.meta.dirname, "..");
+// Codex and Cursor Dishes cooked in the repo, before the move out of it, carry a disclosure note; later ones do not.
+const COOKED_IN_REPO_BEFORE = "2026-11-09T00:00:00Z";
+const DISCLOSURES = { "codex-cli": ["codex-saw-kitchen-agents-md", "codex-saw-personal-skills"], "cursor-agent": ["cursor-real-home"] };
+
+/** A historical Dish carries a disclosure for its harness; any other Dish carries none. Other notes are allowed. */
+function carriesItsDisclosure(dish) {
+  const ids = (dish.notes ?? []).map((note) => note.id);
+  const historical = dish.identity.harness in DISCLOSURES && dish.executedAt < COOKED_IN_REPO_BEFORE;
+  return historical
+    ? ids.some((id) => DISCLOSURES[dish.identity.harness].includes(id))
+    : !ids.some((id) => Object.values(DISCLOSURES).flat().includes(id));
+}
 
 test("the static gallery preserves the cooked public catalog", async () => {
   const [html, registry, recipeBook, assets] = await Promise.all([
@@ -16,11 +28,14 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.match(html, /\/assets\//);
   assert.equal(registry.schemaVersion, 3);
   assert.equal(registry.cuisines.length, 9);
-  assert.equal(registry.configurations.length, 59);
+  assert.equal(registry.configurations.length, 67);
   assert.equal(registry.configurations.filter((configuration) => configuration.executionProfile.route === "openrouter" && configuration.harness === "hermes").length, 12);
   assert.ok(registry.configurations.filter((configuration) => configuration.harness === "direct-api").every((configuration) => configuration.capabilities.length === 0));
   assert.equal(registry.recipes.length, 17);
   assert.equal(registry.dishes.length, 27);
+  // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
+  assert.ok(registry.dishes.every(carriesItsDisclosure));
+  assert.equal(registry.dishes.filter((dish) => dish.notes?.some((note) => note.id === "codex-saw-kitchen-agents-md")).length, 7);
   assert.equal(registry.dishes.filter((dish) => dish.artifact.kind === "web").length, 20);
   const sessionDishes = registry.dishes.filter((dish) => dish.artifact.kind === "session");
   assert.equal(sessionDishes.length, 7);
@@ -69,6 +84,9 @@ test("the built site publishes only active Dishes and their selected public arti
   const activeRecipeIds = new Set(registry.recipes.map((recipe) => recipe.id));
   assert.equal(activeRecipeIds.size, 17);
   assert.equal(registry.dishes.length, 27);
+  // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
+  assert.ok(registry.dishes.every(carriesItsDisclosure));
+  assert.equal(registry.dishes.filter((dish) => dish.notes?.some((note) => note.id === "codex-saw-kitchen-agents-md")).length, 7);
   assert.ok(registry.dishes.every((dish) => activeRecipeIds.has(dish.recipe.id)));
   assert.ok(registry.menus.every((menu) => menu.recipes.every((recipeId) => activeRecipeIds.has(recipeId))));
   assert.ok(registry.dishes.every((dish) => dish.artifact.files.every((file) => !/^(?:fixtures|private)\//u.test(file.path))));

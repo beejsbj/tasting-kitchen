@@ -5,6 +5,7 @@ import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
+import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
@@ -1011,6 +1012,12 @@ for (const relative of reviewFiles.sort()) {
   if (!review) continue;
   if (reviewIds.has(review.id)) fail(relative, `duplicate review id ${review.id}`);
   reviewIds.add(review.id);
+}
+
+try {
+  await loadDishNotes(root, { dishes: [...dishes.values()] });
+} catch (error) {
+  fail("catalog/dish-notes.json", error.message);
 }
 
 let axisSets = [];

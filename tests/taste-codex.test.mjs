@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -13,6 +13,7 @@ import {
   runCodexSession,
   runCodexTurn,
 } from "../lib/taste/codex.mjs";
+import { getHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const EXECUTION_PROFILE = {
@@ -40,7 +41,7 @@ import { appendFile, writeFile } from "node:fs/promises";
 const args = process.argv.slice(2);
 let stdin = "";
 for await (const chunk of process.stdin) stdin += chunk;
-if (process.env.FAKE_LOG) await appendFile(process.env.FAKE_LOG, JSON.stringify({ args, stdin, home: process.env.CODEX_HOME, cwd: process.cwd() }) + "\\n");
+if (process.env.FAKE_LOG) await appendFile(process.env.FAKE_LOG, JSON.stringify({ args, stdin, home: process.env.CODEX_HOME, userHome: process.env.HOME, xdgConfig: process.env.XDG_CONFIG_HOME ?? null, cwd: process.cwd() }) + "\\n");
 if (args[0] === "--version") { console.log("codex-cli 9.9.9-fake"); process.exit(0); }
 const outputFlag = args.indexOf("--output-last-message");
 if (outputFlag >= 0 && process.env.FAKE_NO_FINAL !== "1") await writeFile(args[outputFlag + 1], process.env.FAKE_FINAL ?? "finished");
@@ -223,6 +224,45 @@ test("a scripted session starts fresh then resumes only the returned UUID", asyn
   assert.deepEqual(plans.map(({ argv }) => argv), session.turns.map(({ argv }) => argv));
   assert.equal(session.turns[0].turnId, "opening");
   assert.equal(session.turns[0].eventsPath.endsWith("stdout.jsonl"), true);
+});
+
+test("a clean Codex session runs with a fresh HOME beside its fresh CODEX_HOME; the original profile keeps the real HOME", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const auth = path.join(f.root, "auth.json");
+  await writeFile(auth, "{}");
+  const recipe = { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }, { id: "correction", content: "Two" }] };
+  const cleanProfile = { ...EXECUTION_PROFILE, id: "codex-linux-host-clean-v1", label: "via Codex CLI · clean", environment: "clean" };
+  const variant = { model: "gpt-5.6-sol", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: cleanProfile };
+  const adapter = getHarnessAdapter("codex-cli");
+  const codexHome = path.join(f.root, "cook", "codex-home");
+  await mkdir(path.dirname(codexHome));
+  await adapter.prepareAttempt({ variant, codexHome, authPath: auth });
+  const home = path.join(f.root, "cook", "home");
+  assert.deepEqual(await readdir(home), [], "the fresh home starts empty");
+  assert.deepEqual(await readdir(codexHome), ["auth.json"]);
+  assert.deepEqual(adapter.requestedExecution(variant), { codexHome: "fresh-per-attempt", home: "fresh-per-attempt" });
+
+  const env = { FAKE_THREAD: THREAD_ID, FAKE_LOG: f.log, XDG_CONFIG_HOME: "/elsewhere/.config" };
+  const session = await runCodexSession({ variant, recipe, workspace: f.workspace, codexHome, privateDir: path.join(f.root, "clean"), executable: f.fake, env });
+  assert.equal(session.failure, null);
+  const calls = (await readFile(f.log, "utf8")).trim().split("\n").map(JSON.parse);
+  assert.equal(calls.length, 3, "version query and both turns");
+  for (const call of calls) {
+    assert.equal(call.home, codexHome);
+    assert.equal(call.userHome, home, "user skills under the real HOME stay out of reach");
+    assert.equal(call.xdgConfig, null);
+  }
+  for (const call of calls.filter(({ args }) => args.includes("exec"))) {
+    assert.ok(call.args.includes("--ignore-user-config"));
+    assert.ok(call.args.includes("--ignore-rules"));
+  }
+
+  await rm(f.log);
+  const original = { ...variant, executionProfile: EXECUTION_PROFILE };
+  assert.deepEqual(adapter.requestedExecution(original), { codexHome: "fresh-per-attempt", home: "inherited" });
+  await runCodexSession({ variant: original, recipe, workspace: f.workspace, codexHome, privateDir: path.join(f.root, "original"), executable: f.fake, env: { FAKE_THREAD: THREAD_ID, FAKE_LOG: f.log } });
+  for (const call of (await readFile(f.log, "utf8")).trim().split("\n").map(JSON.parse)) assert.equal(call.userHome, process.env.HOME);
 });
 
 test("session returns a terminal failure and does not send later turns", async () => {

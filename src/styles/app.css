@@ -152,3 +152,4 @@ h1, h2, h3 { font-family: var(--font-display); }
 .helper { font-size: var(--text-xs); color: var(--ink-muted); line-height: 1.5; }
 .dish-card__changed, .receipt-note { color: var(--ink-muted); font-style: italic; }
 .brief-changed { border-left: 3px solid var(--line); padding-left: var(--space-4); }
+.dish-note { border-left: 3px solid var(--line); padding-left: var(--space-3); line-height: 1.5; }

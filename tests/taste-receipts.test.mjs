@@ -233,3 +233,10 @@ test("prompt mounts are forbidden; safe workspace mounts do not change skill ide
   assert.equal(computeSkillHash(workspace, workspace.treeHash), workspace.hash);
   assert.doesNotThrow(() => validateSkillReceipt(workspace, dishSkill(workspace)));
 });
+
+test("the Dish loader ignores an in-flight publication left by a crash", async (t) => {
+  const root = await temporary(t);
+  await mkdir(path.join(root, "dishes/.dish_x.publishing-1-2"), { recursive: true });
+  await writeFile(path.join(root, "dishes/.dish_x.publishing-1-2/partial.txt"), "half a copy");
+  assert.deepEqual(await loadDishes(root), []);
+});
