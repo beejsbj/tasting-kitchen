@@ -155,7 +155,7 @@ test("T3 → Claude Code runs on a scratch server, keeps the refresh token out, 
   const f = await setup(t);
   const a = await attempt(f.root, "claude");
   await prepareT3Attempt({ variant: viaClaude, cwd: a.attemptDir, env: f.env });
-  await access(path.join(a.attemptDir, ".git"));
+  await assert.rejects(access(path.join(a.attemptDir, ".git")), /ENOENT/, "no marker: the cook directory is outside any repository");
   const userSettings = JSON.parse(await readFile(path.join(a.attemptDir, "claude-home", "settings.json"), "utf8"));
   assert.equal(userSettings.disableAllHooks, true);
   assert.deepEqual(userSettings.permissions.deny, ["WebFetch", "WebSearch"]);
@@ -291,6 +291,11 @@ test("a T3 → Claude Code Dish publishes through the runner with its harness pa
   const requested = JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8"));
   assert.deepEqual(requested.identity.harnessPath, ["t3", "claude-code"]);
   assert.equal(requested.execution.innerHarness, "claude-code");
+  // The workspace and the scratch T3 home sit in the cook directory outside the repo, and the token is gone from it.
+  const cook = requested.cookDirectory;
+  assert.equal(path.relative(repoRoot, cook).startsWith(".."), true, "the cook directory is outside the repo");
+  assert.equal((await readdir(path.join(cook, "t3-home", "userdata"))).includes("settings.json"), false);
+  assert.equal(requested.execution.gitBoundary, "cook-directory-outside-repo");
   const receipt = JSON.parse(await readFile(path.join(run.dishDirectory, "receipt.json"), "utf8"));
   assert.deepEqual(receipt.configuration.harnessPath, ["t3", "claude-code"]);
 });
