@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import { CREDENTIAL_ENV, harnessEnv } from "../lib/taste/child-env.mjs";
@@ -86,3 +88,16 @@ test("live Claude Code runs as he runs claude: his environment, minus a parent C
   assert.equal(live.GH_TOKEN, "gh-secret", "live keeps his environment, as he runs it");
   for (const key of ["CLAUDECODE", "CLAUDE_CODE_MESSAGING_TOKEN", "CLAUDE_CONFIG_DIR", "ANTHROPIC_API_KEY"]) assert.equal(live[key], undefined, key);
 }));
+
+test("acceptance checks run the model's code with the allowlisted environment, not the Kitchen's", async (t) => {
+  const { runChecks } = await import("../lib/taste/checks.mjs");
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "taste-checks-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  process.env.ZZ_UNKNOWN_CANARY = "leak";
+  t.after(() => { delete process.env.ZZ_UNKNOWN_CANARY; });
+  const script = "const leaked = Object.keys(process.env).filter((key) => /CANARY|GH_TOKEN|OPENROUTER/.test(key)); process.exit(leaked.length ? 1 : 0)";
+  const recipe = { validation: { checks: [{ id: "env", type: "command", required: true, argv: [process.execPath, "-e", script] }] } };
+  const result = await runChecks(recipe, workspace, { env: { GH_TOKEN: "x", OPENROUTER_API_KEY: "y" } });
+  assert.equal(result.passed, true, JSON.stringify(result.checks));
+});
