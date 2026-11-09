@@ -60,6 +60,7 @@ test("the clock aborts once the declared time has passed, credits reported waits
   let pending = null;
   const clock = startBudgetClock({ seconds: 10, now: () => now, setTimer: (fn, ms) => { pending = { fn, at: now + ms }; return 1; }, clearTimer: () => { pending = null; } });
   const advance = (to) => { now = to; while (pending && pending.at <= now) { const { fn } = pending; pending = null; fn(); } };
+  clock.resume();
   advance(9_000);
   clock.credit(5_000); // a 5 s rate-limit wait the harness reported
   advance(12_000);
@@ -72,12 +73,34 @@ test("the clock aborts once the declared time has passed, credits reported waits
   assert.deepEqual(clock.stop(), { seconds: 10, elapsedMs: 15_000, creditedMs: 5_000, expired: true }, "a credit after the budget ran out changes nothing");
 });
 
+test("the clock runs only while a harness or request is running: startup and Kitchen's work between turns are not the model's", () => {
+  let now = 0;
+  let pending = null;
+  const clock = startBudgetClock({ seconds: 10, now: () => now, setTimer: (fn, ms) => { pending = { fn, at: now + ms }; return 1; }, clearTimer: () => { pending = null; } });
+  const advance = (to) => { now = to; while (pending && pending.at <= now) { const { fn } = pending; pending = null; fn(); } };
+  advance(60_000); // a version probe, a scratch server starting: the clock has not started
+  assert.equal(clock.expired, false);
+  clock.resume(); // the first turn's harness starts
+  advance(66_000);
+  clock.pause(); // the turn ends; Kitchen writes its files and reads the harness's records
+  advance(200_000);
+  assert.equal(clock.expired, false, "paused time is not the model's");
+  clock.resume(); // the second turn
+  advance(203_999);
+  assert.equal(clock.expired, false);
+  advance(204_000);
+  assert.equal(clock.expired, true, "6 s + 4 s of running time spends the 10 s budget");
+  assert.deepEqual(clock.stop(), { seconds: 10, elapsedMs: 10_000, creditedMs: 0, expired: true });
+});
+
 test("the real clock aborts with BudgetExpired, and a clock with no seconds never does", async () => {
   const clock = startBudgetClock({ seconds: 0.05 });
+  clock.resume();
   await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
   assert.ok(clock.signal.reason instanceof BudgetExpired);
   assert.equal(clock.stop().expired, true);
   const open = startBudgetClock({});
+  open.resume();
   await new Promise((resolve) => setTimeout(resolve, 80));
   assert.equal(open.expired, false);
   assert.deepEqual(Object.keys(open.stop()), ["elapsedMs", "creditedMs", "expired"]);
@@ -204,6 +227,7 @@ test("an expired time budget with the adapter's evidence is a chef fault, publis
   const result = await cook(f, t, {
     budgetClock: quickClock(),
     runSession: async ({ clock }) => {
+      clock.resume(); // as an adapter does when its harness starts
       await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
       return failedTurn("codex-cli was stopped by the Recipe's time budget", { chefFault: "out-of-time" });
     },
@@ -221,6 +245,7 @@ test("an expired time budget without evidence that the requested model was servi
   const result = await cook(f, t, {
     budgetClock: quickClock(),
     runSession: async ({ clock }) => {
+      clock.resume(); // as an adapter does when its harness starts
       await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
       return failedTurn("Codex exited with code null (SIGKILL)");
     },
