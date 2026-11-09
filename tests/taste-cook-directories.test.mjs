@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import "../lib/taste/harness-adapters.mjs";
-import { pruneCookDirectories, registerCookDirectory, retentionMs } from "../lib/taste/cook-directories.mjs";
+import { pruneCookDirectories, registerCookDirectory, retentionMs, settleCookDirectory } from "../lib/taste/cook-directories.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { createCookDirectory, defaultRuntimeRoot, writableRuntimeRoot } from "../lib/taste/runtime-root.mjs";
 
@@ -89,6 +89,16 @@ test("a cook directory whose Kitchen is alive is never touched, whatever its att
   const report = await s.prune();
   assert.deepEqual(report.kept.map(({ reason }) => reason), ["running"]);
   assert.equal(await readFile(path.join(running.cookDirectory, "t3-home/userdata/settings.json"), "utf8"), "{\"token\":\"live\"}");
+});
+
+test("a settled attempt in a still-living process ages out like any failed attempt", async (t) => {
+  const s = await scene(t);
+  const failed = await s.attempt({ owner: "alive", state: failedAt(30) });
+  assert.deepEqual((await s.prune({ dryRun: true })).kept.map(({ reason }) => reason), ["running"]);
+  await settleCookDirectory(failed.cookDirectory);
+  const report = await s.prune();
+  assert.deepEqual(report.removed.map(({ reason }) => reason), ["expired"]);
+  assert.equal(await exists(failed.cookDirectory), false);
 });
 
 test("an attempt whose Kitchen died is settled: its adapter's cleanup removes stale tokens, logins and copies, and its state says so", async (t) => {
