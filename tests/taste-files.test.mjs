@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { publicTextFindings, scanPublicTree, scanWebArtifactNetwork } from "../lib/taste/files.mjs";
+import { publicTextFindings, scanPublicTree, scanWebArtifactNetwork, selectArtifactFiles } from "../lib/taste/files.mjs";
 
 test("public scan distinguishes serialized page newlines from Windows absolute paths", () => {
   const serialized = JSON.stringify({ response: "Finished the page:\nNext line includes more prose." }, null, 2);
@@ -114,4 +114,21 @@ test("web artifact scan rejects remote runtime dependencies", async (t) => {
   await writeFile(path.join(root, "style.css"), '@import url("//cdn.example.test/type.css");');
   await assert.rejects(scanWebArtifactNetwork(root), /remote runtime references/);
   assert.ok(true);
+});
+
+test("artifact selection ignores workspace equipment outside the output contract, symlinks included", async (t) => {
+  // A lyric workspace holds Kitchen's engine with node_modules/.bin symlinks; it is never delivered.
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-select-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "engine/app/node_modules/.bin"), { recursive: true });
+  await writeFile(path.join(root, "engine/app/node_modules/tool.js"), "1\n");
+  await symlink("../tool.js", path.join(root, "engine/app/node_modules/.bin/tool"));
+  await mkdir(path.join(root, "source"));
+  await writeFile(path.join(root, "index.html"), "<!doctype html>\n");
+  await writeFile(path.join(root, "source/scene.ts"), "export {};\n");
+  const output = { entry: "index.html", include: ["index.html", "source/**"], limits: { maxFiles: 10, maxBytes: 4096 } };
+  assert.deepEqual((await selectArtifactFiles(root, output)).files, ["index.html", "source/scene.ts"]);
+  await symlink("../index.html", path.join(root, "source/link.html"));
+  await assert.rejects(selectArtifactFiles(root, output), /Symlinks are not allowed in artifacts: source\/link\.html/u);
+  await assert.rejects(selectArtifactFiles(root, { ...output, include: ["**"] }), /Symlinks are not allowed/u);
 });
