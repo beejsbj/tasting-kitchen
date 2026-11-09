@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
-import { axisOptions, axisValue, carryComparisonSelection, compareByNote, comparisonValues, defaultComparisonSelection, MAX_PANES, modelName, snapshotOptions, toggleComparisonValue } from '../src/lib/configuration-axes.ts';
-import { differingDimensions } from '../src/lib/configuration-label.ts';
+import { axisOptions, axisValue, carryComparisonSelection, compareAnnouncement, compareByNote, comparisonValues, defaultComparisonSelection, heldConfigLabels, MAX_PANES, modelName, showsAxis, snapshotOptions, toggleComparisonValue } from '../src/lib/configuration-axes.ts';
+import { differenceNote, differingDimensions } from '../src/lib/configuration-label.ts';
 
 const profile = { id: 'p', label: 'p', runtime: 'linux-host', sandbox: 'danger-full-access', approvalPolicy: 'never', nativeWeb: 'disabled', networkPolicy: 'not-enforced', filesystemBoundary: 'not-a-secrecy-boundary' };
 const configuration = (id, harness, model, reasoningEffort, environment, harnessProfile, extra = {}) => ({
@@ -135,4 +135,40 @@ test('the compare-by note states what was held and never credits the varied axis
   assert.match(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], loose), /harness varies, and so does model, environment · not an isolated comparison$/);
   assert.match(compareByNote('effort', ['Opus 5.5'], []), /only one effort on the counter$/);
   assert.match(compareByNote('environment', ['Opus 5.5'], ['harness']), /only one environment on the counter, yet harness differs$/);
+});
+
+test('a pane on an uncooked service tier keeps a Tier chip so it can be moved back', () => {
+  const tiered = [configuration('codex-luna-xhigh', 'codex-cli', 'gpt-5.6-luna', 'xhigh'), configuration('codex-luna-high-fast', 'codex-cli', 'gpt-5.6-luna', 'high', undefined, undefined, { serviceTier: 'fast' }), configuration('codex-luna-high', 'codex-cli', 'gpt-5.6-luna', 'high'), configuration('codex-luna-xhigh-fast', 'codex-cli', 'gpt-5.6-luna', 'xhigh', undefined, undefined, { serviceTier: 'fast' })];
+  const luna = counts({ 'codex-luna-xhigh': 1, 'codex-luna-high': 1 });
+  const [xhigh, highFast, , xhighFast] = tiered;
+  assert.equal(showsAxis(tiered, xhigh, 'tier', luna), false, 'only the default tier is cooked, so there is no choice to offer');
+  assert.equal(showsAxis(tiered, highFast, 'tier', luna), true, 'a pane on an uncooked tier shows the chip');
+  assert.equal(showsAxis(tiered, xhighFast, 'tier', luna), true, 'effort changes can land on an uncooked tier; the chip is how to leave it');
+  const options = byValue(axisOptions(tiered, xhighFast, 'tier', luna));
+  assert.equal(options.default.status, 'cooked');
+  assert.equal(options.default.config.id, 'codex-luna-xhigh', 'the chip leads back to the cooked tier');
+  assert.equal(options.fast.selected, true);
+  assert.equal(showsAxis(tiered, xhigh, 'model', luna), true, 'model, effort and harness always show');
+});
+
+test('undeclared environments are never held across harnesses, and the note says so', () => {
+  const codex = configuration('codex-luna-xhigh', 'codex-cli', 'gpt-5.6-luna', 'xhigh');
+  const cursor = configuration('cursor-luna-xhigh', 'cursor-agent', 'gpt-5.6-luna', 'xhigh');
+  const slots = [codex, cursor].map((config) => ({ config, skillKey: 'none' }));
+  const all = counts({ 'codex-luna-xhigh': 1, 'cursor-luna-xhigh': 1 });
+  const differing = differingDimensions(slots);
+  assert.deepEqual(differing, ['harness', 'undeclared environments']);
+  assert.deepEqual(heldConfigLabels([codex, cursor], codex, 'harness', all), ['Luna 5.6', 'XHigh'], 'Not declared is not a held environment');
+  const note = compareByNote('harness', ['Luna 5.6', 'XHigh'], differing);
+  assert.equal(note, 'Holding Luna 5.6 · XHigh · harness varies · environments not declared, so not known to be the same · not an isolated comparison');
+  assert.doesNotMatch(note, /only the harness differs|Not declared/);
+  assert.equal(differenceNote(differing), 'Same brief · harness differs · environments not declared, so not known to be the same');
+  assert.deepEqual(differingDimensions([slots[0], { config: { ...codex, id: 'codex-luna-high', reasoningEffort: 'high' }, skillKey: 'none' }]), ['effort'], 'one harness running undeclared twice is not a gap');
+  assert.deepEqual(differingDimensions([slots[0], { config: claude('opus', 'high', 'clean'), skillKey: 'none' }]).includes('undeclared environments'), false, 'a declared environment is a known difference, not a gap');
+  assert.deepEqual(heldConfigLabels(catalog, claude('opus', 'high', 'clean'), 'harness', cooked), ['Opus 5.5', 'High', 'Clean'], 'a declared environment is still held');
+});
+
+test('a Compare by layout is announced with what it holds', () => {
+  assert.equal(compareAnnouncement('harness', 3, ['Opus 5.5', 'High', 'Clean']), 'Comparing 3 harnesses, holding Opus 5.5 · High · Clean');
+  assert.equal(compareAnnouncement('tier', 2, []), 'Comparing 2 service tiers');
 });

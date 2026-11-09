@@ -15,7 +15,7 @@ import { latestDish, resolveRecipeSelection, selectionForDish, skillTokenForDish
 import { DishGallery } from "./components/DishGallery";
 import { artifactUrl, briefChanged, catalogChanges, dishesFor, dishSkillKey, loadRegistry, modelFamily, NO_SKILL, reviewsForDish, shortHash, serviceTierDrift, skillLabelFor } from "./lib/registry";
 import { configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentName, harnessLabel } from "./lib/configuration-label";
-import { compareByNote, MAX_PANES } from "./lib/configuration-axes";
+import { compareAnnouncement, compareByNote, MAX_PANES } from "./lib/configuration-axes";
 import { readGalleryState, writeGalleryState, type GalleryState } from "./lib/url-state";
 import { StyleGuide } from "./styleguide/StyleGuide";
 import { readDishVotes, saveDishVotes, syncDishVotes, voteFor, writeDishVote, type DishVote, type VoteMode } from './lib/dish-votes';
@@ -146,6 +146,7 @@ export default function App() {
     };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
+      <p className="sr-only" role="status" aria-live="polite">{compare ? compareAnnouncement(compare, slots.length, heldLabels(context, slots[0], compare)) : ''}</p>
       <section className="comparison-grid" data-panes={slots.length} style={{ "--columns": columns, "--rows": rows, "--panes": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
         {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
           {slots.length > 1 && <div className="pane-label">{paneLabel(slots[index], index)}</div>}
