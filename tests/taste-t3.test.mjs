@@ -272,7 +272,10 @@ for (const ignoresTerm of [false, true]) test(`if the Kitchen is killed mid-run,
   // A stand-in Kitchen: starts the scratch server, reports its port, then waits to be killed.
   const kitchen = path.join(f.root, "kitchen.mjs");
   const t3Module = new URL("../lib/taste/t3.mjs", import.meta.url).href;
-  await writeFile(kitchen, `import { startT3Server } from ${JSON.stringify(t3Module)};
+  // harness-adapters first: it is how the Kitchen loads t3.mjs, and t3.mjs sits in an import cycle with it.
+  const adapters = new URL("../lib/taste/harness-adapters.mjs", import.meta.url).href;
+  await writeFile(kitchen, `import ${JSON.stringify(adapters)};
+import { startT3Server } from ${JSON.stringify(t3Module)};
 const server = await startT3Server({ executable: ${JSON.stringify(f.t3)}, t3Home: ${JSON.stringify(path.join(a.attemptDir, "t3-home"))}, workspace: ${JSON.stringify(a.workspace)}, env: { ...process.env, FAKE_LOG: ${JSON.stringify(path.join(f.root, "calls.jsonl"))}${ignoresTerm ? ", FAKE_IGNORE_TERM: \"1\"" : ""} } });
 console.log(server.port);
 setInterval(() => {}, 1000);
