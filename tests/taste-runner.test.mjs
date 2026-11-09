@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, readdir, readlink, rm, stat, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, readlink, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { executePlan, executeRecipe } from "../lib/taste/runner.mjs";
+import { otherFilesystem } from "./support/filesystems.mjs";
 
 async function fixture({ failing = false } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-runner-"));
@@ -97,6 +98,7 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
   let usedCodexHome;
+  let usedWorkspace;
   const result = await executeRecipe({
     repoRoot: f.root,
     catalog: f.catalog,
@@ -105,19 +107,27 @@ test("publishes only selected output plus sanitized receipts as an immutable dis
     now: new Date("2026-08-14T12:00:00.000Z"),
     nonce: "fixed",
     authPath: f.authPath,
-    runSession: async ({ codexHome }) => {
+    runSession: async ({ codexHome, workspace }) => {
       usedCodexHome = codexHome;
+      usedWorkspace = workspace;
       return fakeSession();
     },
     verifyIdentity: observed,
   });
 
   assert.equal(result.status, "accepted", result.error);
-  assert.match(usedCodexHome, /attempts\/attempt_[^/]+\/codex-home$/);
+  // The model works in an opaque cook directory under the runtime root, outside the repo.
+  const cookDirectory = path.dirname(usedWorkspace);
+  assert.equal(path.dirname(cookDirectory), process.env.TASTE_RUNTIME_ROOT);
+  assert.match(path.basename(cookDirectory), /^[a-f0-9]{16}$/u);
+  assert.equal(usedCodexHome, path.join(cookDirectory, "codex-home"));
+  assert.equal(path.relative(f.root, usedWorkspace).startsWith(".."), true);
+  for (const name of [f.recipe.id, f.variant.id, f.variant.model]) assert.equal(usedWorkspace.includes(name), false, `workspace path names ${name}`);
   assert.deepEqual(await readdir(usedCodexHome), ["auth.json"]);
   assert.equal(await readlink(path.join(usedCodexHome, "auth.json")), f.authPath);
   assert.equal((await stat(usedCodexHome)).mode & 0o777, 0o700);
-  const requested = JSON.parse(await readFile(path.join(path.dirname(usedCodexHome), "requested.json"), "utf8"));
+  const requested = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "requested.json"), "utf8"));
+  assert.equal(requested.cookDirectory, cookDirectory);
   assert.deepEqual(requested.execution, {
     profileId: "codex-linux-host-unsandboxed-v1",
     label: "via Codex CLI · host-unsandboxed fallback",
@@ -173,6 +183,56 @@ test("a required check failure remains private and creates no dish", async (t) =
   assert.match(result.error, /Required validation failed/);
   assert.equal(JSON.parse(await readFile(path.join(result.attemptDir, "state.json"), "utf8")).status, "failed");
   await assert.rejects(readFile(path.join(f.root, "dishes", "dish_demo-session_codex-sol-high_20260814120000000_failed", "dish.json")), /ENOENT/);
+});
+
+test("a runtime root under a directory holding AGENTS.md fails closed before credentials or the model are touched", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const outer = await mkdtemp(path.join(os.tmpdir(), "taste-ancestor-"));
+  t.after(() => rm(outer, { recursive: true, force: true }));
+  await writeFile(path.join(outer, "AGENTS.md"), "# Notes about what is being tasted\n");
+  let launches = 0;
+  const result = await executeRecipe({
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant, nonce: "guarded", authPath: f.authPath,
+    env: { TASTE_RUNTIME_ROOT: path.join(outer, "runtime") },
+    runSession: async () => { launches += 1; return fakeSession(); }, verifyIdentity: observed,
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(launches, 0);
+  assert.match(result.error, /Workspace is not isolated/);
+  assert.ok(result.error.includes(path.join(outer, "AGENTS.md")));
+  const state = JSON.parse(await readFile(path.join(result.attemptDir, "state.json"), "utf8"));
+  assert.equal(state.stage, "preparation");
+  const [cook] = await readdir(path.join(outer, "runtime"));
+  assert.deepEqual(await readdir(path.join(outer, "runtime", cook)), [], "no harness home or workspace was prepared");
+  await assert.rejects(stat(path.join(f.root, "dishes")), /ENOENT/);
+});
+
+test("cooking and publication work when the workspace, private/ and dishes/ sit on different filesystems", async (t) => {
+  const elsewhere = await otherFilesystem();
+  if (!elsewhere) return t.skip("no second filesystem on this machine");
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const remote = await mkdtemp(path.join(elsewhere, "taste-private-"));
+  t.after(() => rm(remote, { recursive: true, force: true }));
+  // private/ is a symlink to another device, as on the host where EXDEV was seen.
+  await rm(path.join(f.root, "private"), { recursive: true, force: true });
+  await symlink(remote, path.join(f.root, "private"));
+  const runtime = await mkdtemp(path.join(os.tmpdir(), "taste-runtime-xdev-"));
+  t.after(() => rm(runtime, { recursive: true, force: true }));
+  let usedWorkspace;
+  const result = await executeRecipe({
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant, nonce: "xdev", authPath: f.authPath,
+    env: { TASTE_RUNTIME_ROOT: runtime },
+    runSession: async ({ workspace }) => { usedWorkspace = workspace; return fakeSession(); }, verifyIdentity: observed,
+  });
+  assert.equal(result.status, "accepted", result.error);
+  const attemptDir = path.join(f.root, "private/runtime/attempts", result.attemptId);
+  assert.notEqual((await stat(usedWorkspace)).dev, (await stat(attemptDir)).dev);
+  assert.notEqual((await stat(attemptDir)).dev, (await stat(result.dishDirectory)).dev);
+  assert.equal(JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8")).status, "accepted");
+  assert.deepEqual((await readdir(path.join(f.root, "dishes"))).filter((name) => name.startsWith(".")), [], "no publishing leftovers");
+  await assert.rejects(stat(path.join(attemptDir, "public-staging")), /ENOENT/);
 });
 
 test("Codex authentication failure happens before a session is launched", async (t) => {

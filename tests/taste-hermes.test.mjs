@@ -143,7 +143,8 @@ test("clean Hermes runs both turns in one fresh home, resumes exactly, verifies 
   const config = await readFile(path.join(a.attemptDir, "hermes-home", "config.yaml"), "utf8");
   assert.match(config, /provider: anthropic\n {2}default: claude-haiku-5-5/u);
   assert.doesNotMatch(config, /fallback|secrets|plugins|mcp/u);
-  await access(path.join(a.attemptDir, ".git"));
+  // Cooking happens outside any repository, so no .git marker is written.
+  await assert.rejects(access(path.join(a.attemptDir, ".git")), /ENOENT/);
   const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_AUX: "1" } });
   assert.equal(result.failure, null);
   assert.equal(result.threadId, SESSION);
@@ -264,7 +265,8 @@ test("a cooked clean Hermes Dish is public; a personal one goes to private/dishe
   assert.equal(requested.execution.toolsets, "file,terminal");
   const observed = JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8"));
   assert.equal(observed.environment, "clean");
-  await assert.rejects(access(path.join(attemptDir, "hermes-home", "auth.json")), /ENOENT/);
+  await access(path.join(requested.cookDirectory, "hermes-home", "config.yaml"));
+  await assert.rejects(access(path.join(requested.cookDirectory, "hermes-home", "auth.json")), /ENOENT/);
   const dish = JSON.parse(await readFile(path.join(cleanRun.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.observedModel, "claude-haiku-5-5");
   assert.equal(dish.identity.harnessVersion, "Hermes Agent v9.9.9 (fake)");

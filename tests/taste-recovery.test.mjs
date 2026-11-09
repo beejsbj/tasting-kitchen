@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -10,6 +10,7 @@ import { copyTree, pathExists } from "../lib/taste/files.mjs";
 import { sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { configurationFromRequest, recoverAttempt } from "../lib/taste/recovery.mjs";
 import { applySkillToRecipe, loadSkills } from "../lib/taste/skills.mjs";
+import { otherFilesystem } from "./support/filesystems.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
 const ATTEMPT_ID = "attempt_demo-web_codex-sol-high_20260814200923790_test";
@@ -265,6 +266,44 @@ test("recovery reconstructs preserved evidence, invokes no model, and publishes 
   assert.equal(JSON.parse(await readFile(path.join(f.attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
   assert.equal(await pathExists(path.join(f.attemptDir, "validation.recovery.json")), true);
   assert.equal(await pathExists(`${poison}.invoked`), false);
+});
+
+test("recovery finds the workspace and Codex home in the recorded cook directory outside the repo", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const runtime = await mkdtemp(path.join(await otherFilesystem() ?? os.tmpdir(), "taste-cook-"));
+  t.after(() => rm(runtime, { recursive: true, force: true }));
+  const cookDirectory = path.join(runtime, "0123456789abcdef");
+  for (const name of ["workspace", "codex-home"]) {
+    await cp(path.join(f.attemptDir, name), path.join(cookDirectory, name), { recursive: true });
+    await rm(path.join(f.attemptDir, name), { recursive: true });
+  }
+  const workspace = path.join(cookDirectory, "workspace");
+  await writeFile(path.join(f.attemptDir, "raw/turns/001-build/final.txt"), `Finished [index.html](${path.join(workspace, "index.html")}).`);
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  await json(requestedFile, { ...requested, cookDirectory, workspace: "workspace/" });
+
+  const result = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID, now: new Date("2026-08-15T01:02:03.000Z") });
+  assert.equal(result.status, "accepted");
+  const trace = await readFile(path.join(result.dishDirectory, "trace.json"), "utf8");
+  assert.match(trace, /artifact\/index\.html/);
+  assert.equal(trace.includes(runtime), false);
+  const observed = JSON.parse(await readFile(path.join(f.attemptDir, "observed.json"), "utf8"));
+  assert.equal(observed.rolloutPath, `codex-home/sessions/2026/08/14/rollout-${THREAD_ID}.jsonl`);
+  assert.equal(await pathExists(path.join(f.attemptDir, "public-staging")), false);
+  assert.equal((await stat(result.dishDirectory)).isDirectory(), true);
+});
+
+test("recovery refuses an unsafe or missing cook directory", async (t) => {
+  const f = await recoveryFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const requestedFile = path.join(f.attemptDir, "requested.json");
+  const requested = JSON.parse(await readFile(requestedFile, "utf8"));
+  await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "..", "escape") });
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /unsafe cook directory/);
+  await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "gone", "0123456789abcdef") });
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /workspace is missing/);
 });
 
 test("recovery records the attempted catalog hash, not the live catalog's", async (t) => {
