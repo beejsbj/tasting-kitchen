@@ -16,8 +16,9 @@ const eslintConfig = defineConfig([
     "private/**",
     "public/data/**",
     "public/dishes/**",
-    // Pinned third-party recipe inputs; preserve their original source bytes.
+    // Pinned third-party recipe inputs and skill sources; preserve their original source bytes.
     "catalog/recipes/**/fixtures/upstream/**",
+    "catalog/skills/*/files/**",
   ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

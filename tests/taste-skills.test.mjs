@@ -161,7 +161,8 @@ test("a layered run mounts the exact skill bytes and records the layer on the di
   const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
   assert.deepEqual(dish.skill, { id: "hand-drawn", hash: skill.skillHash });
   assert.equal("visibility" in dish, false);
-  const requested = JSON.parse(await readFile(path.join(path.dirname(seenWorkspace), "requested.json"), "utf8"));
+  const requested = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "requested.json"), "utf8"));
+  assert.equal(path.dirname(seenWorkspace), requested.cookDirectory);
   assert.equal(requested.skill.hash, skill.skillHash);
   assert.equal(requested.skill.mountAs, "skill");
   const { inputs, receipt } = await readDishSidecars(result.dishDirectory);
