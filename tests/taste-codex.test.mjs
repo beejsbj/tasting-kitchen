@@ -13,6 +13,7 @@ import {
   runCodexSession,
   runCodexTurn,
 } from "../lib/taste/codex.mjs";
+import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { getHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
@@ -48,6 +49,7 @@ if (outputFlag >= 0 && process.env.FAKE_NO_FINAL !== "1") await writeFile(args[o
 const resumeIndex = args.indexOf("resume");
 const threadId = resumeIndex >= 0 ? args[resumeIndex + 1] : process.env.FAKE_THREAD;
 console.log(JSON.stringify({ type: "thread.started", thread_id: process.env.FAKE_REPORTED_THREAD ?? threadId }));
+if (process.env.FAKE_HANG) await new Promise(() => setInterval(() => {}, 1000));
 if (process.env.FAKE_EVENT) console.log(JSON.stringify(JSON.parse(process.env.FAKE_EVENT)));
 else console.log(JSON.stringify({ type: "turn.completed" }));
 if (process.env.FAKE_STDERR) console.error(process.env.FAKE_STDERR);
@@ -317,4 +319,21 @@ test("detects nonzero exits, failure events, thread substitution, and missing fi
 test("captures an injected codex --version without running real Codex", async () => {
   const f = await fixture();
   assert.equal(await getCodexVersion({ executable: f.fake, codexHome: f.codexHome }), "codex-cli 9.9.9-fake");
+});
+
+test("the Recipe's time budget stops a hung Codex turn and the Run; without identity evidence it names no chef fault", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const clock = startBudgetClock({ seconds: 0.5 });
+  const started = Date.now();
+  const session = await runCodexSession({
+    variant: { model: "gpt-5.6-luna", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE },
+    recipe: { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }, { id: "correction", content: "Two" }] },
+    workspace: f.workspace, codexHome: f.codexHome, privateDir: path.join(f.root, "raw"), executable: f.fake, env: { FAKE_THREAD: THREAD_ID, FAKE_HANG: "1" }, clock,
+  });
+  clock.stop();
+  assert.ok(Date.now() - started < 10_000);
+  assert.match(session.failure.message, /stopped by the Recipe's time budget/);
+  assert.equal(session.failure.chefFault, undefined);
+  assert.equal(session.turns.length, 1);
 });
