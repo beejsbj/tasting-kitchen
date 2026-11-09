@@ -228,8 +228,9 @@ Still reachable by a model that looks (same user, so ordinary file reads):
 - a D-Bus or gpg-agent socket under `XDG_RUNTIME_DIR`, which the allowlist
   still passes (repointing or dropping it is a host-side choice);
 - for a live run, the whole shell environment (above);
-- `/proc/<pid>/environ` of the harness itself, which now holds nothing secret
-  (except a live run's).
+- `/proc/<pid>/environ` of the harness itself: no real provider key, only a
+  proxy dummy token, except the Claude Code access token under T3 (listed
+  above) and a live run's whole environment.
   Yama `ptrace_scope` is 1 on the Kitchen host, so the model's shell cannot read
   its ancestors' memory.
 
