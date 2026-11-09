@@ -47,14 +47,14 @@
 .axis-options, .compare-values { display: flex; flex-direction: column; gap: 1px; margin: .375rem 0 0; padding: .25rem; list-style: none; border: 1px solid #e2e8f0; border-radius: .625rem; background: #f8fafc; max-height: 18rem; overflow-y: auto; }
 .axis-option, .compare-value { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .5rem; width: 100%; min-height: 2.5rem; padding: .375rem .5rem; border: 0; border-radius: .375rem; background: transparent; color: #1e293b; font-size: .8125rem; text-align: left; cursor: pointer; }
 .compare-value { grid-template-columns: auto auto 1fr auto; }
-.axis-option:hover:not(:disabled), .compare-value:hover:not([data-disabled=true]) { background: white; }
+.axis-option:hover:not([aria-disabled=true]), .compare-value:hover:not([data-disabled=true]) { background: white; }
 .axis-option[aria-pressed=true], .compare-value[data-checked=true] { background: white; color: #1d4ed8; box-shadow: 0 1px 2px rgb(15 23 42 / .06); }
-.axis-option:disabled { cursor: not-allowed; color: #94a3b8; }
+.axis-option[aria-disabled=true] { cursor: not-allowed; color: #94a3b8; }
 .compare-value[data-disabled=true] { cursor: default; }
 .compare-value input { width: 1rem; height: 1rem; margin: 0; accent-color: #1d4ed8; }
 .axis-option__label, .compare-value__label { display: flex; flex-direction: column; min-width: 0; font-weight: 500; line-height: 1.3; }
 .axis-option__label small, .compare-value__label small { font-size: .6875rem; font-weight: 400; color: #64748b; }
-.axis-option:disabled .axis-option__label small { color: #94a3b8; }
+.axis-option[aria-disabled=true] .axis-option__label small { color: #94a3b8; }
 .axis-option__count { font: .6875rem var(--font-mono); color: #64748b; white-space: nowrap; }
 .cooked-mark { width: .5rem; height: .5rem; border-radius: 99rem; background: #1d4ed8; flex: none; }
 .cooked-mark[data-status=uncooked] { background: transparent; box-shadow: inset 0 0 0 1.5px #94a3b8; }
@@ -62,5 +62,5 @@
 .compare-axis.kitchen-button { min-height: 2.25rem; padding: .25rem .4rem .25rem .75rem; gap: .4rem; font-size: .8125rem; }
 .compare-axis__count { min-width: 1.25rem; padding: 0 .3rem; border-radius: 99rem; background: #e2e8f0; color: #334155; font: .6875rem/1.4 var(--font-mono); }
 .compare-axis[aria-pressed=true] .compare-axis__count { background: rgb(255 255 255 / .2); color: inherit; }
-.compare-axis:disabled { opacity: .45; }
+.compare-axis[aria-disabled=true] { opacity: .45; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { .axis-chip { transition: none; } }
