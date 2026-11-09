@@ -7,7 +7,7 @@ import test from "node:test";
 
 import { computeRecipeHash, planSelection } from "../lib/taste/catalog.mjs";
 import {
-  buildDirectApiRequest, directApiModelsEquivalent, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
+  buildDirectApiRequest, directApiModelsEquivalent, directApiReply, parseDirectApiJsonl, prepareDirectApiAttempt, runDirectApiSession, verifyDirectApiIdentity,
 } from "../lib/taste/direct-api.mjs";
 import { compatibilityFor, resolveHarnessAdapter, skillDeliverySupport } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -63,6 +63,7 @@ test("Direct API configurations carry no capabilities, the OpenRouter route, and
   assert.throws(() => resolveHarnessAdapter({ ...direct, reasoningEffort: "max" }), /reasoning effort/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, upstream: undefined } }), /upstream pin must be one of/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, upstream: "together" } }), /upstream pin must be one of/);
+  assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, upstream: "deepseek" } }), /not the maker anthropic's own provider/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, executionProfile: { ...profile, environment: undefined } }), /environment must be clean/);
   assert.throws(() => resolveHarnessAdapter({ ...direct, harnessPath: ["direct-api", "claude-code"] }), /cannot wrap Claude|cannot wrap claude-code/);
 });
@@ -140,40 +141,76 @@ test("two turns are one resent conversation; the served model is observed and th
   const parsed = parseDirectApiJsonl(await readFile(result.turns[1].eventsPath, "utf8"));
   assert.equal(parsed.threadId, result.threadId);
 
-  const observed = await verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint });
+  const observed = await verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint, recipe });
   assert.equal(observed.model, "anthropic/claude-opus-5.5");
   assert.equal(observed.route, "openrouter");
   assert.deepEqual(observed.upstreamProviders, ["Anthropic"]);
   assert.equal(observed.upstreamPin, "anthropic");
   assert.equal(observed.verifiedBy, "direct-api-response-model");
   // Production verification pins the real endpoint, so a test endpoint cannot pass it.
-  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result }), /endpoint requested https:\/\/openrouter.ai\/api\/v1\/chat\/completions/);
+  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, recipe }), /endpoint requested https:\/\/openrouter.ai\/api\/v1\/chat\/completions/);
 
   const rewritten = structuredClone(result);
   rewritten.turns[1].events[0].body.messages[1].content = "a different first reply";
-  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: rewritten, endpoint: fake.endpoint }), /did not replay reply 1 exactly/);
+  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: rewritten, endpoint: fake.endpoint, recipe }), /did not replay reply 1 exactly/);
   const altered = structuredClone(result);
   altered.turns[0].finalMessage = "altered";
-  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: altered, endpoint: fake.endpoint }), /final message does not match/);
+  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: altered, endpoint: fake.endpoint, recipe }), /final message does not match/);
 });
 
-test("a response served by another upstream, or by none reported, fails verification", async (t) => {
+test("a response served by another upstream, or by none reported, stops the run and fails verification", async (t) => {
   const root = await scratch(t);
-  const serve = (provider) => fakeServer(t, (body) => ({ status: 200, body: { model: body.model, ...(provider ? { provider } : {}), choices: [{ finish_reason: "stop", message: { content: "ok" } }] } }));
-  for (const [name, provider, expected] of [["bedrock", "Amazon Bedrock", /pinned to Anthropic, served by Amazon Bedrock/], ["silent", undefined, /served by an unreported provider/]]) {
-    const fake = await serve(provider);
-    const result = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, name), env: { OPENROUTER_API_KEY: KEY }, endpoint: fake.endpoint });
-    assert.equal(result.failure, null);
-    await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint }), expected);
-    const tampered = structuredClone(result);
-    for (const turn of tampered.turns) turn.events[0].body.provider = { only: ["amazon-bedrock"] };
-    await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: tampered, endpoint: fake.endpoint }), /did not send the upstream pin anthropic/);
+  const good = await fakeServer(t);
+  const result = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, "good"), env: { OPENROUTER_API_KEY: KEY }, endpoint: good.endpoint });
+  assert.equal(result.failure, null);
+  const verify = (changed) => verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: changed, endpoint: good.endpoint, recipe });
+  for (const [provider, expected] of [["Amazon Bedrock", /pinned to Anthropic, served by Amazon Bedrock/], [undefined, /served by an unreported provider/]]) {
+    const swapped = structuredClone(result);
+    for (const turn of swapped.turns) { if (provider) turn.events[1].body.provider = provider; else delete turn.events[1].body.provider; }
+    await assert.rejects(verify(swapped), expected);
   }
+  const tampered = structuredClone(result);
+  for (const turn of tampered.turns) turn.events[0].body.provider = { only: ["amazon-bedrock"] };
+  await assert.rejects(verify(tampered), /did not send the upstream pin anthropic/);
+
+  // A first turn from the wrong upstream is not followed by a second paid turn.
+  const bedrock = await fakeServer(t, (body) => ({ status: 200, body: { model: body.model, provider: "Amazon Bedrock", choices: [{ finish_reason: "stop", message: { content: "ok" } }] } }));
+  const stopped = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, "bedrock"), env: { OPENROUTER_API_KEY: KEY }, endpoint: bedrock.endpoint });
+  assert.match(stopped.failure.message, /pinned to Anthropic, served by Amazon Bedrock/);
+  assert.equal(bedrock.requests.length, 1);
+});
+
+test("verification rebuilds each request from the recipe: another prompt, a system message or an extra parameter fails it", async (t) => {
+  const root = await scratch(t);
+  const fake = await fakeServer(t);
+  const result = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, "raw"), env: { OPENROUTER_API_KEY: KEY }, endpoint: fake.endpoint });
+  const verify = (changed) => verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result: changed, endpoint: fake.endpoint, recipe });
+  await assert.doesNotReject(verify(result));
+  const prompt = structuredClone(result);
+  prompt.turns[1].events[0].body.messages[2].content = "Something else entirely.";
+  await assert.rejects(verify(prompt), /request is not the recipe's conversation so far/);
+  const system = structuredClone(result);
+  system.turns[0].events[0].body.messages[0].role = "system";
+  await assert.rejects(verify(system), /request is not the recipe's conversation so far/);
+  for (const extra of [{ tools: [] }, { temperature: 0 }, { max_tokens: 1 }]) {
+    const added = structuredClone(result);
+    Object.assign(added.turns[0].events[0].body, extra);
+    await assert.rejects(verify(added), /request is not the recipe's conversation so far/);
+  }
+  await assert.rejects(verifyDirectApiIdentity({ variant: direct, cliVersion: result.cliVersion, result, endpoint: fake.endpoint }), /requires the recipe/);
+});
+
+test("a reply that did not end normally, or a response with no HTTP status, is not accepted", async () => {
+  const ok = { model: "m", provider: "Anthropic", choices: [{ finish_reason: "stop", message: { content: "fine" } }] };
+  assert.equal(directApiReply(ok), "fine");
+  for (const finish of ["content_filter", "error", "tool_calls", undefined]) assert.throws(() => directApiReply({ ...ok, choices: [{ finish_reason: finish, message: { content: "partial" } }] }), /did not end normally/);
+  const request = JSON.stringify({ type: "request", conversationId: `direct_${"a".repeat(8)}-aaaa-aaaa-aaaa-${"a".repeat(12)}` });
+  assert.throws(() => parseDirectApiJsonl(`${request}\n${JSON.stringify({ type: "response", body: ok })}`), /HTTP/);
 });
 
 test("a substituted model, an HTTP error, or an empty reply stops the conversation without leaking the key", async (t) => {
   const root = await scratch(t);
-  const swapped = await fakeServer(t, (body, index) => ({ status: 200, body: { model: index === 0 ? body.model : "anthropic/claude-haiku-5.5", choices: [{ finish_reason: "stop", message: { content: "ok" } }] } }));
+  const swapped = await fakeServer(t, (body, index) => ({ status: 200, body: { model: index === 0 ? body.model : "anthropic/claude-haiku-5.5", provider: "Anthropic", choices: [{ finish_reason: "stop", message: { content: "ok" } }] } }));
   const substituted = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, "a"), env: { OPENROUTER_API_KEY: KEY }, endpoint: swapped.endpoint });
   assert.match(substituted.failure.message, /served anthropic\/claude-haiku-5.5 after anthropic\/claude-opus-5.5/);
   assert.equal(substituted.failure.turnId, "follow");
@@ -185,7 +222,7 @@ test("a substituted model, an HTTP error, or an empty reply stops the conversati
   assert.equal(broke.requests.length, 1, "no retry");
   assert.equal(paid.failure.message.includes(KEY), false);
 
-  const empty = await fakeServer(t, (body) => ({ status: 200, body: { model: body.model, choices: [{ finish_reason: "length", message: { content: "cut" } }] } }));
+  const empty = await fakeServer(t, (body) => ({ status: 200, body: { model: body.model, provider: "Anthropic", choices: [{ finish_reason: "length", message: { content: "cut" } }] } }));
   const cut = await runDirectApiSession({ variant: direct, recipe, privateDir: path.join(root, "c"), env: { OPENROUTER_API_KEY: KEY }, endpoint: empty.endpoint });
   assert.match(cut.failure.message, /cut off at the output limit/);
 });
