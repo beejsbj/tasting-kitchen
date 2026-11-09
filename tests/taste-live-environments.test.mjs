@@ -405,8 +405,9 @@ test("a live Hermes run writes to the real profile, empties nothing, and never t
     assert.equal(call.args[call.args.indexOf("-t") + 1], "file,terminal", "connections off gives the model file and terminal only");
   }
   // His profile is exactly as it was, plus the session database the run recorded in it.
-  assert.deepEqual((await own(otto)).filter((entry) => !before.otto.includes(entry)), ["state.db"]);
-  assert.deepEqual(before.otto.filter((entry) => !before.otto.includes(entry)), []);
+  const afterOtto = await own(otto);
+  assert.deepEqual(afterOtto.filter((entry) => !before.otto.includes(entry)), ["state.db"]);
+  assert.deepEqual(before.otto.filter((entry) => !afterOtto.includes(entry)), [], "nothing was removed from his profile");
   for (const [name, bytes] of Object.entries(bytesBefore)) assert.equal(await readFile(path.join(otto, name), "utf8"), bytes, name);
   assert.deepEqual(await own(f.profiles.default), before.default, "the default profile is untouched");
   assert.deepEqual(await own(f.profiles.rose), before.rose, "rose is untouched");
