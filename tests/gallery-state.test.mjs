@@ -262,6 +262,8 @@ test('service tier drift compares the observed tier with the requested tier, hon
   assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'priority', observedServiceTier: 'default' }), true);
   assert.equal(serviceTierDrift({ serviceTier: 'priority', requestedServiceTier: 'fast', observedServiceTier: 'priority' }), false);
   assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'default', observedServiceTier: 'default' }), false);
+  assert.equal(serviceTierDrift({ serviceTier: 'standard', requestedServiceTier: 'default', observedServiceTier: 'standard' }), false);
+  assert.equal(serviceTierDrift({ serviceTier: 'standard', requestedServiceTier: 'priority', observedServiceTier: 'standard' }), true);
   assert.equal(serviceTierDrift({ serviceTier: 'default' }), false);
   assert.equal(serviceTierDrift({ serviceTier: 'default', requestedServiceTier: 'priority' }), false);
 });

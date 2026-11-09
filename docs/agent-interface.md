@@ -82,7 +82,8 @@ Do not select a default model implicitly in automation. Use a discovered configu
 
 ## Internal runner adapters
 
-Cooking uses a fixed internal adapter allowlist: `codex-cli`, `cursor-agent` and `hermes`.
+Cooking uses a fixed internal adapter allowlist: `codex-cli`, `cursor-agent`,
+`claude-code` and `hermes`.
 An adapter validates and copies the declared configuration and exact execution
 profile, exposes only its actually declared capabilities, plans a turn without
 side effects, prepares authentication immediately before launch, runs fresh and
@@ -105,6 +106,63 @@ timeout and bounded captured output. It requires the CLI’s explicit
 occurs when logged out. Account fields are discarded. This checks existing
 credential presence; it does not certify remote authentication, which must
 still succeed during execution. Recovery never runs authentication preflight.
+
+### Claude Code
+
+`claude-code` runs `claude -p --output-format stream-json --verbose` with the
+configuration's `--model` and `--effort`, and resumes later turns with
+`--resume <session UUID>`. Each attempt gets a fresh `CLAUDE_CONFIG_DIR`
+(`claude-home/`). Inherited `CLAUDE*` and `ANTHROPIC*` variables are dropped, so
+a parent Claude Code session cannot pass on its effort or credentials.
+
+Both environments run with:
+
+- an empty MCP config under `--strict-mcp-config`, and claude.ai connectors
+  disabled. Burooj's MCP servers reach Gmail, Calendar, Linear and tududi, and
+  a Run with bypassed permissions must not cause external side effects;
+- only `Bash`, `Edit`, `Glob`, `Grep`, `Read` and `Write`, plus `Skill` in
+  `personal` (no web, subagent or scheduling tools). Network access through the shell is not blocked;
+- hooks disabled and auto-update off;
+- `includeGitInstructions: false`. Attempt workspaces sit inside the Kitchen
+  checkout, and Claude Code's git-status prompt section would otherwise give the
+  model the Kitchen's branch and recent commits. The setting also drops Claude
+  Code's built-in commit and PR guidance, which no current Recipe uses.
+  `GIT_CEILING_DIRECTORIES` stops the model's own `git` at the attempt.
+
+`clean` adds `--safe-mode` and no setting sources, and disables CLAUDE.md and
+auto-memory, so the home is empty at launch. Claude Code's built-in plugins and
+bundled skill list still load: they ship with the harness. The Skill tool is not
+offered, so bundled skills cannot be invoked.
+
+`personal` mirrors `CLAUDE.md`, `skills/`, `agents/`, `commands/` and
+`output-styles/` from `~/.claude` as symlinks. The links point at the real
+files and are writable: a personal Run with bypassed permissions can edit them.
+It loads only the user setting source and adds the Skill tool. Instruction files in the workspace's
+ancestors are excluded through `claudeMdExcludes`, because the Kitchen's
+`AGENTS.md` (and any above the checkout) would otherwise load as project
+memory. It does not mirror `settings.json` (today that file holds only model and
+effort defaults, which the configuration overrides, and push-notification
+toggles), plugins, or hooks. Session transcripts and any auto-memory a personal
+Run writes stay in the attempt home, not in `~/.claude`.
+
+Authentication reuses the existing claude.ai login. The access token is read
+from `~/.claude/.credentials.json` (`TASTE_CLAUDE_CREDENTIALS_PATH` overrides it)
+and handed to the child on file descriptor 3. It never enters argv, the
+environment or the attempt home. Claude Code refreshes credentials by atomic
+rename, so a symlinked credentials file would be replaced in the attempt home and
+leave Burooj's own login holding a refresh token that may already have been
+rotated away. Without a refresh token the child cannot rotate it, so preparation
+refuses a token that expires within 30 minutes
+(`TASTE_CLAUDE_TOKEN_MARGIN_MS`); running any `claude` command refreshes it.
+
+Identity requires the init model and every main-thread assistant message to
+match the request, argv that pins model and effort, a stream CLI version equal to
+`claude --version`, the default output style (the configuration's
+`personality`) and a tier of `standard`, which is Anthropic's name for the default
+tier. The stream does not report effort, so its evidence is the pinned argv; an
+organization effort cap could still lower it silently. Other models in the
+result's `modelUsage`, such as background calls, are listed as `auxiliaryModels` in the
+private `observed.json`.
 
 Hermes runs each turn as `hermes chat --query-file … --oneshot --format
 stream-json`, pinned to `--provider`, `-m`, `--reasoning` and the `file,terminal`
