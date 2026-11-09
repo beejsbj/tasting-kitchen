@@ -526,6 +526,7 @@ test("a Menu may declare the configurations it is cooked with: catalog ids, spec
     ["unknown configuration id", ["no-such-configuration"], /standard-web\.json.*unknown configuration no-such-configuration/],
     ["unparseable spec", ["hermes:openrouter/x@"], /standard-web\.json.*configurations\[0\].*harness:route\/model@effort/],
     ["route without a template", ["hermes:nous/x-ai/grok-4.7@high"], /standard-web\.json.*configurations\[0\].*nous.*OAuth/],
+    ["unknown effort", ["hermes:openrouter/*@turbo+free"], /standard-web\.json.*configurations\[0\].*effort turbo is not a Hermes effort/],
     ["duplicate", ["hermes:openrouter/*@auto+free", "hermes:openrouter/*@auto+free"], /standard-web\.json.*duplicate value/],
     ["empty", [], /standard-web\.json.*at least 1 item/],
   ];

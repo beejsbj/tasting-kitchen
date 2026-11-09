@@ -75,7 +75,7 @@ const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST
 const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
 const baseUrl = (process.env.FAKE_BASE_URL || routeBase || "https://api.anthropic.com") + (process.env.FAKE_TRAILING_SLASH ? "/" : "");
-db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
+db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: (process.env.FAKE_EFFORT || flag("--reasoning")) === "none" ? { enabled: false } : { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
 const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
 if (process.env.FAKE_AUX) db.prepare("INSERT OR IGNORE INTO session_model_usage VALUES (?, 'claude-haiku-5-5', 'anthropic', 'https://api.anthropic.com', 'title', 1)").run(session);
@@ -596,6 +596,14 @@ test("an OpenCode Go run reaches its upstream only through the key proxy and is 
   assert.equal(messages.failure, null, messages.failure?.message);
   assert.deepEqual(upstream.requests.slice(2).map((request) => [request.url, request.authorization, request.apiKey]), [["/zen/go/v1/messages", null, "sk-go-real"], ["/zen/go/v1/messages", null, "sk-go-real"]]);
   await verifyHermesIdentity({ codexHome: b.codexHome, variant: viaGo, cliVersion: messages.cliVersion, result: messages, env });
+
+  // Effort none is recorded as reasoning switched off, with no effort, and verifies as none.
+  const n = await attempt(f.root, "go-none");
+  const noReasoning = { ...viaGo, id: "hermes-opencode-go-glm-5-3-none-clean", reasoningEffort: "none" };
+  await prepareHermesAttempt({ variant: noReasoning, cwd: n.attemptDir, env });
+  const none = await runHermesSession({ variant: noReasoning, recipe, workspace: n.workspace, privateDir: n.privateDir, executable: f.executable, env: { ...env, FAKE_SESSION: "20261108_131309_99cccc" }, proxy });
+  assert.equal(none.failure, null, none.failure?.message);
+  assert.equal((await verifyHermesIdentity({ codexHome: n.codexHome, variant: noReasoning, cliVersion: none.cliVersion, result: none, env })).reasoningEffort, "none");
 
   // A call recorded straight against opencode.ai went around the proxy: the identity check fails the run.
   const c = await attempt(f.root, "go-around");

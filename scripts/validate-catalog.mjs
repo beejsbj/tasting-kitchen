@@ -5,6 +5,7 @@ import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
+import { HERMES_EFFORTS } from "../lib/taste/hermes.mjs";
 import { isConfigurationSpec, materializedProblems, parseConfigurationSpec, templateFor } from "../lib/taste/configuration-templates.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
@@ -983,7 +984,11 @@ async function validateMenus(recipeRecords, cuisines, variants) {
           if (!variants.has(entry)) fail(relative, `unknown configuration ${entry}`);
           return;
         }
-        try { templateFor(parseConfigurationSpec(entry)); }
+        try {
+          const spec = parseConfigurationSpec(entry);
+          templateFor(spec);
+          if (spec.effort !== "auto" && !HERMES_EFFORTS.includes(spec.effort)) throw new Error(`effort ${spec.effort} is not a Hermes effort (${HERMES_EFFORTS.join(", ")}) or auto`);
+        }
         catch (error) { fail(relative, `configurations[${index}]: ${error.message}`); }
       });
     }

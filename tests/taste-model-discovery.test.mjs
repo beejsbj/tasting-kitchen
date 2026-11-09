@@ -46,7 +46,7 @@ async function fakeHermesHome(t) {
   }));
   await writeFile(path.join(hermes, "provider_models_cache.json"), JSON.stringify({
     openrouter: { at: 1794209901, models: ["anthropic/claude-opus-5.5", "google/gemma-4-31b-it:free"] },
-    "opencode-go": { at: 1794209901, models: ["glm-5.3", "beam-free", "mimo-v2.5"] },
+    "opencode-go": { at: 1794209901, models: ["glm-5.3", "beam-free", "mimo-v2.5", "odd/slash-free"] },
     "opencode-free": { at: 1788465482, models: ["deepseek-v4-flash-free"] },
     anthropic: { at: 1794209901, models: ["claude-opus-5-5", "claude-fable-5.1", "claude-opus-4-8"] },
     gemini: { at: 1794209901, models: ["gemini-3.8-flash"] },
@@ -144,6 +144,7 @@ test("discovery lists every Hermes route with its state, the fix for a logged-ou
   // On a key route, efforts follow whether the model reasons, and a model that takes no tools is not cookable.
   assert.deepEqual(routes["opencode-go"].models.map((model) => [model.id, model.name, model.cookable, model.efforts?.length, model.reasons ?? null]), [
     ["glm-5.3", "GLM-5.3", true, 8, null], ["beam-free", "beam-free", true, 8, null], ["mimo-v2.5", "MiMo V2.5", false, 1, ["no tool calling, which Hermes's file and terminal tools need"]],
+    ["odd/slash-free", "odd/slash-free", false, 8, ["not a plain model id on this route"]],
   ]);
   // The Anthropic template takes Kitchen's four models, in Kitchen's spelling.
   assert.deepEqual(routes.anthropic.models.map((model) => [model.id, model.cookable, model.kitchenModel ?? null]), [["claude-opus-5-5", true, null], ["claude-fable-5.1", true, "claude-fable-5-1"], ["claude-opus-4-8", false, null]]);
@@ -167,8 +168,8 @@ test("discovery narrows to one route and to free models, and falls back to Herme
   assert.equal(free.routes[0].counts.models, 7, "counts describe the whole route, not the filter");
   await assert.rejects(discoverModels({ env, route: "nowhere" }), /Hermes has no route nowhere/);
   const go = (await discoverModels({ env, route: "opencode-go", free: true })).routes[0];
-  assert.equal(go.counts.models, 3);
-  assert.deepEqual(go.models.map((model) => model.id), ["beam-free"]);
+  assert.equal(go.counts.models, 4);
+  assert.deepEqual(go.models.map((model) => model.id), ["beam-free", "odd/slash-free"]);
 
   const down = await discoveryEnv(t, { failModels: true });
   const fallback = (await discoverModels({ env: down.env, route: "openrouter" })).routes[0];
@@ -410,8 +411,9 @@ test("a spec or selector on any key route resolves through the route template; a
   // A model nobody has a maker for keeps the route as its provider: the route is all Kitchen knows of where it comes from.
   const free = await resolveConfigurationSpec(catalog, "hermes:opencode-go/*@auto+free", { env, now });
   assert.deepEqual(free.entries.map((item) => [item.configuration.id, item.configuration.provider, item.configuration.reasoningEffort, item.configuration.materialized.free]), [["hermes-opencode-go-beam-free-high-clean", "opencode-go", "high", true]]);
+  assert.deepEqual(free.unsupported, [{ model: "odd/slash-free", reason: "not a plain model id on this route" }]);
   const all = await resolveConfigurationSpec(catalog, "hermes:opencode-go/*@auto", { env, now });
-  assert.deepEqual(all.unsupported, [{ model: "mimo-v2.5", reason: "no tool calling, which Hermes's file and terminal tools need" }]);
+  assert.deepEqual(all.unsupported.map((item) => item.model), ["mimo-v2.5", "odd/slash-free"]);
   await assert.rejects(resolveConfigurationSpec(catalog, "hermes:opencode-go/nothing@high", { env }), /Hermes lists no nothing on the opencode-go route/);
   await assert.rejects(resolveConfigurationSpec(catalog, "hermes:opencode-go/glm-5.3@high", { env, upstream: "z-ai" }), /--upstream applies only to the OpenRouter route/);
   await assert.rejects(resolveConfigurationSpec(catalog, "hermes:nous/x-ai/grok-4.7@high", { env }), /nous.*OAuth/);
@@ -438,4 +440,9 @@ test("a Menu that declares its configurations is cooked with them when no --conf
   // An explicit --config still wins, and a Menu that declares none needs one.
   assert.equal((await plan(root, { menuId: "free-launch", configurationId: "hermes-openrouter-opus-5-5-high-clean", env })).variant.id, "hermes-openrouter-opus-5-5-high-clean");
   await assert.rejects(plan(root, { menuId: "standard-web", env }), /Menu standard-web declares no configurations; name one with --config/);
+  // One declared configuration that cannot be planned is reported beside the rest, as in cook.
+  await writeFile(path.join(root, "catalog", "menus", "free-launch.json"), `${JSON.stringify({ ...menu, configurations: ["hermes:nous/x-ai/grok-4.7@high", "hermes-openrouter-opus-5-5-high-clean"] }, null, 2)}\n`);
+  const partial = await plan(root, { menuId: "free-launch", env });
+  assert.match(partial.plans[0].error, /nous.*OAuth/);
+  assert.equal(partial.plans[1].variant.id, "hermes-openrouter-opus-5-5-high-clean");
 });
