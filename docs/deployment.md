@@ -40,11 +40,27 @@ The registry and HTML revalidate; hashed application assets can be cached indefi
 
 Live: `https://tasting-kitchen.burooj.dev/`, public, dedicated Coolify application `rlh7jvdyrxrsidy9hdwztmgz`, building `main` from its Dockerfile. The canonical deployment was first promoted from commit `d2f9e01` on September 7, 2026; the historical proof at `https://artifacts.burooj.dev/model-tasting/` was then stopped and now returns 404, and its stopped container and files remain available.
 
-The current release is commit `49772b4`, promoted on November 8, 2026 as Coolify deployment `g9idrx8ol2zbnv1aqc24gbgh` with image `sha256:990e15a60ec83284b6a7a998bc8bfc3f0425d213f230a39c550200f39fe94185`. It replaced `83b552f` (image `sha256:8fc7a63b4916d8113117081ea029eeeb52b9ec3246c8f7bc8d399edd66fad8d4`), which is the rollback target; that image is also kept on bjslab as `tasting-kitchen:rollback-83b552f`. Production checks passed for the HTTP-to-HTTPS redirect, TLS without ignoring errors, the root, `/healthz`, the registry (17 Recipes, 27 Dishes, one observation), all 27 Dish entries (20 web, 7 session), all 154 artifact files and 172 public input previews by hash, the `/dishes/` sandbox, CORS and `nosniff` headers, the vote API's trusted-network boundary, and desktop (1440×900) and phone (390×844) presentation. Known defect: nginx served `.mjs` as `application/octet-stream`, so the 14 web Dishes that use JavaScript modules load without their behaviour. This was already true of the previous image. [PR #36](https://github.com/beejsbj/tasting-kitchen/pull/36) fixes it.
+The current release is commit `4be01e1`, promoted on November 9, 2026 as Coolify deployment `1vd8rftjcuzec92gsm46hzgw` with image `sha256:ae6dd79e38a9197cdb4659cb1262897562d4eae2e6ee41c4e8869efc1bce9787`. It includes the `.mjs` fix from [PR #36](https://github.com/beejsbj/tasting-kitchen/pull/36), the harness and environment axes, and the later harness work (#26, #42, #44). Its rollback target is `73f2b0d` (image `sha256:f44f6bade862ac35e789748ced049b5465126d7ab469bf23a8053a90ac9086ff`), live from November 8 to 9. That release had already passed the module check; every web Dish ran its JavaScript.
+
+Production checks on `4be01e1` passed for:
+
+- the HTTP-to-HTTPS redirect, and TLS without ignoring errors on the public and local paths;
+- the root and `/healthz`;
+- the registry (17 Recipes, 27 Dishes, one observation, 67 configurations);
+- all 27 Dish entries (20 web, 7 session), all 154 artifact files and 172 public input previews, matched by hash;
+- the `/dishes/` sandbox, CORS and `nosniff` headers;
+- `.mjs` served as `text/javascript`, with all 14 module-based web Dishes running in a browser without module or page errors;
+- the vote API's trusted-network boundary;
+- the harness, environment and Compare by controls, with no console errors;
+- desktop (1440×900) and phone (390×844) presentation.
+
+The releases before it, both on November 8, were `49772b4` (deployment `g9idrx8ol2zbnv1aqc24gbgh`, image `sha256:990e15a6…`), which still served `.mjs` as `application/octet-stream`, and `73f2b0d` (deployment `s6dpkqo0dla0dbiqgnzrf0q4`). Before them, `83b552f` (image `sha256:8fc7a63b…`) was live from September 7.
+
+The host backup gate in Cockpit's Coolify runbook was not met for these releases. `bjslab-local-backup` fails on a locked SQLite database, and its last successful snapshot is from October 19, 2026. Each promotion therefore went ahead on service-specific copies: the hash-checked vote store and the saved previous image. Cockpit's Tasting Kitchen receipt records the details.
 
 Follow Cockpit's `handbook/bjslab/runbooks/coolify-deployments.md` and network operating pipeline for the live operation. Record the approved public exposure, current backup, exact image digest, resource UUID, route pre-state and rollback before promotion. The public source repository is `beejsbj/tasting-kitchen`; choose the authorized image/source delivery path during that preflight.
 
-For each promotion, prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm neighboring artifact routes still work. Roll back in Coolify to the previous healthy image or stop the canonical application; during the initial cutover, the stopped historical proof container can also be restarted from `/mnt/server-ssd/services/model-tasting/compose.yaml`.
+For each promotion, prove the new origin and `/healthz`, canonical HTTPS without ignoring TLS errors, the registry, one artifact of every represented output kind, input previews, and desktop/phone comparison. Confirm neighboring artifact routes still work. To roll back, deploy the previous image, not the source. A plain Coolify deploy rebuilds `main` HEAD, so it rolls forward. Coolify keeps recent images as `rlh7jvdyrxrsidy9hdwztmgz:<commit>`. Choose the target commit's image in the application's Rollback view. If that image has been pruned, first `docker load` the saved copy on bjslab, which restores the same tag; Cockpit's receipt records where it is. Alternatively, stop the canonical application; during the initial cutover, the stopped historical proof container can also be restarted from `/mnt/server-ssd/services/model-tasting/compose.yaml`.
 
 ## Maintenance state
 
