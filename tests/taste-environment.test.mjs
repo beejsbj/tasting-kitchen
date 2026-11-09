@@ -283,9 +283,14 @@ test("setup collection leaves volatile files and credential-looking files out at
   await writeFile(path.join(root, ".credentials.json"), "secret");
   await symlink(path.join(root, ".credentials.json"), path.join(skill, "notes.md"));
 
+  // A link into a directory that merely has an excluded-looking name (an npm-installed skill) is still a skill.
+  await mkdir(path.join(root, "node_modules", "pkg", "linked"), { recursive: true });
+  await writeFile(path.join(root, "node_modules", "pkg", "linked", "SKILL.md"), "linked");
+  await symlink(path.join(root, "node_modules", "pkg", "linked"), path.join(root, "skills", "linked"));
+
   const collect = () => collectSetupChildren(path.join(root, "skills"), "skills");
   const files = await collect();
-  assert.deepEqual(files.map((file) => file.path).sort(), ["skills/sample/.env.example", "skills/sample/SKILL.md", "skills/sample/scripts/run.sh"]);
+  assert.deepEqual(files.map((file) => file.path).sort(), ["skills/linked/SKILL.md", "skills/sample/.env.example", "skills/sample/SKILL.md", "skills/sample/scripts/run.sh"]);
   assert.equal(files.some((file) => file.path.endsWith("notes.md")), false, "a link to a credential file is a credential file");
   assert.equal(files.find((file) => file.path.endsWith("run.sh")).executable, true);
   const digest = setupDigest(files);
