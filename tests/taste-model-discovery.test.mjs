@@ -8,7 +8,7 @@ import test from "node:test";
 import { computeConfigHash, loadCatalog } from "../lib/taste/catalog.mjs";
 import {
   buildTemplateConfiguration, catalogWithConfigurations, chooseEffort, chooseUpstream, CONFIGURATION_TEMPLATES, isConfigurationSpec,
-  materializeConfigurations, materializedProblems, parseConfigurationSpec, resolveConfigurationSpec,
+  materializeConfigurations, materializedProblems, parseConfigurationSpec, resolveConfigurationSpec, servingProviders,
 } from "../lib/taste/configuration-templates.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { cook, plan } from "../lib/taste/index.mjs";
@@ -17,7 +17,7 @@ import { configurationProviderPin, isPinnedUpstream, upstreamName } from "../lib
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 // Secrets planted in the fake Hermes home: none may reach any discovery output.
-const SECRETS = ["sk-or-v1-PLANTED-OPENROUTER", "PLANTED-ACCESS-TOKEN", "PLANTED-REFRESH-TOKEN", "fp:PLANTED", "PLANTED-LABEL-SECRET"];
+const SECRETS = ["sk-or-v1-PLANTED-OPENROUTER", "PLANTED-ACCESS-TOKEN", "PLANTED-REFRESH-TOKEN", "fp:PLANTED", "PLANTED-LABEL-SECRET", "PLANTED-ERROR-MESSAGE"];
 
 async function fakeHermesHome(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-hermes-discovery-"));
@@ -30,7 +30,7 @@ async function fakeHermesHome(t) {
   await writeFile(path.join(hermes, "auth.json"), JSON.stringify({
     version: 1, active_provider: "nous",
     providers: {
-      nous: { access_token: SECRETS[1], refresh_token: SECRETS[2], last_auth_error: { provider: "nous", code: "invalid_grant", message: "Invalid refresh token", relogin_required: true } },
+      nous: { access_token: SECRETS[1], refresh_token: SECRETS[2], last_auth_error: { provider: "nous", code: "invalid_grant", message: `Invalid refresh token ${SECRETS[5]}`, relogin_required: true } },
     },
     credential_pool: {
       nous: [],
@@ -320,6 +320,17 @@ test("an executed cook does not materialize a configuration with nothing to cook
   assert.deepEqual(result.materialized, []);
   assert.equal(result.cooks[0].mode, "skipped");
   assert.equal(await readFile(path.join(root, "catalog", "configurations.json"), "utf8"), before);
+  // The plan and a dry run say so too, rather than promising a materialization.
+  const dry = await cook(root, { configurationId: "hermes:openrouter/google/*@auto+free", recipeIds: ["bounded-tool-repair"], env, intent: "fill-missing" });
+  assert.deepEqual(dry.configurationSpec.configurations.map((item) => item.status), ["nothing-to-cook"]);
+  const planned = await plan(root, { configurationId: "hermes:openrouter/google/*@auto+free", recipeIds: ["bounded-tool-repair"], env });
+  assert.deepEqual(planned.configurationSpec.configurations.map((item) => item.status), ["nothing-to-cook"]);
+});
+
+test("a pin must be an endpoint that takes tools and, for a free model, charges nothing", () => {
+  const providers = [{ slug: "paid", name: "Paid", free: false, tools: true }, { slug: "free-notools", name: "NoTools", free: true, tools: false }, { slug: "free", name: "Free", free: true, tools: true }];
+  assert.deepEqual(servingProviders({ free: true }, providers).map((provider) => provider.slug), ["free"]);
+  assert.deepEqual(servingProviders({ free: false }, providers).map((provider) => provider.slug), ["paid", "free"]);
 });
 
 test("catalog validation checks a materialized record against its configuration", async () => {
