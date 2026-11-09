@@ -16,9 +16,9 @@ h1, h2, h3 { font-family: var(--font-display); }
 .eyebrow, .control-label { font: 500 var(--text-xs)/1.5 var(--font-mono); text-transform: uppercase; letter-spacing: .1em; color: var(--ink-muted); }
 .kitchen-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--surface); border: var(--line-width) solid var(--line); border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transition: background var(--duration-fast) ease, color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-out); }
 .kitchen-button--primary, .kitchen-button[aria-pressed=true], .kitchen-button[aria-current=page] { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); }
-.kitchen-button:active:not(:disabled) { transform: translateY(var(--line-width)); }
+.kitchen-button:active:not(:disabled):not([aria-disabled=true]) { transform: translateY(var(--line-width)); }
 @media (hover: hover) and (pointer: fine) {
-  .kitchen-button:hover:not(:disabled) { background: var(--surface-soft); }
+  .kitchen-button:hover:not(:disabled):not([aria-disabled=true]) { background: var(--surface-soft); }
   .kitchen-button--primary:hover:not(:disabled), .kitchen-button[aria-pressed=true]:hover, .kitchen-button[aria-current=page]:hover { background: var(--ink); color: var(--surface); }
   .recipe-card__open:hover .recipe-card__title { color: var(--signal); text-decoration: underline; text-underline-offset: .2em; }
   .recipe-card:hover { border-color: var(--line-bright); }

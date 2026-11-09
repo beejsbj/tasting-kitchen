@@ -242,7 +242,14 @@ try {
   assert.equal(await harnessOptions.getByRole("button", { name: /^Claude Code · / }).evaluate(node => node === document.activeElement), true, "the current value takes focus");
   await harnessPage.keyboard.press("ArrowDown");
   assert.equal(await harnessOptions.getByRole("button", { name: /^Hermes · 1 dish$/ }).evaluate(node => node === document.activeElement), true, "arrows move between reachable values");
-  assert.equal(await harnessOptions.getByRole("button", { name: /^Codex CLI · unavailable · No configuration for Opus 5\.5 · Codex CLI$/ }).isDisabled(), true, "an impossible combination is disabled with its reason");
+  const impossible = harnessOptions.getByRole("button", { name: /^Codex CLI · unavailable · No configuration for Opus 5\.5 · Codex CLI$/ });
+  assert.equal(await impossible.getAttribute("aria-disabled"), "true", "an impossible combination is aria-disabled with its reason in the name");
+  await harnessPage.keyboard.press("ArrowDown");
+  assert.equal(await impossible.evaluate(node => node === document.activeElement), true, "an impossible combination stays reachable by keyboard");
+  const beforeImpossible = params().get("models");
+  await harnessPage.keyboard.press("Enter"); await settle(harnessPage);
+  assert.equal(params().get("models"), beforeImpossible, "activating an impossible combination changes nothing");
+  assert.equal(await harnessOptions.count(), 1, "and leaves the list open");
   await save(harnessPage, "pane-harness-values");
   await harnessPage.keyboard.press("Escape"); await settle(harnessPage);
   assert.equal(await harnessOptions.count(), 0, "Escape closes the value list");
@@ -266,12 +273,14 @@ try {
   assert.equal(params().get("dishes")?.split(",")[0], opusClean.id, "the held pane keeps its exact Dish");
   assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Claude Code", "Hermes"], "panes are named by the varied value");
   assert.match(await harnessPage.locator(".pane-label").first().innerText(), /holding Opus 5\.5 · High · Clean · Without skill/);
-  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools and defaults come with it$/;
+  assert.equal(await harnessPage.locator("[role=status][aria-live=polite].sr-only").innerText(), "Comparing 2 harnesses, holding Opus 5.5 · High · Clean · Without skill", "a Compare by layout is announced politely");
+  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools, route and defaults come with it$/;
   assert.equal(await harnessPage.getByText(note).count(), 1, "the note states the isolation by construction");
   const harnessValues = harnessPage.getByRole("region", { name: "Harness values" });
   await harnessValues.getByRole("checkbox").nth(2).check(); await settle(harnessPage);
   assert.equal(await harnessPage.locator(".comparison-slot").count(), 3, "a loose value can be added");
-  assert.equal(await harnessPage.getByText(/not an isolated comparison$/).count(), 1, "and the note stops claiming isolation");
+  assert.equal(await harnessPage.locator("p:not([role=status])").filter({ hasText: /not an isolated comparison$/ }).count(), 1, "and the note stops claiming isolation");
+  assert.match(await harnessPage.locator("[role=status][aria-live=polite].sr-only").innerText(), /^Comparing 3 harnesses, holding .*; not an isolated comparison$/, "and so does the announcement");
   await harnessValues.getByRole("checkbox").nth(2).uncheck(); await settle(harnessPage);
   await save(harnessPage, "compare-by-harness-panel");
   await harnessPage.getByRole("group", { name: "Held configuration" }).getByRole("button", { name: "Effort: High" }).click();
@@ -311,6 +320,10 @@ try {
   await harnessPage.getByRole("button", { name: "Choose panes one by one" }).click(); await settle(harnessPage);
   assert.equal(params().has("compare"), false, "choosing panes one by one keeps the panes and drops the axis");
   assert.equal(await harnessPage.getByRole("group", { name: "Configuration 2", exact: true }).count(), 1);
+  assert.equal(await harnessPage.evaluate(() => document.activeElement?.matches('[data-pane="0"] .axis-chip')), true, "leaving Compare by puts focus on the first pane's first chip");
+  await harnessPage.getByRole("button", { name: "Remove configuration 1" }).click(); await settle(harnessPage);
+  assert.equal(await harnessPage.locator(".comparison-slot").count(), 1);
+  assert.equal(await harnessPage.evaluate(() => document.activeElement?.matches('[data-pane="0"] .axis-chip')), true, "removing a pane moves focus to the next pane's first chip");
   await harnessPage.keyboard.press("Escape");
 
   // A phone swipes between three or more full-width panes.
@@ -368,6 +381,7 @@ try {
   assert.equal(await page.locator(".comparison-slot").count(), 2, "Compare should add a second pane");
   await page.getByRole("button", { name: "Models and comparison" }).click(); await settle(page);
   await page.getByRole("button", { name: "Remove configuration 2" }).click(); await settle(page);
+  assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-pane="0"] .axis-chip')), true, "removing the last pane moves focus to the pane before it");
   assert.equal(await page.locator(".comparison-slot").count(), 1, "remove should return to one pane");
   await page.goBack(); await settle(page);
   assert.equal(await page.locator(".comparison-slot").count(), 2, "Back restores the removed comparison pane");

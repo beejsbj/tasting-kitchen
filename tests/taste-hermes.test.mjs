@@ -20,7 +20,7 @@ const clean = {
   harness: "hermes", reasoningEffort: "high", serviceTier: "default", personality: "none", capabilities: ["files", "shell"], executionProfile: cleanProfile,
   configHash: `sha256:${"3".repeat(64)}`,
 };
-const openRouterProfile = { id: "hermes-linux-host-clean-openrouter-v1", label: "via Hermes · clean home · OpenRouter route", ...base, environment: "clean", route: "openrouter" };
+const openRouterProfile = { id: "hermes-linux-host-clean-openrouter-v1", label: "via Hermes · clean home · OpenRouter route", ...base, environment: "clean", route: "openrouter", upstream: "google-ai-studio" };
 const viaOpenRouter = {
   ...clean, id: "hermes-openrouter-gemini-4-argon-high-clean", label: "Gemini 4 Argon · High · via Hermes · clean (OpenRouter)",
   provider: "google", model: "google/gemini-4-argon", executionProfile: openRouterProfile,
@@ -294,11 +294,14 @@ test("a cooked clean Hermes Dish is public; a personal one goes to private/dishe
 
 test("the OpenRouter route pins its maker's slug, carries only the route key, and verifies the recorded OpenRouter route", async (t) => {
   assert.doesNotThrow(() => resolveHarnessAdapter(viaOpenRouter));
-  assert.doesNotThrow(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "anthropic", model: "anthropic/claude-opus-5.5" }));
+  assert.doesNotThrow(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "anthropic", model: "anthropic/claude-opus-5.5", executionProfile: { ...openRouterProfile, upstream: "anthropic" } }));
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "anthropic", model: "anthropic/claude-opus-5.5" }), /not the maker anthropic's own provider/);
   assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, provider: "openrouter" }), /provider must be the model's maker google/);
   assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, model: "~google/gemini-latest" }), /pinned maker\/model slug/);
   assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, executionProfile: { ...openRouterProfile, route: undefined } }), /route must be openrouter \(omitted\)/);
   assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, route: "openrouter" } }), /must omit route/);
+  assert.throws(() => resolveHarnessAdapter({ ...viaOpenRouter, executionProfile: { ...openRouterProfile, upstream: undefined } }), /upstream pin must be one of/);
+  assert.throws(() => resolveHarnessAdapter({ ...clean, executionProfile: { ...cleanProfile, upstream: "anthropic" } }), /must omit upstream/);
   assert.deepEqual(buildHermesTurnArgs({ variant: viaOpenRouter, workspace: "/tmp/work", queryFile: "/tmp/q.txt" }).slice(6, 10), ["--provider", "openrouter", "-m", "google/gemini-4-argon"]);
 
   const f = await setup(t);
@@ -311,6 +314,7 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
   const config = await readFile(path.join(a.attemptDir, "hermes-home", "config.yaml"), "utf8");
   assert.match(config, /provider: openrouter\n {2}default: google\/gemini-4-argon/u);
   assert.match(config, /adopt_external_logins: false/u);
+  assert.match(config, /provider_routing:\n {2}only:\n {4}- google-ai-studio\n {2}require_parameters: true\n/u);
   const result = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env });
   assert.equal(result.failure, null, result.failure?.message);
   for (const call of await f.calls()) {
