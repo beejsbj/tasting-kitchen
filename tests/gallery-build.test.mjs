@@ -19,6 +19,9 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.equal(registry.configurations.length, 41);
   assert.equal(registry.recipes.length, 17);
   assert.equal(registry.dishes.length, 27);
+  // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
+  assert.ok(registry.dishes.every((dish) => ["codex-cli", "cursor-agent"].includes(dish.identity.harness) === (dish.notes?.length === 1)));
+  assert.equal(registry.dishes.filter((dish) => dish.notes?.[0]?.id === "codex-saw-kitchen-agents-md").length, 7);
   assert.equal(registry.dishes.filter((dish) => dish.artifact.kind === "web").length, 20);
   const sessionDishes = registry.dishes.filter((dish) => dish.artifact.kind === "session");
   assert.equal(sessionDishes.length, 7);
@@ -67,6 +70,9 @@ test("the built site publishes only active Dishes and their selected public arti
   const activeRecipeIds = new Set(registry.recipes.map((recipe) => recipe.id));
   assert.equal(activeRecipeIds.size, 17);
   assert.equal(registry.dishes.length, 27);
+  // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
+  assert.ok(registry.dishes.every((dish) => ["codex-cli", "cursor-agent"].includes(dish.identity.harness) === (dish.notes?.length === 1)));
+  assert.equal(registry.dishes.filter((dish) => dish.notes?.[0]?.id === "codex-saw-kitchen-agents-md").length, 7);
   assert.ok(registry.dishes.every((dish) => activeRecipeIds.has(dish.recipe.id)));
   assert.ok(registry.menus.every((menu) => menu.recipes.every((recipeId) => activeRecipeIds.has(recipeId))));
   assert.ok(registry.dishes.every((dish) => dish.artifact.files.every((file) => !/^(?:fixtures|private)\//u.test(file.path))));
