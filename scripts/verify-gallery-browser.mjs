@@ -438,11 +438,11 @@ try {
   assert.match(new URL(manyPage.url()).searchParams.get("models") ?? "", /^fixture-many-nvidia-nemotron/u, "choosing a found model moves the pane to it");
   await manyPage.keyboard.press("Escape"); await settle(manyPage);
   await manyPage.goto(`${base}/`, { waitUntil: "networkidle" });
-  await manyPage.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: /^Filter by model: All \d+ models$/ }).click(); await settle(manyPage);
+  await manyPage.getByRole("group", { name: "Filter by model" }).getByRole("button", { name: "Filter by model: All models", exact: true }).click(); await settle(manyPage);
   const facet = manyPage.getByRole("dialog", { name: "Filter by model" });
   await facet.getByRole("searchbox", { name: "Search models" }).fill("google"); await settle(manyPage);
   assert.deepEqual(await facet.getByRole("group").evaluateAll(groups => groups.map(group => group.getAttribute("aria-label"))), ["Google"], "searching a maker keeps its group");
-  assert.match(await facet.getByRole("button", { name: /^Gemma/ }).innerText(), /Free/, "a family with a free configuration is marked");
+  assert.match(await facet.getByRole("button", { name: /^Gemma/ }).innerText(), /free/i, "a family with a free configuration is marked");
   await save(manyPage, "counter-model-facet");
   await facet.getByRole("button", { name: /^Gemma/ }).click(); await settle(manyPage);
   assert.equal(new URL(manyPage.url()).searchParams.get("family"), "Gemma", "a family chosen from search is URL-addressable");
