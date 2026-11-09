@@ -55,6 +55,14 @@
 .axis-option__label, .compare-value__label { display: flex; flex-direction: column; min-width: 0; font-weight: 500; line-height: 1.3; }
 .axis-option__label small, .compare-value__label small { font-size: .6875rem; font-weight: 400; color: #64748b; }
 .axis-option[aria-disabled=true] .axis-option__label small { color: #94a3b8; }
+.axis-option__name { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.axis-option__badge { padding: 0 .3rem; border-radius: .25rem; background: #dcfce7; color: #166534; font: 600 .625rem/1.5 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+.axis-search { position: sticky; top: -.25rem; z-index: 1; display: flex; align-items: center; gap: .375rem; margin: -.25rem -.25rem .25rem; padding: .375rem .5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; color: #94a3b8; }
+.axis-search input { width: 100%; min-width: 0; min-height: 2rem; border: 0; background: transparent; color: #1e293b; font-size: .8125rem; outline: none; }
+.axis-search:focus-within { box-shadow: inset 0 -2px 0 #2563eb; }
+.axis-options__group { display: flex; flex-direction: column; gap: 1px; }
+.axis-options__group > p { margin: .375rem .5rem .125rem; font: 600 .625rem/1.2 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+.axis-options__empty { margin: .5rem; font-size: .8125rem; color: #64748b; }
 .axis-option__count { font: .6875rem var(--font-mono); color: #64748b; white-space: nowrap; }
 .cooked-mark { width: .5rem; height: .5rem; border-radius: 99rem; background: #1d4ed8; flex: none; }
 .cooked-mark[data-status=uncooked] { background: transparent; box-shadow: inset 0 0 0 1.5px #94a3b8; }

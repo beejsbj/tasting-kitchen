@@ -5,7 +5,7 @@ import { KitchenButton } from './KitchenButton';
 import { IconButton } from './ui/ViewerControls';
 import { dishSkillKey, shortHash } from '../lib/registry';
 import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, heldConfigLabels, MAX_PANES, showsAxis, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
-import type { ComparisonDimension } from '../lib/configuration-label';
+import { isFreeModel, makerLabel, modelMaker, type ComparisonDimension } from '../lib/configuration-label';
 import type { GalleryState } from '../lib/url-state';
 import type { Configuration, Dish } from '../types';
 
@@ -66,6 +66,8 @@ function paneAxes(context: ComparisonContext, pane: Pane, onConfig: (config: Con
     id: axis, label: axis === 'tier' ? 'Tier' : AXIS_LABELS[axis], value: axisValueLabel(axis, axisValue(pane.config, axis)),
     options: axisOptions(context.configurations, pane.config, axis, count).map((option): AxisPickerOption => ({
       key: option.value, label: option.label, status: option.status, dishes: option.dishes, selected: option.selected,
+      // Hundreds of models stay findable: grouped by maker, searchable by id, free ones marked.
+      ...(axis === 'model' ? { group: makerLabel(modelMaker(option.value)), terms: option.value, ...(isFreeModel(option.config ?? { model: option.value }) ? { badge: 'Free' } : {}) } : {}),
       note: option.reason ?? (option.changes.length ? `also → ${option.changes.map((change) => change.label).join(' · ')}` : option.config?.historical ? 'preserved configuration' : undefined),
       onSelect: () => option.config && onConfig(option.config),
     })),

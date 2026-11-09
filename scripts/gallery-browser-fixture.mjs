@@ -89,3 +89,33 @@ export function withHarnessConfigurations(registry, recipeId) {
   const shipped = registry.configurations.filter(configuration => configuration.harness !== 'claude-code');
   return { ...registry, recipes, configurations: [...shipped, ...configurations], dishes: [...registry.dishes, ...dishes] };
 }
+
+/**
+ * Many OpenRouter models on one recipe through Hermes, free ones among them, as
+ * a free-model selector would leave the catalog: enough that the Model chip and
+ * the counter's model facet must search and group by maker. Served only to
+ * browser checks.
+ */
+export const MANY_MODELS = [
+  'google/gemma-4-31b-it:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3.5-lightning:free', 'cohere/north-mini-code:free',
+  'liquid/lfm-3-1.7b:free', 'stealth/crouton-alpha', 'x-ai/grok-4.7', 'z-ai/glm-5.3', 'qwen/qwen3.8-max-0902', 'mistralai/mistral-large-4-0', 'deepseek/deepseek-v4-pro-0813', 'moonshotai/kimi-k3.1-pro',
+];
+export function withManyModels(registry, recipeId) {
+  const base = registry.configurations.find(configuration => configuration.harness === 'hermes' && configuration.executionProfile.route === 'openrouter') ?? registry.configurations[0];
+  const source = registry.dishes.find(dish => dish.recipe.id === recipeId && dish.artifact.kind === 'web');
+  const configurations = MANY_MODELS.map(model => {
+    const id = `fixture-many-${model.replace(/[^a-z0-9]+/gu, '-')}`;
+    const free = model.endsWith(':free') || model === 'stealth/crouton-alpha';
+    return {
+      ...base, id, label: id, model, provider: model.split('/')[0], reasoningEffort: 'high', configHash: `sha256:fixture-${id}`,
+      executionProfile: { ...base.executionProfile, upstream: model.split('/')[0] },
+      ...(free && { materialized: { template: 'hermes-openrouter-clean', spec: `hermes:openrouter/${model}@high:clean`, at: '2099-03-01T00:00:00.000Z', free: true, source: 'fixture' } }),
+    };
+  });
+  const dishes = configurations.map((configuration, index) => ({
+    ...source, artifact: { ...source.artifact, preview: FIXTURE_PREVIEW }, id: `dish_many_${index}`, executedAt: `2099-03-01T${String(index).padStart(2, '0')}:00:00.000Z`, dishHash: `sha256:fixture-many-${index}`, skill: undefined,
+    identity: { ...source.identity, variantId: configuration.id, harness: 'hermes', harnessVersion: '9.9.9', requestedModel: configuration.model, observedModel: configuration.model, reasoningEffort: 'high', serviceTier: 'default', configHash: configuration.configHash },
+    receipt: { ...source.receipt, configuration },
+  }));
+  return { ...registry, configurations: [...registry.configurations, ...configurations], dishes: [...registry.dishes, ...dishes] };
+}
