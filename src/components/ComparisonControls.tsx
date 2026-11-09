@@ -1,9 +1,11 @@
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { AxisPicker, CookedMark, dishCountLabel, type AxisPickerAxis, type AxisPickerOption } from './AxisPicker';
 import { KitchenButton } from './KitchenButton';
 import { IconButton } from './ui/ViewerControls';
 import { dishSkillKey, shortHash } from '../lib/registry';
-import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, MAX_PANES, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
+import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, heldConfigLabels, MAX_PANES, showsAxis, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
+import type { ComparisonDimension } from '../lib/configuration-label';
 import type { GalleryState } from '../lib/url-state';
 import type { Configuration, Dish } from '../types';
 
@@ -24,7 +26,7 @@ export const dishCounter = (recipeDishes: Dish[], skillKey?: string) => (config:
 
 const layerToken = (context: ComparisonContext, key: string) => context.showLayers ? context.layerChoices.find((choice) => choice.key === key)?.token ?? key : '';
 const layerLabel = (context: ComparisonContext, key: string) => context.layerChoices.find((choice) => choice.key === key)?.label ?? 'Without skill';
-/** Tier and environment earn a chip only when this recipe offers more than one. */
+/** Compare by offers Tier only when this recipe has more than one cooked. */
 const axisVaries = (context: ComparisonContext, axis: ConfigAxis) => cookedValues(context.configurations, axis, dishCounter(context.recipeDishes)).length > 1;
 export const valueOf = (pane: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis) => axis === 'skill' ? pane.skillKey : axisValue(pane.config, axis);
 
@@ -52,15 +54,14 @@ export function comparisonPatch(axis: CompareAxis, values: ComparisonValueView[]
 }
 
 /** What a "Compare by" layout holds still, as value labels from the held pane. */
-export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis) {
-  const config = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((item) => item !== axis && (item === 'model' || item === 'effort' || item === 'harness' || axisVaries(context, item) || (item === 'environment' && Boolean(anchor.config.executionProfile.environment))));
-  return [...config.map((item) => axisValueLabel(item, axisValue(anchor.config, item))), ...(context.showLayers && axis !== 'skill' ? [layerLabel(context, anchor.skillKey)] : [])];
+export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis, differing: readonly ComparisonDimension[] = []) {
+  return [...heldConfigLabels(context.configurations, anchor.config, axis, dishCounter(context.recipeDishes), differing), ...(context.showLayers && axis !== 'skill' && !differing.includes('skill layer') ? [layerLabel(context, anchor.skillKey)] : [])];
 }
 
 /** The axis chips for one pane: Model · Effort · Harness, then Environment, Tier, Skill and Snapshot where they vary. */
 function paneAxes(context: ComparisonContext, pane: Pane, onConfig: (config: Configuration) => void, onLayer: (token: string) => void, except?: CompareAxis): AxisPickerAxis[] {
   const count = dishCounter(context.recipeDishes);
-  const shown: ConfigAxis[] = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((axis) => axis !== except && (axis === 'model' || axis === 'effort' || axis === 'harness' || axisVaries(context, axis)));
+  const shown: ConfigAxis[] = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((axis) => axis !== except && showsAxis(context.configurations, pane.config, axis, count));
   const axes: AxisPickerAxis[] = shown.map((axis) => ({
     id: axis, label: axis === 'tier' ? 'Tier' : AXIS_LABELS[axis], value: axisValueLabel(axis, axisValue(pane.config, axis)),
     options: axisOptions(context.configurations, pane.config, axis, count).map((option): AxisPickerOption => ({
@@ -97,6 +98,15 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
   context: ComparisonContext; title: string; panes: Pane[]; compare: CompareAxis | ''; comparisonNote: string;
   update: (patch: Patch) => void;
 }) {
+  // Removing a pane or leaving "Compare by" unmounts the focused control; focus moves on once the new layout renders.
+  const root = useRef<HTMLDivElement>(null);
+  const pending = useRef<{ panes: number; compare: CompareAxis | ''; index: number } | undefined>(undefined);
+  useEffect(() => {
+    const wanted = pending.current;
+    if (!wanted || wanted.panes !== panes.length || wanted.compare !== compare) return;
+    pending.current = undefined;
+    (root.current?.querySelector<HTMLElement>(`[data-pane="${Math.min(wanted.index, panes.length - 1)}"] .axis-chip`) ?? root.current?.querySelector<HTMLElement>('.compare-axis'))?.focus();
+  });
   const anchor = panes[0];
   if (!anchor) return null;
   const tokens = panes.map((pane) => layerToken(context, pane.skillKey));
@@ -119,7 +129,11 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
     const dishes = panes.map((pane) => pane.dish?.id ?? ''); dishes[index] = '';
     update({ ...current({ skills, dishes }), compare: '' });
   };
-  const remove = (index: number) => update({ compare: '', models: panes.filter((_, i) => i !== index).map((pane) => pane.config.id), skills: tokens.filter((_, i) => i !== index), dishes: panes.filter((_, i) => i !== index).map((pane) => pane.dish?.id ?? '') });
+  const remove = (index: number) => {
+    // The next pane's first chip now sits at this index; when the last pane went, the one before it is nearest.
+    pending.current = { panes: panes.length - 1, compare: '', index };
+    update({ compare: '', models: panes.filter((_, i) => i !== index).map((pane) => pane.config.id), skills: tokens.filter((_, i) => i !== index), dishes: panes.filter((_, i) => i !== index).map((pane) => pane.dish?.id ?? '') });
+  };
 
   const repeatGroups = panes.length > 1 && panes.some((pane) => pane.repeats.length > 1) && <div className="mt-4 border-t border-slate-100 pt-3">
     <p className="mb-1 text-xs font-medium text-slate-500">Repeats</p>
@@ -135,10 +149,10 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
       // A comparison needs a second value that holds everything else; otherwise it would open on the held pane alone.
       const unavailable = defaultComparisonSelection(values).length < 2;
       const why = values.length < 2 ? `only one ${label} for this pane` : `no other ${label} cooked with the rest held`;
-      return <KitchenButton key={axis} className="compare-axis" aria-pressed={compare === axis} disabled={unavailable}
+      return <KitchenButton key={axis} className="compare-axis" aria-pressed={compare === axis} aria-disabled={unavailable || undefined}
         aria-label={`Compare by ${label} · ${unavailable ? why : `${cooked} cooked with the rest held`}`}
         title={unavailable ? `Needs a second ${label} that holds everything else; ${why}` : `${cooked} of ${values.length} have a Dish with everything else held`}
-        onClick={() => compare === axis ? undefined : startComparing(axis)}>{AXIS_LABELS[axis]}<span className="compare-axis__count">{cooked}</span></KitchenButton>;
+        onClick={() => compare === axis || unavailable ? undefined : startComparing(axis)}>{AXIS_LABELS[axis]}<span className="compare-axis__count">{cooked}</span></KitchenButton>;
     })}</div>
   </div>;
 
@@ -152,7 +166,7 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
       update(comparisonPatch(compare, next, carryComparisonSelection(selection, next), undefined));
     };
     const full = selection.length >= MAX_PANES;
-    return <>
+    return <div ref={root}>
       <h2 className="mb-4 text-base font-semibold">{title}</h2>
       {compareBy}
       <section className="mb-4" aria-label="Held still">
@@ -176,18 +190,18 @@ export function ComparisonControls({ context, title, panes, compare, comparisonN
       </section>
       {repeatGroups}
       <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>
-      <div className="mt-3 flex justify-end"><KitchenButton onClick={() => update({ compare: '' })}>Choose panes one by one</KitchenButton></div>
-    </>;
+      <div className="mt-3 flex justify-end"><KitchenButton onClick={() => { pending.current = { panes: panes.length, compare: '', index: 0 }; update({ compare: '' }); }}>Choose panes one by one</KitchenButton></div>
+    </div>;
   }
 
-  return <>
+  return <div ref={root}>
     <h2 className="mb-4 text-base font-semibold">{title}</h2>
     {compareBy}
-    <div>{panes.map((pane, index) => <section key={index} className="mb-3 border-b border-slate-100 pb-3 last:mb-0 last:border-0 last:pb-0" aria-label={panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}>
+    <div>{panes.map((pane, index) => <section key={index} data-pane={index} className="mb-3 border-b border-slate-100 pb-3 last:mb-0 last:border-0 last:pb-0" aria-label={panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}>
       <div className="mb-1 flex min-h-8 items-center justify-between"><span className="text-xs font-medium text-slate-500">{panes.length > 1 ? `Pane ${index + 1}` : 'This pane'}</span>{panes.length > 1 && <button className="inline-flex min-h-8 items-center gap-1 rounded-md border-0 bg-transparent px-2 text-xs text-slate-500 hover:bg-slate-100" aria-label={`Remove configuration ${index + 1}`} onClick={() => remove(index)}>Remove<X size={12} aria-hidden="true" /></button>}</div>
       <AxisPicker label={`Configuration ${index + 1}`} axes={paneAxes(context, pane, (config) => chooseConfig(index, config), (token) => chooseLayer(index, token))} />
     </section>)}</div>
     {repeatGroups}
     {panes.length > 1 && <p className="mb-0 mt-4 text-xs leading-relaxed text-slate-500">{comparisonNote}</p>}
-  </>;
+  </div>;
 }
