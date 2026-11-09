@@ -64,6 +64,7 @@ function paneAxes(context: ComparisonContext, pane: Pane, onConfig: (config: Con
   const shown: ConfigAxis[] = (['model', 'effort', 'harness', 'environment', 'tier'] as const).filter((axis) => axis !== except && showsAxis(context.configurations, pane.config, axis, count));
   const axes: AxisPickerAxis[] = shown.map((axis) => ({
     id: axis, label: axis === 'tier' ? 'Tier' : AXIS_LABELS[axis], value: axisValueLabel(axis, axisValue(pane.config, axis)),
+    ...(axis === 'model' && isFreeModel(pane.config) ? { badge: 'Free' } : {}),
     options: axisOptions(context.configurations, pane.config, axis, count).map((option): AxisPickerOption => ({
       key: option.value, label: option.label, status: option.status, dishes: option.dishes, selected: option.selected,
       // Hundreds of models stay findable: grouped by maker, searchable by id, free ones marked.

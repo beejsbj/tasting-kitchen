@@ -12,7 +12,7 @@ import {
 } from "../lib/taste/configuration-templates.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { cook, plan } from "../lib/taste/index.mjs";
-import { discoverModels, formatDiscovery, openRouterEfforts } from "../lib/taste/model-discovery.mjs";
+import { describeOpenRouterModel, discoverModels, formatDiscovery, openRouterEfforts } from "../lib/taste/model-discovery.mjs";
 import { configurationProviderPin, isPinnedUpstream, upstreamName } from "../lib/taste/openrouter.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
@@ -346,4 +346,12 @@ test("catalog validation checks a materialized record against its configuration"
   const catalog = await loadCatalog(repoRoot);
   assert.notEqual(catalogWithConfigurations(catalog, [configuration]).catalogHash, catalog.catalogHash);
   assert.equal(catalogWithConfigurations(catalog, []).catalogHash, catalog.catalogHash);
+});
+
+test("a missing price is unknown, not free", () => {
+  const base = { id: "acme/thing-1", supported_parameters: ["tools"] };
+  assert.equal(describeOpenRouterModel({ ...base, pricing: {} }).free, false);
+  assert.equal(describeOpenRouterModel({ ...base, pricing: { prompt: null, completion: null } }).free, false);
+  assert.equal(describeOpenRouterModel({ ...base, pricing: { prompt: "0", completion: "0" } }).free, true);
+  assert.equal(describeOpenRouterModel({ ...base, id: "acme/thing-1:free" }).free, true);
 });

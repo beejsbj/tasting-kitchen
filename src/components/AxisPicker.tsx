@@ -18,7 +18,7 @@ export type AxisPickerOption = {
   terms?: string;
   onSelect: () => void;
 };
-export type AxisPickerAxis = { id: string; label: string; value: string; options: AxisPickerOption[] };
+export type AxisPickerAxis = { id: string; label: string; value: string; badge?: string; options: AxisPickerOption[] };
 
 /** Filled: a Dish exists. Ring: reachable, not cooked. Dash: no such configuration. */
 export function CookedMark({ status }: { status: AxisPickerOption['status'] }) {
@@ -67,7 +67,7 @@ export function AxisPicker({ label, axes }: { label: string; axes: AxisPickerAxi
   const onSearchKey = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (query) setQuery(''); else close(); return; }
     if (event.key === 'ArrowDown') { event.preventDefault(); buttons()[0]?.focus(); }
-    if (event.key === 'Enter') { event.preventDefault(); buttons().find((button) => button.getAttribute('aria-disabled') !== 'true')?.click(); }
+    if (event.key === 'Enter') { event.preventDefault(); if (query) buttons().find((button) => button.getAttribute('aria-disabled') !== 'true')?.click(); }
   };
   const optionButton = (option: AxisPickerOption) => <button key={option.key} type="button" className="axis-option" aria-pressed={option.selected} aria-disabled={option.status === 'impossible' || undefined}
     aria-label={`${option.label}${option.badge ? ` · ${option.badge}` : ''} · ${dishCountLabel(option)}${option.note ? ` · ${option.note}` : ''}`}
@@ -78,10 +78,10 @@ export function AxisPicker({ label, axes }: { label: string; axes: AxisPickerAxi
   </button>;
   return <div role="group" aria-label={label} className="axis-picker">
     <div className="flex flex-wrap gap-1">{axes.map((axis) => <button key={axis.id} type="button" ref={(node) => { if (node) chips.current.set(axis.id, node); else chips.current.delete(axis.id); }}
-      className="axis-chip" aria-expanded={open === axis.id} aria-controls={open === axis.id ? `${id}-options` : undefined} aria-label={`${axis.label}: ${axis.value}`}
+      className="axis-chip" aria-expanded={open === axis.id} aria-controls={open === axis.id ? `${id}-options` : undefined} aria-label={`${axis.label}: ${axis.value}${axis.badge ? ` · ${axis.badge}` : ''}`}
       onClick={() => toggle(axis.id)}
       onKeyDown={(event) => { if (event.key === 'ArrowDown' && open !== axis.id) { event.preventDefault(); toggle(axis.id); } }}>
-      <span className="axis-chip__axis">{axis.label}</span><span className="axis-chip__value">{axis.value}<ChevronDown size={13} aria-hidden="true" /></span>
+      <span className="axis-chip__axis">{axis.label}</span><span className="axis-chip__value">{axis.value}{axis.badge && <span className="axis-option__badge">{axis.badge}</span>}<ChevronDown size={13} aria-hidden="true" /></span>
     </button>)}</div>
     {openAxis && <div ref={list} id={`${id}-options`} role="group" aria-label={`${openAxis.label} options`} className="axis-options" data-closes-on-escape>
       {searchable && <label className="axis-search"><Search size={14} aria-hidden="true" /><span className="sr-only">{`Search ${openAxis.label.toLowerCase()} options`}</span>
