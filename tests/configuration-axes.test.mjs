@@ -159,6 +159,10 @@ test('undeclared environments are never held across harnesses, and the note says
   const differing = differingDimensions(slots);
   assert.deepEqual(differing, ['harness', 'undeclared environments']);
   assert.deepEqual(heldConfigLabels([codex, cursor], codex, 'harness', all), ['Luna 5.6', 'XHigh'], 'Not declared is not a held environment');
+  const withClean = [codex, cursor, claude('opus', 'xhigh', 'clean')];
+  const shown = counts({ 'codex-luna-xhigh': 1, 'cursor-luna-xhigh': 1, 'claude-opus-xhigh-clean': 1 });
+  assert.deepEqual(heldConfigLabels(withClean, codex, 'model', shown), ['XHigh', 'Codex CLI', 'Not declared'], 'with an environment choice on the recipe, one harness holds its undeclared environment');
+  assert.deepEqual(heldConfigLabels(withClean, codex, 'model', shown, ['model', 'undeclared environments']), ['XHigh', 'Codex CLI'], 'undeclared environments are left out whichever axis varies');
   const note = compareByNote('harness', ['Luna 5.6', 'XHigh'], differing);
   assert.equal(note, 'Holding Luna 5.6 · XHigh · harness varies · environments not declared, so not known to be the same · not an isolated comparison');
   assert.doesNotMatch(note, /only the harness differs|Not declared/);
