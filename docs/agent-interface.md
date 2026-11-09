@@ -129,6 +129,111 @@ recover from their own directory. Publication copies the staged Dish beside
 its destination and renames it within that directory, so `private/` may sit on
 another filesystem.
 
+Every harness child gets `TMPDIR=<cook directory>/tmp`, so its temp files,
+shell snapshots and sockets stay inside the cook directory and go with it. No
+adapter creates a git worktree; T3 keeps its threads, projects and state under
+its scratch `--base-dir`.
+
+#### Cook directory lifecycle
+
+Nobody has to clean cook directories by hand (`lib/taste/cook-directories.mjs`):
+
+- **Accepted:** once the Dish is published, the runner deletes the whole cook
+  directory: workspace, harness homes, snapshot copies, Hermes's `state.db`,
+  scratch. Recovery does the same after it publishes. The private evidence stays.
+- **Failed:** the cook directory stays, so `taste recover` can read it, until it
+  is older than the retention window: 14 days from `failedAt`,
+  `TASTE_COOK_RETENTION_DAYS` to change it. The prune then deletes it and writes
+  `pruned.json` beside the attempt's evidence; recovering that attempt fails with
+  a message naming the prune.
+- **Killed:** an attempt whose Kitchen died without settling it (a SIGKILL, a
+  crash, a reboot) is settled by the next prune: its adapter's cleanup runs
+  (T3's token-bearing settings and secret store, Hermes's login copy and
+  copied profile, a Claude Code snapshot home), and its state becomes `failed`
+  at stage `interrupted`. It then ages like any failed attempt.
+- **Orphans:** a cook directory no attempt references (an older Kitchen, a test
+  run against the real root) is deleted once it is an hour old.
+
+Every executed Cook prunes before its first attempt, and the result reports
+`pruned`. `taste prune [--dry-run]` does the same by hand and prints what it
+removed, kept (with the reason and, for a failed attempt, when it expires) and
+settled. Who owns a cook directory is recorded outside it, in
+`<root>/.owners/<name>.json` (the evidence directory, the owning process id and
+its start time), so the model's working tree names nothing, a prune from
+another checkout sharing the root can still find the attempt, and no prune ever
+touches a directory whose Kitchen is still running. The prune only deletes
+entries named like cook directories (16 hex characters) in a root that is
+private to the Cook.
+
+Tests never cook in the real root. `tests/support/runtime-root.mjs` gives each
+test run a temporary `TASTE_RUNTIME_ROOT` (ignoring one exported in the shell);
+without it, creating or pruning a cook directory under the test runner refuses
+the real default. `npm run test:taste` runs through
+`scripts/check-runtime-root.mjs`, which fails if the real root gained an entry
+during the run. Under the test runner the key proxy refuses any upstream but a
+loopback fake, so no test can reach a real provider.
+
+### What the model can reach
+
+Runs are unsandboxed and the tasted model has a shell running as the same user
+as the Kitchen. Kitchen therefore keeps credentials out of the harness's own
+process, environment and cook directory, where a model would find them without
+looking. It cannot keep them from a model that goes looking elsewhere on the
+host.
+
+Kept out of the harness:
+
+- **Environment.** Every harness child starts from an allowlist
+  (`lib/taste/child-env.mjs`): `PATH`, `HOME`, user and shell names, locale,
+  `TERM`, `TZ`, `TMPDIR`, `XDG_RUNTIME_DIR`, the host's proxy and CA settings,
+  and the XDG directories only for a harness that keeps the real home (Cursor,
+  original-profile Codex, T3 → Claude Code). `GH_TOKEN`, `OPENROUTER_API_KEY`,
+  `BWS_ACCESS_TOKEN`, AWS keys, `SSH_AUTH_SOCK`, D-Bus, a parent Claude Code or T3
+  session's channels, and any name added later never arrive. Explicit variables
+  a programmatic caller passes go through, minus credential-shaped names
+  (`TASTE_`, `CLAUDE*`, `ANTHROPIC_`, `OPENROUTER_`, `GH_`, `AWS_`, `SSH_` and the
+  like); the CLI passes none. Live Claude Code is the exception: it runs as he
+  runs `claude`, with his environment minus a parent Claude session.
+- **Bearer keys.** Hermes on OpenRouter and Direct API run behind a
+  per-attempt loopback key proxy (`lib/taste/key-proxy.mjs`). The harness gets a
+  dummy token and `http://127.0.0.1:<port>/api/v1`; the proxy refuses any other
+  token or path, adds the real key, and forwards only to the pinned upstream
+  (`https://openrouter.ai/api/v1`). It lives exactly as long as the session.
+  Hermes records the proxy as its endpoint, so its identity check accepts one
+  loopback proxy URL for every call. The model could spend through the proxy
+  while its own attempt runs; it cannot carry the key away.
+- **The Claude login.** Claude Code receives the access token on a file
+  descriptor; T3 → Claude Code in its scratch settings (deleted when the server
+  stops, and by the next prune if even the supervisor was killed); Hermes as an
+  access-token copy in its throwaway home. None receives the refresh token, so
+  no run can rotate his login, and none is pointed at `~/.claude/.credentials.json`.
+
+Still reachable by a model that looks (same user, so ordinary file reads):
+
+- `~/.claude/.credentials.json`, with its **refresh token**;
+- `~/.codex/auth.json`, which Codex and T3 → Codex link into their home
+  because Codex refreshes its own ChatGPT login there;
+- `~/.config/cursor/auth.json`, which Cursor uses in place;
+- `~/.hermes/.env` and any other file holding the OpenRouter key, and the
+  Kitchen process's own `/proc/<pid>/environ` when the key was exported for the
+  Cook command (the exec-time environment cannot be scrubbed afterwards);
+- the scratch T3 settings while that attempt runs, and the Claude Code access
+  token in the inner Claude process's environment under T3;
+- `/proc/<pid>/environ` of the harness itself, which now holds nothing secret.
+  Yama `ptrace_scope` is 1 on the Kitchen host, so the model's shell cannot read
+  its ancestors' memory.
+
+Closing these needs a separate unprivileged user for the harness, with the
+Kitchen (and the key proxy) staying as Burooj. The proxy is already the piece
+that design needs: the harness user would hold only dummy tokens. The OAuth
+logins are the harder part: Claude Code and T3 would need an access token
+handed across the user boundary each attempt, and Codex and Cursor a login of
+their own for that user. That is a host change, not a Kitchen one, so it waits
+for Burooj's decision. Proxying the OAuth logins as well (a dummy Claude token
+and `ANTHROPIC_BASE_URL` pointing at the proxy) is not built: whether Claude
+Code, Hermes and T3 accept a stand-in OAuth token cannot be checked without a
+real run, and the real credential files would stay readable regardless.
+
 ### Codex
 
 Every Codex turn gets a fresh `CODEX_HOME` holding only a link to the existing
@@ -163,8 +268,11 @@ contributes nothing.
 `claude-code` runs `claude -p --output-format stream-json --verbose` with the
 configuration's `--model` and `--effort`, and resumes later turns with
 `--resume <session UUID>`. Each attempt gets a fresh `CLAUDE_CONFIG_DIR`
-(`claude-home/`). Inherited `CLAUDE*` and `ANTHROPIC*` variables are dropped, so
-a parent Claude Code session cannot pass on its effort or credentials.
+(`claude-home/`). Clean and snapshot children start from the environment
+allowlist (see "What the model can reach"), so neither a parent Claude Code
+session's effort and credentials nor a provider key, GitHub token or agent
+socket reaches a run whose skills may tell the model to use them. Live keeps
+his environment minus inherited `CLAUDE*` and `ANTHROPIC*` variables.
 
 Every environment runs with:
 
@@ -233,8 +341,8 @@ groups by it: the run itself may have changed what it measured.
 
 An interrupted cook (SIGINT or SIGTERM) kills the harness's process group,
 deletes the copied setup, and records the attempt as failed at stage
-`interrupted`. A SIGKILL cannot be caught: its home stays in the cook directory
-until someone removes it.
+`interrupted`. A SIGKILL cannot be caught: the next Cook's prune settles that
+attempt and deletes its copied home (see "Cook directory lifecycle").
 
 Both personal environments load only the user setting source. The workspace has
 no ancestor instruction files to exclude (see "Where cooking happens").
@@ -311,20 +419,27 @@ rose's own sessions and run its plugin hooks against his real channels.
 
 Both environments use the committed Hermes environment's own entry point,
 because the `hermes` launcher would build a new dependency environment for an
-unfamiliar home. Hermes borrows the Claude Code login from
-`~/.claude/.credentials.json` (a refresh is written back there, so a Hermes
-attempt that crosses the token's expiry rotates the login his own sessions use:
-the one place a Kitchen run can write to his real `~/.claude`). When the
-attempt ends, however it ends, the runner empties the Hermes home of everything
-but `state.db` (and its WAL files), so a copied login and the copied files do not
-outlive it; an allowlist of what stays covers credential files a later Hermes
-might add. `state.db` itself stays, because identity verification and recovery
+unfamiliar home. On the Anthropic route Hermes borrows the Claude Code login,
+which it reads and refreshes through `CLAUDE_CONFIG_DIR`. Kitchen points that at
+`hermes-home/claude-login/`, holding a copy of the access token with its expiry
+and scopes and no refresh token, read from `CLAUDE_CONFIG_DIR` or `~/.claude` in
+the Kitchen's environment. A refresh Hermes attempts fails without a refresh
+token, and anything it writes back lands in the copy, so no Hermes run touches
+`~/.claude/.credentials.json`. A token that expires within the run window
+(`TASTE_CLAUDE_TOKEN_MARGIN_MS`, 30 minutes by default) is refused before the
+run. On the OpenRouter route Hermes gets `adopt_external_logins: false`, the key
+proxy's dummy token as `OPENROUTER_API_KEY`, and its loopback URL as
+`OPENROUTER_BASE_URL`, which Hermes treats as a deliberate OpenRouter mirror.
+When the attempt ends, however it ends, the runner empties the Hermes home of
+everything but `state.db` (and its WAL files), so the login copy, Hermes's own
+credential pool and the copied files do not outlive it; an allowlist of what
+stays covers credential files a later Hermes might add. `state.db` stays while
+the attempt might still need it, because identity verification and recovery
 read it, and Hermes stores each session's system prompt there: a snapshot run's
-soul and memory blocks therefore remain in the cook directory's `state.db`
-(outside the repo, never published) until someone removes the directory. A Hermes child inherits only `PATH`, `HOME`, `USER`, `LOGNAME`,
-`SHELL`, locale, `TERM`, `TZ`, `TMPDIR`, `XDG_RUNTIME_DIR` and
-`CLAUDE_CONFIG_DIR` from the Kitchen's environment, so no Gemini, AWS, GitHub or
-future provider key reaches it. Hermes reads every AGENTS.md from the git root
+soul and memory blocks remain in it (outside the repo, never published) until
+the Dish is published, which deletes the cook directory, or a failed attempt is
+pruned after the retention window. A Hermes child starts from the environment
+allowlist; `CLAUDE_CONFIG_DIR` is set by the adapter, never inherited. Hermes reads every AGENTS.md from the git root
 down and gives a run its coding posture when it finds a `package.json` within
 six levels; the runtime-root guard keeps both out of a cook directory's
 ancestry.
