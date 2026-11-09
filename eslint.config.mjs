@@ -18,6 +18,9 @@ const eslintConfig = defineConfig([
     "public/dishes/**",
     // Pinned third-party recipe inputs; preserve their original source bytes.
     "catalog/recipes/**/fixtures/upstream/**",
+    // Pinned skill sources are hashed into each skill layer; like upstream fixtures, their bytes stay as published.
+    // `npm run lint` already passed --ignore-pattern catalog/skills; this makes a bare `eslint .` agree.
+    "catalog/skills/**",
   ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
