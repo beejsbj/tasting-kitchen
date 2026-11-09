@@ -25,6 +25,10 @@ export type Configuration = {
     nativeWeb: "disabled";
     networkPolicy: "not-enforced";
     filesystemBoundary: "not-a-secrecy-boundary";
+    /** Absent on configurations that predate the dimension. */
+    environment?: "clean" | "personal";
+    /** A named harness profile (such as a Hermes profile); only with the personal environment. */
+    harnessProfile?: string;
   };
 };
 
