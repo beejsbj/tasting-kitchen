@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { publicTextFindings, scanPublicTree, scanWebArtifactNetwork } from "../lib/taste/files.mjs";
+import { publicTextFindings, scanPublicTree, scanWebArtifactNetwork, selectArtifactFiles } from "../lib/taste/files.mjs";
 
 test("public scan distinguishes serialized page newlines from Windows absolute paths", () => {
   const serialized = JSON.stringify({ response: "Finished the page:\nNext line includes more prose." }, null, 2);
@@ -42,6 +42,39 @@ test("public tree scan permits only parent references that resolve inside the ar
 
   await writeFile(path.join(root, "source/outside.mjs"), 'import "../../outside.mjs";\n');
   await assert.rejects(scanPublicTree(root), /path traversal/);
+});
+
+test("public tree scan permits a source import of Kitchen equipment the artifact does not ship", async (t) => {
+  // A lyric scene in source/scenes/ imports the engine it ran against as ../engine/scene;
+  // the engine is Kitchen's and is deliberately not in the delivery.
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-public-tree-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "source/scenes"), { recursive: true });
+  await writeFile(path.join(root, "source/scenes/words.ts"), "import { Scene } from '../engine/scene';\nimport { W } from \"../engine/gl\";\n");
+  await assert.doesNotReject(scanPublicTree(root));
+  await writeFile(path.join(root, "source/scenes/escape.ts"), "import x from '../../../engine/scene';\n");
+  await assert.rejects(scanPublicTree(root), /path traversal/);
+  // A host location spelled after a climb that stays inside the tree is not hidden by the mask.
+  await rm(path.join(root, "source/scenes/escape.ts"));
+  for (const specifier of ["../../mnt/server-ssd/work/notes", "../../root/.config/env", "../x/home/user/file", "../../private/fixtures/a"]) {
+    await writeFile(path.join(root, "source/scenes/disguised.ts"), `import x from "${specifier}";\n`);
+    await assert.rejects(scanPublicTree(root), /path traversal/, specifier);
+  }
+});
+
+test("public scan permits a first-line env shebang and nothing else of its shape", () => {
+  assert.deepEqual(publicTextFindings("#!/usr/bin/env node\nconsole.log(1);\n"), []);
+  assert.deepEqual(publicTextFindings("#!/usr/bin/env -S node --no-warnings\n"), []);
+  assert.ok(publicTextFindings("#!/home/user/bin/node\n").includes("absolute home path"));
+  assert.ok(publicTextFindings("#!/opt/tools/node\n").includes("absolute path"));
+  assert.ok(publicTextFindings("// run #!/usr/bin/env node\n/usr/bin/env node x\n").includes("absolute path"));
+  // Only an interpreter and its flags are exempt; anything else on the line is scanned.
+  assert.ok(publicTextFindings("#!/usr/bin/env node /home/admin/.config\n").includes("absolute home path"));
+  assert.ok(publicTextFindings("#!/usr/bin/env node sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  // Flag values and the interpreter slot are scanned too.
+  assert.ok(publicTextFindings("#!/usr/bin/env -S node --api-key=sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  assert.ok(publicTextFindings("#!/usr/bin/env sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  assert.ok(publicTextFindings("#!/usr/bin/env -S node --root=/mnt/server-ssd/work\n").includes("absolute home path"));
 });
 
 test("verbatim inputs relax path shapes, including regexes shaped like Windows paths, but not leaks", async (t) => {
@@ -94,4 +127,21 @@ test("web artifact scan rejects remote runtime dependencies", async (t) => {
   await writeFile(path.join(root, "style.css"), '@import url("//cdn.example.test/type.css");');
   await assert.rejects(scanWebArtifactNetwork(root), /remote runtime references/);
   assert.ok(true);
+});
+
+test("artifact selection ignores workspace equipment outside the output contract, symlinks included", async (t) => {
+  // A lyric workspace holds Kitchen's engine with node_modules/.bin symlinks; it is never delivered.
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-select-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "engine/app/node_modules/.bin"), { recursive: true });
+  await writeFile(path.join(root, "engine/app/node_modules/tool.js"), "1\n");
+  await symlink("../tool.js", path.join(root, "engine/app/node_modules/.bin/tool"));
+  await mkdir(path.join(root, "source"));
+  await writeFile(path.join(root, "index.html"), "<!doctype html>\n");
+  await writeFile(path.join(root, "source/scene.ts"), "export {};\n");
+  const output = { entry: "index.html", include: ["index.html", "source/**"], limits: { maxFiles: 10, maxBytes: 4096 } };
+  assert.deepEqual((await selectArtifactFiles(root, output)).files, ["index.html", "source/scene.ts"]);
+  await symlink("../index.html", path.join(root, "source/link.html"));
+  await assert.rejects(selectArtifactFiles(root, output), /Symlinks are not allowed in artifacts: source\/link\.html/u);
+  await assert.rejects(selectArtifactFiles(root, { ...output, include: ["**"] }), /Symlinks are not allowed/u);
 });
