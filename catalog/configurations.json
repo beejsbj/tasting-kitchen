@@ -820,6 +820,502 @@
         "environment": "personal",
         "harnessProfile": "rose"
       }
+    },
+    {
+      "id": "hermes-openrouter-opus-5-5-high-clean",
+      "label": "Opus 5.5 · High · via Hermes · clean (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-opus-5.5",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-sonnet-5-5-high-clean",
+      "label": "Sonnet 5.5 · High · via Hermes · clean (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-sonnet-5.5",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-haiku-5-5-high-clean",
+      "label": "Haiku 5.5 · High · via Hermes · clean (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-haiku-5.5",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-fable-5-1-high-clean",
+      "label": "Fable 5.1 · High · via Hermes · clean (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-fable-5.1",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-gemini-4-argon-high-clean",
+      "label": "Gemini 4 Argon · High · via Hermes · clean (OpenRouter)",
+      "provider": "google",
+      "model": "google/gemini-4-argon",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-grok-4-7-high-clean",
+      "label": "Grok 4.7 · High · via Hermes · clean (OpenRouter)",
+      "provider": "x-ai",
+      "model": "x-ai/grok-4.7",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-muse-wonder-high-clean",
+      "label": "Muse Wonder · High · via Hermes · clean (OpenRouter)",
+      "provider": "meta",
+      "model": "meta/muse-wonder",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-kimi-k3-1-pro-high-clean",
+      "label": "Kimi K3.1 Pro · High · via Hermes · clean (OpenRouter)",
+      "provider": "moonshotai",
+      "model": "moonshotai/kimi-k3.1-pro",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-deepseek-v4-pro-0813-high-clean",
+      "label": "DeepSeek V4 Pro 0813 · High · via Hermes · clean (OpenRouter)",
+      "provider": "deepseek",
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-glm-5-3-high-clean",
+      "label": "GLM 5.3 · High · via Hermes · clean (OpenRouter)",
+      "provider": "z-ai",
+      "model": "z-ai/glm-5.3",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-qwen3-8-max-0902-high-clean",
+      "label": "Qwen3.8 Max 0902 · High · via Hermes · clean (OpenRouter)",
+      "provider": "qwen",
+      "model": "qwen/qwen3.8-max-0902",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "hermes-openrouter-mistral-large-4-high-clean",
+      "label": "Mistral Large 4 · High · via Hermes · clean (OpenRouter)",
+      "provider": "mistralai",
+      "model": "mistralai/mistral-large-4-0",
+      "harness": "hermes",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "hermes-linux-host-clean-openrouter-v1",
+        "label": "via Hermes · clean home · OpenRouter route",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "yolo",
+        "nativeWeb": "disabled",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-opus-5-5-high",
+      "label": "Opus 5.5 · High · Direct API (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-opus-5.5",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-sonnet-5-5-high",
+      "label": "Sonnet 5.5 · High · Direct API (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-sonnet-5.5",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-haiku-5-5-high",
+      "label": "Haiku 5.5 · High · Direct API (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-haiku-5.5",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-fable-5-1-high",
+      "label": "Fable 5.1 · High · Direct API (OpenRouter)",
+      "provider": "anthropic",
+      "model": "anthropic/claude-fable-5.1",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-gemini-4-argon-high",
+      "label": "Gemini 4 Argon · High · Direct API (OpenRouter)",
+      "provider": "google",
+      "model": "google/gemini-4-argon",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-grok-4-7-high",
+      "label": "Grok 4.7 · High · Direct API (OpenRouter)",
+      "provider": "x-ai",
+      "model": "x-ai/grok-4.7",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-kimi-k3-1-pro-high",
+      "label": "Kimi K3.1 Pro · High · Direct API (OpenRouter)",
+      "provider": "moonshotai",
+      "model": "moonshotai/kimi-k3.1-pro",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
+    },
+    {
+      "id": "direct-api-deepseek-v4-pro-0813-high",
+      "label": "DeepSeek V4 Pro 0813 · High · Direct API (OpenRouter)",
+      "provider": "deepseek",
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "harness": "direct-api",
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [],
+      "executionProfile": {
+        "id": "direct-api-openrouter-v1",
+        "label": "Direct API · OpenRouter route · no harness",
+        "runtime": "linux-host",
+        "sandbox": "no-tools",
+        "approvalPolicy": "no-tools",
+        "nativeWeb": "disabled",
+        "networkPolicy": "no-tools",
+        "filesystemBoundary": "no-workspace",
+        "environment": "clean",
+        "route": "openrouter"
+      }
     }
   ]
 }
