@@ -54,6 +54,12 @@ test("public tree scan permits a source import of Kitchen equipment the artifact
   await assert.doesNotReject(scanPublicTree(root));
   await writeFile(path.join(root, "source/scenes/escape.ts"), "import x from '../../../engine/scene';\n");
   await assert.rejects(scanPublicTree(root), /path traversal/);
+  // A host location spelled after a climb that stays inside the tree is not hidden by the mask.
+  await rm(path.join(root, "source/scenes/escape.ts"));
+  for (const specifier of ["../../mnt/server-ssd/work/notes", "../../root/.config/env", "../x/home/user/file", "../../private/fixtures/a"]) {
+    await writeFile(path.join(root, "source/scenes/disguised.ts"), `import x from "${specifier}";\n`);
+    await assert.rejects(scanPublicTree(root), /path traversal/, specifier);
+  }
 });
 
 test("public scan permits a first-line env shebang and nothing else of its shape", () => {
@@ -65,6 +71,10 @@ test("public scan permits a first-line env shebang and nothing else of its shape
   // Only an interpreter and its flags are exempt; anything else on the line is scanned.
   assert.ok(publicTextFindings("#!/usr/bin/env node /home/admin/.config\n").includes("absolute home path"));
   assert.ok(publicTextFindings("#!/usr/bin/env node sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  // Flag values and the interpreter slot are scanned too.
+  assert.ok(publicTextFindings("#!/usr/bin/env -S node --api-key=sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  assert.ok(publicTextFindings("#!/usr/bin/env sk-proj1234567890abcdefghij\n").includes("credential-like token"));
+  assert.ok(publicTextFindings("#!/usr/bin/env -S node --root=/mnt/server-ssd/work\n").includes("absolute home path"));
 });
 
 test("verbatim inputs relax path shapes, including regexes shaped like Windows paths, but not leaks", async (t) => {
