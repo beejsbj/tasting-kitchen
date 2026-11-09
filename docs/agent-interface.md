@@ -15,6 +15,19 @@ Import `lib/taste/index.mjs` for cooking and Recipe Book authoring. The authorin
   skipped-covered, and unsupported cells. Covered means a Dish exists for the
   Recipe's current hash, the configuration hash and the skill layer. Nothing is
   frozen into the catalog; each Dish records its own inputs and receipt.
+- `discoverModels({ harness: "hermes", route?, free? })` lists every route Hermes
+  is set up for (authenticated, logged out with the fixing command, exhausted,
+  retired) and each route's models, free ones marked, with context size and the
+  efforts a model takes where known. It reads Hermes's caches and an allowlist of
+  auth.json fields (sources such as `env:OPENROUTER_API_KEY`, never a key), and
+  OpenRouter's public model list. `taste models [--route ID] [--free] [--json]`.
+- `plan` and `cook` also take a configuration spec or selector as
+  `configurationId` (`hermes:openrouter/<model>@<effort>[:clean]`,
+  `hermes:openrouter/*@auto+free`), with `upstream` naming the OpenRouter
+  provider when the choice is not settled by the maker or a sole provider. A
+  spec's plan carries `configurationSpec` beside the usual fields; a selector's
+  returns `{ configurationSpec, plans }` and its Cook `{ configurationSpec, cooks }`.
+  An executed Cook materializes new configurations into the catalog first.
 - `coverage(menu, recipes, dishes, configurationHashes?, skillHashes?)` keeps the complete
   Menu denominator, measured against each member's current recipe hash, and
   reports missing cells explicitly. Skill keys are skill hashes or `"none"`.
