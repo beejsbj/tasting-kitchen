@@ -120,8 +120,8 @@ Both environments run with:
 - an empty MCP config under `--strict-mcp-config`, and claude.ai connectors
   disabled. Burooj's MCP servers reach Gmail, Calendar, Linear and tududi, and
   a Run with bypassed permissions must not cause external side effects;
-- only `Bash`, `Edit`, `Glob`, `Grep`, `Read` and `Write` (no web, subagent or
-  scheduling tools). Network access through the shell is not blocked;
+- only `Bash`, `Edit`, `Glob`, `Grep`, `Read` and `Write`, plus `Skill` in
+  `personal` (no web, subagent or scheduling tools). Network access through the shell is not blocked;
 - hooks disabled and auto-update off;
 - `includeGitInstructions: false`. Attempt workspaces sit inside the Kitchen
   checkout, and Claude Code's git-status prompt section would otherwise give the
@@ -135,8 +135,9 @@ bundled skill list still load: they ship with the harness. The Skill tool is not
 offered, so bundled skills cannot be invoked.
 
 `personal` mirrors `CLAUDE.md`, `skills/`, `agents/`, `commands/` and
-`output-styles/` from `~/.claude` as read-only symlinks, loads only the user
-setting source, and adds the Skill tool. Instruction files in the workspace's
+`output-styles/` from `~/.claude` as symlinks. The links point at the real
+files and are writable: a personal Run with bypassed permissions can edit them.
+It loads only the user setting source and adds the Skill tool. Instruction files in the workspace's
 ancestors are excluded through `claudeMdExcludes`, because the Kitchen's
 `AGENTS.md` (and any above the checkout) would otherwise load as project
 memory. It does not mirror `settings.json` (today that file holds only model and
