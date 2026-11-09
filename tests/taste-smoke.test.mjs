@@ -15,7 +15,7 @@ const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 const args = process.argv.slice(2);
-if (args[0] === "image") { console.log("sha256:fake"); process.exit(0); }
+if (args[0] === "image") { console.log(process.env.FAKE_TOOLCHAIN_HASH); process.exit(0); }
 const mounts = {};
 let i = 1;
 for (; i < args.length; i++) {
@@ -80,7 +80,7 @@ async function kitchen(t) {
   const docker = path.join(root, "fake-docker");
   await writeFile(docker, FAKE_DOCKER);
   await chmod(docker, 0o755);
-  return { root, env: { ...process.env, TASTE_DOCKER: docker } };
+  return { root, env: { ...process.env, TASTE_DOCKER: docker, FAKE_TOOLCHAIN_HASH: toolchain.toolchainHash } };
 }
 
 test("a public film smoke publishes, lists and plays a Dish only inside its scratch Kitchen", async (t) => {
@@ -111,6 +111,14 @@ test("a private film smoke keeps its Dish out of the registry and plays it from 
   const inputs = JSON.parse(await readFile(path.join(result.directory, result.steps.publication.dishDirectory, "inputs.json"), "utf8"));
   assert(!JSON.stringify(inputs).includes("private bytes"));
   assert.deepEqual(await readdir(path.join(result.directory, result.steps.publication.dishDirectory, "inputs", "fixtures")).then((names) => names.sort()), ["brief.md", "toolchain.json"]);
+});
+
+test("a smoke refuses an image built from another toolchain pin", async (t) => {
+  const { root, env } = await kitchen(t);
+  const result = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: { ...env, FAKE_TOOLCHAIN_HASH: "sha256:older" } });
+  assert.equal(result.passed, false);
+  assert.match(result.steps.image.error, /built from toolchain sha256:older/u);
+  assert.equal(result.steps.render, undefined);
 });
 
 test("a failing delivery check stops the smoke before publication", async (t) => {

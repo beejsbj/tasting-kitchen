@@ -2,7 +2,7 @@
 # works in, and that Kitchen validates and plays back with. Every input is
 # pinned in toolchain.json; tests/taste-toolchain.test.mjs keeps them in step.
 # Build from the repository root:
-#   docker build -f catalog/toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
+#   node scripts/build-toolchain.mjs film-v1   (labels the image with its toolchain hash)
 FROM docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6
 
 ARG DEBIAN_SNAPSHOT=20261101T000000Z

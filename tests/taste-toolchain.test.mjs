@@ -8,6 +8,7 @@ import test from "node:test";
 import { computeRecipeHash, loadCatalog } from "../lib/taste/catalog.mjs";
 import { runChecks } from "../lib/taste/checks.mjs";
 import {
+  assertToolchainImage,
   loadToolchains,
   mountToolchainEngine,
   renderToolchainPin,
@@ -109,9 +110,10 @@ async function fakeDocker(t, script) {
 test("toolchain recipes run their command checks inside the image, offline and read-only", async (t) => {
   const workspace = await mkdtemp(path.join(os.tmpdir(), "taste-toolchain-ws-"));
   t.after(() => rm(workspace, { recursive: true, force: true }));
-  const docker = await fakeDocker(t, "echo 'PASS in image'");
+  const docker = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
+echo 'PASS in image'`);
   const recipe = {
-    id: "film", toolchainRuntime: { id: "film-v1", image: "kitchen/film:v1" },
+    id: "film", toolchainRuntime: { id: "film-v1", image: "kitchen/film:v1", toolchainHash: "sha256:pinned" },
     validation: { checks: [{ id: "film-contract", type: "command", required: true, description: "Film.", argv: ["node", "validation/film.mjs"] }] },
   };
   const result = await runChecks(recipe, workspace, { env: docker.env });
@@ -121,8 +123,23 @@ test("toolchain recipes run their command checks inside the image, offline and r
   assert.deepEqual(argv.slice(0, 4), ["run", "--rm", "--network", "none"]);
   assert(argv.includes(`${workspace}:/work:ro`));
   assert.deepEqual(argv.slice(-3), ["kitchen/film:v1", "node", "validation/film.mjs"]);
-  const failing = await fakeDocker(t, "exit 3");
+  const failing = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
+exit 3`);
   assert.equal((await runChecks(recipe, workspace, { env: failing.env })).passed, false);
+});
+
+test("an image built from another pin is refused before anything runs in it", async (t) => {
+  const workspace = await mkdtemp(path.join(os.tmpdir(), "taste-toolchain-ws-"));
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  const runtime = { id: "film-v1", image: "kitchen/film:v1", toolchainHash: "sha256:pinned" };
+  const stale = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:older; exit 0; }
+echo 'PASS in image'`);
+  await assert.rejects(assertToolchainImage(runtime, { processEnv: stale.env }), /built from toolchain sha256:older.*rebuild/su);
+  const result = await runChecks({ id: "film", toolchainRuntime: runtime, validation: { checks: [{ id: "film-contract", type: "command", required: true, description: "Film.", argv: ["node", "validation/film.mjs"] }] } }, workspace, { env: stale.env });
+  assert.equal(result.passed, false);
+  assert.match(result.checks[0].detail, /rebuild/u);
+  const missing = await fakeDocker(t, "exit 1");
+  await assert.rejects(assertToolchainImage(runtime, { processEnv: missing.env }), /is not built/u);
 });
 
 test("toolchainArgv never mounts more than it is given", () => {
@@ -136,13 +153,15 @@ test("the lyric engine is copied from the image only when the image carries the 
   const workspace = await mkdtemp(path.join(os.tmpdir(), "taste-toolchain-ws-"));
   t.after(() => rm(workspace, { recursive: true, force: true }));
   const engine = { commit: film.lyricEngine.commit, patchSha256: film.lyricEngine.patch.sha256, fontsCommit: film.lyricEngine.fonts.commit };
-  const recipe = { id: "lyric", toolchain: { id: "film-v1", engineMount: "engine" }, toolchainRuntime: { id: "film-v1", image: "kitchen/film:v1", engine } };
-  const good = await fakeDocker(t, `echo '${JSON.stringify(engine)}'`);
+  const recipe = { id: "lyric", toolchain: { id: "film-v1", engineMount: "engine" }, toolchainRuntime: { id: "film-v1", image: "kitchen/film:v1", toolchainHash: "sha256:pinned", engine } };
+  const good = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
+echo '${JSON.stringify(engine)}'`);
   assert.deepEqual(await mountToolchainEngine(recipe, workspace, { processEnv: good.env }), engine);
   const argv = await good.argv();
   assert(argv.includes(`${workspace}:/work`), "the engine copy writes the workspace");
   assert(argv.includes("/work/engine"));
-  const drifted = await fakeDocker(t, `echo '${JSON.stringify({ ...engine, patchSha256: "0".repeat(64) })}'`);
+  const drifted = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
+echo '${JSON.stringify({ ...engine, patchSha256: "0".repeat(64) })}'`);
   await assert.rejects(mountToolchainEngine(recipe, workspace, { processEnv: drifted.env }), /Rebuild the toolchain image/u);
   assert.equal(await mountToolchainEngine({ id: "plain" }, workspace, { processEnv: good.env }), null);
 });

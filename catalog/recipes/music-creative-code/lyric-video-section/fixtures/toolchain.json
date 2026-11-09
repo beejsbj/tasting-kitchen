@@ -87,6 +87,6 @@
     },
     "excluded": "The skill's world kit (assets/lib/kit.ts) and example scenes are technique, not engine: they reach a model only through the skill layer."
   },
-  "treeHash": "sha256:4c4dfdb987022a8152ba28e4007186dbe8f66dddf19aecf9e4adab6bd300a861",
-  "toolchainHash": "sha256:4a773aa2d84ae00d62cc7c1d12082e4df2083c64993facd65f54c349b9c547ae"
+  "treeHash": "sha256:844743640884bec6d3f980cde676b26958609f3496e47aadfd14e865af7fc195",
+  "toolchainHash": "sha256:8b25aa151997bf484a4629f66e3546616e858953248d4b55f9e3ec7c14d1fdc0"
 }

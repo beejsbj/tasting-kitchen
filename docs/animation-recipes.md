@@ -105,10 +105,12 @@ the skill layer.
 
 A Recipe names the toolchain in `toolchain` and carries the generated pin as
 its `toolchain` fixture, so editing the image moves the recipe hash. Command
-checks of such a Recipe run in the image, offline and read-only.
+checks of such a Recipe run in the image, offline and read-only, and only
+after the image's `kitchen.toolchain-hash` label matches the current pin; a
+stale local build is refused with a rebuild instruction.
 
 ```sh
-docker build -f catalog/toolchains/film/Dockerfile -t tasting-kitchen/film-toolchain:v1 .
+node scripts/build-toolchain.mjs film-v1   # labels the image with its toolchain hash
 node scripts/pin-toolchain.mjs            # after any toolchain edit; --check to verify
 node scripts/smoke-recipe.mjs heavy-little-suitcase
 node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine render
