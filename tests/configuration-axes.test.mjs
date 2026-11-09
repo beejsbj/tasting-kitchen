@@ -127,7 +127,7 @@ test('choosing values keeps the held pane first, the limit, and survives a new h
 test('the compare-by note states what was held and never credits the varied axis alone', () => {
   const slot = (config) => ({ config, skillKey: 'none' });
   const harness = differingDimensions([slot(opusHighClean), slot(hermes('opus', 'high', 'clean'))]);
-  assert.equal(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], harness), 'Holding Opus 5.5 · High · Clean · only the harness differs · its own prompt, tools and defaults come with it');
+  assert.equal(compareByNote('harness', ['Opus 5.5', 'High', 'Clean'], harness), 'Holding Opus 5.5 · High · Clean · only the harness differs · its own prompt, tools, route and defaults come with it');
   assert.equal(compareByNote('environment', ['Opus 5.5', 'High', 'Claude Code'], ['environment']), 'Holding Opus 5.5 · High · Claude Code · only the environment differs · what the environment adds');
   assert.equal(compareByNote('skill', ['Opus 5.5'], ['skill layer']), 'Holding Opus 5.5 · only the skill layer differs · the model still decides how to use it');
   assert.equal(compareByNote('model', ['Claude Code'], ['model']), 'Holding Claude Code · only the model differs');

@@ -274,7 +274,7 @@ try {
   assert.deepEqual(await harnessPage.locator(".pane-label b").allInnerTexts(), ["Claude Code", "Hermes"], "panes are named by the varied value");
   assert.match(await harnessPage.locator(".pane-label").first().innerText(), /holding Opus 5\.5 · High · Clean · Without skill/);
   assert.equal(await harnessPage.locator("[role=status][aria-live=polite].sr-only").innerText(), "Comparing 2 harnesses, holding Opus 5.5 · High · Clean · Without skill", "a Compare by layout is announced politely");
-  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools and defaults come with it$/;
+  const note = /^Holding Opus 5\.5 · High · Clean · Without skill · only the harness differs · its own prompt, tools, route and defaults come with it$/;
   assert.equal(await harnessPage.getByText(note).count(), 1, "the note states the isolation by construction");
   const harnessValues = harnessPage.getByRole("region", { name: "Harness values" });
   await harnessValues.getByRole("checkbox").nth(2).check(); await settle(harnessPage);

@@ -260,7 +260,7 @@ export function toggleComparisonValue(selection: readonly string[], value: strin
 }
 
 const ISOLATION: Partial<Record<ComparisonDimension, string>> = {
-  harness: "its own prompt, tools and defaults come with it",
+  harness: "its own prompt, tools, route and defaults come with it",
   environment: "what the environment adds",
   "skill layer": "the model still decides how to use it",
 };

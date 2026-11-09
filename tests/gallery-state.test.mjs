@@ -247,7 +247,7 @@ test('the comparison note names the one dimension that differs, without creditin
   assert.match(differenceNote(['environment']), /^Same brief · only the environment differs/);
   // The same model under Hermes' own spelling, with its own profile, is still only a harness difference.
   assert.deepEqual(differingDimensions([slot(claudePersonal), slot(hermesPersonal)]), ['harness']);
-  assert.match(differenceNote(['harness']), /^Same brief · only the harness differs · its own prompt, tools and defaults come with it/);
+  assert.match(differenceNote(['harness']), /^Same brief · only the harness differs · its own prompt, tools, route and defaults come with it/);
   assert.deepEqual(differingDimensions([slot(hermesPersonal), slot({ ...hermesPersonal, executionProfile: { ...hermesPersonal.executionProfile, harnessProfile: 'other' } })]), ['environment']);
   assert.deepEqual(differingDimensions([slot(claudeClean), slot({ ...claudeClean, reasoningEffort: 'max' })]), ['effort']);
   assert.deepEqual(differingDimensions([slot(claudeClean), slot(claudeClean, 'sha256:skill')]), ['skill layer']);

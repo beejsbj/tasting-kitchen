@@ -97,7 +97,7 @@ export function differingDimensions(slots: ReadonlyArray<{ config: Dimensioned &
   return undeclared ? [...differing, UNDECLARED_ENVIRONMENTS] : differing;
 }
 const ONLY_NOTES: Partial<Record<ComparisonDimension, string>> = {
-  harness: "only the harness differs · its own prompt, tools and defaults come with it",
+  harness: "only the harness differs · its own prompt, tools, route and defaults come with it",
   environment: "only the environment differs · what the environment adds",
 };
 /** The comparison note once the briefs match and nothing drifted: it names what differs. */
