@@ -19,6 +19,7 @@ import {
 } from "../lib/taste/claude-code.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { dishIdForAttempt as dishIdFor } from "../lib/taste/publication.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
@@ -457,7 +458,8 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   assert.equal((await readJson(path.join(clean.dishDirectory, "receipt.json"))).setup, undefined);
   const attemptDir = path.join(f.root, "private/runtime/attempts", clean.attemptId);
   const requested = await readJson(path.join(attemptDir, "requested.json"));
-  assert.deepEqual((await readdir(path.join(requested.cookDirectory, "claude-home"))).filter((entry) => /credential/iu.test(entry)), []);
+  // Published: the whole cook directory is gone, the clean home with it.
+  assert.equal(await pathExists(requested.cookDirectory), false);
   assert.equal(requested.execution.environment, "clean");
   assert.equal(requested.execution.setup, "none (safe mode)");
   assert.equal(requested.execution.mcpServers, "none");
@@ -478,7 +480,7 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   assert.deepEqual(receipt.setup.loaded, { mcpServers: [], plugins: [] });
   assert.deepEqual(receipt.setup.entries.map((entry) => entry.entry), ["CLAUDE.md", "memory", "settings.json", "skills"]);
   // The copy is discarded once the attempt ends; the digest is what remains of it.
-  assert.equal(await readdir(path.join(snapshotRequest.cookDirectory, "claude-home")).catch(() => "gone"), "gone");
+  assert.equal(await pathExists(snapshotRequest.cookDirectory), false);
   const snapshotCall = (await readFile(f.env.FAKE_LOG, "utf8")).trim().split("\n").map(JSON.parse).at(-1);
   assert.equal(snapshotCall.configDir, path.join(snapshotRequest.cookDirectory, "claude-home"));
 
@@ -523,26 +525,32 @@ test("a snapshot Claude Code attempt that failed at publication recovers private
   const f = await runnerFixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const variant = claudeVariant("snapshot");
+  // A Dish directory already in the way fails the attempt at publication, after the model ran.
+  const blockPublication = (nonce) => mkdir(path.join(f.root, "private/dishes", `dish_${f.recipe.id}_${variant.id}_20261108120000000_${nonce}`), { recursive: true });
+  await blockPublication("recover");
   const cooked = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: f.env, now: new Date("2026-11-08T12:00:00.000Z"), nonce: "recover" });
-  assert.equal(cooked.status, "accepted", cooked.error);
-  const original = JSON.parse(await readFile(path.join(cooked.dishDirectory, "dish.json"), "utf8"));
-  // Turn the accepted attempt back into a publication failure, and change his setup in the meantime.
-  await rm(cooked.dishDirectory, { recursive: true });
+  assert.equal(cooked.status, "failed");
+  assert.match(cooked.error, /already exists/);
   const attemptDir = path.join(f.root, "private/runtime/attempts", cooked.attemptId);
-  await writeFile(path.join(attemptDir, "state.json"), JSON.stringify({ status: "failed", stage: "publication", message: "disk full", failedAt: "2026-11-08T12:01:00.000Z" }));
+  const { cookDirectory, setup } = JSON.parse(await readFile(path.join(attemptDir, "requested.json"), "utf8"));
+  assert.equal(await pathExists(path.join(cookDirectory, "workspace")), true, "a failed attempt keeps its cook directory for recovery");
+  // Change his setup in the meantime: recovery must use the digest the attempt recorded.
+  await rm(path.join(f.root, "private/dishes", dishIdFor(cooked.attemptId)), { recursive: true });
   await writeFile(path.join(f.env.TASTE_CLAUDE_MEMORY_SOURCE, "light.md"), "Changed after the run.\n");
   const recovered = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: cooked.attemptId, env: f.env });
   assert.equal(recovered.status, "accepted");
   assert.deepEqual(path.relative(f.root, recovered.dishDirectory).split(path.sep).slice(0, 2), ["private", "dishes"], "recovery keeps the unpublished choice");
   const dish = JSON.parse(await readFile(path.join(recovered.dishDirectory, "dish.json"), "utf8"));
-  assert.equal(dish.identity.setupDigest, original.identity.setupDigest);
+  assert.equal(dish.identity.setupDigest, setup.digest);
   assert.equal(JSON.parse(await readFile(path.join(attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
+  assert.equal(await pathExists(cookDirectory), false, "a recovered Dish's cook directory is removed");
 
   // A request whose setup record no longer matches its configuration does not recover.
+  await blockPublication("tampered");
   const second = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: f.env, now: new Date("2026-11-08T12:00:00.000Z"), nonce: "tampered" });
-  await rm(second.dishDirectory, { recursive: true });
+  assert.equal(second.status, "failed");
+  await rm(path.join(f.root, "private/dishes", dishIdFor(second.attemptId)), { recursive: true });
   const secondDir = path.join(f.root, "private/runtime/attempts", second.attemptId);
-  await writeFile(path.join(secondDir, "state.json"), JSON.stringify({ status: "failed", stage: "publication", message: "disk full" }));
   const requested = JSON.parse(await readFile(path.join(secondDir, "requested.json"), "utf8"));
   delete requested.setup.digest;
   await writeFile(path.join(secondDir, "requested.json"), JSON.stringify(requested));

@@ -4,11 +4,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, discoverModels, evaluateDishWithJev, formatDiscovery, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, recover } from "../lib/taste/index.mjs";
+import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discover, discoverModels, evaluateDishWithJev, formatDiscovery, inspect, listRecipes, loadAxisSets, loadCatalog, loadDishes, loadObservations, plan, prune, recover } from "../lib/taste/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "harness", "route", "upstream"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "free"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "free"]);
 
 const commandFlags = {
   help: new Set(),
@@ -25,6 +25,7 @@ const commandFlags = {
   "compare-rubrics": new Set(["experiment", "output"]),
   "build-registry": new Set(["output"]),
   recover: new Set(["attempt"]),
+  prune: new Set(["dry-run"]),
 };
 
 class UsageError extends Error {
@@ -131,6 +132,7 @@ Usage:
   taste validate [--public-checkout] [--json]
   taste build-registry [--output PATH]
   taste recover --attempt ID
+  taste prune [--dry-run]
 
   models lists every route Hermes is set up for and the models on it, free ones marked, from Hermes's own caches and OpenRouter's public model list. It reads only.
   A SPEC names a model on a configuration template: hermes:openrouter/google/gemma-4-31b-it:free@high[:clean]. If the catalog holds no
@@ -140,6 +142,7 @@ Usage:
   Validate checks private provenance by default. --public-checkout skips private provenance entirely, even when present; public checks still run.
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
+  Prune removes the cook directories of accepted attempts, of failed attempts older than TASTE_COOK_RETENTION_DAYS (14 by default), and orphans; every Cook prunes first.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
 Errors use {"error":{"code":"INVALID_ARGUMENT","message":"..."}} on stderr with --json.
@@ -221,6 +224,7 @@ async function main() {
     const result = await buildRegistry({ repoRoot, basePath: process.env.TASTE_BASE_PATH ?? "/", ...(output ? { output } : {}) });
     return print({ status: "built", output: path.relative(repoRoot, result.output), dishes: result.registry.dishes.length }, true);
   }
+  if (command === "prune") return print(await prune(repoRoot, { dryRun: options["dry-run"] === true }), true);
   if (command === "recover") {
     if (!options.attempt) throw new UsageError("recover requires --attempt ID");
     return print(await recover(repoRoot, { attemptId: options.attempt }), true);
