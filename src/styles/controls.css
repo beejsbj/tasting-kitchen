@@ -3,7 +3,7 @@
 
 /* Keep the counter's established styles; Tailwind owns the viewer controls. */
 .tasting-room--immersive { padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: white; }
-.tasting-room--immersive .comparison-grid { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); height: 100%; gap: 1px; background: var(--line); }
+.tasting-room--immersive .comparison-grid { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 1), minmax(0, 1fr)); height: 100%; gap: 1px; background: var(--line); }
 .tasting-room--immersive .comparison-slot { min-width: 0; overflow: hidden; position: relative; height: 100%; border: 0; border-radius: 0; }
 .tasting-room--immersive .artifact-pane { height: 100%; border: 0; }
 /* Keep session text clear of the fixed viewer dock, including while scrolling. */
@@ -14,15 +14,53 @@
 .tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .pane-label { position: static; align-self: flex-start; margin: .75rem .75rem .5rem; }
 .tasting-room--immersive .comparison-slot:has(.artifact-review-mark) .artifact-pane { flex: 1 1 0; min-height: 0; height: auto; }
 .tasting-room--immersive .session-artifact { max-width: 76ch; margin-inline: auto; }
-.pane-label { position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
+.pane-label__held { color: #64748b; }
+.pane-label__total { display: none; color: #64748b; }
+.pane-label b { color: #0f172a; font-weight: 600; }
+.pane-label { max-width: calc(100% - 1.5rem); position: absolute; top: .75rem; left: .75rem; z-index: 2; padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: rgb(255 255 255 / .95); color: #475569; font-size: .75rem; pointer-events: none; }
 .recipe-sheet > section, .recipe-sheet > footer { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .recipe-sheet { animation: recipe-in 220ms cubic-bezier(.22,1,.36,1); }
 @keyframes recipe-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @media (max-width: 650px) {
-  .tasting-room--immersive .comparison-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(var(--columns), minmax(0, 1fr)); }
+  .tasting-room--immersive .comparison-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(var(--panes), minmax(0, 1fr)); }
+  /* Three or more panes become a swipeable row of full-width panes rather than slivers. */
+  .tasting-room--immersive .comparison-grid:is([data-panes="3"], [data-panes="4"], [data-panes="5"], [data-panes="6"]) { grid-template-rows: minmax(0, 1fr); grid-auto-flow: column; grid-auto-columns: 100%; grid-template-columns: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; }
+  .tasting-room--immersive .comparison-grid:is([data-panes="3"], [data-panes="4"], [data-panes="5"], [data-panes="6"]) > .comparison-slot { scroll-snap-align: start; }
+  .pane-label { max-width: calc(100% - 5.5rem); }
+  /* Swiping hides the other panes, so their count stays in view. */
+  .comparison-grid:is([data-panes="3"], [data-panes="4"], [data-panes="5"], [data-panes="6"]) .pane-label__total { display: inline; }
 }
 @media (prefers-reduced-motion: reduce) { .recipe-sheet { animation: none; } }
 
 .recipe-sheet .recipe-brief__intro h2 { font-size: 1.5rem; line-height: 1.25; margin: 1rem 0; letter-spacing: -.025em; }
 .recipe-sheet p, .recipe-sheet li { font-size: .875rem; line-height: 1.7; }
 .recipe-sheet h3 { font-size: .875rem; font-weight: 600; }
+
+/* Configuration axes: a pane is a row of chips; a chip opens its values inline. */
+.axis-chip { display: inline-flex; flex-direction: column; align-items: flex-start; min-height: 2.75rem; padding: .3rem .6rem; border: 1px solid #e2e8f0; border-radius: .5rem; background: white; color: #1e293b; text-align: left; transition: border-color 140ms ease, background 140ms ease; }
+.axis-chip:hover { border-color: #94a3b8; }
+.axis-chip[aria-expanded=true] { border-color: #2563eb; background: #eff6ff; }
+.axis-chip:focus-visible, .axis-option:focus-visible, .compare-value:focus-within { outline: 2px solid #2563eb; outline-offset: 2px; }
+.axis-chip__axis { font: 600 .625rem/1.2 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+.axis-chip__value { display: inline-flex; align-items: center; gap: .25rem; font-size: .8125rem; font-weight: 600; line-height: 1.35; }
+.axis-chip__value svg { color: #94a3b8; }
+.axis-options, .compare-values { display: flex; flex-direction: column; gap: 1px; margin: .375rem 0 0; padding: .25rem; list-style: none; border: 1px solid #e2e8f0; border-radius: .625rem; background: #f8fafc; max-height: 18rem; overflow-y: auto; }
+.axis-option, .compare-value { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .5rem; width: 100%; min-height: 2.5rem; padding: .375rem .5rem; border: 0; border-radius: .375rem; background: transparent; color: #1e293b; font-size: .8125rem; text-align: left; cursor: pointer; }
+.compare-value { grid-template-columns: auto auto 1fr auto; }
+.axis-option:hover:not(:disabled), .compare-value:hover:not([data-disabled=true]) { background: white; }
+.axis-option[aria-pressed=true], .compare-value[data-checked=true] { background: white; color: #1d4ed8; box-shadow: 0 1px 2px rgb(15 23 42 / .06); }
+.axis-option:disabled { cursor: not-allowed; color: #94a3b8; }
+.compare-value[data-disabled=true] { cursor: default; }
+.compare-value input { width: 1rem; height: 1rem; margin: 0; accent-color: #1d4ed8; }
+.axis-option__label, .compare-value__label { display: flex; flex-direction: column; min-width: 0; font-weight: 500; line-height: 1.3; }
+.axis-option__label small, .compare-value__label small { font-size: .6875rem; font-weight: 400; color: #64748b; }
+.axis-option:disabled .axis-option__label small { color: #94a3b8; }
+.axis-option__count { font: .6875rem var(--font-mono); color: #64748b; white-space: nowrap; }
+.cooked-mark { width: .5rem; height: .5rem; border-radius: 99rem; background: #1d4ed8; flex: none; }
+.cooked-mark[data-status=uncooked] { background: transparent; box-shadow: inset 0 0 0 1.5px #94a3b8; }
+.cooked-mark[data-status=impossible] { height: 1.5px; border-radius: 0; background: #cbd5e1; }
+.compare-axis.kitchen-button { min-height: 2.25rem; padding: .25rem .4rem .25rem .75rem; gap: .4rem; font-size: .8125rem; }
+.compare-axis__count { min-width: 1.25rem; padding: 0 .3rem; border-radius: 99rem; background: #e2e8f0; color: #334155; font: .6875rem/1.4 var(--font-mono); }
+.compare-axis[aria-pressed=true] .compare-axis__count { background: rgb(255 255 255 / .2); color: inherit; }
+.compare-axis:disabled { opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .axis-chip { transition: none; } }

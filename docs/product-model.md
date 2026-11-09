@@ -143,7 +143,7 @@ The same model used through two harnesses represents two configurations and does
 - `clean` starts the harness from an empty home: no user instructions, skills, memory, hooks or MCP servers. Only the harness itself shapes the Run.
 - `personal` loads Burooj's own setup for that harness, optionally a named harness profile (`executionProfile.harnessProfile`, such as a Hermes profile). It tastes the model as he actually works with it.
 
-Clean and personal are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the setup adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. The current Codex and Cursor configurations declare no environment, because neither harness yet isolates its home: Codex cooks run inside the Kitchen repo, and Cursor runs with the real home directory (see [#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
+Clean and personal are separate configurations, so they never form Repeats, and comparing them on one Recipe shows what the environment adds. A personal Run can carry private instructions into its trace, so its Dish is written to `private/dishes/` unless the Cook passes `--publish-personal` after Burooj has decided that setup may be public. Environment is enforced, not a label: each harness profile declares the one environment its adapter implements, or none, and a configuration must carry exactly that. A configuration may declare `clean` only when its harness truly isolates. The current Codex and Cursor configurations declare no environment, because neither harness yet isolates its home: Codex cooks run inside the Kitchen repo, and Cursor runs with the real home directory (see [#35](https://github.com/beejsbj/tasting-kitchen/issues/35)). A missing `environment` is not the same as `clean`: those configurations predate the dimension, and their hashes are unchanged.
 
 ### Skill and skill hash
 
@@ -197,7 +197,7 @@ The public site supports:
 
 - a Dishes counter that groups every visible Dish and Repeat beneath its Recipe, with model/thinking filters;
 - a separate Recipe Book at `?view=recipes` for current authored definitions;
-- Recipe detail pages containing all matching models, configurations, and Repeats;
+- Recipe detail pages containing all matching models, configurations, and Repeats, where each pane is chosen axis by axis (model, effort, harness, environment, and tier or skill layer where they vary) and “Compare by” holds the first pane still while laying out one pane per value of a single axis, up to six;
 - model and configuration facets on the Dishes counter;
 - Cuisine filtering; and
 - Menu views with explicit coverage.
@@ -248,7 +248,7 @@ An explicit Repeat-intent Cook creates another Run. Its Dish joins the Repeat gr
 
 ### One model through different harnesses
 
-The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Holding the model, effort and environment constant while changing only the harness is the closest Kitchen gets to isolating a harness; the receipts still say what else each harness supplied.
+The Dishes share a model family but not an exact configuration. They can be browsed together or filtered by harness, but they are not Repeats. Holding the model, effort and environment constant while changing only the harness is the closest Kitchen gets to isolating a harness; the receipts still say what else each harness supplied. “Compare by Harness” on the Recipe page builds exactly that layout; a harness that cannot hold the other axes is offered only as a marked, non-isolated pane, and the comparison note then stops claiming isolation.
 
 ### A Recipe in several Menus
 

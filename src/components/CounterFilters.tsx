@@ -2,6 +2,7 @@ import { effortLabel } from '../lib/effort-label';
 import * as Popover from '@radix-ui/react-popover';
 import { Check, Search, SlidersHorizontal, X } from 'lucide-react';
 import { dishSkillKey, modelFamily, NO_SKILL } from '../lib/registry';
+import { configurationFacets, environmentKeyLabel, harnessLabel } from '../lib/configuration-label';
 import type { GalleryState } from '../lib/url-state';
 import type { Registry } from '../types';
 
@@ -13,6 +14,14 @@ export function CounterFilters({ registry, state, update }: { registry: Registry
   const skillsWithDishes = (registry.skills ?? []).filter(skill => registry.dishes.some(dish => dish.skill?.hash === skill.skillHash));
   const hasUnskilled = registry.dishes.some(dish => dishSkillKey(dish) === NO_SKILL);
   const showSkills = skillsWithDishes.length > 0;
+  const facets = configurationFacets(registry.configurations);
+  const facetRows = ([{ key: 'harness', title: 'Harness', all: 'All harnesses', options: facets.harnesses }, { key: 'environment', title: 'Environment', all: 'All environments', options: facets.environments }] as const).filter(row => row.options.length > 1);
+  const chips = [
+    ...(['cuisine', 'origin'] as const).filter(key => state[key] !== 'all').map(key => ({ key, label: key === 'cuisine' ? cuisines.find(item => item.id === state[key])?.label ?? state[key] : lineages.find(item => item.id === state[key])?.label ?? state[key] })),
+    ...(state.harness !== 'all' ? [{ key: 'harness' as const, label: `Harness: ${harnessLabel(state.harness)}` }] : []),
+    ...(state.environment !== 'all' ? [{ key: 'environment' as const, label: `Environment: ${environmentKeyLabel(state.environment)}` }] : []),
+    ...(state.tier !== 'all' ? [{ key: 'tier' as const, label: `Service tier: ${state.tier}` }] : []),
+  ];
   const segment = 'min-h-9 rounded-md border-0 bg-transparent px-2 text-sm font-medium text-slate-600 hover:bg-white aria-pressed:bg-white aria-pressed:text-blue-800 aria-pressed:shadow-sm';
   return <div className="counter-controls">
     <div className="flex flex-wrap items-center gap-3">
@@ -24,7 +33,7 @@ export function CounterFilters({ registry, state, update }: { registry: Registry
     </div>
     {state.family !== 'all' && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label="Filter by thinking effort"><span className="mr-2 text-xs text-slate-500">Thinking</span><button className={segment} aria-pressed={state.effort === 'all'} onClick={() => update({ effort: 'all' })}>All efforts</button>{[...new Set(registry.configurations.filter(config => modelFamily(config.model) === state.family).map(config => config.reasoningEffort))].map(effort => <button key={effort} title={`${effort} reasoning effort`} aria-label={`${effort} reasoning effort`} className={segment} aria-pressed={state.effort === effort} onClick={() => update({ effort })}>{effortLabel(effort)}</button>)}</div>}
     {showSkills && <div className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label="Filter by skill layer"><span className="mr-2 text-xs text-slate-500">Skill</span><button className={segment} aria-pressed={state.skill === 'all'} onClick={() => update({ skill: 'all' })}>All layers</button>{hasUnskilled && <button className={segment} aria-pressed={state.skill === NO_SKILL} onClick={() => update({ skill: NO_SKILL })}>Without skill</button>}{skillsWithDishes.map(skill => <button key={skill.id} className={segment} title={skill.summary} aria-pressed={state.skill === skill.id} onClick={() => update({ skill: skill.id })}>{skill.label}</button>)}</div>}
-    {(state.harness !== 'all' || state.tier !== 'all') && <button className="mt-3 min-h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600" onClick={() => update({ harness: 'all', tier: 'all' })}>Clear saved harness / tier filter ×</button>}
-    {count > 0 && <div className="mt-3 flex flex-wrap gap-2" aria-label="Active filters">{(['cuisine', 'origin'] as const).filter(key => state[key] !== 'all').map(key => { const label = key === 'cuisine' ? cuisines.find(item => item.id === state[key])?.label ?? state[key] : lineages.find(item => item.id === state[key])?.label ?? state[key]; return <button key={key} aria-label={`Remove ${label} filter`} onClick={() => update({ [key]: 'all' })} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600">{label}<X size={12} /></button>; })}</div>}
+    {facetRows.map(row => <div key={row.key} className="mt-3 flex flex-wrap items-center gap-1" role="group" aria-label={`Filter by ${row.title.toLowerCase()}`}><span className="mr-2 text-xs text-slate-500">{row.title}</span><button className={segment} aria-pressed={state[row.key] === 'all'} onClick={() => update({ [row.key]: 'all' })}>{row.all}</button>{row.options.map(option => <button key={option.id} className={segment} aria-pressed={state[row.key] === option.id} onClick={() => update({ [row.key]: option.id })}>{option.label}</button>)}</div>)}
+    {chips.length > 0 && <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Active filters">{chips.map(chip => <button key={chip.key} aria-label={`Remove ${chip.label} filter`} onClick={() => update({ [chip.key]: 'all' })} className="inline-flex min-h-8 items-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600">{chip.label}<X size={12} /></button>)}</div>}
   </div>;
 }
