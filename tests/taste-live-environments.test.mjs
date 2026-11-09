@@ -23,7 +23,7 @@ const codexLive = {
 };
 const withProfile = (variant, executionProfile) => ({ ...variant, executionProfile: { ...variant.executionProfile, ...executionProfile } });
 
-const cursorProfile = { id: "cursor-linux-host-live-v1", label: "via Cursor Agent · live", ...HOST, sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", environment: "live", memory: "on", connections: "off" };
+const cursorProfile = { id: "cursor-linux-host-live-v1", label: "via Cursor Agent · live", ...HOST, sandbox: "disabled", approvalPolicy: "force", nativeWeb: "not-enforced", environment: "live", memory: "on", connections: "on" };
 const cursorLive = {
   id: "cursor-composer-2-5-live", label: "Composer 2.5 · live", provider: "cursor", model: "composer-2.5[fast=false]", harness: "cursor-agent", reasoningEffort: "adaptive",
   serviceTier: "default", personality: "default", capabilities: ["files", "shell"], executionProfile: cursorProfile, configHash: `sha256:${"6".repeat(64)}`,
@@ -40,9 +40,10 @@ test("live is offered for Codex, Cursor and Hermes (named profiles), each within
   for (const [memory, connections] of [["on", "off"], ["on", "on"], ["off", "off"], ["off", "on"]]) {
     assert.doesNotThrow(() => resolveHarnessAdapter(withProfile(codexLive, { memory, connections })), `Codex honours memory ${memory} and connections ${connections}`);
   }
-  // Cursor has no switch for its memory; Hermes has none for memory alone.
-  assert.doesNotThrow(() => resolveHarnessAdapter(withProfile(cursorLive, { connections: "on" })));
+  // Cursor has no switch for its memory or for his own MCP servers; Hermes has none for memory alone.
+  assert.doesNotThrow(() => resolveHarnessAdapter(cursorLive));
   assert.throws(() => resolveHarnessAdapter(withProfile(cursorLive, { memory: "off" })), /cannot honour memory off/);
+  assert.throws(() => resolveHarnessAdapter(withProfile(cursorLive, { connections: "off" })), /cannot honour connections off/);
   for (const profile of ["default", "otto"]) assert.doesNotThrow(() => resolveHarnessAdapter(hermesAs(profile)));
   assert.doesNotThrow(() => resolveHarnessAdapter(hermesAs("otto", { connections: "on" })));
   assert.throws(() => resolveHarnessAdapter(hermesAs("otto", { memory: "off" })), /cannot honour memory off/);
@@ -83,7 +84,8 @@ test("the live configurations in the catalog are high or below, never max, never
   for (const configuration of live) {
     assert.notEqual(configuration.reasoningEffort, "max", configuration.id);
     assert.notEqual(configuration.executionProfile.harnessProfile, "rose", configuration.id);
-    assert.equal(configuration.executionProfile.connections, "off", `${configuration.id} stays connections off by default`);
+    // Cursor cannot keep his MCP servers from loading, so its live configuration is honestly connections on.
+    assert.equal(configuration.executionProfile.connections, configuration.harness === "cursor-agent" ? "on" : "off", configuration.id);
     assert.doesNotThrow(() => resolveHarnessAdapter(configuration), configuration.id);
   }
   const byHarness = Object.groupBy(live, (configuration) => configuration.harness);
@@ -104,9 +106,9 @@ test("a live Codex turn loads his config and rules, pins the same fields, and ad
   for (const pinned of ['model_reasoning_effort="high"', 'personality="none"', 'service_tier="priority"', 'web_search="disabled"']) assert.ok(memoryOnConnectionsOn.includes(pinned), pinned);
   assert.deepEqual(memoryOnConnectionsOn.filter((arg) => /^(memories|mcp_servers)/u.test(arg) || ["plugins", "apps", "memories"].includes(arg)), [], "memory on and connections on override nothing");
 
-  const off = args(withProfile(codexLive, { memory: "off", connections: "off" }), { disabledMcpServers: ["tududi", "a.b"] });
+  const off = args(withProfile(codexLive, { memory: "off", connections: "off" }), { disabledMcpServers: ["tududi", "chat-scrobbler"] });
   assert.ok(off.includes("memories.use_memories=false") && off.includes("memories.generate_memories=false"));
-  assert.ok(off.includes("mcp_servers.tududi.enabled=false") && off.includes('mcp_servers."a.b".enabled=false'));
+  assert.ok(off.includes("mcp_servers.tududi.enabled=false") && off.includes("mcp_servers.chat-scrobbler.enabled=false"));
   for (const feature of ["memories", "plugins", "apps"]) assert.equal(off[off.indexOf(feature) - 1], "--disable", feature);
   // A clean or original configuration is unchanged: it still ignores his config.
   const original = args({ ...codexLive, executionProfile: { ...codexProfile, id: "codex-linux-host-unsandboxed-v1", environment: undefined, memory: undefined, connections: undefined } });
@@ -226,6 +228,7 @@ test("live Codex with connections on lists no servers and passes no disable; wit
   await assert.rejects(f.calls(), /ENOENT/, "connections on never runs Codex, so it never asks for its servers");
   await assert.rejects(adapter.prepareAttempt({ variant: codexLive, codexHome: path.join(cook, "codex-home"), executable: f.executable, env: { ...f.env, FAKE_MCP_FAIL: "1" }, cwd: cook }), /connections off cannot be honoured/);
   await assert.rejects(adapter.prepareAttempt({ variant: codexLive, codexHome: path.join(cook, "codex-home"), executable: f.executable, env: { ...f.env, FAKE_MCP: "not json" }, cwd: cook }), /not JSON/);
+  await assert.rejects(adapter.prepareAttempt({ variant: codexLive, codexHome: path.join(cook, "codex-home"), executable: f.executable, env: { ...f.env, FAKE_MCP: JSON.stringify([{ name: "a.b" }]) }, cwd: cook }), /cannot be named in a -c override/);
   await rm(path.join(f.home, "auth.json"));
   await assert.rejects(adapter.prepareAttempt({ variant: codexLive, codexHome: path.join(cook, "codex-home"), executable: f.executable, env: f.env, cwd: cook }), /real login/);
   assert.equal(codexLiveHome({ TASTE_CODEX_LIVE_HOME: "/x/y" }), "/x/y");
@@ -274,10 +277,9 @@ test("a live Codex Dish goes to private/dishes, never records a setup digest, an
 
 // ---------------------------------------------------------------- Cursor
 
-test("live Cursor approves MCP servers only with connections on; the original configuration never does", async () => {
+test("live Cursor passes --approve-mcps; the original configuration never does", async () => {
   const args = (variant) => buildCursorTurnArgs({ variant, workspace: "/tmp/work", prompt: "cook" });
-  assert.equal(args(cursorLive).includes("--approve-mcps"), false, "connections off approves none, so none load");
-  assert.equal(args(withProfile(cursorLive, { connections: "on" })).includes("--approve-mcps"), true);
+  assert.equal(args(cursorLive).includes("--approve-mcps"), true);
   const original = { ...cursorLive, executionProfile: { ...cursorProfile, id: "cursor-linux-host-unsandboxed-v1", environment: undefined, memory: undefined, connections: undefined } };
   assert.equal(args(original).includes("--approve-mcps"), false);
   assert.equal(args(original).includes("--force"), true);
@@ -291,7 +293,7 @@ test("live Cursor prepares nothing, records a live setup, and still requires the
   await chmod(executable, 0o755);
   const adapter = getHarnessAdapter("cursor-agent");
   const prepared = await adapter.prepareAttempt({ variant: cursorLive, executable, env: {}, cwd: root });
-  assert.deepEqual(prepared.setup, { environment: "live", memory: "on", connections: "off", home: "real" });
+  assert.deepEqual(prepared.setup, { environment: "live", memory: "on", connections: "on", home: "real" });
   assert.deepEqual(await readdir(root), ["fake-cursor.mjs"]);
   await assert.rejects(adapter.prepareAttempt({ variant: cursorLive, executable, env: { FAKE_STATUS: "out" }, cwd: root }), /authentication preflight failed/);
   // The original configuration keeps returning nothing to record.
@@ -439,6 +441,12 @@ test("a live Hermes run on the default profile uses the root itself, and a missi
   const prepared = await prepareHermesAttempt({ variant: hermesAs("default"), cwd: path.join(f.root, "cook"), env: f.env });
   assert.equal(prepared.setup.harnessProfile, "default");
   assert.equal(prepared.setup.home, "real");
+  // Hermes runs as the root's active profile when HERMES_HOME is not a profiles/<name> directory, so a sticky rose stops `default`.
+  await writeFile(path.join(f.hermesRoot, "active_profile"), "rose\n");
+  await assert.rejects(prepareHermesAttempt({ variant: hermesAs("default"), cwd: path.join(f.root, "cook"), env: f.env }), /active profile rose, not default/);
+  await prepareHermesAttempt({ variant: hermesAs("otto"), cwd: path.join(f.root, "cook"), env: f.env });
+  await writeFile(path.join(f.hermesRoot, "active_profile"), "default\n");
+  await assert.doesNotReject(prepareHermesAttempt({ variant: hermesAs("default"), cwd: path.join(f.root, "cook"), env: f.env }));
   await rm(path.join(f.profiles.otto, "auth.json"));
   await assert.rejects(prepareHermesAttempt({ variant: hermesAs("otto"), cwd: path.join(f.root, "cook"), env: f.env }), /profile's own login/);
   await assert.rejects(prepareHermesAttempt({ variant: hermesAs("ghost"), cwd: path.join(f.root, "cook"), env: f.env }), /no readable config\.yaml/);

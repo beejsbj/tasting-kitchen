@@ -177,7 +177,7 @@ pinned model and provider in the rollout.
 | Toggle | On | Off |
 | --- | --- | --- |
 | memory | his config as it is (Codex's `memories` feature is his flag; Kitchen does not force it on) | `--disable memories`, `memories.use_memories=false`, `memories.generate_memories=false` |
-| connections | his config as it is | `--disable plugins`, `--disable apps`, and `mcp_servers.<name>.enabled=false` for each server `codex mcp list --json` reports (a failed listing refuses the attempt) |
+| connections | his config as it is | `--disable plugins`, `--disable apps`, and `mcp_servers.<name>.enabled=false` for each server `codex mcp list --json` reports, listed once at prepare (a failed listing, or a server name `-c` cannot address, refuses the attempt) |
 
 Neither toggle is observed from the rollout; both are requested. The rollout is read from his home by
 file name (the thread id), not by scanning every past session. The receipt records the toggles and a
@@ -187,12 +187,13 @@ rewrites. Authentication is his own `auth.json`, which must exist.
 ### Cursor live
 
 `cursor-linux-host-live-v1` runs `cursor-agent` as the original profile does, against his real
-`~/.cursor` and `HOME`; what differs is the claim, the toggles and the `live` label on the receipt. It
-keeps the existing login preflight. Cursor has no switch for its memory or account rules, so live
-offers memory `on` only. `connections` on adds `--approve-mcps` (every MCP server his real config defines
-is approved); off omits it, and a print run cannot answer an approval prompt, so no server loads.
-Cursor does not report what it loaded, so neither value is observed. It writes chats and CLI state into
-`~/.cursor`. The original Cursor configurations declare no environment and keep their hashes.
+`~/.cursor` and `HOME`; what differs is the claim and the `live` label on the receipt. It keeps the
+existing login preflight. Cursor has no switch for its memory or account rules, and `--approve-mcps`
+only gates MCP servers a workspace declares: the servers in his `~/.cursor/mcp.json` and his plugins
+load whatever Kitchen does. So live Cursor offers memory `on` and connections `on` only, passes
+`--approve-mcps`, and executes only when the Cook passes `--allow-connections`. Cursor does not report
+what it loaded, so the receipt records none. It writes chats and CLI state into `~/.cursor`. The
+original Cursor configurations declare no environment and keep their hashes.
 
 ### Claude Code
 
@@ -354,7 +355,9 @@ configuration's provider is `openai`. Nothing is copied, emptied or cleaned: the
 emptying of a throwaway home is skipped, and `cleanupHermesHome` refuses any directory that is not a
 per-attempt `hermes-home`. The run adds a session to the profile's `state.db` (tagged `--source tool`),
 may write its memory and run its plugin hooks, and issues exactly one `hermes chat --oneshot`: no
-gateway command, so a running gateway is neither stopped, restarted nor reconfigured. Identity is read
+gateway command, so a running gateway is neither stopped, restarted nor reconfigured. Hermes reads
+`active_profile` in the root whenever `HERMES_HOME` is not a `profiles/<name>` directory and then runs
+as that profile, so a live `default` Run refuses to start if `<root>/active_profile` names anything else. Identity is read
 from the profile's own `state.db` by session id, so a fallback provider his config would use fails the
 attempt like any other mismatch.
 

@@ -343,7 +343,7 @@
         "filesystemBoundary": "not-a-secrecy-boundary",
         "environment": "live",
         "memory": "on",
-        "connections": "off"
+        "connections": "on"
       }
     },
     {

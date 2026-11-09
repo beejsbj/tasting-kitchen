@@ -254,19 +254,19 @@ test('harness and environment labels read plainly and unknown harnesses keep the
 });
 
 const codexLive = withProfile(configuration('codex-live', 'codex-cli', 'live', undefined, { model: 'gpt-6.1-sol' }), toggles('on', 'off'));
-const cursorLive = withProfile(configuration('cursor-live', 'cursor-agent', 'live', undefined, { model: 'composer-2.5[fast=false]', reasoningEffort: 'adaptive' }), toggles('on', 'off'));
+const cursorLive = withProfile(configuration('cursor-live', 'cursor-agent', 'live', undefined, { model: 'composer-2.5[fast=false]', reasoningEffort: 'adaptive' }), toggles('on', 'on'));
 const hermesOtto = withProfile(configuration('hermes-otto-live', 'hermes', 'live', 'otto', { model: 'gpt-6-luna' }), toggles('on', 'off'));
 const hermesDefault = withProfile(hermesOtto, { harnessProfile: 'default' });
 
 test('live labels name the harness, the profile and what is off, so a live Dish never reads as clean', () => {
   assert.equal(configurationHeading(codexLive, 'Sol'), 'Sol · High · Codex CLI · Live · connections off');
-  assert.equal(configurationHeading(cursorLive, 'Composer'), 'Composer · Adaptive · Cursor Agent · Live · connections off');
+  assert.equal(configurationHeading(cursorLive, 'Composer'), 'Composer · Adaptive · Cursor Agent · Live · connections on');
   assert.equal(configurationHeading(hermesOtto, 'Luna'), 'Luna · High · Hermes · Live · otto · connections off');
   assert.equal(environmentLabel(hermesDefault), 'Live · default · connections off');
   assert.equal(environmentLabel(withProfile(codexLive, { connections: 'on' })), 'Live · connections on');
   assert.deepEqual([hermesOtto, hermesDefault, codexLive].map((config) => environmentKey(config)), ['live:otto', 'live:default', 'live']);
   assert.equal(environmentKeyLabel('live:otto'), 'Live · otto · connections off');
-  assert.deepEqual(configurationFacets([codexLive, cursorLive, hermesOtto, hermesDefault]).environments.map((item) => item.label), ['Live · connections off', 'Live · otto · connections off', 'Live · default · connections off']);
+  assert.deepEqual(configurationFacets([codexLive, cursorLive, hermesOtto, hermesDefault]).environments.map((item) => item.label), ['Live · connections off', 'Live · connections on', 'Live · otto · connections off', 'Live · default · connections off']);
 });
 
 test('live receipts say where the Run wrote and which toggles the harness could not switch', () => {
@@ -283,7 +283,6 @@ test('live receipts say where the Run wrote and which toggles the harness could 
   assert.equal(liveMemoryLine(codexLive, 'off'), 'off');
   assert.match(liveConnectionsOff(hermesOtto), /MCP servers and plugins can still start/);
   assert.match(liveConnectionsOff(codexLive), /plugins, apps and each MCP server/);
-  assert.match(liveConnectionsOff(cursorLive), /no MCP server approved/);
   assert.equal(liveConnectionsOff(claudeLive), 'off');
 });
 

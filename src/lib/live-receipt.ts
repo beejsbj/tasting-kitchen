@@ -32,10 +32,9 @@ export function liveMemoryLine(config: Source, memory: "on" | "off") {
   return "on · writes to your real memory";
 }
 
-/** The connections row of a live receipt: what off actually withheld, per harness. */
+/** The connections row of a live receipt: what off actually withheld, per harness (Cursor offers no off). */
 export function liveConnectionsOff(config: Source) {
   if (config.harness === "hermes") return "off · the model gets file and terminal tools only; the profile's MCP servers and plugins can still start";
   if (config.harness === "codex-cli") return "off · plugins, apps and each MCP server in his config switched off";
-  if (config.harness === "cursor-agent") return "off · no MCP server approved, so none loads";
   return "off";
 }
