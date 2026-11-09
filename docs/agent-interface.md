@@ -163,7 +163,7 @@ occurs when logged out. Account fields are discarded. This checks existing
 credential presence; it does not certify remote authentication, which must
 still succeed during execution. Recovery never runs authentication preflight.
 
-Cursor declares no environment. It could run with an isolated home: it reads
+Cursor's original profile declares no environment. It could run with an isolated home: it reads
 `CURSOR_CONFIG_DIR`, but skills (`~/.cursor`, `~/.claude`, `~/.codex`,
 `~/.agents`), policy and CLI state come from `homedir()`, so it would need a
 fresh `HOME` with `auth.json` linked under `.config/cursor/`. That is not
@@ -172,6 +172,43 @@ the login (the stream protocol carries a `user_rules` message), and no local
 home can remove them. A borrowed `auth.json` could also rotate Burooj's own
 Cursor login. `clean` waits on evidence from a real run that the account
 contributes nothing.
+
+Codex and Cursor each also declare `live`, below. A live Run is never isolated, so none of the
+reasoning above applies to it: its claim is only that it ran in his real home.
+
+### Codex live
+
+`codex-linux-host-live-v1` runs in his real `~/.codex` and real `HOME` (`TASTE_CODEX_LIVE_HOME`
+points tests at a fake): `CODEX_HOME` is set to it, `HOME` and the XDG variables are not replaced, and
+nothing is created or copied for the attempt. His `AGENTS.md`, rules, skills, `config.toml` and
+memories load. Compared with the other profiles the argv drops `--ignore-user-config`,
+`--ignore-rules` and `--strict-config`; every pin (model, effort, personality, verbosity, tier,
+web search off, the shell's environment policy) stays and wins over his config. Codex writes its
+session rollouts, history and logs in his home, and any command the model runs can write wherever it
+likes. His config can also route Codex (a `model_provider` or `openai_base_url`, as an `opencodex`
+proxy does): that is part of what live means, and identity verification still has to find the
+pinned model and provider in the rollout.
+
+| Toggle | On | Off |
+| --- | --- | --- |
+| memory | his config as it is (Codex's `memories` feature is his flag; Kitchen does not force it on) | `--disable memories`, `memories.use_memories=false`, `memories.generate_memories=false` |
+| connections | his config as it is | `--disable plugins`, `--disable apps`, and `mcp_servers.<name>.enabled=false` for each server `codex mcp list --json` reports, listed once at prepare (a failed listing, or a server name `-c` cannot address, refuses the attempt) |
+
+Neither toggle is observed from the rollout; both are requested. The rollout is read from his home by
+file name (the thread id), not by scanning every past session. The receipt records the toggles and a
+digest of `AGENTS.md`, rules, skills and (memory on) memories at the start; not `config.toml`, which Codex
+rewrites. Authentication is his own `auth.json`, which must exist.
+
+### Cursor live
+
+`cursor-linux-host-live-v1` runs `cursor-agent` as the original profile does, against his real
+`~/.cursor` and `HOME`; what differs is the claim and the `live` label on the receipt. It keeps the
+existing login preflight. Cursor has no switch for its memory or account rules, and `--approve-mcps`
+only gates MCP servers a workspace declares: the servers in his `~/.cursor/mcp.json` and his plugins
+load whatever Kitchen does. So live Cursor offers memory `on` and connections `on` only, passes
+`--approve-mcps`, and executes only when the Cook passes `--allow-connections`. Cursor does not report
+what it loaded, so the receipt records none. It writes chats and CLI state into `~/.cursor`. The
+original Cursor configurations declare no environment and keep their hashes.
 
 ### Claude Code
 
@@ -316,15 +353,43 @@ stay behind, as do `auth.json`, `.env`, sessions and the profile's `state.db`.
 With connections on, each copied server's `mcp-<name>` toolset joins
 `file,terminal`; plugin hooks run but plugin toolsets are not added. The run
 never selects a profile (`-p`) and keeps the copied soul (no `--ignore-rules`).
-Kitchen never runs a Hermes profile live: a live run would record itself in
-rose's own sessions and run its plugin hooks against his real channels.
+A live attempt (`hermes-linux-host-live-openai-codex-v1`, below) never copies a profile.
 
 | Toggle | On | Off |
 | --- | --- | --- |
 | memory | `memories/` copied; memory and user profile enabled | nothing copied; `memory_enabled` and `user_profile_enabled` false |
 | connections | `mcp_servers`, `plugins` and `plugins/` copied; `mcp-<server>` toolsets added | none of them; `-t file,terminal` |
 
-Both environments use the committed Hermes environment's own entry point,
+`live` runs one named profile in place: `HERMES_HOME` is the real profile directory (`~/.hermes` for
+`default`, `~/.hermes/profiles/<name>` otherwise, under `TASTE_HERMES_ROOT`), with the profile's soul,
+rules, memory, skills, config, `.env`, login and secrets helper exactly as they are. It is offered for any
+named profile except `rose`, which validation, the profile reader and `prepareAttempt` all refuse. The
+run uses the model and route the profile itself uses: today `gpt-6-luna` through `openai-codex`, which
+the profile reaches with its own login, so the execution profile id names that route and the
+configuration's provider is `openai`. Nothing is copied, emptied or cleaned: the end-of-attempt
+emptying of a throwaway home is skipped, and `cleanupHermesHome` refuses any directory that is not a
+per-attempt `hermes-home`. The run adds a session to the profile's `state.db` (tagged `--source tool`),
+may write its memory and run its plugin hooks, and issues exactly one `hermes chat --oneshot`: no
+gateway command, so a running gateway is neither stopped, restarted nor reconfigured. Hermes reads
+`active_profile` in the root whenever `HERMES_HOME` is not a `profiles/<name>` directory and then runs
+as that profile, so a live `default` Run refuses to start if `<root>/active_profile` names anything else,
+and each of its turns passes `-p default` (the one place a profile is selected), so a switch after
+preparation cannot redirect it either. Identity is read
+from the profile's own `state.db` by session id, so a fallback provider his config would use fails the
+attempt like any other mismatch.
+
+| Toggle | On | Off |
+| --- | --- | --- |
+| memory | the profile's own, writes kept (not switchable off, so memory `off` is not offered) | not offered |
+| connections | `mcp-<server>` toolsets for each server the profile's `config.yaml` names join `file,terminal` | `-t file,terminal`: the model is given no MCP or plugin tools, but the profile's MCP servers and plugins can still start |
+
+The child environment is the same allowlist as above, pointed at the real profile and without the
+lazy-install block meant for a fresh home. Hermes reads his keys from the profile's `.env`, login and
+secrets helper as when he runs it, so live passes nothing more from the Kitchen's environment. The
+receipt's digest at the start covers `SOUL.md` and (memory on) the memory files, not the skills
+(`default` holds well over a hundred megabytes of them).
+
+Clean and snapshot use the committed Hermes environment's own entry point,
 because the `hermes` launcher would build a new dependency environment for an
 unfamiliar home. Hermes borrows the Claude Code login from
 `~/.claude/.credentials.json` (a refresh is written back there, so a Hermes

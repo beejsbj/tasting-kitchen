@@ -5,6 +5,7 @@ import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { axisSetsForDish, comparisonConfigurations, serviceTierDrift, dishesFor, modelFamily, observationDisagreements, observationsForDish, briefChanged, catalogChanges, skillForDish } from '../src/lib/registry.ts';
 import { claudeModelName, configurationFacets, configurationHeading, differenceNote, differingDimensions, environmentKey, environmentKeyLabel, environmentLabel, environmentName, harnessKey, harnessLabel, slugModelName } from '../src/lib/configuration-label.ts';
 import { latestDish, resolveRecipeSelection, selectionForDish } from '../src/lib/selection.ts';
+import { liveConnectionsOff, liveHomeName, liveMemoryLine, liveSetupLine } from '../src/lib/live-receipt.ts';
 
 test('links preserve repeated configuration slots, and selected Dishes', () => {
   const calls = [];
@@ -250,6 +251,39 @@ test('harness and environment labels read plainly and unknown harnesses keep the
   assert.equal(configurationHeading(hermesPersonal, 'Opus'), 'Opus 5.5 · High · Hermes · Snapshot · rose');
   assert.equal(configurationHeading(claudeLive, 'Opus'), 'Opus 5.5 · High · Claude Code · Live · connections off');
   assert.equal(configurationHeading(legacy, 'Sol'), 'Sol · High · Codex CLI');
+});
+
+const codexLive = withProfile(configuration('codex-live', 'codex-cli', 'live', undefined, { model: 'gpt-6.1-sol' }), toggles('on', 'off'));
+const cursorLive = withProfile(configuration('cursor-live', 'cursor-agent', 'live', undefined, { model: 'composer-2.5[fast=false]', reasoningEffort: 'adaptive' }), toggles('on', 'on'));
+const hermesOtto = withProfile(configuration('hermes-otto-live', 'hermes', 'live', 'otto', { model: 'gpt-6-luna' }), toggles('on', 'off'));
+const hermesDefault = withProfile(hermesOtto, { harnessProfile: 'default' });
+
+test('live labels name the harness, the profile and what is off, so a live Dish never reads as clean', () => {
+  assert.equal(configurationHeading(codexLive, 'Sol'), 'Sol · High · Codex CLI · Live · connections off');
+  assert.equal(configurationHeading(cursorLive, 'Composer'), 'Composer · Adaptive · Cursor Agent · Live · connections on');
+  assert.equal(configurationHeading(hermesOtto, 'Luna'), 'Luna · High · Hermes · Live · otto · connections off');
+  assert.equal(environmentLabel(hermesDefault), 'Live · default · connections off');
+  assert.equal(environmentLabel(withProfile(codexLive, { connections: 'on' })), 'Live · connections on');
+  assert.deepEqual([hermesOtto, hermesDefault, codexLive].map((config) => environmentKey(config)), ['live:otto', 'live:default', 'live']);
+  assert.equal(environmentKeyLabel('live:otto'), 'Live · otto · connections off');
+  assert.deepEqual(configurationFacets([codexLive, cursorLive, hermesOtto, hermesDefault]).environments.map((item) => item.label), ['Live · connections off', 'Live · connections on', 'Live · otto · connections off', 'Live · default · connections off']);
+});
+
+test('live receipts say where the Run wrote and which toggles the harness could not switch', () => {
+  const short = (hash) => hash.slice(0, 8);
+  assert.equal(liveHomeName(codexLive), '~/.codex');
+  assert.equal(liveHomeName(hermesOtto), 'otto profile');
+  assert.match(liveSetupLine(codexLive, { digestAtStart: 'abcdef0123456789' }, short), /^his real ~\/\.codex, writes kept \(session rollouts, history, logs.*\) · abcdef01 at start$/);
+  assert.match(liveSetupLine(hermesOtto, {}, short), /^his real otto profile, writes kept \(its session database, memory and plugin hooks\)$/);
+  assert.match(liveSetupLine(cursorLive, {}, short), /~\/\.cursor, writes kept \(chats and CLI state\)/);
+  assert.equal(liveMemoryLine(claudeLive, 'on'), 'on · writes to your real memory');
+  assert.match(liveMemoryLine(cursorLive, 'on'), /cannot switch it off/);
+  assert.match(liveMemoryLine(hermesOtto, 'on'), /cannot switch it off/);
+  assert.match(liveMemoryLine(codexLive, 'on'), /not forced/);
+  assert.equal(liveMemoryLine(codexLive, 'off'), 'off');
+  assert.match(liveConnectionsOff(hermesOtto), /MCP servers and plugins can still start/);
+  assert.match(liveConnectionsOff(codexLive), /plugins, apps and each MCP server/);
+  assert.equal(liveConnectionsOff(claudeLive), 'off');
 });
 
 test('facets list the values present, so a single-harness catalog has nothing to choose', () => {
