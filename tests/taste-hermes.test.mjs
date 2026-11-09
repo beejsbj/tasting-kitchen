@@ -42,7 +42,7 @@ const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
 db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, 'https://api.anthropic.com')").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"));
 const fellBack = served !== requested;
-db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : "https://api.anthropic.com");
+if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : "https://api.anthropic.com");
 if (process.env.FAKE_AUX) db.prepare("INSERT OR IGNORE INTO session_model_usage VALUES (?, 'claude-haiku-5-5', 'anthropic', 'https://api.anthropic.com', 'title', 1)").run(session);
 db.close();
 if (!profile) writeFileSync(path.join(home, "auth.json"), "{}");
@@ -187,6 +187,11 @@ test("Hermes stops on a silent fallback, a different recorded effort, or a faile
   const lateResult = await runHermesSession({ variant: clean, recipe, workspace: late.workspace, privateDir: late.privateDir, executable: f.executable, env: { ...f.env, FAKE_RESUMED_MODEL: "claude-sonnet-5-5" } });
   assert.match(lateResult.failure.message, /observed claude-sonnet-5-5/);
   assert.equal(lateResult.turns.length, 2);
+
+  const blocked = await attempt(f.root, "blocked");
+  const hooked = await runHermesSession({ variant: clean, recipe, workspace: blocked.workspace, privateDir: blocked.privateDir, executable: f.executable, env: { ...f.env, FAKE_BLOCKED_RESUME: "1" } });
+  assert.match(hooked.failure.message, /this turn recorded no new main-loop API call/, "an earlier turn's call cannot vouch for a turn that never reached the model");
+  assert.equal(hooked.turns.length, 2);
 
   const effort = await attempt(f.root, "effort");
   const clamped = await runHermesSession({ variant: clean, recipe, workspace: effort.workspace, privateDir: effort.privateDir, executable: f.executable, env: { ...f.env, FAKE_EFFORT: "medium" } });
