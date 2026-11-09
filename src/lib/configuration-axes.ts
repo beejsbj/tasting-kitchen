@@ -88,11 +88,12 @@ export function showsAxis<C extends AxisConfiguration>(configs: readonly C[], cu
  * What a "Compare by" layout holds still, as value labels from the held pane.
  * An environment is listed once the recipe offers a choice of them or the pane
  * declares one, but never when it is undeclared across harnesses: nothing says
- * two undeclared configurations share an environment.
+ * two undeclared configurations share an environment. `differing` names
+ * dimensions the compared panes turn out to disagree on; those are not held.
  */
-export function heldConfigLabels<C extends AxisConfiguration>(configs: readonly C[], anchor: C, axis: CompareAxis, dishCount: (config: C) => number) {
+export function heldConfigLabels<C extends AxisConfiguration>(configs: readonly C[], anchor: C, axis: CompareAxis, dishCount: (config: C) => number, differing: readonly ComparisonDimension[] = []) {
   const held = (["model", "effort", "harness", "environment", "tier"] as const).filter((item) => item !== axis && (item === "model" || item === "effort" || item === "harness" || (item === "tier" ? showsAxis(configs, anchor, item, dishCount) : showsAxis(configs, anchor, item, dishCount) || Boolean(anchor.executionProfile.environment))));
-  return held.filter((item) => !(item === "environment" && axis === "harness" && !anchor.executionProfile.environment)).map((item) => axisValueLabel(item, axisValue(anchor, item)));
+  return held.filter((item) => !(item === "environment" && axis === "harness" && !anchor.executionProfile.environment) && !differing.includes(AXIS_DIMENSIONS[item])).map((item) => axisValueLabel(item, axisValue(anchor, item)));
 }
 
 /** The polite announcement for a "Compare by" layout: "Comparing 3 harnesses, holding Opus 5.5 · High · Clean". */

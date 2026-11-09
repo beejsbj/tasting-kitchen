@@ -166,6 +166,7 @@ test('undeclared environments are never held across harnesses, and the note says
   assert.deepEqual(differingDimensions([slots[0], { config: { ...codex, id: 'codex-luna-high', reasoningEffort: 'high' }, skillKey: 'none' }]), ['effort'], 'one harness running undeclared twice is not a gap');
   assert.deepEqual(differingDimensions([slots[0], { config: claude('opus', 'high', 'clean'), skillKey: 'none' }]).includes('undeclared environments'), false, 'a declared environment is a known difference, not a gap');
   assert.deepEqual(heldConfigLabels(catalog, claude('opus', 'high', 'clean'), 'harness', cooked), ['Opus 5.5', 'High', 'Clean'], 'a declared environment is still held');
+  assert.deepEqual(heldConfigLabels(catalog, claude('opus', 'high', 'clean'), 'harness', cooked, ['model', 'environment']), ['High'], 'what the panes disagree on is not announced as held');
 });
 
 test('a Compare by layout is announced with what it holds', () => {

@@ -146,7 +146,7 @@ export default function App() {
     };
     return <main className="tasting-room tasting-room--immersive">
       <h1 className="sr-only">{currentRecipe.title}</h1>
-      <p className="sr-only" role="status" aria-live="polite">{compare ? compareAnnouncement(compare, slots.length, heldLabels(context, slots[0], compare), compareValues.every((item) => item.isolated || !slots.some((slot) => valueOf(slot, compare) === item.value))) : ''}</p>
+      <p className="sr-only" role="status" aria-live="polite">{compare ? compareAnnouncement(compare, slots.length, heldLabels(context, slots[0], compare, differing), !differing.includes('undeclared environments') && compareValues.every((item) => item.isolated || !slots.some((slot) => valueOf(slot, compare) === item.value))) : ''}</p>
       <section className="comparison-grid" data-panes={slots.length} style={{ "--columns": columns, "--rows": rows, "--panes": Math.max(1, slots.length) } as React.CSSProperties} aria-label="Artifact comparison">
         {slots.map(({ config, dish }, index) => <article className="comparison-slot" key={`${index}-${config.id}`}>
           {slots.length > 1 && <div className="pane-label">{paneLabel(slots[index], index)}</div>}

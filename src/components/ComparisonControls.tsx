@@ -5,6 +5,7 @@ import { KitchenButton } from './KitchenButton';
 import { IconButton } from './ui/ViewerControls';
 import { dishSkillKey, shortHash } from '../lib/registry';
 import { AXIS_LABELS, axisOptions, axisValue, axisValueLabel, carryComparisonSelection, COMPARE_AXES, comparisonValues, cookedValues, defaultComparisonSelection, heldConfigLabels, MAX_PANES, showsAxis, snapshotOptions, toggleComparisonValue, type CompareAxis, type ConfigAxis } from '../lib/configuration-axes';
+import type { ComparisonDimension } from '../lib/configuration-label';
 import type { GalleryState } from '../lib/url-state';
 import type { Configuration, Dish } from '../types';
 
@@ -53,8 +54,8 @@ export function comparisonPatch(axis: CompareAxis, values: ComparisonValueView[]
 }
 
 /** What a "Compare by" layout holds still, as value labels from the held pane. */
-export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis) {
-  return [...heldConfigLabels(context.configurations, anchor.config, axis, dishCounter(context.recipeDishes)), ...(context.showLayers && axis !== 'skill' ? [layerLabel(context, anchor.skillKey)] : [])];
+export function heldLabels(context: ComparisonContext, anchor: Pick<Pane, 'config' | 'skillKey'>, axis: CompareAxis, differing: readonly ComparisonDimension[] = []) {
+  return [...heldConfigLabels(context.configurations, anchor.config, axis, dishCounter(context.recipeDishes), differing), ...(context.showLayers && axis !== 'skill' && !differing.includes('skill layer') ? [layerLabel(context, anchor.skillKey)] : [])];
 }
 
 /** The axis chips for one pane: Model · Effort · Harness, then Environment, Tier, Skill and Snapshot where they vary. */
