@@ -251,10 +251,12 @@ test("a Direct API Dish publishes through the runner as a public session transcr
   };
   cooked.recipeHash = computeRecipeHash(cooked, cooked.fixtureHashes);
   const catalog = { catalogHash: `sha256:${"4".repeat(64)}`, recipes: [cooked] };
-  const env = { OPENROUTER_API_KEY: KEY };
+  // The runner's key proxy forwards to the loopback fake; the session itself only ever holds the proxy's dummy token.
+  const env = { OPENROUTER_API_KEY: KEY, TASTE_OPENROUTER_UPSTREAM: fake.endpoint.replace(/\/chat\/completions$/u, "") };
+  let sessionProxy;
   const run = await executeRecipe({
     repoRoot: root, catalog, recipe: cooked, variant: direct, env, nonce: "direct",
-    runSession: (options) => runDirectApiSession({ ...options, endpoint: fake.endpoint }),
+    runSession: (options) => { sessionProxy = options.proxy; return runDirectApiSession(options); },
     verifyIdentity: (options) => verifyDirectApiIdentity({ ...options, endpoint: fake.endpoint }),
   });
   assert.equal(run.status, "accepted", run.error);
@@ -270,5 +272,9 @@ test("a Direct API Dish publishes through the runner as a public session transcr
   assert.equal(requested.execution.upstream, "anthropic");
   assert.equal(requested.execution.upstreamPin, "anthropic");
   assert.equal(requested.execution.tools, "none");
+  assert.equal(requested.execution.providerAuth, "kitchen-key-proxy");
+  assert.match(sessionProxy.token, /^tk-proxy-[a-f0-9]{48}$/u);
+  assert.deepEqual(fake.requests.map((request) => request.authorization), [`Bearer ${KEY}`, `Bearer ${KEY}`], "the proxy added the key upstream");
+  assert.equal(fake.requests[0].url, "/api/v1/chat/completions");
   for (const file of await filesUnder(root)) assert.equal((await readFile(file)).includes(KEY), false, `${file} holds the key`);
 });

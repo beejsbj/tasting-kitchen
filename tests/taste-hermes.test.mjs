@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -9,6 +10,7 @@ import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
   buildHermesTurnArgs, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
+import { startKeyProxy } from "../lib/taste/key-proxy.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 const SESSION = "20261108_131309_66bdb7";
@@ -43,7 +45,18 @@ if (args.includes("-p")) process.exit(64);
 const home = process.env.HERMES_HOME;
 let soul = null;
 try { soul = readFileSync(path.join(home, "SOUL.md"), "utf8"); } catch {}
-appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: process.env.OPENROUTER_API_KEY ?? null }) + "\\n");
+// The borrowed login as Hermes finds it through CLAUDE_CONFIG_DIR, then a refresh written back the way Hermes does.
+let login = null;
+const loginFile = process.env.CLAUDE_CONFIG_DIR ? path.join(process.env.CLAUDE_CONFIG_DIR, ".credentials.json") : null;
+try { login = JSON.parse(readFileSync(loginFile, "utf8")).claudeAiOauth; } catch {}
+if (login) writeFileSync(loginFile, JSON.stringify({ claudeAiOauth: { ...login, accessToken: "rotated-by-hermes", refreshToken: "rotated-refresh" } }));
+// On the OpenRouter route, one real request through whatever base URL and key Hermes was given.
+let upstream = null;
+if (process.env.OPENROUTER_BASE_URL) {
+  const response = await fetch(process.env.OPENROUTER_BASE_URL + "/chat/completions", { method: "POST", headers: { authorization: "Bearer " + process.env.OPENROUTER_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ model: flag("-m") }) });
+  upstream = { status: response.status, body: await response.json() };
+}
+appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), home: home ?? null, soul, lazy: process.env.HERMES_DISABLE_LAZY_INSTALLS ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, routeKey: process.env.OPENROUTER_API_KEY ?? null, routeBase: process.env.OPENROUTER_BASE_URL ?? null, upstream, configDir: process.env.CLAUDE_CONFIG_DIR ?? null, login, canaries: Object.keys(process.env).filter((key) => key.startsWith("TK_CANARY")), tmp: process.env.TMPDIR ?? null }) + "\\n");
 mkdirSync(home, { recursive: true });
 const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
@@ -51,7 +64,7 @@ const requested = flag("-m");
 const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || requested;
 const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
-const baseUrl = process.env.FAKE_BASE_URL || "https://api.anthropic.com";
+const baseUrl = process.env.FAKE_BASE_URL || process.env.OPENROUTER_BASE_URL || "https://api.anthropic.com";
 db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
 const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
@@ -69,6 +82,21 @@ else emit({ type: "result", session_id: session, exit_code: 0, text: "answer to:
 process.exit(process.env.FAKE_FAIL ? 1 : 0);
 `;
 
+const LOGIN = `${JSON.stringify({ claudeAiOauth: { accessToken: "sk-ant-oat01-stand-in-access", refreshToken: "sk-ant-ort01-stand-in-refresh", expiresAt: Date.now() + 6 * 60 * 60 * 1000, scopes: ["user:inference"] } })}\n`;
+
+/** A stand-in OpenRouter: records the Authorization header each request arrived with. */
+async function fakeUpstream(t) {
+  const seen = [];
+  const server = createServer((request, response) => {
+    seen.push(request.headers.authorization);
+    request.resume();
+    request.on("end", () => { response.writeHead(200, { "content-type": "application/json" }); response.end(JSON.stringify({ ok: true })); });
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  return { base: `http://127.0.0.1:${server.address().port}/api/v1`, seen };
+}
+
 async function setup(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-hermes-"));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -77,7 +105,7 @@ async function setup(t) {
   await chmod(executable, 0o755);
   const claudeDir = path.join(root, "claude");
   await mkdir(claudeDir);
-  await writeFile(path.join(claudeDir, ".credentials.json"), "{}\n");
+  await writeFile(path.join(claudeDir, ".credentials.json"), LOGIN);
   const hermesRoot = path.join(root, "hermes-root");
   await fakeRose(root, path.join(hermesRoot, "profiles", "rose"));
   const log = path.join(root, "calls.jsonl");
@@ -172,19 +200,31 @@ test("a Hermes child inherits only allowlisted variables; a caller's env cannot 
   process.env.AWS_SECRET_ACCESS_KEY = "aws-leak";
   process.env.GITHUB_TOKEN = "gh-leak";
   process.env.SOME_FUTURE_PROVIDER_KEY = "future-leak";
+  process.env.GH_TOKEN = "gh-leak";
+  process.env.BWS_ACCESS_TOKEN = "bws-leak";
+  process.env.SSH_AUTH_SOCK = "/tmp/agent.sock";
+  process.env.CLAUDE_CONFIG_DIR = "/home/me/.claude";
   try {
     const env = { ANTHROPIC_API_KEY: "sk-leak", HERMES_HOME: "/real/.hermes", OPENROUTER_API_KEY: "or-leak", XAI_API_KEY: "x-leak", FAKE_LOG: "/tmp/log" };
     for (const variant of [clean, snapshot]) {
       hermesEnvironment(variant);
       const processEnv = hermesProcessEnv({ hermesHome: "/tmp/attempt/hermes-home", env });
-      for (const key of ["ANTHROPIC_API_KEY", "OPENROUTER_API_KEY", "XAI_API_KEY", "GEMINI_API_KEY", "AWS_SECRET_ACCESS_KEY", "GITHUB_TOKEN", "SOME_FUTURE_PROVIDER_KEY"]) assert.equal(processEnv[key], undefined, key);
+      for (const key of ["ANTHROPIC_API_KEY", "OPENROUTER_API_KEY", "XAI_API_KEY", "GEMINI_API_KEY", "AWS_SECRET_ACCESS_KEY", "GITHUB_TOKEN", "SOME_FUTURE_PROVIDER_KEY", "GH_TOKEN", "BWS_ACCESS_TOKEN", "SSH_AUTH_SOCK", "CLAUDE_CONFIG_DIR"]) assert.equal(processEnv[key], undefined, key);
       assert.equal(processEnv.HERMES_HOME, "/tmp/attempt/hermes-home");
       assert.equal(processEnv.HERMES_DISABLE_LAZY_INSTALLS, "1");
       assert.equal(processEnv.FAKE_LOG, "/tmp/log");
       assert.equal(processEnv.PATH, process.env.PATH);
     }
+    // The Anthropic route points CLAUDE_CONFIG_DIR at the copy in the throwaway home, never the inherited one.
+    assert.equal(hermesProcessEnv({ variant: clean, hermesHome: "/tmp/attempt/hermes-home", env }).CLAUDE_CONFIG_DIR, "/tmp/attempt/hermes-home/claude-login");
+    assert.throws(() => hermesProcessEnv({ variant: viaOpenRouter, hermesHome: "/tmp/attempt/hermes-home", env }), /only through Kitchen's key proxy/);
+    const proxied = hermesProcessEnv({ variant: viaOpenRouter, hermesHome: "/tmp/attempt/hermes-home", env, proxy: { token: "tk-proxy-dummy", baseUrl: "http://127.0.0.1:9/api/v1" } });
+    assert.equal(proxied.OPENROUTER_API_KEY, "tk-proxy-dummy");
+    assert.equal(proxied.OPENROUTER_BASE_URL, "http://127.0.0.1:9/api/v1");
+    assert.equal(proxied.CLAUDE_CONFIG_DIR, undefined);
   } finally {
     for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
   }
   assert.equal(hermesEnvironment(clean), "clean");
   assert.equal(hermesEnvironment(snapshot), "snapshot");
@@ -229,7 +269,16 @@ test("clean Hermes runs both turns in one fresh home, resumes exactly, verifies 
     assert.equal(call.home, path.join(a.attemptDir, "hermes-home"));
     assert.equal(call.lazy, "1");
     assert.equal(call.cwd, a.workspace);
+    // The borrowed login is an access-token copy inside the throwaway home: no refresh token, never the real file.
+    assert.equal(call.configDir, path.join(a.attemptDir, "hermes-home", "claude-login"));
+    assert.deepEqual(call.login.scopes, ["user:inference"]);
   }
+  assert.equal(calls[0].login.accessToken, "sk-ant-oat01-stand-in-access");
+  assert.equal(calls[0].login.refreshToken, undefined);
+  assert.equal(calls[1].login.accessToken, "rotated-by-hermes", "the first turn's write-back landed in the copy");
+  // Hermes's write-back reached only the copy, which is gone with the home; the source login is byte-for-byte unchanged.
+  assert.equal(await readFile(path.join(f.env.CLAUDE_CONFIG_DIR, ".credentials.json"), "utf8"), LOGIN);
+  await assert.rejects(access(path.join(a.attemptDir, "hermes-home", "claude-login")), /ENOENT/);
   await assert.rejects(access(path.join(a.attemptDir, "hermes-home", "auth.json")), /ENOENT/);
   const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: clean, cliVersion: result.cliVersion, result, env: f.env });
   assert.equal(observed.model, "claude-haiku-5-5");
@@ -375,7 +424,8 @@ test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dish
   assert.equal(requested.execution.toolsets, "file,terminal");
   const observed = JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8"));
   assert.equal(observed.environment, "clean");
-  assert.deepEqual(await readdir(path.join(requested.cookDirectory, "hermes-home")), ["state.db"], "only the session database outlives the session");
+  // Published: the cook directory goes, session database and all.
+  await assert.rejects(access(requested.cookDirectory), /ENOENT/);
   const dish = JSON.parse(await readFile(path.join(cleanRun.dishDirectory, "dish.json"), "utf8"));
   assert.equal(dish.identity.observedModel, "claude-haiku-5-5");
   assert.equal(dish.identity.harnessVersion, "Hermes Agent v9.9.9 (fake)");
@@ -403,7 +453,7 @@ test("a cooked clean Hermes Dish is public; a snapshot Dish goes to private/dish
     assert.equal(call.soul, "I am Rose.\n", "the run sees the copied soul");
   }
   // The copy and the borrowed login are gone; the real profile is untouched.
-  assert.deepEqual(await readdir(path.join(snapshotRequest.cookDirectory, "hermes-home")), ["state.db"]);
+  await assert.rejects(access(snapshotRequest.cookDirectory), /ENOENT/);
   assert.deepEqual(await listTree(rose), roseBefore);
   const snapshotObserved = JSON.parse(await readFile(path.join(snapshotAttempt, "observed.json"), "utf8"));
   assert.equal(snapshotObserved.environment, "snapshot");
@@ -433,19 +483,30 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
   const f = await setup(t);
   const a = await attempt(f.root, "openrouter");
   await assert.rejects(prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env: { ...f.env, OPENROUTER_API_KEY: "" } }), /needs OPENROUTER_API_KEY/);
-  // The route key is the only credential that survives the scrub; Anthropic's does not.
-  const env = { ...f.env, OPENROUTER_API_KEY: "sk-or-test", ANTHROPIC_API_KEY: "sk-ant-leak", FAKE_BASE_URL: "https://openrouter.ai/api/v1" };
+  // Hermes never holds the key: it gets the proxy's dummy token and loopback URL, and the proxy adds the key upstream.
+  const env = { ...f.env, OPENROUTER_API_KEY: "sk-or-test", ANTHROPIC_API_KEY: "sk-ant-leak" };
   await prepareHermesAttempt({ variant: viaOpenRouter, cwd: a.attemptDir, env });
+  const upstream = await fakeUpstream(t);
+  const proxy = await startKeyProxy({ upstream: upstream.base, apiKey: "sk-or-test" });
+  t.after(() => proxy.close());
   const config = await readFile(path.join(a.attemptDir, "hermes-home", "config.yaml"), "utf8");
   assert.match(config, /provider: openrouter\n {2}default: google\/gemini-4-argon/u);
   assert.match(config, /adopt_external_logins: false/u);
   assert.match(config, /provider_routing:\n {2}only:\n {4}- google-ai-studio\n {2}require_parameters: true\n/u);
-  const result = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env });
+  await assert.rejects(runHermesSession({ variant: viaOpenRouter, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env }), /only through Kitchen's key proxy/);
+  const result = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env, proxy });
   assert.equal(result.failure, null, result.failure?.message);
-  for (const call of await f.calls()) {
-    assert.equal(call.routeKey, "sk-or-test");
+  const routed = (await f.calls()).filter((call) => call.routeBase);
+  assert.equal(routed.length, 2);
+  for (const call of routed) {
+    assert.equal(call.routeKey, proxy.token);
+    assert.equal(call.routeBase, proxy.baseUrl);
     assert.equal(call.leaked, null);
+    assert.equal(call.configDir, null, "the key-proxy route borrows no Claude Code login");
+    assert.deepEqual(call.upstream, { status: 200, body: { ok: true } });
   }
+  assert.deepEqual(upstream.seen, ["Bearer sk-or-test", "Bearer sk-or-test"], "the upstream saw the real key, added by the proxy");
+  for (const file of await listTree(a.attemptDir)) assert.equal((await readFile(path.join(a.attemptDir, file))).includes("sk-or-test"), false, file);
   const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: viaOpenRouter, cliVersion: result.cliVersion, result, env });
   assert.equal(observed.route, "openrouter");
   assert.equal(observed.endpoint, "https://openrouter.ai/api/v1");
@@ -453,6 +514,6 @@ test("the OpenRouter route pins its maker's slug, carries only the route key, an
 
   const b = await attempt(f.root, "openrouter-elsewhere");
   await prepareHermesAttempt({ variant: viaOpenRouter, cwd: b.attemptDir, env });
-  const elsewhere = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://api.anthropic.com" } });
-  assert.match(elsewhere.failure.message, /endpoint requested https:\/\/openrouter.ai\/api\/v1, observed https:\/\/api.anthropic.com/);
+  const elsewhere = await runHermesSession({ variant: viaOpenRouter, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://api.anthropic.com" }, proxy });
+  assert.match(elsewhere.failure.message, /endpoint requested Kitchen's key proxy to https:\/\/openrouter.ai\/api\/v1, observed https:\/\/api.anthropic.com/);
 });
