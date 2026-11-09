@@ -7,7 +7,8 @@ import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { buildRecipeBook, saveRecipeEdits } from "../lib/taste/recipe-book.mjs";
-import { loadRecipeFromGitHub, saveRecipeViaGitHub, verifyGitHubAccess } from "../src/lib/github-recipe-save.ts";
+import { loadRecipeFromGitHub, saveRecipeViaGitHub, saveVerdictViaGitHub, verifyGitHubAccess } from "../src/lib/github-recipe-save.ts";
+import { createVerdict } from "../src/lib/verdicts.ts";
 
 const api = "https://api.github.com/repos/beejsbj/tasting-kitchen";
 
@@ -229,4 +230,52 @@ test("a branch advance during the save never resets its reference", async (t) =>
     /branch changed while saving/,
   );
   assert.equal(requests.some((request) => request.url === `${api}/git/refs/heads/main` && request.init.method === "PATCH"), false);
+});
+
+function installVerdictMock(t, paths) {
+  const requests = [];
+  const previous = globalThis.fetch;
+  globalThis.fetch = async (url, init = {}) => {
+    requests.push({ url: String(url), init });
+    if (url === `${api}/git/ref/heads/main`) return response({ object: { sha: "head" } });
+    if (url === `${api}/git/commits/head`) return response({ tree: { sha: "tree-current" } });
+    if (url === `${api}/git/trees/tree-current?recursive=1`) return response({ truncated: false, tree: paths.map((item, index) => ({ path: item, mode: "100644", type: "blob", sha: `blob-${index}` })) });
+    if (url === `${api}/git/trees` && init.method === "POST") return response({ sha: "tree-new" }, 201);
+    if (url === `${api}/git/commits` && init.method === "POST") return response({ sha: "commit-new" }, 201);
+    if (url === `${api}/git/refs/heads/main` && init.method === "PATCH") return response({ object: { sha: "commit-new" } });
+    throw new Error(`Unexpected request: ${init.method ?? "GET"} ${url}`);
+  };
+  t.after(() => { globalThis.fetch = previous; });
+  return requests;
+}
+
+const HASH = (digit) => `sha256:${String(digit).repeat(64)}`;
+
+test("a verdict commit writes only verdicts/<id>.json, for a Dish or a No Dish in the branch", async (t) => {
+  const requests = installVerdictMock(t, ["dishes/dish_a/dish.json", "no-dishes/nodish_b/no-dish.json"]);
+  const now = new Date("2026-11-09T10:00:00.000Z");
+  const dishVerdict = createVerdict({ id: "dish_a", dishHash: HASH(1) }, "failed", "Misses the constraint.", now);
+  const noDishVerdict = createVerdict({ id: "nodish_b", outcome: "no-dish", noDishHash: HASH(2) }, "passed", "The checks were wrong.", now);
+  assert.equal(noDishVerdict.plateHash, HASH(2));
+  assert.throws(() => createVerdict({ id: "nodish_b", outcome: "no-dish", noDishHash: HASH(2) }, "failed", "x", now), /takes only a pass/);
+  for (const verdict of [dishVerdict, noDishVerdict]) {
+    requests.length = 0;
+    const saved = await saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict });
+    assert.equal(saved.path, `verdicts/${verdict.id}.json`);
+    const treeBody = JSON.parse(requests.find((request) => request.url === `${api}/git/trees` && request.init.method === "POST").init.body);
+    assert.deepEqual(treeBody.tree.map((item) => item.path), [`verdicts/${verdict.id}.json`]);
+    assert.deepEqual(JSON.parse(treeBody.tree[0].content), verdict);
+  }
+});
+
+test("a verdict commit refuses an unknown plate, a traversing id, an existing file and a branch advance", async (t) => {
+  const now = new Date("2026-11-09T10:00:00.000Z");
+  const good = createVerdict({ id: "dish_a", dishHash: HASH(1) }, "passed", "Holds up.", now);
+  const requests = installVerdictMock(t, ["dishes/dish_a/dish.json", `verdicts/${good.id}.json`]);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, plateId: "dish_missing", id: "verdict_dish_missing_20261109100000000" } }), /not in the repository branch/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, id: "verdict_../../.github/workflows/x" } }), /verdict id is invalid/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, plateId: "dish_a\nco-author" } }), /verdict id is invalid/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: { ...good, id: "verdict_dish_other_20261109100000000" } }), /verdict id is invalid/);
+  await assert.rejects(saveVerdictViaGitHub({ token: "test-token", branch: "main", verdict: good }), /already exists/);
+  assert.equal(requests.some((request) => request.init.method === "POST" || request.init.method === "PATCH"), false, "nothing is written");
 });

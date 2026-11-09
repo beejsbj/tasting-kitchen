@@ -87,6 +87,8 @@ h1, h2, h3 { font-family: var(--font-display); }
 .artifact-pane--empty { display: grid; place-items: center; padding: var(--space-6); background: var(--viewer-ground); }
 .artifact-pane--empty h2 { font-size: var(--text-lg); }
 .artifact-pane--empty p { font-size: var(--text-sm); line-height: 1.5; }
+.artifact-marks { position: sticky; top: 0; z-index: 1; }
+.artifact-marks > .verdict-mark, .artifact-marks > .artifact-review-mark { position: static; }
 .artifact-review-mark { position: sticky; top: 0; z-index: 1; display: flex; gap: var(--space-3); align-items: center; justify-content: space-between; font-size: var(--text-xs); padding: var(--space-2) var(--space-3); background: var(--surface); border-bottom: var(--line-width) solid var(--line); }
 .artifact-review-mark[data-verdict=issue] b { color: var(--danger); }
 .receipt { padding: var(--space-3); font-size: var(--text-xs); }
@@ -153,3 +155,35 @@ h1, h2, h3 { font-family: var(--font-display); }
 .dish-card__changed, .receipt-note { color: var(--ink-muted); font-style: italic; }
 .brief-changed { border-left: 3px solid var(--line); padding-left: var(--space-4); }
 .dish-note { border-left: 3px solid var(--line); padding-left: var(--space-3); line-height: 1.5; }
+
+/* No Dish: an empty plate, not an error page. Warm and plain, never the danger red. */
+.no-dish__plate { display: block; width: 4.5rem; aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--line-bright); box-shadow: inset 0 0 0 .55rem var(--surface), inset 0 0 0 .62rem var(--line); background: var(--surface); }
+.artifact-pane--no-dish { display: flex; flex-direction: column; background: var(--viewer-ground); }
+/* A verdict bar sits above, like on a Dish; the plate stays centred in what is left. */
+.no-dish { max-width: 34rem; margin: auto; padding: var(--space-6); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+.no-dish h2 { font-size: var(--text-lg); margin: 0; }
+.no-dish__eyebrow { font: 600 var(--text-xs) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mother); }
+.no-dish__reason { font-size: var(--text-md); line-height: 1.5; margin: 0; }
+.no-dish__class { font-size: var(--text-sm); color: var(--ink-muted); line-height: 1.5; margin: 0; }
+.no-dish__checks { margin: 0; padding-left: 1.1rem; font-size: var(--text-sm); line-height: 1.6; }
+.no-dish__checks small { color: var(--ink-muted); }
+.no-dish__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--text-sm); margin: var(--space-2) 0 0; }
+.no-dish__links span { color: var(--ink-muted); }
+.recipe-card__no-dish { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); background: var(--viewer-ground); color: var(--ink); font-size: var(--text-sm); }
+.recipe-card__no-dish b { font: 600 var(--text-xs) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mother); }
+.dish-card__outcome { display: inline-flex; align-items: center; padding: 0 var(--space-2); border-radius: 999px; font-size: var(--text-xs); border: 1px solid currentColor; }
+.dish-card__outcome[data-outcome=no-dish], .dish-card__outcome[data-outcome=failed] { color: var(--mother); }
+.dish-card__outcome[data-outcome=passed] { color: var(--hybrid); }
+.coverage-table td[data-outcome=no-dish] .kitchen-button, .coverage-table td[data-outcome=no-dish] button { color: var(--mother); }
+
+/* Burooj's verdict leads the pane; the automated result stays beside it. */
+.verdict-mark { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); align-items: baseline; padding: var(--space-2) var(--space-3); font-size: var(--text-sm); background: var(--surface); border-bottom: 2px solid var(--line); }
+.verdict-mark[data-verdict=failed] { border-bottom-color: var(--mother); }
+.verdict-mark[data-verdict=failed] b { color: var(--mother); }
+.verdict-mark[data-verdict=passed] { border-bottom-color: var(--hybrid); }
+.verdict-mark[data-verdict=passed] b { color: var(--hybrid); }
+.verdict-mark__note { flex: 1 1 16rem; }
+.verdict-mark__checks { font-size: var(--text-xs); color: var(--ink-muted); }
+.verdict-choice { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.25rem; padding: 0 .75rem; border: 1px solid var(--line); border-radius: .5rem; font-size: var(--text-sm); cursor: pointer; }
+.verdict-choice:has(input:checked)[data-choice=failed] { border-color: var(--mother); color: var(--mother); }
+.verdict-choice:has(input:checked)[data-choice=passed] { border-color: var(--hybrid); color: var(--hybrid); }

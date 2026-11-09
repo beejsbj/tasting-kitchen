@@ -9,6 +9,10 @@ import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
+import { CHEF_FAULTS } from "../lib/taste/faults.mjs";
+import { loadNoDishes, loadPrivateNoDishes } from "../lib/taste/no-dishes.mjs";
+import { JUDGE_RANK, loadPrivateVerdicts, loadVerdicts, VERDICT_VALUES } from "../lib/taste/verdicts.mjs";
+import { loadPrivateDishes } from "../lib/taste/registry.mjs";
 import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
 
 const args = process.argv.slice(2);
@@ -915,6 +919,14 @@ async function scanPublicCatalog() {
 const recipeSchema = await json("catalog/recipe.schema.json");
 const dishSchema = await json("catalog/dish.schema.json");
 const reviewSchema = await json("catalog/review.schema.json");
+const noDishSchema = await json("catalog/no-dish.schema.json");
+const verdictSchema = await json("catalog/verdict.schema.json");
+if (noDishSchema?.properties?.fault?.properties?.code?.enum?.join("\0") !== Object.keys(CHEF_FAULTS).join("\0")) {
+  fail("catalog/no-dish.schema.json", "chef fault enum disagrees with runtime classifier");
+}
+if (verdictSchema?.properties?.verdict?.enum?.join("\0") !== VERDICT_VALUES.join("\0") || verdictSchema?.properties?.judge?.properties?.kind?.enum?.join("\0") !== Object.keys(JUDGE_RANK).join("\0")) {
+  fail("catalog/verdict.schema.json", "verdict or judge enum disagrees with runtime validator");
+}
 if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
   fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");
 }
@@ -1020,6 +1032,34 @@ try {
   fail("catalog/dish-notes.json", error.message);
 }
 
+// No Dishes: chef faults only, each verified against its own hash and the public scan.
+let noDishCount = 0;
+let publicNoDishes = [];
+let privateNoDishes = [];
+try {
+  publicNoDishes = await loadNoDishes(root);
+  privateNoDishes = publicCheckout ? [] : await loadPrivateNoDishes(root);
+  const noDishes = [...publicNoDishes, ...privateNoDishes];
+  const seenNoDishIds = new Set();
+  for (const plate of noDishes) {
+    if (seenNoDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "duplicate No Dish id");
+    seenNoDishIds.add(plate.id);
+    if (dishes.has(plate.id) || allDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "id collides with a Dish");
+    if (!recipeRecords.has(plate.recipe.id)) fail(`no-dishes/${plate.id}`, `unknown recipe ${plate.recipe.id}`);
+  }
+  noDishCount = noDishes.length;
+} catch (error) {
+  fail("no-dishes", error.message);
+}
+
+let verdictCount = 0;
+try {
+  verdictCount = (await loadVerdicts(root, { plates: [...dishes.values(), ...publicNoDishes] })).length;
+  if (!publicCheckout) await loadPrivateVerdicts(root, { plates: [...await loadPrivateDishes(root), ...privateNoDishes] });
+} catch (error) {
+  fail("verdicts", error.message);
+}
+
 let axisSets = [];
 try {
   axisSets = await loadAxisSets(root);
@@ -1036,4 +1076,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${publicCheckout ? "private provenance skipped (--public-checkout)" : `${recipeRecords.size} private provenance records checked`}.`);
+console.log(`Catalog valid: ${cuisines.size} cuisines, ${tags.size} tags, ${variants.size} configurations, ${skills.size} skills, ${recipeRecords.size} recipes, ${dishes.size} dishes, ${noDishCount} no dish${noDishCount === 1 ? "" : "es"}, ${verdictCount} verdict${verdictCount === 1 ? "" : "s"}, ${reviewIds.size} artifact review${reviewIds.size === 1 ? "" : "s"}, ${axisSets.length} axis sets, ${publicCheckout ? "private provenance skipped (--public-checkout)" : `${recipeRecords.size} private provenance records checked`}.`);

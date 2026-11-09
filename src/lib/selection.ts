@@ -1,16 +1,18 @@
-import type { Configuration, Dish, Recipe, Registry } from "../types";
+import type { Configuration, Plate, Recipe, Registry } from "../types";
+import { platesOf } from "./outcomes.ts";
 import type { GalleryState } from "./url-state";
 
 // Kept local (not imported from ./registry) so this module stays importable by node's type-stripping test runner.
 const NO_SKILL = "none";
-const dishSkillKey = (dish: Pick<Dish, "skill">) => dish.skill?.hash ?? NO_SKILL;
+const dishSkillKey = (dish: Pick<Plate, "skill">) => dish.skill?.hash ?? NO_SKILL;
 
 export type RecipeSelectionSlot = {
   config?: Configuration;
   /** "none", a skill hash, or undefined when the URL left the layer to the latest Dish. */
   skillKey: string;
-  repeats: Dish[];
-  dish?: Dish;
+  repeats: Plate[];
+  /** A Dish, or a No Dish where the configuration could not make it. */
+  dish?: Plate;
 };
 
 /** Filters accept skill ids, exact hashes, or "none"; Dish links always carry exact hashes. */
@@ -20,7 +22,7 @@ export function skillKeyForToken(registry: Pick<Registry, "skills">, token: stri
   const current = registry.skills?.find((skill) => skill.id === token || skill.skillHash === token);
   return current?.skillHash ?? token;
 }
-export function skillTokenForDish(_registry: Pick<Registry, "skills">, dish: Dish) {
+export function skillTokenForDish(_registry: Pick<Registry, "skills">, dish: Plate) {
   if (!dish.skill) return NO_SKILL;
   return dish.skill.hash;
 }
@@ -30,22 +32,22 @@ export type ResolvedRecipeSelection = {
 };
 
 /** Returns the newest Dish, resolving equal execution times by Dish ID. */
-export function latestDish(dishes: readonly Dish[]): Dish | undefined {
+export function latestDish<T extends Plate>(dishes: readonly T[]): T | undefined {
   return [...dishes].sort((a, b) => b.executedAt.localeCompare(a.executedAt) || b.id.localeCompare(a.id))[0];
 }
 
-function configurationForDish(registry: Registry, dish: Dish): Configuration | undefined {
+function configurationForDish(registry: Registry, dish: Plate): Configuration | undefined {
   return registry.configurations.find((config) => config.configHash === dish.identity.configHash);
 }
 
 /** Builds the URL patch for one immutable Dish and its exact configuration snapshot. */
-export function selectionForDish(registry: Registry, dish: Dish): Pick<GalleryState, "recipe" | "models" | "skills" | "dishes"> {
+export function selectionForDish(registry: Registry, dish: Plate): Pick<GalleryState, "recipe" | "models" | "skills" | "dishes"> {
   const config = configurationForDish(registry, dish);
   if (!config) throw new Error(`No public configuration snapshot exists for Dish ${dish.id}.`);
   return { recipe: dish.recipe.id, models: [config.id], skills: [skillTokenForDish(registry, dish)], dishes: [dish.id] };
 }
 
-function slotForConfiguration(config: Configuration | undefined, requestedSkillKey: string | undefined, dishes: Dish[], selectedDishId: string | undefined): RecipeSelectionSlot {
+function slotForConfiguration(config: Configuration | undefined, requestedSkillKey: string | undefined, dishes: Plate[], selectedDishId: string | undefined): RecipeSelectionSlot {
   const configDishes = config ? dishes.filter((dish) => dish.identity.configHash === config.configHash)
     .sort((a, b) => a.executedAt.localeCompare(b.executedAt) || a.id.localeCompare(b.id)) : [];
   // An unspecified layer follows the selected or newest Dish; Repeats never mix layers.
@@ -66,7 +68,8 @@ function slotForConfiguration(config: Configuration | undefined, requestedSkillK
  * for a snapshot, setup digest.
  */
 export function resolveRecipeSelection(registry: Registry, recipe: Recipe, state: Pick<GalleryState, "models" | "skills" | "dishes">): ResolvedRecipeSelection {
-  const recipeDishes = registry.dishes.filter((dish) => dish.recipe.id === recipe.id);
+  // No Dishes sit in their cells beside Dishes, so a pane shows where a configuration could not make it.
+  const recipeDishes = platesOf(registry).filter((dish) => dish.recipe.id === recipe.id);
 
   if (state.models.length || state.dishes.some(Boolean)) {
     return {

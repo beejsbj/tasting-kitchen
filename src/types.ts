@@ -156,6 +156,48 @@ export type SetupReceipt = {
 
 export type DishNote = { id: string; text: string; link?: string };
 
+/** Why a configuration could not make the Recipe. Only chef faults are ever public. */
+export type ChefFaultCode = "checks-failed" | "output-contract" | "refused" | "out-of-turns";
+
+/**
+ * The public plate of a chef fault: the configuration was given the Recipe and
+ * could not make it. Sits at recipe hash × configuration × skill layer like a
+ * Dish and covers its cell. Kitchen faults never appear here.
+ */
+export type NoDish = {
+  schemaVersion: 1;
+  id: string;
+  outcome: "no-dish";
+  recipe: Dish["recipe"];
+  skill?: Dish["skill"];
+  executedAt: string;
+  failedAt: string;
+  identity: Omit<Dish["identity"], "observedModel" | "harnessVersion" | "requestedServiceTier" | "observedServiceTier"> & { observedModel: string | null; harnessVersion: string | null };
+  fault: { class: "chef"; code: ChefFaultCode; stage: "execution" | "validation"; reason: string; turn?: string; checks?: string[] };
+  validation: { passed: false; report: string } | null;
+  publicTrace: string | null;
+  artifact: { kind: Recipe["kind"]; entry?: string; treeHash: string; files: Array<{ path: string; sha256: string; bytes: number }>; partial: true } | null;
+  noDishHash: string;
+  artifactBase: string;
+  inputs?: Dish["inputs"];
+  receipt?: Dish["receipt"];
+};
+
+/** A Dish or a No Dish: what a cell of the counter holds. */
+export type Plate = Dish | NoDish;
+
+/** A judge's pass or fail beside a Dish or No Dish. Burooj (owner) outranks every automated check; a No Dish takes only a pass. */
+export type Verdict = {
+  schemaVersion: 1;
+  id: string;
+  plateId: string;
+  plateHash: string;
+  judge: { kind: "owner"; name: string };
+  verdict: "failed" | "passed";
+  note: string;
+  decidedAt: string;
+};
+
 export type DishInput = { id: string; path: string; mountAs: string; public: boolean; editable: boolean; mediaType?: string; sha256: string; bytes: number; url?: string };
 
 export type ReviewVerdict = "pass" | "issue" | "inconclusive";
@@ -245,6 +287,9 @@ export type Registry = {
   skills?: Skill[];
   recipes: Recipe[];
   dishes: Dish[];
+  /** Absent in registries built before No Dishes existed. */
+  noDishes?: NoDish[];
+  verdicts?: Verdict[];
   reviews: ArtifactReview[];
   axisSets: AxisSet[];
   observations: TasteObservation[];

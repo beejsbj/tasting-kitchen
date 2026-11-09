@@ -6,7 +6,7 @@ This document defines the target model for Tasting Kitchen. It is the source of 
 
 ## Product claim
 
-Tasting Kitchen gives requested model configurations the same Recipe—one prompt or prompt chain—and preserves their results for human inspection.
+Tasting Kitchen gives requested model configurations the same Recipe—one prompt or prompt chain—and preserves their results for human inspection: what each configuration made, and where it could not make it.
 
 It helps a person develop an impression of recurring tendencies or “fingerprints.” It does not rank models or claim that observed differences were caused solely by the model.
 
@@ -19,7 +19,10 @@ Skill is an optional layer a Recipe can be cooked through
 Cook(Menu, model configurations, skill layer)
   -> one Run per selected Recipe (at its current recipe hash) × requested configuration × skill layer
   -> each successful accepted Run produces one immutable Dish
-Tasting presents matching Dishes through Recipe, Menu, Cuisine, and model views
+  -> each Run that fails by the model's own doing (a chef fault) produces one immutable No Dish
+  -> a Run that fails by Kitchen's doing (a kitchen fault) stays private and retryable
+Tasting presents matching Dishes and No Dishes through Recipe, Menu, Cuisine, and model views
+Burooj's verdict attaches beside a Dish or a No Dish and outranks the automated checks
 ```
 
 ## Canonical vocabulary
@@ -86,7 +89,7 @@ The system must not silently choose between reuse and new execution.
 
 One private operational attempt to execute one Recipe at its current recipe hash with one exact requested model configuration.
 
-A Run may fail or be rejected without producing a public Dish. A successful, accepted Run produces exactly one Dish. Raw/private execution evidence remains outside the public artifact boundary.
+A successful, accepted Run produces exactly one Dish. A failed Run is classified as exactly one of a **chef fault** or a **kitchen fault** (see No Dish below): a chef fault produces exactly one No Dish; a kitchen fault produces nothing public. Raw/private execution evidence remains outside the public artifact boundary either way, and the attempt's private `state.json` records the class, reason code and plain reason.
 
 Run is operational language, not a public gallery entity.
 
@@ -112,6 +115,39 @@ Two sidecars sit beside `dish.json` and are **not** part of `dish.json` or `dish
 Both are written at publication. Dishes published earlier were backfilled once from the frozen records that preceded this model (`scripts/backfill-dish-sidecars.mjs`). The validator re-hashes every public input and checks that the receipt reproduces `identity.configHash`. When a Dish's recipe hash is still the Recipe's current hash, the validator and registry build also require `inputs.json` to list exactly that Recipe's fixtures; an older hash cannot be re-derived, so its inputs rest on their own hashes and the public scan. Published inputs are scanned for leaks (home paths, file URLs, credentials, private identifiers); only the relative-import and route-shaped path rules are relaxed for these verbatim bytes. A Dish with no sidecar still validates; the gallery then falls back to the Recipe's current fixtures and says so.
 
 **Catalog changed.** When a Dish's configuration hash or skill hash is no longer in the catalog (a configuration was edited, a skill pin moved), the receipts say “catalog changed”. The Dish is neither hidden nor failed; its own `receipt.json` still says exactly what it ran as, and the gallery rebuilds the old configuration from it so the Dish stays selectable.
+
+### No Dish
+
+A **No Dish** is the public plate of a chef fault: the configuration was given the Recipe and could not make it. The counter shows what each configuration made *and* where it could not, so “can this model do this at all?” is visible rather than inferred from an absence.
+
+The name says what is on the plate, not why: there is nothing to taste. That holds for every chef fault, where “Burnt” would claim the model ruined something it never tried (a refusal) and “Sent back” is a diner's act, kept for Burooj's verdict below. It is distinct on the counter but not shaming: an empty plate, in the warm accent, never the danger colour.
+
+**Fairness rule.** Only the model's own doing becomes public:
+
+| Class | Public? | Codes |
+| --- | --- | --- |
+| Chef fault | Yes, as a No Dish | `checks-failed` (required checks ran and failed) · `output-contract` (artifact entry missing or over its file/byte limits; a read-only fixture or the mounted skill edited) · `refused` (structured refusal evidence: a Claude `refusal` stop reason, a chat-completions `refusal` from the requested model through its pinned upstream) · `out-of-turns` (the harness reports its turn budget spent, Claude Code's `error_max_turns`) |
+| Kitchen fault | Never; private and retryable | `auth` · `rate-limited` (including free-tier throttling) · `network` · `provider-unavailable` · `timeout` · `identity-drift` (the route served another model, tier or upstream) · `harness-changed` (a CLI or protocol Kitchen does not recognise) · `validator-error` (a required check could not run) · `preparation` · `publication` (Kitchen's own scans) · `interrupted` · `kitchen-error` |
+
+A chef fault exists only where a throw site or adapter tags it from structured evidence; it is never read from an error message. Every untagged failure is a kitchen fault, so an ambiguous failure never stains the model. That is why time is not yet a chef fault: Kitchen's time limits (the Direct API request timeout, the T3 turn timeout) differ by harness and cannot tell a slow model from a hung route, so they are `timeout`, a kitchen fault. A web artifact's remote references and the public-text scan are Kitchen's publication rules, so they stay kitchen faults too.
+
+What a No Dish publishes (`no-dishes/<id>/`, served beside Dishes under the sandboxed `dishes/` path):
+
+- `no-dish.json`: recipe hash, skill layer, requested configuration (configuration hash, and for a snapshot the setup digest), execution and failure times, and `fault: { class: "chef", code, stage, reason, turn?, checks? }`, hashed as `noDishHash`;
+- `validation.json`, when checks ran: every check's result;
+- `trace.json`: the prompts sent and the public-safe responses up to the failure, omitted if it cannot pass the public-text scan;
+- `artifact/`: what the model left that the output contract selects, within its limits, only if it passes the public-text scan (and, for web, the network scan); and
+- the same `inputs.json`/`inputs/` and `receipt.json` sidecars as a Dish.
+
+Raw harness output, error messages, stderr and paths never leave the private attempt. A No Dish is immutable, attaches to recipe hash × configuration × skill layer exactly like a Dish, and is private under `private/no-dishes/` for exactly the Runs whose Dish would be private. It **counts as coverage**: fill-missing never retries it, and only a deliberate Repeat cooks that cell again (a Repeat may then produce a Dish beside it in the same Repeat group). A Recipe with only No Dishes is still on the counter.
+
+**Recovery** republishes a kitchen fault Kitchen can complete without the model (a publication failure, the Codex fast-tier alias). It refuses every chef fault, so it can never turn one into a Dish; any other kitchen fault leaves the cell open for fill-missing.
+
+### Verdict
+
+A **verdict** is a judge's `failed` or `passed` on one plate (a Dish or a No Dish), with a short note. It sits beside the plate in `verdicts/<id>.json`, pinned to its `plateId` and `plateHash` (a Dish's `dishHash` or a No Dish's `noDishHash`), and never inside `dish.json` or `no-dish.json`. Verdicts are append-only: a changed mind is a newer verdict, and the newest from the highest-ranked judge stands.
+
+Burooj (`judge.kind: "owner"`) is the only judge today, and his verdict outranks the automated checks in what the gallery leads with; the checks' own result stays visible beside it. A Dish he fails reads “Failed by Burooj”. He records one from the gallery (the local dev endpoint, or the Recipe Book's GitHub token flow committing the file) or with `taste verdict --dish ID --failed|--passed --note "…"`. A No Dish takes only a pass, so he can overrule a plate he judges good: “Passed by Burooj · checks failed” where the checks failed it, and “Passed by Burooj” beside the fault's own label where the cause was a refusal, a spent turn budget or a broken output contract; there is nothing to fail on a plate that holds nothing. A passed No Dish stays a No Dish on the counter and in the Outcome filter, with his verdict beside the fault. Another judge (such as a model council) would join the judge ranking below him without changing what his verdict means.
 
 ### Repeat
 
@@ -228,7 +264,7 @@ The site is the Tasting surface; the CLI is the v1 cooking surface.
 
 The public site supports:
 
-- a Dishes counter that groups every visible Dish and Repeat beneath its Recipe, with model/thinking filters;
+- a Dishes counter that groups every visible Dish, No Dish and Repeat beneath its Recipe, with model/thinking filters and an outcome filter (Cooked · No Dish · Failed by Burooj);
 - a separate Recipe Book at `?view=recipes` for current authored definitions;
 - Recipe detail pages containing all matching models, configurations, and Repeats, where each pane is chosen axis by axis (model, effort, harness, environment, and tier or skill layer where they vary) and “Compare by” holds the first pane still while laying out one pane per value of a single axis, up to six;
 - model and configuration facets on the Dishes counter;
@@ -241,7 +277,7 @@ The Dishes counter shows each Dish separately, grouped under its Recipe, with a 
 
 Local development exposes `GET /api/recipes` and optimistic `PATCH /api/recipes/:id` with an `expectedHash`; saves replace the recipe source and edited public fixtures coherently. Production serves the active public source text from `public/data/recipe-book.json`; its static sidecar is read-only, while the separate hosted GitHub flow can save current definitions.
 
-A Menu appears publicly only when every Recipe on it is on the public counter (has at least one accepted Dish somewhere). It need not have complete coverage from any single model or configuration.
+A Menu appears publicly only when every Recipe on it is on the public counter (has at least one accepted Dish or No Dish somewhere). It need not have complete coverage from any single model or configuration.
 
 The owner-only Cook button remains outside the public site. Recipe editing is available through the Book; hosted repository saves require an owner-supplied GitHub fine-grained token with repository Contents read/write access. The token is held in browser memory and sent only to `api.github.com`; saves make one atomic commit to the configured branch with conflict protection. No model cook is started by a save.
 
@@ -254,7 +290,7 @@ Examples for a 12-Recipe Menu:
 - `Luna · all efforts · all harnesses — 12/12 represented`
 - `Sol · high · Codex — 9/12 represented`
 
-Missing cells remain visible, and populated cells may contain several Repeats.
+Missing cells remain visible, and populated cells may contain several Repeats. A No Dish represents its cell: the configuration was given the Recipe and could not make it, which is coverage, not a gap.
 
 Family-level `12/12` means complete family coverage. It does not mean configuration was held constant.
 
@@ -274,6 +310,18 @@ Dishes cooked from different recipe hashes may be browsed together, but they are
 ### The same Recipe across several models
 
 Each requested configuration receives the same brief (one recipe hash). Each successful Run yields a Dish. The Recipe detail page presents the Dishes together.
+
+### A configuration cannot make the Recipe
+
+The Run fails its required checks (or breaks the output contract, declines, or runs out of turns). Kitchen publishes a No Dish in that cell with the reason. Fill-missing leaves it; a Repeat tries again. Had the login expired or the provider throttled, the attempt would stay private and the cell open.
+
+### Burooj fails a Dish after tasting it
+
+The Dish passed every required check. He records a failed verdict with a note; the pane and card lead with “Failed by Burooj” and still say the checks passed. The Dish and its hash are unchanged.
+
+### Burooj passes a No Dish
+
+The checks failed a plate he thinks is good. He records a passed verdict with a note; the pane leads with “Passed by Burooj · checks failed” and the No Dish, its fault and its hash are unchanged.
 
 ### The same configuration repeats a Recipe
 
@@ -312,7 +360,7 @@ The correction instruction is part of the Recipe's prompt chain and is held cons
 - **Domain** — replaced by Cuisine.
 - **Flight** — retired; it ambiguously meant a Recipe set, execution batch, or displayed sample set.
 - **Collection** — retired; model and configuration are ordinary filter facets over Dishes.
-- **Chef** — informal prose only.
+- **Chef** — informal prose, and the name of a fault class (chef fault, kitchen fault). Never a schema entity or a substitute for Model.
 - **Oven / Appliance** — infrastructure metaphors only.
 - **Personal environment** — replaced by `snapshot` and `live`, which make different claims about what the model saw. “Personal” survives only as the word for both together (private by default, `--publish-personal`).
 
