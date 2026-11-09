@@ -1316,6 +1316,180 @@
         "environment": "clean",
         "route": "openrouter"
       }
+    },
+    {
+      "id": "t3-claude-code-opus-5-5-high-clean",
+      "label": "Opus 5.5 · High · via T3 → Claude Code · clean",
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "claude-code"
+      ],
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
+      "id": "t3-claude-code-sonnet-5-5-high-clean",
+      "label": "Sonnet 5.5 · High · via T3 → Claude Code · clean",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "claude-code"
+      ],
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
+      "id": "t3-claude-code-haiku-5-5-high-clean",
+      "label": "Haiku 5.5 · High · via T3 → Claude Code · clean",
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "claude-code"
+      ],
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
+      "id": "t3-claude-code-fable-5-1-high-clean",
+      "label": "Fable 5.1 · High · via T3 → Claude Code · clean",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "claude-code"
+      ],
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "default",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
+      "id": "t3-codex-sol-6-1-high-clean",
+      "label": "Sol 6.1 · High · via T3 → Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-6.1-sol",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "codex-cli"
+      ],
+      "reasoningEffort": "high",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
+    },
+    {
+      "id": "t3-codex-luna-5-6-xhigh-clean",
+      "label": "Luna 5.6 · XHigh · via T3 → Codex CLI · clean",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "harness": "t3",
+      "harnessPath": [
+        "t3",
+        "codex-cli"
+      ],
+      "reasoningEffort": "xhigh",
+      "serviceTier": "default",
+      "personality": "none",
+      "capabilities": [
+        "files",
+        "shell"
+      ],
+      "executionProfile": {
+        "id": "t3-linux-host-clean-v1",
+        "label": "via T3 · scratch server · clean inner home",
+        "runtime": "linux-host",
+        "sandbox": "disabled",
+        "approvalPolicy": "full-access",
+        "nativeWeb": "not-enforced",
+        "networkPolicy": "not-enforced",
+        "filesystemBoundary": "not-a-secrecy-boundary",
+        "environment": "clean"
+      }
     }
   ]
 }
