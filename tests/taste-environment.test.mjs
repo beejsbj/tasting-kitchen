@@ -200,3 +200,69 @@ test("owner validation accepts a private Dish of a public Recipe only when its r
   assert.match(await keepPrivate("clean"), /Dish storage does not match Recipe visibility/);
   assert.match(await keepPrivate(undefined), /Dish storage does not match Recipe visibility/);
 });
+
+test("fill-missing counts a snapshot cell covered only by a Dish that saw his setup as it is now; Repeats need the same digest", async (t) => {
+  const { scratch } = await scratchCatalog(t);
+  const setupRoot = await mkdtemp(path.join(os.tmpdir(), "taste-fill-setup-"));
+  t.after(() => rm(setupRoot, { recursive: true, force: true }));
+  // A stand-in ~/.claude: the real one is never read here.
+  const home = path.join(setupRoot, "dot-claude");
+  const memory = path.join(setupRoot, "memory");
+  await mkdir(path.join(home, "skills", "tdd"), { recursive: true });
+  await mkdir(memory);
+  await writeFile(path.join(home, "CLAUDE.md"), "# Prime\n");
+  await writeFile(path.join(home, "skills", "tdd", "SKILL.md"), "Red, green.\n");
+  await writeFile(path.join(memory, "MEMORY.md"), "- one memory\n");
+  const env = { TASTE_CLAUDE_PERSONAL_HOME: home, TASTE_CLAUDE_MEMORY_SOURCE: memory, TASTE_CLAUDE_GLOBAL_CONFIG: path.join(setupRoot, "claude.json") };
+  const id = "claude-code-opus-5-5-high-snapshot";
+  const fill = () => cook(scratch, { config: id, configurationId: id, variantId: id, intent: "fill-missing", env });
+
+  const first = await fill();
+  assert.equal(first.mode, "dry-run");
+  assert.match(first.setupDigest, /^sha256:[a-f0-9]{64}$/);
+  assert.ok(first.planned.length > 0);
+  const [cell] = first.planned;
+  const writeDish = async (dishId, setupDigest) => {
+    const directory = path.join(scratch, "private/dishes", dishId);
+    await mkdir(directory, { recursive: true });
+    const dish = {
+      schemaVersion: 1, id: dishId, recipe: { id: cell.recipeId, version: "1.0.0", hash: cell.recipeHash }, visibility: "private",
+      executedAt: "2026-11-08T12:00:00.000Z", finalizedAt: "2026-11-08T12:01:00.000Z", status: "accepted",
+      identity: { variantId: id, configHash: first.plan.variant.configHash, ...(setupDigest ? { setupDigest } : {}) },
+    };
+    await writeFile(path.join(directory, "dish.json"), JSON.stringify(dish));
+  };
+
+  // A Dish of an older setup leaves the cell uncovered, as an edited brief would.
+  await writeDish("dish_older_setup", `sha256:${"0".repeat(64)}`);
+  assert.equal((await fill()).skipped.some((item) => item.recipeId === cell.recipeId), false);
+  // A Dish that saw today's setup covers it.
+  await writeDish("dish_current_setup", first.setupDigest);
+  const covered = await fill();
+  assert.ok(covered.skipped.some((item) => item.recipeId === cell.recipeId));
+  // His setup changes: the same Dish no longer covers the cell.
+  await writeFile(path.join(memory, "MEMORY.md"), "- one memory, revised\n");
+  const changed = await fill();
+  assert.notEqual(changed.setupDigest, first.setupDigest);
+  assert.equal(changed.skipped.some((item) => item.recipeId === cell.recipeId), false);
+});
+
+test("connections on cooks only with --allow-connections; a dry run says so and spends nothing", async (t) => {
+  const setupRoot = await mkdtemp(path.join(os.tmpdir(), "taste-connections-setup-"));
+  t.after(() => rm(setupRoot, { recursive: true, force: true }));
+  const env = { TASTE_CLAUDE_PERSONAL_HOME: path.join(setupRoot, "dot-claude"), TASTE_CLAUDE_MEMORY_SOURCE: path.join(setupRoot, "memory"), TASTE_CLAUDE_GLOBAL_CONFIG: path.join(setupRoot, "claude.json"), TASTE_ALLOW_MODEL_RUNS: "1" };
+  const id = "claude-code-opus-5-5-high-snapshot-connections";
+  const base = { config: id, configurationId: id, variantId: id, intent: "repeat", recipeIds: ["answer-one-exact-question"], env };
+  const dry = await cook(repoRoot, base);
+  assert.equal(dry.mode, "dry-run");
+  assert.equal(dry.connections, "on");
+  let ran = false;
+  const executePlan = async () => { ran = true; return { results: [], accepted: [], failed: [] }; };
+  await assert.rejects(cook(repoRoot, { ...base, execute: true, executePlan }), (error) => error.code === "INVALID_ARGUMENT" && /--allow-connections/.test(error.message));
+  assert.equal(ran, false, "refused before any model process");
+  // With the flag, the plan reaches the runner, which repeats the check itself.
+  let allowed;
+  // The stub stops before cook rebuilds the registry, so this test writes nothing into the checkout.
+  await assert.rejects(cook(repoRoot, { ...base, execute: true, allowConnections: true, executePlan: async (options) => { allowed = options.allowConnections; throw new Error("stop before the registry"); } }), /stop before the registry/);
+  assert.equal(allowed, true);
+});

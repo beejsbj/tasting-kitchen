@@ -19,6 +19,7 @@ import {
   verifyClaudeIdentity,
 } from "../lib/taste/claude-code.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
+import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -517,4 +518,34 @@ test("snapshot and live Claude Code Dishes land in private/dishes, a clean one i
   // Publishing a snapshot Dish is a deliberate choice.
   const published = await cook(claudeVariant("snapshot"), "published", { publishPersonal: true });
   assert.equal(path.relative(f.root, published.dishDirectory).split(path.sep)[0], "dishes");
+});
+
+test("a snapshot Claude Code attempt that failed at publication recovers privately with the digest it recorded, not today's setup", async (t) => {
+  const f = await runnerFixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const variant = claudeVariant("snapshot");
+  const cooked = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: f.env, now: new Date("2026-11-08T12:00:00.000Z"), nonce: "recover" });
+  assert.equal(cooked.status, "accepted", cooked.error);
+  const original = JSON.parse(await readFile(path.join(cooked.dishDirectory, "dish.json"), "utf8"));
+  // Turn the accepted attempt back into a publication failure, and change his setup in the meantime.
+  await rm(cooked.dishDirectory, { recursive: true });
+  const attemptDir = path.join(f.root, "private/runtime/attempts", cooked.attemptId);
+  await writeFile(path.join(attemptDir, "state.json"), JSON.stringify({ status: "failed", stage: "publication", message: "disk full", failedAt: "2026-11-08T12:01:00.000Z" }));
+  await writeFile(path.join(f.env.TASTE_CLAUDE_MEMORY_SOURCE, "light.md"), "Changed after the run.\n");
+  const recovered = await recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: cooked.attemptId, env: f.env });
+  assert.equal(recovered.status, "accepted");
+  assert.deepEqual(path.relative(f.root, recovered.dishDirectory).split(path.sep).slice(0, 2), ["private", "dishes"], "recovery keeps the unpublished choice");
+  const dish = JSON.parse(await readFile(path.join(recovered.dishDirectory, "dish.json"), "utf8"));
+  assert.equal(dish.identity.setupDigest, original.identity.setupDigest);
+  assert.equal(JSON.parse(await readFile(path.join(attemptDir, "recovery.json"), "utf8")).modelInvoked, false);
+
+  // A request whose setup record no longer matches its configuration does not recover.
+  const second = await executeRecipe({ repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant, executable: f.executable, env: f.env, now: new Date("2026-11-08T12:00:00.000Z"), nonce: "tampered" });
+  await rm(second.dishDirectory, { recursive: true });
+  const secondDir = path.join(f.root, "private/runtime/attempts", second.attemptId);
+  await writeFile(path.join(secondDir, "state.json"), JSON.stringify({ status: "failed", stage: "publication", message: "disk full" }));
+  const requested = JSON.parse(await readFile(path.join(secondDir, "requested.json"), "utf8"));
+  delete requested.setup.digest;
+  await writeFile(path.join(secondDir, "requested.json"), JSON.stringify(requested));
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: second.attemptId, env: f.env }), /SHA-256 setup digest/);
 });
