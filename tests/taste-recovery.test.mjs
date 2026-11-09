@@ -303,7 +303,7 @@ test("recovery refuses an unsafe or missing cook directory", async (t) => {
   await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "..", "escape") });
   await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /unsafe cook directory/);
   await json(requestedFile, { ...requested, cookDirectory: path.join(f.root, "gone", "0123456789abcdef") });
-  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /workspace is missing/);
+  await assert.rejects(recoverAttempt({ repoRoot: f.root, catalog: f.catalog, attemptId: ATTEMPT_ID }), /workspace is missing.*\/var\/tmp.*clean/s);
 });
 
 test("recovery records the attempted catalog hash, not the live catalog's", async (t) => {
