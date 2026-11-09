@@ -30,6 +30,7 @@ const recipe = { setup: { instructions: "Respond in this fresh conversation." },
 // home the scratch settings name.
 const FAKE_T3 = `#!/usr/bin/env node
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
 import path from "node:path";
 const args = process.argv.slice(2);
 if (args[0] === "--version") { console.log("t3 v0.1.6 (fake)"); process.exit(0); }
@@ -40,9 +41,9 @@ const log = (entry) => appendFileSync(process.env.FAKE_LOG, JSON.stringify(entry
 if (args[0] === "serve") {
   mkdirSync(path.dirname(runtime), { recursive: true });
   writeFileSync(runtime, JSON.stringify({ pid: process.pid }));
-  log({ cmd: "serve", args, browser: process.env.T3CODE_NO_BROWSER ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null });
+  log({ cmd: "serve", args, browser: process.env.T3CODE_NO_BROWSER ?? null, leaked: process.env.ANTHROPIC_API_KEY ?? null, telemetry: process.env.T3CODE_TELEMETRY_ENABLED ?? null, doNotTrack: process.env.DO_NOT_TRACK ?? null, sessionEnv: [process.env.CLAUDECODE, process.env.T3_MCP_BEARER_TOKEN, process.env.CLAUDE_CODE_MESSAGING_TOKEN].filter(Boolean) });
   process.on("SIGTERM", () => process.exit(0));
-  setInterval(() => {}, 1000);
+  createServer((request, response) => response.end("ok")).listen(Number(flag("--port")), "127.0.0.1");
 } else if (args[0] === "project") {
   process.exit(existsSync(runtime) ? 0 : 1);
 } else if (args[0] === "thread" && args[1] === "show") {
@@ -129,6 +130,8 @@ test("scratch settings enable one provider pinned to the tasted model and effort
   assert.equal(claude.enableAgentBrowserAccess, false);
   assert.equal(claude.linkedEnvironmentsEnabled, false);
   assert.equal(claude.defaultAutoPull, false);
+  assert.equal(claude.idleCompaction, "off", "no thread is compacted by a second model call");
+  assert.equal(claude.fallbackModelSelection, null);
   assert.ok(claude.providerInstances.claudeAgent.environment.some((variable) => variable.name === "CLAUDE_CODE_OAUTH_TOKEN" && variable.value === TOKEN && variable.sensitive));
   assert.equal(JSON.stringify(t3Settings({ variant: viaClaude, paths })).includes(TOKEN), false, "the evidence copy is redacted");
   const codex = t3Settings({ variant: viaCodex, paths });
@@ -156,7 +159,7 @@ test("T3 → Claude Code runs on a scratch server, keeps the refresh token out, 
   const userSettings = JSON.parse(await readFile(path.join(a.attemptDir, "claude-home", "settings.json"), "utf8"));
   assert.equal(userSettings.disableAllHooks, true);
   assert.deepEqual(userSettings.permissions.deny, ["WebFetch", "WebSearch"]);
-  const result = await runT3Session({ variant: viaClaude, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.t3, env: f.env });
+  const result = await runT3Session({ variant: viaClaude, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.t3, env: { ...f.env, CLAUDECODE: "1", T3_MCP_BEARER_TOKEN: "real-server-bearer", CLAUDE_CODE_MESSAGING_TOKEN: "operator-channel" } });
   assert.equal(result.failure, null, result.failure?.message);
   assert.equal(result.threadId, "thread-0001");
   assert.equal(result.cliVersion, "t3 v0.1.6 (fake) › 2.9.9 (Claude Code)");
@@ -168,6 +171,8 @@ test("T3 → Claude Code runs on a scratch server, keeps the refresh token out, 
   assert.equal(serve.args[serve.args.indexOf("--host") + 1], "127.0.0.1");
   assert.equal(serve.browser, "1");
   assert.equal(serve.leaked, null, "no inherited provider key reaches T3");
+  assert.equal(serve.telemetry, "false", "T3 reports nothing to its vendor");
+  assert.deepEqual(serve.sessionEnv, [], "the operator's own Claude Code and T3 session credentials never reach the scratch server");
   const [start, send] = calls.filter((call) => call.cmd !== "serve");
   assert.equal(start.cmd, "start");
   assert.equal(start.prompt, "Respond in this fresh conversation.\n\nRead the entry.");
@@ -214,6 +219,52 @@ test("T3 stops on a substituted model, a wrong Codex effort, or a failed run", a
   assert.match(failed.failure.message, /ended failed: provider exploded/);
   assert.equal(failed.turns.length, 1);
   await assert.rejects(access(path.join(c.attemptDir, "t3-home", "userdata", "settings.json")), /ENOENT/);
+});
+
+test("a multi-turn T3 → Codex run verifies: Codex appends every turn to one rollout", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "codex-two-turns");
+  await prepareT3Attempt({ variant: viaCodex, cwd: a.attemptDir, env: f.env });
+  const result = await runT3Session({ variant: viaCodex, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.t3, env: f.env });
+  assert.equal(result.failure, null, result.failure?.message);
+  const observed = await verifyT3Identity({ codexHome: a.codexHome, variant: viaCodex, cliVersion: result.cliVersion, result });
+  assert.equal(observed.verifiedBy, "codex-rollouts");
+  assert.equal(observed.innerSessions, 1);
+});
+
+test("if the Kitchen is killed mid-run, the T3 server stops and the token-bearing settings are deleted", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "killed");
+  const settings = path.join(a.attemptDir, "t3-home", "userdata", "settings.json");
+  await mkdir(path.dirname(settings), { recursive: true });
+  await writeFile(settings, JSON.stringify({ token: TOKEN }), "utf8");
+  await mkdir(path.join(path.dirname(settings), "secrets"), { recursive: true });
+  // A stand-in Kitchen: starts the scratch server, reports its port, then waits to be killed.
+  const kitchen = path.join(f.root, "kitchen.mjs");
+  const t3Module = new URL("../lib/taste/t3.mjs", import.meta.url).href;
+  await writeFile(kitchen, `import { startT3Server } from ${JSON.stringify(t3Module)};
+const server = await startT3Server({ executable: ${JSON.stringify(f.t3)}, t3Home: ${JSON.stringify(path.join(a.attemptDir, "t3-home"))}, workspace: ${JSON.stringify(a.workspace)}, env: { ...process.env, FAKE_LOG: ${JSON.stringify(path.join(f.root, "calls.jsonl"))} } });
+console.log(server.port);
+setInterval(() => {}, 1000);
+`, "utf8");
+  const { spawn } = await import("node:child_process");
+  const child = spawn(process.execPath, [kitchen], { stdio: ["ignore", "pipe", "inherit"] });
+  t.after(() => child.kill("SIGKILL"));
+  const port = await new Promise((resolve, reject) => {
+    child.stdout.once("data", (chunk) => resolve(Number(String(chunk).trim())));
+    child.once("exit", () => reject(new Error("the stand-in Kitchen exited early")));
+  });
+  const { pid } = JSON.parse(await readFile(path.join(a.attemptDir, "t3-home", "userdata", "server-runtime.json"), "utf8"));
+  assert.equal(process.kill(pid, 0), true, "the server is up");
+  assert.ok((await fetch(`http://127.0.0.1:${port}/`)).ok);
+  child.kill("SIGKILL");
+  const deadline = Date.now() + 20_000;
+  const alive = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
+  while (Date.now() < deadline && alive()) await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.equal(alive(), false, "the orphaned server was stopped");
+  while (Date.now() < deadline && (await access(settings).then(() => true, () => false))) await new Promise((resolve) => setTimeout(resolve, 100));
+  await assert.rejects(access(settings), /ENOENT/, "the token-bearing settings were deleted");
+  await assert.rejects(access(path.join(path.dirname(settings), "secrets")), /ENOENT/);
 });
 
 test("a T3 → Claude Code Dish publishes through the runner with its harness path frozen", async (t) => {
