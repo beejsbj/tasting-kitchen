@@ -701,6 +701,7 @@ async function validateSidecars(relative, dish, dishDirectory, recipeRecord) {
         fail(relative, "identity service tier does not match the requested tier");
       }
       validateSetupReceipt(receipt, configuration, dish, relative, receiptRelative);
+      validateIsolationReceipt(receipt, configuration, receiptRelative);
     }
     if (receipt && (dish.skill || receipt.skill != null)) {
       try {
@@ -738,6 +739,24 @@ function validateSetupReceipt(receipt, configuration, dish, relative, receiptRel
   if (!PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, "only a snapshot or live Dish records a setup");
   for (const key of ["environment", "harnessProfile", "memory", "connections"]) {
     if (receipt.setup[key] !== configuration.executionProfile?.[key]) fail(receiptRelative, `setup.${key} does not match the recorded configuration`);
+  }
+}
+
+// A clean Dish may carry its harness's own proof that it loaded nothing from outside the cook directory:
+// which record proved it, and the bundled names it found. Older clean Dishes have none.
+const ISOLATION_EVIDENCE = { "codex-cli": "codex-rollout", "claude-code": "claude-code-init" };
+function validateIsolationReceipt(receipt, configuration, receiptRelative) {
+  if (receipt.isolation === undefined) return;
+  const label = `${receiptRelative}.isolation`;
+  if (!object(receipt.isolation, label)) return;
+  onlyKeys(receipt.isolation, new Set(["evidence", "skills", "agents", "plugins"]), label);
+  if (configuration.executionProfile?.environment !== "clean") fail(receiptRelative, "only a clean Dish records isolation");
+  const evidence = ISOLATION_EVIDENCE[configuration.harness];
+  if (receipt.isolation.evidence !== evidence) fail(label, evidence ? `evidence must be ${evidence} for ${configuration.harness}` : `${configuration.harness} records no isolation`);
+  const lists = configuration.harness === "claude-code" ? ["skills", "agents", "plugins"] : ["skills"];
+  for (const key of ["agents", "plugins"]) if (!lists.includes(key) && key in receipt.isolation) fail(label, `${configuration.harness} records no ${key}`);
+  for (const key of lists) {
+    if (array(receipt.isolation[key], `${label}.${key}`)) for (const name of receipt.isolation[key]) string(name, `${label}.${key}[]`, { max: 200 });
   }
 }
 

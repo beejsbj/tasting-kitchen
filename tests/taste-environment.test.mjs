@@ -202,6 +202,32 @@ test("owner validation accepts a private Dish of a public Recipe only when its r
   assert.match(await keepPrivate(undefined), /Dish storage does not match Recipe visibility/);
 });
 
+test("validate-catalog accepts a clean Dish's isolation proof only in its harness's own shape", async (t) => {
+  const { scratch, validate } = await scratchCatalog(t);
+  const [dishId] = (await readdir(path.join(scratch, "dishes"))).filter((id) => id.includes("codex"));
+  const directory = path.join(scratch, "dishes", dishId);
+  const pristine = await readFile(path.join(directory, "receipt.json"), "utf8");
+  const withIsolation = async (isolation, environment = "clean") => {
+    const receipt = JSON.parse(pristine);
+    assert.equal(receipt.configuration.harness, "codex-cli");
+    if (environment) receipt.configuration.executionProfile.environment = environment;
+    receipt.configuration.configHash = computeConfigHash(receipt.configuration);
+    receipt.isolation = isolation;
+    await writeFile(path.join(directory, "receipt.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+    const dish = JSON.parse(await readFile(path.join(directory, "dish.json"), "utf8"));
+    delete dish.dishHash;
+    dish.identity.configHash = receipt.configuration.configHash;
+    await writeFile(path.join(directory, "dish.json"), `${JSON.stringify({ ...dish, dishHash: hashCanonical(dish) }, null, 2)}\n`);
+    return validate("--public-checkout");
+  };
+  assert.doesNotMatch(await withIsolation({ evidence: "codex-rollout", skills: ["imagegen"] }), /isolation/);
+  assert.match(await withIsolation({ evidence: "claude-code-init", skills: [] }), /evidence must be codex-rollout for codex-cli/);
+  assert.match(await withIsolation({ evidence: "codex-rollout", skills: ["imagegen"], agents: [] }), /codex-cli records no agents/);
+  assert.match(await withIsolation({ evidence: "codex-rollout", skills: [7] }), /isolation\.skills\[\]/);
+  assert.match(await withIsolation({ evidence: "codex-rollout", skills: [], paths: ["/home/someone"] }), /unknown key paths/);
+  assert.match(await withIsolation({ evidence: "codex-rollout", skills: [] }, null), /only a clean Dish records isolation/);
+});
+
 test("fill-missing counts a snapshot cell covered only by a Dish that saw his setup as it is now; Repeats need the same digest", async (t) => {
   const { scratch } = await scratchCatalog(t);
   const setupRoot = await mkdtemp(path.join(os.tmpdir(), "taste-fill-setup-"));
