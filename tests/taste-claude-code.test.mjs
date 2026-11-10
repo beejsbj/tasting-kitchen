@@ -220,6 +220,7 @@ test("Claude Code tool use becomes public trace actions: kinds, statuses and wor
     use("b", "Bash", { command: `rm -rf ${workspace}` }), done("b", true),
     use("c", "Read", { file_path: "/home/someone/.claude/CLAUDE.md" }), done("c"),
     use("d", "Grep", { pattern: "x", path: "src" }),
+    use("g", "Glob", { pattern: "*", path: "~/.claude/skills" }),
     use("e", "mcp__tududi__create_task", { name: "private task" }), done("e", false),
     use("f", "Edit", { file_path: `${workspace}/../escape.txt` }, "toolu_parent"),
   ], [workspace]);
@@ -231,11 +232,13 @@ test("Claude Code tool use becomes public trace actions: kinds, statuses and wor
     { event: "item.started", type: "tool_call", tool: "Read" },
     { event: "item.completed", type: "tool_call", tool: "Read", status: "completed" },
     { event: "item.started", type: "tool_call", tool: "Grep", path: "src" },
+    { event: "item.started", type: "tool_call", tool: "Glob" },
     { event: "item.started", type: "mcp_tool_call" },
     { event: "item.completed", type: "mcp_tool_call", status: "completed" },
     { event: "item.started", type: "file_change", tool: "Edit" },
   ]);
   assert.equal(JSON.stringify(actions).includes("someone"), false);
+  assert.equal(JSON.stringify(actions).includes(".claude"), false);
   // Codex item events keep their existing mapping.
   assert.deepEqual(publicActions([{ type: "item.completed", item: { type: "command_execution", status: "completed", exit_code: 0, command: "ls" } }], [workspace]), [{ event: "item.completed", type: "command_execution", status: "completed", exitCode: 0 }]);
 });
