@@ -5,11 +5,14 @@ import process from "node:process";
 import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
 import { PERSONAL_ENVIRONMENTS } from "../lib/taste/environments.mjs";
 import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adapters.mjs";
-import { materializedProblems } from "../lib/taste/configuration-templates.mjs";
+import { HERMES_EFFORTS } from "../lib/taste/hermes.mjs";
+import { isConfigurationSpec, materializedProblems, parseConfigurationSpec, templateFor } from "../lib/taste/configuration-templates.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
 import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
+import { BUDGET_KEYS, BUDGET_LIMITS, recipeBudget } from "../lib/taste/budget.mjs";
+import { loadToolchains, toolchainPinFindings } from "../lib/taste/toolchains.mjs";
 import { CHEF_FAULTS } from "../lib/taste/faults.mjs";
 import { loadNoDishes, loadPrivateNoDishes } from "../lib/taste/no-dishes.mjs";
 import { JUDGE_RANK, loadPrivateVerdicts, loadVerdicts, VERDICT_VALUES } from "../lib/taste/verdicts.mjs";
@@ -64,7 +67,7 @@ const publicLeakPatterns = [
   { name: "numerical ranking language", pattern: /\b(?:leaderboards?|ratings?|rankings?|scoring|scores?)\b/i }
 ];
 
-const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "variation", "supersedes"]);
+const RECIPE_KEYS = new Set(["schemaVersion", "id", "version", "status", "visibility", "title", "summary", "cuisines", "origin", "originNote", "tags", "kind", "harness", "setup", "turns", "output", "validation", "presentation", "skills", "toolchain", "variation", "supersedes", "budget"]);
 const SKILLS_CONTRACT_KEYS = new Set(["mountAs", "optional", "layers"]);
 const SKILL_KEYS = new Set(["id", "label", "summary", "entry", "source", "delivery"]);
 const allowedSkillDeliveries = new Set(["workspace", "prompt"]);
@@ -423,6 +426,9 @@ async function validateRecipe(relative, cuisines, tags, skills) {
       string(recipe.presentation.semanticRuntime.version, `${relative}.presentation.semanticRuntime.version`);
     } else if (recipe.presentation.semanticRuntime !== null) fail(`${relative}.presentation.semanticRuntime`, "must be null or an object");
   }
+
+  // The same rules the runner applies before a Cook: whole seconds and model turns, within bounds.
+  try { recipeBudget(recipe); } catch (error) { fail(`${relative}.budget`, error.message); }
 
   const expectedId = path.basename(path.dirname(relative));
   if (recipe.id !== expectedId) fail(relative, `id must match recipe directory ${expectedId}`);
@@ -932,6 +938,16 @@ if (noDishSchema?.properties?.fault?.properties?.code?.enum?.join("\0") !== Obje
 if (verdictSchema?.properties?.verdict?.enum?.join("\0") !== VERDICT_VALUES.join("\0") || verdictSchema?.properties?.judge?.properties?.kind?.enum?.join("\0") !== Object.keys(JUDGE_RANK).join("\0")) {
   fail("catalog/verdict.schema.json", "verdict or judge enum disagrees with runtime validator");
 }
+{
+  const budgetSchema = recipeSchema?.properties?.budget?.properties ?? {};
+  if (Object.keys(budgetSchema).join("\0") !== BUDGET_KEYS.join("\0") || BUDGET_KEYS.some((key) => budgetSchema[key]?.minimum !== BUDGET_LIMITS[key].minimum || budgetSchema[key]?.maximum !== BUDGET_LIMITS[key].maximum)) {
+    fail("catalog/recipe.schema.json", "budget keys or bounds disagree with runtime validator");
+  }
+  const spentSchema = noDishSchema?.properties?.fault?.properties?.budget?.properties ?? {};
+  if (Object.keys(spentSchema).join("\0") !== BUDGET_KEYS.join("\0") || BUDGET_KEYS.some((key) => spentSchema[key]?.minimum !== BUDGET_LIMITS[key].minimum || spentSchema[key]?.maximum !== BUDGET_LIMITS[key].maximum)) {
+    fail("catalog/no-dish.schema.json", "fault.budget keys or bounds disagree with runtime validator");
+  }
+}
 if (recipeSchema?.properties?.harness?.properties?.capabilities?.items?.enum?.join("\0") !== [...allowedCapabilities].join("\0")) {
   fail("catalog/recipe.schema.json", "capability enum disagrees with runtime validator");
 }
@@ -946,8 +962,10 @@ if (reviewSchema?.properties?.reviewerKind?.enum?.join("\0") !== [...allowedRevi
 }
 
 // A Menu is a plain list of recipe ids; nothing else checks them before they reach coverage and the registry.
-const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes"]);
-async function validateMenus(recipeRecords, cuisines) {
+// It may also declare the configurations it is cooked with: catalog ids, or specs and selectors whose template exists.
+// Checking a spec reads no network: discovery runs at plan time, not here.
+const MENU_KEYS = new Set(["schemaVersion", "id", "title", "summary", "cuisines", "recipes", "configurations"]);
+async function validateMenus(recipeRecords, cuisines, variants) {
   let entries = [];
   try { entries = await readdir(path.join(root, "catalog/menus"), { withFileTypes: true }); }
   catch (error) { if (error.code !== "ENOENT") throw error; }
@@ -973,6 +991,22 @@ async function validateMenus(recipeRecords, cuisines) {
       unique(menu.recipes, `${relative}.recipes`);
       for (const recipeId of menu.recipes) if (!recipeRecords.has(recipeId)) fail(relative, `unknown recipe ${recipeId}`);
     }
+    if (menu.configurations !== undefined && array(menu.configurations, `${relative}.configurations`, { min: 1 })) {
+      unique(menu.configurations, `${relative}.configurations`);
+      menu.configurations.forEach((entry, index) => {
+        if (typeof entry !== "string") return fail(relative, `configurations[${index}] must be a string`);
+        if (!isConfigurationSpec(entry)) {
+          if (!variants.has(entry)) fail(relative, `unknown configuration ${entry}`);
+          return;
+        }
+        try {
+          const spec = parseConfigurationSpec(entry);
+          templateFor(spec);
+          if (spec.effort !== "auto" && !HERMES_EFFORTS.includes(spec.effort)) throw new Error(`effort ${spec.effort} is not a Hermes effort (${HERMES_EFFORTS.join(", ")}) or auto`);
+        }
+        catch (error) { fail(relative, `configurations[${index}]: ${error.message}`); }
+      });
+    }
   }
 }
 
@@ -994,7 +1028,18 @@ for (const relative of recipeFiles.sort()) {
   recipeRecords.set(record.recipe.id, record);
 }
 
-await validateMenus(recipeRecords, cuisines);
+await validateMenus(recipeRecords, cuisines, variants);
+
+// A Recipe on a pinned toolchain must name a known toolchain and carry its current pin.
+const toolchains = await loadToolchains(root);
+const toolchainRecipes = [...recipeRecords.values()].filter((record) => record.recipe.toolchain !== undefined);
+for (const { recipe, relative } of toolchainRecipes) {
+  if (!object(recipe.toolchain, `${relative}.toolchain`)) continue;
+  onlyKeys(recipe.toolchain, new Set(["id", "engineMount"]), `${relative}.toolchain`);
+  string(recipe.toolchain.id, `${relative}.toolchain.id`, { pattern: IDS });
+  if (recipe.toolchain.engineMount !== undefined) safeRelative(recipe.toolchain.engineMount, `${relative}.toolchain.engineMount`);
+}
+for (const finding of await toolchainPinFindings(root, toolchainRecipes.map(({ recipe, relative }) => ({ ...recipe, sourcePath: relative })), toolchains)) fail("toolchains", finding);
 
 if (!publicCheckout) await validateProvenance(recipeRecords);
 

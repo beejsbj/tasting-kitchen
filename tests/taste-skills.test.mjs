@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -9,7 +9,8 @@ import { cook } from "../lib/taste/index.mjs";
 import { buildRegistry, loadDishes, loadPrivateDishes } from "../lib/taste/registry.mjs";
 import { readDishSidecars, verifyInputs } from "../lib/taste/receipts.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
-import { computeSkillHash, loadSkills, skillCompatibility } from "../lib/taste/skills.mjs";
+import { runChecks } from "../lib/taste/checks.mjs";
+import { applySkillToRecipe, computeSkillHash, loadSkills, removeSkillFromRecipe, skillCompatibility } from "../lib/taste/skills.mjs";
 
 async function json(filename, value) {
   await mkdir(path.dirname(filename), { recursive: true });
@@ -307,6 +308,10 @@ test("a prompt-delivered skill rides inside the first turn, mounts nothing, and 
   assert.equal(dish.recipe.hash, catalog.recipes.find((recipe) => recipe.id === "quiet-talk").recipeHash);
   const trace = JSON.parse(await readFile(path.join(result.dishDirectory, "trace.json"), "utf8"));
   assert.match(trace.turns[0].prompt, /Say less/);
+  // The session artifact keeps the Recipe's own prompt and names the layer; the trace shows what the model saw.
+  const artifact = JSON.parse(await readFile(path.join(result.dishDirectory, "artifact/output/session.json"), "utf8"));
+  assert.equal(artifact.turns[0].prompt, "Read the brief; use skill/SKILL.md when mounted.\n\nMake the film.");
+  assert.deepEqual(artifact.skill, { id: "quiet-soul", hash: soul.skillHash });
   const requested = JSON.parse(await readFile(path.join(f.root, "private/runtime/attempts", result.attemptId, "requested.json"), "utf8"));
   assert.equal(requested.skill.delivery, "prompt");
   assert.equal("mountAs" in requested.skill, false);
@@ -315,6 +320,73 @@ test("a prompt-delivered skill rides inside the first turn, mounts nothing, and 
     runSession: async ({ recipe, workspace }) => { assert.equal(recipe.turns[0].content, "Make the film."); await json(path.join(workspace, "output/session.json"), { ok: true }); return session(); },
   }));
   assert.equal(bare.status, "accepted", bare.error);
+});
+
+test("removing a prompt layer returns the recipe's own turns and refuses a recipe that does not carry it", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const catalog = await loadCatalog(f.root);
+  const soul = catalog.skills.find((skill) => skill.id === "quiet-soul");
+  const recipe = catalog.recipes.find((item) => item.id === "quiet-talk");
+  assert.deepEqual(removeSkillFromRecipe(applySkillToRecipe(recipe, soul), soul).turns, recipe.turns);
+  assert.throws(() => removeSkillFromRecipe(recipe, soul), /does not carry the quiet-soul prompt layer/);
+  const workspaceSkill = catalog.skills.find((skill) => skill.id === "hand-drawn");
+  assert.equal(removeSkillFromRecipe(recipe, workspaceSkill), recipe);
+});
+
+test("the short journal Recipe wears each of its souls, passes its own exact-prompt check, and keeps its hash", async (t) => {
+  const repo = path.resolve(import.meta.dirname, "..");
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-journal-souls-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const recipeDirectory = "catalog/recipes/conversation-journaling/respond-to-short-journal";
+  const real = JSON.parse(await readFile(path.join(repo, recipeDirectory, "recipe.json"), "utf8"));
+  const allSkills = JSON.parse(await readFile(path.join(repo, "catalog/skills.json"), "utf8")).skills;
+  for (const relative of ["catalog/cuisines.json", "catalog/tags.json", recipeDirectory, ...real.skills.layers.map((id) => `catalog/skills/${id}`)]) {
+    await cp(path.join(repo, relative), path.join(root, relative), { recursive: true });
+  }
+  await json(path.join(root, "catalog/configurations.json"), { schemaVersion: 1, configurations: [configuration] });
+  await json(path.join(root, "catalog/skills.json"), { schemaVersion: 1, skills: allSkills.filter((skill) => real.skills.layers.includes(skill.id)) });
+  const authPath = path.join(root, "source-auth.json");
+  await writeFile(authPath, "{}\n", { mode: 0o600 });
+  const catalog = await loadCatalog(root);
+  const recipe = catalog.recipes.find((item) => item.id === "respond-to-short-journal");
+  const { skills, ...withoutLayers } = real;
+  assert.equal(recipe.recipeHash, computeRecipeHash(withoutLayers), "declaring layers at the default mount keeps the recipe hash");
+  assert.deepEqual(skills.layers, ["prime-orientation", "friedrich-niche", "journal-prompter"]);
+  const ownPrompt = `${real.setup.instructions}\n\n${real.turns[0].content}`;
+  for (const id of [null, ...real.skills.layers]) {
+    const soul = id && catalog.skills.find((skill) => skill.id === id);
+    if (soul) {
+      assert.equal(soul.delivery, "prompt");
+      assert.deepEqual(skillCompatibility(recipe, soul), []);
+    }
+    let seen;
+    const result = await executeRecipe(runOptions({ root, authPath }, catalog, "respond-to-short-journal", {
+      ...(soul ? { skill: soul } : {}), nonce: id ?? "bare",
+      runSession: async ({ recipe: given }) => {
+        seen = given.turns[0].content;
+        return { ...session(), turns: [{ finalMessage: "A complete response.", usage: { input_tokens: 1, output_tokens: 1 }, events: [] }] };
+      },
+    }));
+    assert.equal(result.status, "accepted", result.error);
+    if (soul) {
+      assert.ok(seen.startsWith("A skill layer is supplied with this task."));
+      assert.ok(seen.includes(soul.promptText.trim()));
+    }
+    assert.ok(seen.endsWith(real.turns[0].content));
+    const dish = JSON.parse(await readFile(path.join(result.dishDirectory, "dish.json"), "utf8"));
+    assert.equal(dish.recipe.hash, recipe.recipeHash);
+    assert.deepEqual(dish.skill ?? null, soul ? { id: soul.id, hash: soul.skillHash } : null);
+    assert.equal(JSON.parse(await readFile(path.join(result.dishDirectory, "validation.json"), "utf8")).passed, true);
+    const artifact = JSON.parse(await readFile(path.join(result.dishDirectory, "artifact/output/session.json"), "utf8"));
+    assert.equal(artifact.turns[0].prompt, ownPrompt);
+    const trace = JSON.parse(await readFile(path.join(result.dishDirectory, "trace.json"), "utf8"));
+    assert.equal(trace.turns[0].prompt, soul ? `${real.setup.instructions}\n\n${seen}` : ownPrompt);
+  }
+  // Without the Kitchen keeping the Recipe's own prompt in the artifact, the exact-prompt check would fail a layered Cook.
+  const workspace = path.join(root, "layered-check");
+  await json(path.join(workspace, "output/session.json"), { schemaVersion: 1, recipeId: real.id, turns: [{ id: "respond", prompt: `${real.setup.instructions}\n\n${applySkillToRecipe(recipe, catalog.skills[0]).turns[0].content}`, response: "A complete response." }] });
+  assert.equal((await runChecks(recipe, workspace)).passed, false);
 });
 
 test("skill identity binds delivery and entry while normalizing implicit workspace delivery", () => {

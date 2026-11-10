@@ -64,6 +64,22 @@
         "mediaType": "text/javascript"
       },
       {
+        "id": "audio-check",
+        "path": "validation/audio-identity.mjs",
+        "mountAs": "validation/audio-identity.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
         "id": "excerpt",
         "path": "excerpt.wav",
         "mountAs": "inputs/excerpt.wav",
@@ -87,6 +103,10 @@
     "layers": [
       "lyric-music-video"
     ]
+  },
+  "toolchain": {
+    "id": "film-v1",
+    "engineMount": "engine"
   },
   "turns": [
     {
@@ -123,6 +143,16 @@
         "argv": [
           "node",
           "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "audio-identity",
+        "type": "command",
+        "required": true,
+        "description": "Kitchen-side audio identity: the film's decoded soundtrack must match the supplied excerpt PCM within 20 ms, with every audible half-second correlated and nothing added, stretched or replaced. A uniform level trim is reported, not failed.",
+        "argv": [
+          "node",
+          "validation/audio-identity.mjs"
         ]
       },
       {

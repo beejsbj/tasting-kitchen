@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { buildCursorTurnArgs, parseCursorJsonl, runCursorSession, verifyCursorIdentity } from "../lib/taste/cursor.mjs";
 
 const SESSION_ID = "28d38cf9-c737-4662-a2b6-0b1105f755b6";
@@ -114,4 +115,23 @@ console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false
   assert.match(wrongLast.failure.message, /model mismatch/);
   assert.equal(wrongLast.turns.length, 2);
   await assert.rejects(verifyCursorIdentity({ variant, result: wrongLast, cliVersion: wrongLast.cliVersion }), /failed turn/);
+});
+
+test("the Recipe's time budget stops a hung Cursor turn; without identity evidence it names no chef fault", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-cursor-budget-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const workspace = path.join(root, "workspace");
+  await mkdir(workspace);
+  const executable = path.join(root, "fake-cursor.mjs");
+  await writeFile(executable, `#!/usr/bin/env node
+if (process.argv[2] === "--version") { console.log("2026.08.25-fake"); process.exit(0); }
+console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "${SESSION_ID}", model: "Composer 2.5" }));
+await new Promise(() => setInterval(() => {}, 1000));
+`, "utf8");
+  await chmod(executable, 0o755);
+  const clock = startBudgetClock({ seconds: 0.5 });
+  const result = await runCursorSession({ variant, recipe: { setup: { instructions: "Set the table." }, turns: [{ id: "make", content: "Cook" }] }, workspace, privateDir: path.join(root, "raw"), executable, env: {}, clock });
+  clock.stop();
+  assert.match(result.failure.message, /stopped by the Recipe's time budget/);
+  assert.equal(result.failure.chefFault, undefined);
 });

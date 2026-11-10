@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { computeRecipeHash } from "../lib/taste/catalog.mjs";
 import { resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
@@ -70,6 +71,7 @@ if (args[0] === "serve") {
     appendFileSync(path.join(dir, "rollout-" + threadId + ".jsonl"), JSON.stringify({ type: "turn_context", payload: { model: served, effort } }) + "\\n");
     log({ cmd: args[1], args, prompt, selection, home: instance.config.homePath });
   }
+  if (process.env.FAKE_HANG) await new Promise(() => setInterval(() => {}, 1000));
   if (process.env.FAKE_FAIL) { console.log(JSON.stringify({ threadId, runId: "run-1", status: "failed", reply: null, error: "provider exploded" })); process.exit(1); }
   console.log(JSON.stringify({ threadId, runId: "run-" + args[1], status: "completed", reply: "reply to: " + prompt, error: null }));
 }
@@ -331,4 +333,22 @@ test("a T3 → Claude Code Dish publishes through the runner with its harness pa
   assert.equal(requested.execution.gitBoundary, "cook-directory-outside-repo");
   const receipt = JSON.parse(await readFile(path.join(run.dishDirectory, "receipt.json"), "utf8"));
   assert.deepEqual(receipt.configuration.harnessPath, ["t3", "claude-code"]);
+});
+
+test("T3's own turn timeout is a named harness limit; with a declared time budget, the budget is the limit and stops the turn", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "own-limit");
+  await prepareT3Attempt({ variant: viaClaude, cwd: a.attemptDir, env: f.env });
+  const own = await runT3Session({ variant: viaClaude, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.t3, env: { ...f.env, FAKE_HANG: "1", TASTE_T3_TURN_TIMEOUT_MS: "300" } });
+  assert.equal(own.failure.kitchenFault, "harness-limit");
+  assert.equal(own.failure.limit, "T3 turn timeout (300 ms)");
+
+  const b = await attempt(f.root, "budget");
+  await prepareT3Attempt({ variant: viaClaude, cwd: b.attemptDir, env: f.env });
+  const clock = startBudgetClock({ seconds: 0.6 });
+  const budgeted = await runT3Session({ variant: viaClaude, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.t3, env: { ...f.env, FAKE_HANG: "1", TASTE_T3_TURN_TIMEOUT_MS: "300" }, budget: { seconds: 600 }, clock });
+  clock.stop();
+  assert.equal(budgeted.failure.kitchenFault, undefined, "Kitchen's 300 ms timeout did not fire first");
+  assert.equal(budgeted.failure.chefFault, undefined, "T3 gives no evidence yet that the requested model was serving");
+  assert.match(budgeted.failure.message, /time budget/);
 });

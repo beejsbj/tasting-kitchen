@@ -60,6 +60,45 @@
         "path": "skills/lyric-music-video",
         "license": "MIT"
       }
+    },
+    {
+      "id": "prime-orientation",
+      "label": "Prime orientation",
+      "summary": "Burooj’s own working soul: a warm, honest friend who witnesses accurately, follows the concern beneath the words and hands the verdict back.",
+      "entry": "orientation.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/beejsbj/skills",
+        "commit": "b52c7c12d55beb479244ac541998c0cb5c5f8f07",
+        "path": "souls/prime/source/orientation.md",
+        "license": "None stated (owner-authored)"
+      }
+    },
+    {
+      "id": "friedrich-niche",
+      "label": "Friedrich Niche",
+      "summary": "A Nietzsche-inspired provocateur: genealogy of values, amor fati and becoming as a direction; offers clarity instead of comfort.",
+      "entry": "SOUL.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/reisierx/famous-souls",
+        "commit": "39ba8d9bbd751a640b98f25ad5fbd34dba522296",
+        "path": "souls/friedrich-niche/SOUL.md",
+        "license": "MIT"
+      }
+    },
+    {
+      "id": "journal-prompter",
+      "label": "Journal Prompter",
+      "summary": "A widely copied public journaling persona: non-judgmental, never advises, answers in structured reflective prompts.",
+      "entry": "SOUL.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/mergisi/awesome-openclaw-agents",
+        "commit": "c10525fc2d27b7771eee63b7c22e21ca1a58adfd",
+        "path": "agents/personal/journal-prompter/SOUL.md",
+        "license": "MIT"
+      }
     }
   ]
 }
