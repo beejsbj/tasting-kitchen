@@ -649,6 +649,12 @@ test("a clean Claude Code attempt recovers by re-proving its isolation from the 
   const attemptDir = path.join(f.root, "private/runtime/attempts", cooked.attemptId);
   assert.deepEqual(JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8")).isolation, receipt.isolation);
 
+  // The usual case: the configuration is still in the catalog. Its recorded `memory: "off"` describes the Run; it is not a toggle.
+  const { configHash: _hash, ...listedConfiguration } = variant;
+  const inCatalog = { ...f.catalog, configurations: [listedConfiguration] };
+  const listed = await blocked("listed");
+  assert.equal((await recoverAttempt({ repoRoot: f.root, catalog: inCatalog, attemptId: listed.attemptId, env: f.env })).status, "accepted");
+
   // A recorded init that lists one of his skills cannot be republished as clean.
   const tampered = await blocked("tampered");
   const tamperedDir = path.join(f.root, "private/runtime/attempts", tampered.attemptId);
