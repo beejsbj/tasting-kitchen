@@ -31,11 +31,13 @@ function setupReceiptLine(setup: NonNullable<NonNullable<Dish['receipt']>['setup
   if (setup.environment === 'live') return liveSetupLine(config, setup, shortHash);
   return `copy ${shortHash(digest ?? setup.digest ?? '')}${setup.entries?.length ? ` · ${setup.entries.map((entry) => entry.entry).join(', ')}` : ''}`;
 }
-/** "checked in Claude Code's init · bundled only: 4 agents, 2 skills, no plugins" for a clean Dish that proved its isolation. */
+/** What a clean Dish's harness record showed, claiming no more than that record can: "Claude Code's init listed bundled items only · 4 agents, 2 skills, no plugins". */
 function isolationReceiptLine(isolation: NonNullable<NonNullable<Dish['receipt']>['isolation']>) {
   const count = (items: string[], noun: string) => items.length ? `${items.length} ${noun}${items.length === 1 ? '' : 's'}` : `no ${noun}s`;
   const found = [isolation.agents && count(isolation.agents, 'agent'), count(isolation.skills, 'skill'), isolation.plugins && count(isolation.plugins, 'plugin')].filter(Boolean).join(', ');
-  return `checked in ${isolation.evidence === 'codex-rollout' ? "Codex's rollout" : "Claude Code's init"} · nothing from outside the cook directory · bundled only: ${found}`;
+  return isolation.evidence === 'codex-rollout'
+    ? `Codex's rollout: skills, AGENTS.md and working directory inside the cook directory · ${found}`
+    : `Claude Code's init listed bundled plugins, agents and skills only · ${found}`;
 }
 function useUrlState() {
   const [state, setState] = useState<GalleryState>(() => readGalleryState());

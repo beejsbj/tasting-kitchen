@@ -304,11 +304,14 @@ system skills still load in `clean`: they ship with the harness.
 A clean Codex Run proves that from its own rollout. Every skill root and skill
 file in the injected skill index, every `# AGENTS.md instructions for` block and
 every recorded working directory must lie inside the cook directory, and any
-AGENTS.md text (or legacy `<user_instructions>`) needs an `AGENTS.md` or
-`AGENTS.override.md` there to account for it, because Codex files his global
+AGENTS.md text (or legacy `<user_instructions>`) must consist of the text of an
+`AGENTS.md` or `AGENTS.override.md` there, because Codex files his global
 instructions under the working directory's heading. Anything else fails
-verification as a Kitchen fault. `observed.json` records the verdict (skill
-names, root and instruction counts); the Dish receipt shows the skill names.
+verification as the private Kitchen fault `isolation`. Inside the attempt's own
+Codex home only `skills/` (its bundled system skills) counts, so a plugin synced
+from his account into the fresh home still fails, and a skill index Kitchen
+cannot read fails rather than passing empty. `observed.json` records the verdict (skill names,
+root and instruction counts); the Dish receipt shows the skill names.
 Codex fast-to-priority recovery is a Codex-only historical alias path.
 
 Cursor authentication preflight uses `status --format json` with a ten-second
@@ -399,6 +402,12 @@ own `plugin:skill` names count as bundled). A CLI update that adds a bundled ite
 fails clean verification until the list is reviewed; that is the tripwire. The
 verdict, with the names it found, is recorded in `observed.json` and the Dish
 receipt.
+
+The proof is only as wide as the init event. It does not list skills marked
+`user-invocable: false`, it merges a skill that shares a bundled name (his own
+`code-review`, say) into the bundled one, and it reports nothing about
+`CLAUDE.md`, hooks or settings. Those rest on safe mode and the empty attempt
+home, so the receipt says what the init listed, not that nothing else loaded.
 
 `snapshot` copies a bounded slice of `~/.claude` into the fresh attempt home
 and records the digest of exactly those bytes:
