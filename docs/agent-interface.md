@@ -300,6 +300,18 @@ profile (`codex-linux-host-clean-v1`) also gives the child a fresh, empty
 (`codex-linux-host-unsandboxed-v1`) keeps the real `HOME` and declares no
 environment, so its configurations keep their hashes. Codex's own bundled
 system skills still load in `clean`: they ship with the harness.
+
+A clean Codex Run proves that from its own rollout. Every skill root and skill
+file in the injected skill index, every `# AGENTS.md instructions for` block and
+every recorded working directory must lie inside the cook directory, and any
+AGENTS.md text (or legacy `<user_instructions>`) must consist of the text of an
+`AGENTS.md` or `AGENTS.override.md` there, because Codex files his global
+instructions under the working directory's heading. Anything else fails
+verification as the private Kitchen fault `isolation`. Inside the attempt's own
+Codex home only `skills/` (its bundled system skills) counts, so a plugin synced
+from his account into the fresh home still fails, and a skill index Kitchen
+cannot read fails rather than passing empty. `observed.json` records the verdict (skill names,
+root and instruction counts); the Dish receipt shows the skill names.
 Codex fast-to-priority recovery is a Codex-only historical alias path.
 
 Cursor authentication preflight uses `status --format json` with a ten-second
@@ -383,6 +395,20 @@ auto-memory and claude.ai connectors, and pins an empty MCP config under
 plugins and bundled skill list still load: they ship with the harness. The Skill
 tool is not offered, so bundled skills cannot be invoked.
 
+A clean session proves that from its own `system/init` event: every plugin must
+be built in (`source` ending `@builtin`), and every agent and skill must be in
+`CLAUDE_CODE_BUNDLED`, the set Claude Code 2.1.312 ships (a built-in plugin's
+own `plugin:skill` names count as bundled). A CLI update that adds a bundled item
+fails clean verification until the list is reviewed; that is the tripwire. The
+verdict, with the names it found, is recorded in `observed.json` and the Dish
+receipt.
+
+The proof is only as wide as the init event. It does not list skills marked
+`user-invocable: false`, it merges a skill that shares a bundled name (his own
+`code-review`, say) into the bundled one, and it reports nothing about
+`CLAUDE.md`, hooks or settings. Those rest on safe mode and the empty attempt
+home, so the receipt says what the init listed, not that nothing else loaded.
+
 `snapshot` copies a bounded slice of `~/.claude` into the fresh attempt home
 and records the digest of exactly those bytes:
 
@@ -454,7 +480,16 @@ Verification compares Claude Code's own `system/init` event with the request:
 permission mode `bypassPermissions`, the attempt workspace as `cwd`, exactly the
 requested built-in tools, and with connections off no MCP server or `mcp__`
 tool. The MCP servers and plugins it reports are recorded in `observed.json` and,
-by name, in the Dish receipt.
+by name, in the Dish receipt. A failed turn is held to the same checks, and to
+the CLI version, tier and output style below, before its stream can make a chef
+fault.
+
+The public trace lists each tool call as an action in the vocabulary Codex
+items use: its kind (`command_execution`, `file_change`, `tool_call`,
+`mcp_tool_call`), the built-in tool name, whether its result failed, and a
+workspace-relative path. Commands, inputs, outputs, MCP tool names and paths
+outside the workspace are never copied, and the trace still passes the
+publication scan.
 
 Authentication reuses the existing claude.ai login. The access token is read
 from `~/.claude/.credentials.json` (`TASTE_CLAUDE_CREDENTIALS_PATH` overrides it)

@@ -144,6 +144,10 @@ if (!existsSync(rollout)) {
   writeFileSync(rollout, [
     { type: "session_meta", payload: { id: thread, cli_version: "9.9.9-fake", model_provider: "openai" } },
     { type: "event_msg", payload: { type: "thread_settings_applied", thread_settings: { model, model_provider_id: "openai", reasoning_effort: configValue("model_reasoning_effort"), personality: configValue("personality"), service_tier: configValue("service_tier") } } },
+    // The context Codex injects: its skill index names the roots it read, here its own system skills
+    // plus whatever FAKE_SKILL_ROOT adds (a Codex that read his ~/.agents/skills, say).
+    { type: "response_item", payload: { type: "message", role: "developer", content: [{ type: "input_text", text: ["<skills_instructions>", "### Skill roots", "- \`r0\` = \`" + path.join(process.env.CODEX_HOME, "skills", ".system") + "\`", ...(process.env.FAKE_SKILL_ROOT ? ["- \`r1\` = \`" + process.env.FAKE_SKILL_ROOT + "\`"] : []), "### Available skills", "- imagegen: Make images. (file: r0/imagegen/SKILL.md)", ...(process.env.FAKE_SKILL_ROOT ? ["- grilling: Ask. (file: r1/grilling/SKILL.md)"] : []), "</skills_instructions>"].join("\\n") }] } },
+    { type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: "<environment_context>\\n  <cwd>" + process.cwd() + "</cwd>\\n</environment_context>" }] } },
   ].map(JSON.stringify).join("\\n") + "\\n");
 }
 writeFileSync(args[args.indexOf("--output-last-message") + 1], "answer to: " + stdin.trim());
@@ -273,6 +277,28 @@ test("a live Codex Dish goes to private/dishes, never records a setup digest, an
   assert.deepEqual((await tree(f.home)).filter((entry) => !before.includes(entry)).map((entry) => entry.split("/")[0]), ["sessions"]);
   // Connections on without the Cook's flag is refused before anything runs.
   await assert.rejects(executeRecipe({ repoRoot, catalog, recipe, variant: withProfile(codexLive, { connections: "on" }), executable: f.executable, env: f.env, nonce: "refused" }), /--allow-connections/);
+});
+
+test("a clean Codex Dish records the isolation its rollout proves; a rollout naming his skills fails as a Kitchen fault", async (t) => {
+  const f = await codexFixture(t);
+  const repoRoot = path.join(f.root, "repo");
+  const { recipe, catalog } = await kitchen(repoRoot);
+  const clean = { ...codexLive, id: "codex-gpt-6-1-sol-high-clean", serviceTier: "default", executionProfile: { id: "codex-linux-host-clean-v1", label: "via Codex CLI · clean", ...HOST, sandbox: "danger-full-access", approvalPolicy: "never", environment: "clean" } };
+  const env = { ...f.env, TASTE_CODEX_AUTH_PATH: path.join(f.home, "auth.json") };
+  const run = await executeRecipe({ repoRoot, catalog, recipe, variant: clean, executable: f.executable, env, nonce: "clean" });
+  assert.equal(run.status, "accepted", run.error);
+  const receipt = JSON.parse(await readFile(path.join(run.dishDirectory, "receipt.json"), "utf8"));
+  assert.deepEqual(receipt.isolation, { evidence: "codex-rollout", skills: ["imagegen"] });
+  const observed = JSON.parse(await readFile(path.join(repoRoot, "private/runtime/attempts", run.attemptId, "observed.json"), "utf8"));
+  assert.deepEqual(observed.isolation, { evidence: "codex-rollout", skills: ["imagegen"], skillRoots: 1, instructions: 0 });
+
+  // Codex 0.165 read $HOME/.agents/skills whatever CODEX_HOME said (#42). The next such change fails here.
+  const leaked = await executeRecipe({ repoRoot, catalog, recipe, variant: clean, executable: f.executable, env: { ...env, FAKE_SKILL_ROOT: path.join(f.home, "skills") }, nonce: "leaked" });
+  assert.equal(leaked.status, "failed");
+  assert.match(leaked.error, /skill root outside the cook directory/);
+  assert.equal(leaked.fault.class, "kitchen", "an isolation failure is Kitchen's, never the model's");
+  assert.equal(leaked.fault.code, "isolation");
+  assert.equal(leaked.noDishId, undefined);
 });
 
 // ---------------------------------------------------------------- Cursor

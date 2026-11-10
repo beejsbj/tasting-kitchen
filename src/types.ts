@@ -146,7 +146,7 @@ export type Dish = {
   /** Public notes recorded beside the Dish after it was cooked (catalog/dish-notes.json). */
   notes?: DishNote[];
   /** The full configuration and skill source the Dish ran as, from receipt.json. */
-  receipt?: { schemaVersion: 1; configuration: Configuration; setup?: SetupReceipt; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
+  receipt?: { schemaVersion: 1; configuration: Configuration; setup?: SetupReceipt; isolation?: IsolationReceipt; skill: (NonNullable<Dish["skill"]> & { source: Skill["source"]; entry: string; treeHash: string }) | null };
 };
 
 /** What a snapshot or live Dish's receipt says about the setup it ran with. */
@@ -160,6 +160,18 @@ export type SetupReceipt = {
   entries?: Array<{ entry: string; files: number; bytes: number; digest: string }>;
   toolsets?: string;
   loaded?: { mcpServers: string[]; plugins: string[] };
+};
+
+/**
+ * A clean Dish's own proof, from its harness's record, that it loaded nothing
+ * from outside its cook directory: the record that proved it and the bundled
+ * names it found. Absent on clean Dishes cooked before the check existed.
+ */
+export type IsolationReceipt = {
+  evidence: "codex-rollout" | "claude-code-init";
+  skills: string[];
+  agents?: string[];
+  plugins?: string[];
 };
 
 export type DishNote = { id: string; text: string; link?: string };

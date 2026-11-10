@@ -126,10 +126,10 @@ test("out-of-time is a chef fault only by tag; a limit nobody declared is Kitche
 const claudeModel = "claude-opus-5-5";
 const jsonl = (...events) => events.map((event) => JSON.stringify(event)).join("\n");
 const sessionId = "11111111-1111-4111-8111-111111111111";
-const init = { type: "system", subtype: "init", model: claudeModel, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId };
+const init = { type: "system", subtype: "init", model: claudeModel, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId, claude_code_version: "2.1.312", output_style: "default", plugins: [], skills: [], agents: [] };
 const spoke = { type: "assistant", message: { model: claudeModel, content: [{ type: "text", text: "Working." }] } };
 const spent = { type: "result", subtype: "error_max_turns", is_error: true };
-const claudeOptions = { variant: { model: claudeModel, executionProfile: { environment: "clean" } }, workspaces: ["/attempt/workspace"] };
+const claudeOptions = { variant: { model: claudeModel, personality: "default", serviceTier: "default", executionProfile: { environment: "clean" } }, workspaces: ["/attempt/workspace"], cliVersion: "claude-code 2.1.312" };
 
 test("Claude Code's exhausted turns are the model's only when Kitchen set the turn budget", () => {
   assert.equal(claudeChefFault(jsonl(init, spoke, spent), { ...claudeOptions, turnBudget: 40 }), "out-of-turns");
@@ -312,7 +312,7 @@ const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
 const model = flag("--model");
 const emit = (event) => console.log(JSON.stringify(event));
-emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model, permissionMode: "bypassPermissions", output_style: "default", tools: flag("--tools").split(","), mcp_servers: [] });
+emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model, permissionMode: "bypassPermissions", claude_code_version: "2.1.312", output_style: "default", tools: flag("--tools").split(","), mcp_servers: [], plugins: [], skills: ["simplify"], agents: ["general-purpose"] });
 const mode = process.env.FAKE_MODE;
 if (mode === "silent") await new Promise(() => setInterval(() => {}, 1000));
 if (mode === "retry") { emit({ type: "system", subtype: "api_retry", attempt: 1, max_retries: 10, retry_delay_ms: Number(process.env.FAKE_WAIT_MS), error_status: 429, error: "rate_limit", session_id: session }); await new Promise((resolve) => setTimeout(resolve, Number(process.env.FAKE_WAIT_MS))); }
