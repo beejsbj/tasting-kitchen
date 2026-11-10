@@ -3,14 +3,16 @@ import { access, chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, w
 import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
-  buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
+  buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, readHermesLineage, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
 import { startBudgetClock } from "../lib/taste/budget.mjs";
+import { reconstructResult } from "../lib/taste/recovery.mjs";
 import { KEY_PROXY_AUTH, startKeyProxy } from "../lib/taste/key-proxy.mjs";
 import { executeRecipe } from "../lib/taste/runner.mjs";
 
@@ -41,7 +43,7 @@ const viaOpenRouter = {
 // later Hermes might add), and emits stream-json. It refuses -p: Kitchen never
 // runs a profile in place.
 const FAKE = `#!/usr/bin/env node
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 const args = process.argv.slice(2);
@@ -77,23 +79,37 @@ const session = resume ?? process.env.FAKE_SESSION;
 const requested = flag("-m");
 const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || requested;
 const db = new DatabaseSync(path.join(home, "state.db"));
-db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
+db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT, parent_session_id TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
 const baseUrl = (process.env.FAKE_BASE_URL || routeBase || "https://api.anthropic.com") + (process.env.FAKE_TRAILING_SLASH ? "/" : "");
-db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, 'tool', ?, ?, ?, ?)").run(session, requested, JSON.stringify({ reasoning_config: (process.env.FAKE_EFFORT || flag("--reasoning")) === "none" ? { enabled: false } : { enabled: true, effort: process.env.FAKE_EFFORT || flag("--reasoning") } }), flag("--provider"), baseUrl);
+const effort = process.env.FAKE_EFFORT || flag("--reasoning");
+// FAKE_SOURCE tags every row; FAKE_CHILD_SOURCE only the compression child, so a check of the root alone cannot pass for one of the lineage.
+const addSession = (id, parent) => db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, (parent && process.env.FAKE_CHILD_SOURCE) || process.env.FAKE_SOURCE || "tool", requested, JSON.stringify({ reasoning_config: effort === "none" ? { enabled: false } : { enabled: true, effort } }), flag("--provider"), baseUrl, parent);
+addSession(session, null);
 const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
+// A context compression ends the session in a child row (parent_session_id) and the turn ends in it; FAKE_ROTATE names the turns that rotate.
+const rotates = (process.env.FAKE_ROTATE ?? "").split(",").includes(resume ? "resume" : "first");
+const ended = rotates ? session + "_r" : session;
+if (rotates) {
+  addSession(ended, session);
+  db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1)").run(ended, served, flag("--provider"), baseUrl);
+}
+// A result that names a session the resumed one never became.
+const reported = process.env.FAKE_STRAY && resume ? session + "_stray" : ended;
+if (reported !== ended) { addSession(reported, null); db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1)").run(reported, served, flag("--provider"), baseUrl); }
 if (process.env.FAKE_AUX) db.prepare("INSERT OR IGNORE INTO session_model_usage VALUES (?, 'claude-haiku-5-5', 'anthropic', 'https://api.anthropic.com', 'title', 1)").run(session);
 db.close();
+if (process.env.FAKE_DROP_DB) unlinkSync(path.join(home, "state.db"));
 writeFileSync(path.join(home, "auth.json"), "{}");
 writeFileSync(path.join(home, ".anthropic_oauth.json"), "{}");
 const query = readFileSync(flag("--query-file"), "utf8");
 const emit = (event) => console.log(JSON.stringify({ ...event, timestamp: 1 }));
-emit({ type: "system", subtype: "init", model: requested, session_id: session });
+emit({ type: "system", subtype: "init", model: requested, session_id: process.env.FAKE_EMPTY_INIT ? "" : session });
 emit({ type: "tool_use", name: "read_file", input: { path: "inputs/context.txt" } });
 emit({ type: "text", text: "answer" });
 if (process.env.FAKE_HANG === "after") await hang();
-if (process.env.FAKE_FAIL) emit({ type: "result", session_id: session, exit_code: 1, text: "", error: "provider exploded", tokens: {}, duration_ms: 1 });
-else emit({ type: "result", session_id: session, exit_code: 0, text: "answer to: " + query, tokens: { input: 3, output: 2, total: 5, cache_read: 0, cache_write: 0 }, duration_ms: 5 });
+if (process.env.FAKE_FAIL) emit({ type: "result", session_id: reported, exit_code: 1, text: "", error: "provider exploded", tokens: {}, duration_ms: 1 });
+else emit({ type: "result", session_id: reported, exit_code: 0, text: "answer to: " + query, tokens: { input: 3, output: 2, total: 5, cache_read: 0, cache_write: 0 }, duration_ms: 5 });
 if (process.env.FAKE_HANG === "linger") await hang();
 process.exit(process.env.FAKE_FAIL ? 1 : 0);
 `;
@@ -264,6 +280,108 @@ test("Hermes JSONL requires one init and one successful result, and an exact res
   assert.throws(() => parseHermesJsonl(lines(result, init)), /before its init/);
   assert.throws(() => parseHermesJsonl(lines(init, result), { resumedFrom: "20261108_000000_aaaaaa" }), /resumed/);
   assert.throws(() => parseHermesJsonl("not json"), /Invalid Hermes JSONL/);
+  // An init that names no session is not a failure: the persisted session rows carry identity and the resume check.
+  const unnamed = parseHermesJsonl(lines({ ...init, session_id: "" }, result), { resumedFrom: SESSION });
+  assert.equal(unnamed.threadId, SESSION);
+  assert.equal(unnamed.initSessionId, null);
+  assert.equal(parseHermesJsonl(lines({ type: "system", subtype: "init", model: "claude-haiku-5-5" }, result)).initSessionId, null);
+  assert.throws(() => parseHermesJsonl(lines({ ...init, session_id: "20261108_000000_aaaaaa" }, result), { resumedFrom: SESSION }), /resumed 20261108_000000_aaaaaa/);
+});
+
+test("a Hermes session's lineage follows its compression children, refuses a stranger and a loop", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-hermes-lineage-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const stateDb = path.join(root, "state.db");
+  const db = new DatabaseSync(stateDb);
+  db.exec("CREATE TABLE sessions (id TEXT PRIMARY KEY, parent_session_id TEXT)");
+  for (const [id, parent] of [["a", null], ["b", "a"], ["c", "b"], ["stranger", null], ["x", "y"], ["y", "x"]]) db.prepare("INSERT INTO sessions VALUES (?, ?)").run(id, parent);
+  db.close();
+  assert.deepEqual(await readHermesLineage(stateDb, "c"), ["a", "b", "c"]);
+  assert.deepEqual(await readHermesLineage(stateDb, "c", { from: "b" }), ["b", "c"]);
+  assert.deepEqual(await readHermesLineage(stateDb, "b", { from: "b" }), ["b"]);
+  await assert.rejects(readHermesLineage(stateDb, "stranger", { from: "a" }), /not a continuation of session a/);
+  await assert.rejects(readHermesLineage(stateDb, "x"), /loops/);
+  await assert.rejects(readHermesLineage(stateDb, "missing"), /no session missing/);
+  await assert.rejects(readHermesLineage(path.join(root, "absent.db"), "a"), /database is missing/);
+});
+
+test("an init event with no session id still cooks, resumes and verifies against the persisted session rows", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "empty-init");
+  const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_EMPTY_INIT: "1" } });
+  assert.equal(result.failure, null);
+  assert.equal(result.threadId, SESSION);
+  const calls = await f.calls();
+  assert.equal(calls[1].args[calls[1].args.indexOf("--resume") + 1], SESSION);
+  const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: clean, cliVersion: result.cliVersion, result, env: f.env });
+  assert.deepEqual(observed.sessions, [SESSION]);
+  assert.equal(observed.mainLoopCalls, 2);
+});
+
+test("a compression child ends a turn, the next turn resumes it, and identity and recovery follow the whole lineage", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "rotation");
+  const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_ROTATE: "first,resume" } });
+  assert.equal(result.failure, null, result.failure?.message);
+  const first = `${SESSION}_r`;
+  const second = `${first}_r`;
+  assert.equal(result.threadId, second);
+  const calls = await f.calls();
+  assert.equal(calls[1].args[calls[1].args.indexOf("--resume") + 1], first, "the second turn resumes the first turn's child");
+  const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: clean, cliVersion: result.cliVersion, result, env: f.env });
+  assert.deepEqual(observed.sessions, [SESSION, first, second]);
+  assert.equal(observed.mainLoopCalls, 4);
+
+  // Recovery re-reads each turn's stream: the first turn ends in another session than the last, which is not a rotation fault.
+  const execution = {
+    failure: null, threadId: result.threadId, cliVersion: result.cliVersion, observedModel: "claude-haiku-5-5",
+    turns: result.turns.map((turn, index) => ({ turnId: recipe.turns[index].id, eventsPath: path.relative(a.attemptDir, turn.eventsPath), finalPath: path.relative(a.attemptDir, turn.finalPath), argv: turn.argv, usage: turn.usage })),
+  };
+  const { adapter } = resolveHarnessAdapter(clean);
+  const rebuilt = await reconstructResult(a.attemptDir, execution, recipe, adapter);
+  assert.equal(rebuilt.threadId, second);
+  assert.deepEqual(rebuilt.turns.map((turn) => turn.finalMessage), result.turns.map((turn) => turn.finalMessage));
+  await assert.rejects(reconstructResult(a.attemptDir, { ...execution, threadId: first }, recipe, adapter), /changed thread/);
+  // A thread that rotates only matters to Hermes: every other harness keeps one thread through every turn.
+  await assert.rejects(reconstructResult(a.attemptDir, execution, recipe, { ...adapter, threadRotates: false }), /changed thread/);
+  const lost = structuredClone(result);
+  lost.turns[1].events = lost.turns[1].events.map((event) => event.subtype === "init" ? { ...event, session_id: SESSION } : event);
+  await assert.rejects(verifyHermesIdentity({ codexHome: a.codexHome, variant: clean, cliVersion: result.cliVersion, result: lost, env: f.env }), /resumed/, "a turn that did not resume its predecessor's session is refused");
+});
+
+test("a turn whose result names a session the resumed one never became is a failed turn", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "stray");
+  const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_STRAY: "1" } });
+  assert.match(result.failure.message, /is not a continuation of/);
+  assert.equal(result.failure.turnId, "correct");
+});
+
+test("every identity check confirms the session rows carry the tool source", async (t) => {
+  const f = await setup(t);
+  const a = await attempt(f.root, "source");
+  const result = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_SOURCE: "cli" } });
+  assert.match(result.failure.message, new RegExp(`session ${SESSION} source cli, not tool`, "u"));
+  assert.equal(result.turns.length, 1, "stop before spending a second turn");
+});
+
+test("an unreadable session database before or after a turn is a recorded failed turn, not a thrown error", async (t) => {
+  const f = await setup(t);
+  const after = await attempt(f.root, "db-after");
+  const lost = await runHermesSession({ variant: clean, recipe, workspace: after.workspace, privateDir: after.privateDir, executable: f.executable, env: { ...f.env, FAKE_DROP_DB: "1" } });
+  assert.match(lost.failure.message, /session database is missing/);
+  assert.equal(lost.failure.turnId, "make");
+  assert.equal(lost.turns.length, 1);
+
+  const before = await attempt(f.root, "db-before");
+  const home = path.join(before.attemptDir, "hermes-home");
+  const gone = await runHermesSession({
+    variant: clean, recipe, workspace: before.workspace, privateDir: before.privateDir, executable: f.executable, env: f.env,
+    onPlan: async (plan) => { if (plan.turnId === "correct") await rm(path.join(home, "state.db")); },
+  });
+  assert.match(gone.failure.message, /session database is missing/);
+  assert.equal(gone.failure.turnId, "correct");
+  assert.equal(gone.turns.length, 2);
 });
 
 test("clean Hermes runs both turns in one fresh home, resumes exactly, verifies the recorded route, and drops the borrowed login", async (t) => {
@@ -632,4 +750,31 @@ test("an OpenCode Go run reaches its upstream only through the key proxy and is 
   await prepareHermesAttempt({ variant: viaGo, cwd: c.attemptDir, env });
   const around = await runHermesSession({ variant: viaGo, recipe, workspace: c.workspace, privateDir: c.privateDir, executable: f.executable, env: { ...env, FAKE_BASE_URL: "https://opencode.ai/zen/go/v1", FAKE_SESSION: "20261108_131309_88bbbb" }, proxy });
   assert.match(around.failure.message, /endpoint requested Kitchen's key proxy to https:\/\/opencode\.ai\/zen\/go\/v1, observed https:\/\/opencode\.ai\/zen\/go\/v1/);
+});
+
+test("a compression child on the OpenCode Go route is followed through its proxy base, and a child without the tool source fails the turn", async (t) => {
+  const f = await setup(t);
+  const env = { ...f.env, OPENCODE_GO_API_KEY: "sk-go-real" };
+  const upstream = await fakeUpstream(t, "/zen/go/v1");
+  const proxy = await startKeyProxy({ upstream: upstream.base, apiKey: "sk-go-real" });
+  t.after(() => proxy.close());
+  const a = await attempt(f.root, "go-rotation");
+  await prepareHermesAttempt({ variant: viaGo, cwd: a.attemptDir, env });
+  // A Messages model records its base with a trailing slash; the first turn compresses into a child, the second resumes it.
+  const result = await runHermesSession({ variant: viaGo, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...env, FAKE_ROTATE: "first", FAKE_TRAILING_SLASH: "1" }, proxy });
+  assert.equal(result.failure, null, result.failure?.message);
+  const child = `${SESSION}_r`;
+  assert.equal(result.threadId, child);
+  const calls = (await f.calls()).filter((item) => item.routeBase);
+  assert.equal(calls[1].args[calls[1].args.indexOf("--resume") + 1], child);
+  const observed = await verifyHermesIdentity({ codexHome: a.codexHome, variant: viaGo, cliVersion: result.cliVersion, result, env });
+  assert.deepEqual([observed.route, observed.sessions], ["opencode-go", [SESSION, child]]);
+  assert.equal(observed.mainLoopCalls, 3);
+  assert.equal(observed.routeEvidence.billingProvider, "opencode-go");
+
+  // A compression child that lacks the tool source is not this run's session.
+  const b = await attempt(f.root, "go-rotation-source");
+  await prepareHermesAttempt({ variant: viaGo, cwd: b.attemptDir, env });
+  const foreign = await runHermesSession({ variant: viaGo, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_ROTATE: "first", FAKE_CHILD_SOURCE: "cli", FAKE_SESSION: "20261108_131309_55dddd" }, proxy });
+  assert.match(foreign.failure.message, /session 20261108_131309_55dddd_r source cli, not tool/u);
 });
