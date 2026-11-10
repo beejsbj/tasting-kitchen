@@ -82,7 +82,8 @@ const db = new DatabaseSync(path.join(home, "state.db"));
 db.exec("CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, source TEXT, model TEXT, model_config TEXT, billing_provider TEXT, billing_base_url TEXT, parent_session_id TEXT); CREATE TABLE IF NOT EXISTS session_model_usage (session_id TEXT, model TEXT, billing_provider TEXT, billing_base_url TEXT, task TEXT, api_call_count INTEGER, PRIMARY KEY (session_id, model, billing_provider, billing_base_url, task))");
 const baseUrl = (process.env.FAKE_BASE_URL || routeBase || "https://api.anthropic.com") + (process.env.FAKE_TRAILING_SLASH ? "/" : "");
 const effort = process.env.FAKE_EFFORT || flag("--reasoning");
-const addSession = (id, parent) => db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, process.env.FAKE_SOURCE || "tool", requested, JSON.stringify({ reasoning_config: effort === "none" ? { enabled: false } : { enabled: true, effort } }), flag("--provider"), baseUrl, parent);
+// FAKE_SOURCE tags every row; FAKE_CHILD_SOURCE only the compression child, so a check of the root alone cannot pass for one of the lineage.
+const addSession = (id, parent) => db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, (parent && process.env.FAKE_CHILD_SOURCE) || process.env.FAKE_SOURCE || "tool", requested, JSON.stringify({ reasoning_config: effort === "none" ? { enabled: false } : { enabled: true, effort } }), flag("--provider"), baseUrl, parent);
 addSession(session, null);
 const fellBack = served !== requested;
 if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
@@ -774,6 +775,6 @@ test("a compression child on the OpenCode Go route is followed through its proxy
   // A compression child that lacks the tool source is not this run's session.
   const b = await attempt(f.root, "go-rotation-source");
   await prepareHermesAttempt({ variant: viaGo, cwd: b.attemptDir, env });
-  const foreign = await runHermesSession({ variant: viaGo, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_ROTATE: "first", FAKE_SOURCE: "cli", FAKE_SESSION: "20261108_131309_55dddd" }, proxy });
-  assert.match(foreign.failure.message, /source cli, not tool/);
+  const foreign = await runHermesSession({ variant: viaGo, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_ROTATE: "first", FAKE_CHILD_SOURCE: "cli", FAKE_SESSION: "20261108_131309_55dddd" }, proxy });
+  assert.match(foreign.failure.message, /session 20261108_131309_55dddd_r source cli, not tool/u);
 });
