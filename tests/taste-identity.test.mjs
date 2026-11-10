@@ -145,6 +145,27 @@ test("a clean Codex rollout naming an outside skill root, skill file or AGENTS.m
   await assert.rejects(unaccounted.verify(), /AGENTS\.md instructions no file in the cook directory accounts for/);
   const legacy = await cleanFixture(t, () => [message("user", "<user_instructions>\n# Prime\n</user_instructions>")]);
   await assert.rejects(legacy.verify(), /AGENTS\.md instructions no file in the cook directory accounts for/);
+  // A file there that supplies only part of the text (the model wrote it, say) does not account for the rest.
+  const partly = await cleanFixture(t, ({ workspace }) => [message("user", `# AGENTS.md instructions for ${workspace}\n\n<INSTRUCTIONS>\n# Prime\nUse tabs.\n</INSTRUCTIONS>`)], { files: { "workspace/AGENTS.md": "Use tabs.\n" } });
+  await assert.rejects(partly.verify(), /AGENTS\.md instructions no file in the cook directory accounts for/);
+  const developerHeading = await cleanFixture(t, ({ workspace }) => [message("developer", `Context follows.\n# AGENTS.md instructions for ${workspace}\n\n<INSTRUCTIONS>\n# Prime\n</INSTRUCTIONS>`)]);
+  await assert.rejects(developerHeading.verify(), /no file in the cook directory accounts for/);
+  // Inside the cook directory, but in the fresh Codex home outside skills/: a plugin synced from his account.
+  const syncedPlugin = await cleanFixture(t, ({ codexHome }) => [message("developer", skillIndex([path.join(codexHome, "skills/.system"), path.join(codexHome, "plugins/cache/work-remote/skills")], ["- imagegen: Make images. (file: r0/imagegen/SKILL.md)", "- work:triage: Triage. (file: r1/triage/SKILL.md)"]))]);
+  await assert.rejects(syncedPlugin.verify(), /skill root from its Codex home outside skills\//);
+  const syncedFile = await cleanFixture(t, ({ codexHome }) => [message("developer", `<skills_instructions>\n- work:triage: Triage. (file: ${path.join(codexHome, "plugins/triage/SKILL.md")})\n</skills_instructions>`)]);
+  await assert.rejects(syncedFile.verify(), /skill work:triage from its Codex home outside skills\//);
+  // A reworded index must fail, not pass as one that named nothing.
+  const reworded = await cleanFixture(t, () => [message("developer", "<skills_instructions>\n## Skills\n* imagegen -> /home/someone/.agents/skills/imagegen\n</skills_instructions>")]);
+  await assert.rejects(reworded.verify(), /skill index Kitchen could not read/);
+});
+
+test("the Recipe's own prompt is never read as context Codex injected", async (t) => {
+  const prompt = await cleanFixture(t, ({ workspace }) => [
+    message("user", `<environment_context>\n  <cwd>${workspace}</cwd>\n</environment_context>`),
+    message("user", "Fix the parser so `- note: text (file: /home/someone/notes.md)` and <cwd>/home/someone</cwd> both round-trip.\n# AGENTS.md instructions for /elsewhere"),
+  ]);
+  assert.deepEqual((await prompt.verify()).isolation, { evidence: "codex-rollout", skills: [], skillRoots: 0, instructions: 0 });
 });
 
 test("a clean Codex rollout may carry AGENTS.md instructions a cook-directory file supplies; personal environments are not held to it", async (t) => {
