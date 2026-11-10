@@ -312,7 +312,7 @@ const resume = flag("--resume");
 const session = resume ?? process.env.FAKE_SESSION;
 const model = flag("--model");
 const emit = (event) => console.log(JSON.stringify(event));
-emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model, permissionMode: "bypassPermissions", output_style: "default", tools: flag("--tools").split(","), mcp_servers: [] });
+emit({ type: "system", subtype: "init", session_id: session, cwd: process.cwd(), model, permissionMode: "bypassPermissions", claude_code_version: "2.1.312", output_style: "default", tools: flag("--tools").split(","), mcp_servers: [], plugins: [], skills: ["simplify"], agents: ["general-purpose"] });
 const mode = process.env.FAKE_MODE;
 if (mode === "silent") await new Promise(() => setInterval(() => {}, 1000));
 if (mode === "retry") { emit({ type: "system", subtype: "api_retry", attempt: 1, max_retries: 10, retry_delay_ms: Number(process.env.FAKE_WAIT_MS), error_status: 429, error: "rate_limit", session_id: session }); await new Promise((resolve) => setTimeout(resolve, Number(process.env.FAKE_WAIT_MS))); }
