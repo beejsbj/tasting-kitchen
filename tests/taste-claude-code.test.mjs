@@ -650,7 +650,8 @@ test("a clean Claude Code attempt recovers by re-proving its isolation from the 
   assert.deepEqual(JSON.parse(await readFile(path.join(attemptDir, "observed.json"), "utf8")).isolation, receipt.isolation);
 
   // The usual case: the configuration is still in the catalog. Its recorded `memory: "off"` describes the Run; it is not a toggle.
-  const { configHash: _hash, ...listedConfiguration } = variant;
+  const listedConfiguration = { ...variant };
+  delete listedConfiguration.configHash;
   const inCatalog = { ...f.catalog, configurations: [listedConfiguration] };
   const listed = await blocked("listed");
   assert.equal((await recoverAttempt({ repoRoot: f.root, catalog: inCatalog, attemptId: listed.attemptId, env: f.env })).status, "accepted");
