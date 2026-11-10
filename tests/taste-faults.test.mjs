@@ -50,6 +50,11 @@ const FAILURE_PATHS = [
   { path: "duplicate init", message: "claude-code turn opening failed: Claude Code stream contained 2 init events; expected exactly one", code: "harness-changed" },
   { path: "no version", message: "claude --version did not report a version", code: "harness-changed" },
   { path: "nonzero exit", message: "codex-cli turn opening failed: Codex exited with code 1", code: "harness-changed" },
+  // Kitchen: a clean Run's own record shows it loaded something of his (#45)
+  { path: "Codex outside skill root", message: "A clean Codex run loaded a skill root outside the cook directory", code: "isolation" },
+  { path: "Codex outside AGENTS.md", message: "A clean Codex run loaded AGENTS.md instructions no file in the cook directory accounts for", code: "isolation" },
+  { path: "Claude non-built-in plugin", message: "A clean Claude Code session loaded plugin oauth-tools@market, which is not built in", code: "isolation" },
+  { path: "Claude outside skill", message: "A clean Claude Code session loaded skill consult outside Claude Code's bundled set", code: "isolation" },
   { path: "missing turns", message: "Captured 1/2 scripted turns", code: "kitchen-error" },
   // Kitchen: validation and publication machinery
   { path: "check could not run", stage: "validation", message: "Required validation could not run: render", kitchenFault: "validator-error", code: "validator-error" },

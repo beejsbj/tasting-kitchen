@@ -297,6 +297,7 @@ test("a clean Codex Dish records the isolation its rollout proves; a rollout nam
   assert.equal(leaked.status, "failed");
   assert.match(leaked.error, /skill root outside the cook directory/);
   assert.equal(leaked.fault.class, "kitchen", "an isolation failure is Kitchen's, never the model's");
+  assert.equal(leaked.fault.code, "isolation");
   assert.equal(leaked.noDishId, undefined);
 });
 
