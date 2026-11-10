@@ -106,3 +106,28 @@ test("the upstream is pinned: https or a loopback fake, never a real host under 
   assert.equal(isKeyProxyBaseUrl("https://openrouter.ai/api/v1", "https://openrouter.ai/api/v1"), false);
   assert.equal(isKeyProxyBaseUrl("http://10.0.0.5:41234/api/v1", "https://openrouter.ai/api/v1"), false);
 });
+
+test("a client that sends its key as x-api-key (Anthropic Messages) gets the real key in that same header, and only there", async (t) => {
+  const upstream = await fakeUpstream(t, (request, response) => { response.writeHead(200, { "content-type": "application/json" }); response.end("{}"); });
+  const proxy = await proxyFor(t, upstream.base);
+  const viaHeader = await fetch(`${proxy.baseUrl}/messages`, { method: "POST", headers: { "x-api-key": proxy.token, "content-type": "application/json" }, body: "{}" });
+  assert.equal(viaHeader.status, 200);
+  assert.equal(upstream.seen[0].headers["x-api-key"], KEY);
+  assert.equal(upstream.seen[0].headers.authorization, undefined);
+  // A bearer token keeps the bearer style; a stray x-api-key beside it is dropped.
+  await fetch(`${proxy.baseUrl}/chat/completions`, { method: "POST", headers: { authorization: `Bearer ${proxy.token}`, "x-api-key": "other" }, body: "{}" });
+  assert.equal(upstream.seen[1].headers.authorization, `Bearer ${KEY}`);
+  assert.equal(upstream.seen[1].headers["x-api-key"], undefined);
+  // A wrong token in either header reaches nothing.
+  assert.equal((await fetch(`${proxy.baseUrl}/messages`, { method: "POST", headers: { "x-api-key": "wrong" }, body: "{}" })).status, 401);
+  assert.equal(upstream.seen.length, 2);
+});
+
+test("a proxy base URL is recognised with or without a trailing slash, and on any base path the route records", () => {
+  // Hermes records `…/api/v1/` for some calls; an OpenCode Go Anthropic Messages model records the base without /v1.
+  assert.equal(isKeyProxyBaseUrl("http://127.0.0.1:41234/api/v1/", "https://openrouter.ai/api/v1"), true);
+  assert.equal(isKeyProxyBaseUrl("http://127.0.0.1:41234/zen/go", "https://opencode.ai/zen/go/v1", { paths: ["/zen/go/v1", "/zen/go"] }), true);
+  assert.equal(isKeyProxyBaseUrl("http://127.0.0.1:41234/zen/go/v1/", "https://opencode.ai/zen/go/v1", { paths: ["/zen/go/v1", "/zen/go"] }), true);
+  assert.equal(isKeyProxyBaseUrl("http://127.0.0.1:41234/zen", "https://opencode.ai/zen/go/v1", { paths: ["/zen/go/v1", "/zen/go"] }), false);
+  assert.equal(isKeyProxyBaseUrl("https://opencode.ai/zen/go/v1", "https://opencode.ai/zen/go/v1", { paths: ["/zen/go/v1", "/zen/go"] }), false);
+});

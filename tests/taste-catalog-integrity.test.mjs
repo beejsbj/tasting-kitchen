@@ -512,3 +512,43 @@ test("catalog validation refuses a Dish note whose pinned hash no longer matches
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /dish-notes\.json.*immutable hash/);
 });
+
+test("catalog validation accepts a well-formed Recipe budget and rejects a malformed one", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const [filename] = (await readdir(path.join(root, "catalog/recipes"), { recursive: true })).filter((name) => path.basename(name) === "recipe.json").sort();
+  const target = path.join(root, "catalog/recipes", filename);
+  const recipe = JSON.parse(await readFile(target, "utf8"));
+  await writeFile(target, JSON.stringify({ ...recipe, budget: { seconds: 5, minutes: 3 } }));
+  const malformed = validate(root);
+  assert.equal(malformed.status, 1, malformed.stderr);
+  assert.match(malformed.stderr, /budget: Recipe budget has an unknown key minutes|budget\.seconds must be an integer from 30/);
+  await writeFile(target, JSON.stringify({ ...recipe, budget: { seconds: 600, modelTurns: 40 } }));
+  const wellFormed = validate(root);
+  assert.equal(wellFormed.status, 0, wellFormed.stderr);
+});
+
+test("a Menu may declare the configurations it is cooked with: catalog ids, specs or selectors, each checked without a network call", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const menuFile = path.join(root, "catalog/menus/standard-web.json");
+  const original = JSON.parse(await readFile(menuFile, "utf8"));
+  const { configurations } = JSON.parse(await readFile(path.join(root, "catalog/configurations.json"), "utf8"));
+  await writeFile(menuFile, `${JSON.stringify({ ...original, configurations: ["hermes:openrouter/*@auto+free", "hermes:opencode-go/glm-5.3@high", configurations[0].id] }, null, 2)}\n`);
+  let result = validate(root);
+  assert.equal(result.status, 0, result.stderr);
+  const cases = [
+    ["unknown configuration id", ["no-such-configuration"], /standard-web\.json.*unknown configuration no-such-configuration/],
+    ["unparseable spec", ["hermes:openrouter/x@"], /standard-web\.json.*configurations\[0\].*harness:route\/model@effort/],
+    ["route without a template", ["hermes:nous/x-ai/grok-4.7@high"], /standard-web\.json.*configurations\[0\].*nous.*OAuth/],
+    ["unknown effort", ["hermes:openrouter/*@turbo+free"], /standard-web\.json.*configurations\[0\].*effort turbo is not a Hermes effort/],
+    ["duplicate", ["hermes:openrouter/*@auto+free", "hermes:openrouter/*@auto+free"], /standard-web\.json.*duplicate value/],
+    ["empty", [], /standard-web\.json.*at least 1 item/],
+  ];
+  for (const [name, list, expected] of cases) {
+    await writeFile(menuFile, `${JSON.stringify({ ...original, configurations: list }, null, 2)}\n`);
+    result = validate(root);
+    assert.equal(result.status, 1, `${name} should fail validation`);
+    assert.match(result.stderr, expected, name);
+  }
+});

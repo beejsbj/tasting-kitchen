@@ -13,6 +13,7 @@ import {
   runCodexSession,
   runCodexTurn,
 } from "../lib/taste/codex.mjs";
+import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { getHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
@@ -48,6 +49,19 @@ if (outputFlag >= 0 && process.env.FAKE_NO_FINAL !== "1") await writeFile(args[o
 const resumeIndex = args.indexOf("resume");
 const threadId = resumeIndex >= 0 ? args[resumeIndex + 1] : process.env.FAKE_THREAD;
 console.log(JSON.stringify({ type: "thread.started", thread_id: process.env.FAKE_REPORTED_THREAD ?? threadId }));
+if (process.env.FAKE_HANG) await new Promise(() => setInterval(() => {}, 1000));
+if (process.env.FAKE_HANG_AFTER_ITEM) {
+  // The model answered and is still working: an item in the stream, its identity in the private rollout.
+  const { mkdir } = await import("node:fs/promises");
+  await mkdir(process.env.CODEX_HOME + "/sessions/2026/11/09", { recursive: true });
+  await writeFile(process.env.CODEX_HOME + "/sessions/2026/11/09/rollout-" + threadId + ".jsonl", [
+    { type: "session_meta", payload: { id: threadId, model_provider: "openai", cli_version: "9.9.9-fake" } },
+    { type: "turn_context", payload: { model: process.env.FAKE_ROLLOUT_MODEL ?? "gpt-5.6-luna", effort: "high", personality: "none" } },
+  ].map((record) => JSON.stringify(record)).join("\\n") + "\\n");
+  console.log(JSON.stringify({ type: "item.completed", item: { id: "item_0", type: process.env.FAKE_ITEM_TYPE ?? "agent_message", text: "Working." } }));
+  if (process.env.FAKE_LINGER) console.log(JSON.stringify({ type: "turn.completed" }));
+  await new Promise(() => setInterval(() => {}, 1000));
+}
 if (process.env.FAKE_EVENT) console.log(JSON.stringify(JSON.parse(process.env.FAKE_EVENT)));
 else console.log(JSON.stringify({ type: "turn.completed" }));
 if (process.env.FAKE_STDERR) console.error(process.env.FAKE_STDERR);
@@ -317,4 +331,42 @@ test("detects nonzero exits, failure events, thread substitution, and missing fi
 test("captures an injected codex --version without running real Codex", async () => {
   const f = await fixture();
   assert.equal(await getCodexVersion({ executable: f.fake, codexHome: f.codexHome }), "codex-cli 9.9.9-fake");
+});
+
+test("the Recipe's time budget stops a hung Codex turn and the Run; without identity evidence it names no chef fault", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const clock = startBudgetClock({ seconds: 0.5 });
+  const started = Date.now();
+  const session = await runCodexSession({
+    variant: { model: "gpt-5.6-luna", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE },
+    recipe: { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }, { id: "correction", content: "Two" }] },
+    workspace: f.workspace, codexHome: f.codexHome, privateDir: path.join(f.root, "raw"), executable: f.fake, env: { FAKE_THREAD: THREAD_ID, FAKE_HANG: "1" }, clock,
+  });
+  clock.stop();
+  assert.ok(Date.now() - started < 10_000);
+  assert.match(session.failure.message, /stopped by the Recipe's time budget/);
+  assert.equal(session.failure.chefFault, undefined);
+  assert.equal(session.turns.length, 1);
+});
+
+test("the Recipe's time budget is the model's on Codex only when it answered and the rollout proves the requested identity", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const variant = { provider: "openai", model: "gpt-5.6-luna", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE };
+  const recipe = { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }] };
+  for (const [name, env, expected] of [
+    ["serving", {}, "out-of-time"],
+    ["another model", { FAKE_ROLLOUT_MODEL: "gpt-5.6-sol" }, undefined],
+    ["only an error item", { FAKE_ITEM_TYPE: "error" }, undefined],
+    ["finished, then lingered", { FAKE_LINGER: "1" }, undefined],
+  ]) {
+    await rm(path.join(f.codexHome, "sessions"), { recursive: true, force: true });
+    // Long enough for a loaded machine to start the fake and write its rollout before the budget ends.
+    const clock = startBudgetClock({ seconds: 3 });
+    const session = await runCodexSession({ variant, recipe, workspace: f.workspace, codexHome: f.codexHome, privateDir: path.join(f.root, `raw-${name}`), executable: f.fake, env: { FAKE_THREAD: THREAD_ID, FAKE_HANG_AFTER_ITEM: "1", ...env }, clock });
+    clock.stop();
+    assert.match(session.failure.message, /stopped by the Recipe's time budget/, name);
+    assert.equal(session.failure.chefFault, expected, name);
+  }
 });

@@ -71,6 +71,9 @@ export type RecipeCheck = {
   description: string;
 };
 
+/** The same time and turn budget for every configuration; running past it is a No Dish. */
+export type RecipeBudget = { seconds?: number; modelTurns?: number };
+
 export type Recipe = {
   schemaVersion: 1;
   id: string;
@@ -83,6 +86,7 @@ export type Recipe = {
   recipeHash: string;
   skills?: RecipeSkills;
   presentation?: { profile: string; semanticRuntime: null | { id: string; version: string } };
+  budget?: RecipeBudget;
   origin: "textbook" | "mothers" | "hybrid";
   originNote: string;
   tags: string[];
@@ -173,7 +177,7 @@ export type IsolationReceipt = {
 export type DishNote = { id: string; text: string; link?: string };
 
 /** Why a configuration could not make the Recipe. Only chef faults are ever public. */
-export type ChefFaultCode = "checks-failed" | "output-contract" | "refused" | "out-of-turns";
+export type ChefFaultCode = "checks-failed" | "output-contract" | "refused" | "out-of-turns" | "out-of-time";
 
 /**
  * The public plate of a chef fault: the configuration was given the Recipe and
@@ -189,7 +193,7 @@ export type NoDish = {
   executedAt: string;
   failedAt: string;
   identity: Omit<Dish["identity"], "observedModel" | "harnessVersion" | "requestedServiceTier" | "observedServiceTier"> & { observedModel: string | null; harnessVersion: string | null };
-  fault: { class: "chef"; code: ChefFaultCode; stage: "execution" | "validation"; reason: string; turn?: string; checks?: string[] };
+  fault: { class: "chef"; code: ChefFaultCode; stage: "execution" | "validation"; reason: string; turn?: string; checks?: string[]; budget?: RecipeBudget };
   validation: { passed: false; report: string } | null;
   publicTrace: string | null;
   artifact: { kind: Recipe["kind"]; entry?: string; treeHash: string; files: Array<{ path: string; sha256: string; bytes: number }>; partial: true } | null;
@@ -313,4 +317,4 @@ export type Registry = {
 };
 
 export type Variant = Configuration;
-export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[] };
+export type Menu = { id: string; title: string; summary?: string; cuisines: string[]; recipes: string[]; configurations?: string[] };

@@ -193,6 +193,25 @@
         "layers": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } }
       }
     },
+    "budget": {
+      "description": "Optional. The same budget for every configuration and skill layer; running past it is a chef fault (out-of-time, out-of-turns) published as a No Dish. Without one, every limit is Kitchen's. Joins the recipe hash. Validated at runtime by lib/taste/budget.mjs.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "seconds": { "description": "Wall-clock seconds of model and harness execution, across all turns. Preparation, login, validation and publication do not count; provider waits the harness reports are credited back.", "type": "integer", "minimum": 30, "maximum": 86400 },
+        "modelTurns": { "description": "Model turns each prompt turn may take. Only harnesses that can hold it accept the Recipe.", "type": "integer", "minimum": 1, "maximum": 10000 }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "engineMount": { "$ref": "#/$defs/relativePath" }
+      }
+    },
     "variation": { "type": "string", "maxLength": 500 },
     "supersedes": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
   },

@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **ten drafts awaiting Burooj's authoring acceptance; none cookable.**
+Status: **ten drafts awaiting Burooj's authoring acceptance; none cookable.** `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -69,20 +69,60 @@ more than 50 ms. Integrated loudness is reported, not gated.
 Beat times and check claims are self-reports. Motion, listening, originality
 and whether the picture matches the words remain human tasting; every brief
 lists its own questions. For the lyric recipe, audio identity with the
-supplied excerpt (correlation against the source PCM) is a Kitchen-side check
-still to be written.
+supplied excerpt (correlation against the source PCM) is the Kitchen-side
+check `validation/audio-identity.mjs`: lag within 20 ms, every audible
+half-second correlated, nothing added in the excerpt's silences, duration
+matched; a uniform trim is reported, not failed.
 
 ## Before Ready
 
-1. One pinned execution image (Node 22+, Python, Chromium, FFmpeg, fonts) used
-   by every model and layer; smoke render, validator, sanitization and gallery
-   playback together.
-2. For the lyric recipe, the patched lyric engine supplied by Kitchen at
-   `engine/` and pinned; the skill's `engine.patch` must match it.
-3. A Claude Code harness configuration if Opus is in the comparison. Opus in
+1. **Done for `heavy-little-suitcase` and `lyric-video-section`:** the pinned
+   film toolchain (`catalog/toolchains/film/`, see below), smoke render, validator,
+   sanitization and gallery playback, proven with Kitchen-made references.
+2. **Done:** the patched lyric engine at `engine/`, assembled in the image
+   from the skill's own `engine.patch` (sha-checked) at the pinned upstream
+   commit, and the audio identity check.
+3. **Open:** the model's own shell still runs on the host. Kitchen judges and
+   plays every film in the image, and supplies the engine from it, but a model
+   renders with whatever the host has until a harness can run its tools inside
+   the image. Until then the toolchain is held constant for Kitchen's checks,
+   not for the model's working tools.
+4. A Claude Code harness configuration if Opus is in the comparison. Opus in
    Claude Code and Sol in Codex are different configurations: same
    brief, browsed together, not a like-for-like pair.
-4. Burooj's acceptance of each benchmark shape at the authoring checkpoint.
+5. Burooj's acceptance of each benchmark shape at the authoring checkpoint.
+   Readiness does not flip `status`.
+
+## Film toolchain
+
+`catalog/toolchains/film/toolchain.json` pins the image: a digest-pinned Node 22 base,
+one dated Debian snapshot for Chromium, FFmpeg, Python 3 (NumPy, SciPy) and
+fonts, Bun, and the lyric engine (upstream commit, `engine.patch` and brand
+hashes, Google Fonts commit and per-file hashes). The skill's `brand.ts` is
+supplied with empty handles so the engine draws no watermark; the skill's
+world kit and example scenes are technique and reach a model only through
+the skill layer.
+
+A Recipe names the toolchain in `toolchain` and carries the generated pin as
+its `toolchain` fixture, so editing the image moves the recipe hash. Command
+checks of such a Recipe run in the image, offline and read-only, and only
+after the image's `kitchen.toolchain-hash` label matches the current pin; a
+stale local build is refused with a rebuild instruction.
+
+```sh
+node scripts/build-toolchain.mjs film-v1   # labels the image with its toolchain hash
+node scripts/pin-toolchain.mjs            # after any toolchain edit; --check to verify
+node scripts/smoke-recipe.mjs heavy-little-suitcase
+node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine render
+node scripts/smoke-recipe.mjs lyric-video-section --resume private/runtime/smoke/lyric-video-section/<stamp>
+```
+
+A smoke runs no model. It renders `smoke/<recipe>/` in the image, runs the
+Recipe's required checks there, publishes through the real publication path
+into a scratch Kitchen under ignored `private/runtime/smoke/`, builds the
+registry there as if the Recipe were accepted, and plays the Dish in the
+gallery's sandboxed iframe inside the offline image. A private Recipe's Dish
+must stay out of the registry and is played from the private tree.
 
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody
 decision before it becomes a catalog layer), Manim, Three.js, a sound-design

@@ -46,7 +46,7 @@ async function fakeHermesHome(t) {
   }));
   await writeFile(path.join(hermes, "provider_models_cache.json"), JSON.stringify({
     openrouter: { at: 1794209901, models: ["anthropic/claude-opus-5.5", "google/gemma-4-31b-it:free"] },
-    "opencode-go": { at: 1794209901, models: ["glm-5.3", "beam-free"] },
+    "opencode-go": { at: 1794209901, models: ["glm-5.3", "beam-free", "mimo-v2.5", "odd/slash-free"] },
     "opencode-free": { at: 1788465482, models: ["deepseek-v4-flash-free"] },
     anthropic: { at: 1794209901, models: ["claude-opus-5-5", "claude-fable-5.1", "claude-opus-4-8"] },
     gemini: { at: 1794209901, models: ["gemini-3.8-flash"] },
@@ -54,7 +54,10 @@ async function fakeHermesHome(t) {
   }));
   await writeFile(path.join(hermes, "ollama_cloud_models_cache.json"), JSON.stringify({ models: ["kimi-k3", "glm-5.3"], cached_at: 1788465478 }));
   await writeFile(path.join(hermes, "models_dev_cache.json"), JSON.stringify({
-    "opencode-go": { models: { "glm-5.3": { id: "glm-5.3", reasoning: true, limit: { context: 200000 }, cost: { input: 1, output: 2 } } } },
+    "opencode-go": { models: {
+      "glm-5.3": { id: "glm-5.3", name: "GLM-5.3", reasoning: true, tool_call: true, limit: { context: 200000 }, cost: { input: 1, output: 2 } },
+      "mimo-v2.5": { id: "mimo-v2.5", name: "MiMo V2.5", reasoning: false, tool_call: false, cost: { input: 1, output: 1 } },
+    } },
     openrouter: { models: {
       "google/gemma-4-31b-it:free": { id: "google/gemma-4-31b-it:free", name: "Google: Gemma 4 31B (free)", tool_call: true, reasoning: true, limit: { context: 262144 }, cost: { input: 0, output: 0 } },
     } },
@@ -83,7 +86,8 @@ const ENDPOINTS = {
 };
 
 /** A stand-in for OpenRouter's public metadata API. It records every request so the tests can say no key was sent. */
-async function fakeMetadataServer(t, { failModels = false } = {}) {
+async function fakeMetadataServer(t, { failModels = false, endpoints: moved = {} } = {}) {
+  const endpointsFor = { ...ENDPOINTS, ...moved };
   const requests = [];
   const server = createServer((request, response) => {
     requests.push({ url: request.url, authorization: request.headers.authorization ?? null });
@@ -96,8 +100,8 @@ async function fakeMetadataServer(t, { failModels = false } = {}) {
     const endpoints = /^\/api\/v1\/models\/(.+)\/endpoints$/u.exec(url.pathname);
     if (endpoints) {
       const id = decodeURIComponent(endpoints[1]);
-      if (!ENDPOINTS[id]) { response.statusCode = 404; return response.end("{}"); }
-      return response.end(JSON.stringify({ data: { id, endpoints: ENDPOINTS[id].map((endpoint) => ({ ...endpoint, pricing: { prompt: id.endsWith(":free") ? "0" : "0.000001", completion: "0" }, supported_parameters: ["tools"] })) } }));
+      if (!endpointsFor[id]) { response.statusCode = 404; return response.end("{}"); }
+      return response.end(JSON.stringify({ data: { id, endpoints: endpointsFor[id].map((endpoint) => ({ ...endpoint, pricing: { prompt: id.endsWith(":free") ? "0" : "0.000001", completion: "0" }, supported_parameters: ["tools"] })) } }));
     }
     response.statusCode = 404;
     response.end("{}");
@@ -131,9 +135,17 @@ test("discovery lists every Hermes route with its state, the fix for a logged-ou
   assert.equal(routes["openai-api"].status, "suppressed");
   assert.equal(routes.anthropic.status, "borrowed-claude-code-login");
   assert.equal(routes["ollama-cloud"].source, "hermes:ollama_cloud_models_cache.json");
-  // Only routes Kitchen has a template for are cookable; the rest say why not.
-  assert.deepEqual(result.routes.filter((route) => route.cookable).map((route) => route.route), ["anthropic", "openrouter"]);
-  assert.match(routes["opencode-go"].notCookable, /no Hermes execution profile/);
+  // A route is cookable when Kitchen has a template for it: its own (OpenRouter, Anthropic) or the route template for a key route it can proxy.
+  assert.deepEqual(result.routes.filter((route) => route.cookable).map((route) => route.route), ["anthropic", "opencode-go", "openrouter"]);
+  assert.equal(routes["opencode-go"].template, "hermes-route-clean");
+  assert.match(routes["opencode-go"].note, /OPENCODE_GO_API_KEY from the cook command's environment/);
+  assert.match(routes.nous.notCookable, /OAuth/);
+  assert.match(routes.copilot.notCookable, /no key-proxy entry/);
+  // On a key route, efforts follow whether the model reasons, and a model that takes no tools is not cookable.
+  assert.deepEqual(routes["opencode-go"].models.map((model) => [model.id, model.name, model.cookable, model.efforts?.length, model.reasons ?? null]), [
+    ["glm-5.3", "GLM-5.3", true, 8, null], ["beam-free", "beam-free", true, 8, null], ["mimo-v2.5", "MiMo V2.5", false, 1, ["no tool calling, which Hermes's file and terminal tools need"]],
+    ["odd/slash-free", "odd/slash-free", false, 8, ["not a plain model id on this route"]],
+  ]);
   // The Anthropic template takes Kitchen's four models, in Kitchen's spelling.
   assert.deepEqual(routes.anthropic.models.map((model) => [model.id, model.cookable, model.kitchenModel ?? null]), [["claude-opus-5-5", true, null], ["claude-fable-5.1", true, "claude-fable-5-1"], ["claude-opus-4-8", false, null]]);
   // OpenRouter is listed from its live public list, far beyond Hermes's curated cache.
@@ -156,7 +168,8 @@ test("discovery narrows to one route and to free models, and falls back to Herme
   assert.equal(free.routes[0].counts.models, 7, "counts describe the whole route, not the filter");
   await assert.rejects(discoverModels({ env, route: "nowhere" }), /Hermes has no route nowhere/);
   const go = (await discoverModels({ env, route: "opencode-go", free: true })).routes[0];
-  assert.deepEqual(go.models.map((model) => model.id), ["beam-free"]);
+  assert.equal(go.counts.models, 4);
+  assert.deepEqual(go.models.map((model) => model.id), ["beam-free", "odd/slash-free"]);
 
   const down = await discoveryEnv(t, { failModels: true });
   const fallback = (await discoverModels({ env: down.env, route: "openrouter" })).routes[0];
@@ -240,9 +253,9 @@ test("a selector resolves through discovery to existing entries, entries to mate
   const now = () => new Date("2026-11-09T12:00:00Z");
   const resolution = await resolveConfigurationSpec(catalog, "hermes:openrouter/*@auto+free", { env, now });
   assert.deepEqual(resolution.entries.map((entry) => [entry.configuration.id, entry.status, entry.configuration.reasoningEffort, entry.configuration.executionProfile.upstream, entry.configuration.upstreamChoice?.reason]), [
-    ["hermes-openrouter-dots-studio-dots-3-note-preview-free-high-clean", "materialize", "high", "atlas-cloud", "sole-provider"],
-    ["hermes-openrouter-google-gemma-4-31b-it-free-high-clean", "materialize", "high", "google-ai-studio", "maker"],
-    ["hermes-openrouter-nvidia-nemotron-3-ultra-free-medium-clean", "materialize", "medium", "nvidia", "maker"],
+    ["hermes-openrouter-dots-studio-dots-3-note-preview-free-atlas-cloud-high-clean", "materialize", "high", "atlas-cloud", "sole-provider"],
+    ["hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean", "materialize", "high", "google-ai-studio", "maker"],
+    ["hermes-openrouter-nvidia-nemotron-3-ultra-free-nvidia-medium-clean", "materialize", "medium", "nvidia", "maker"],
   ]);
   assert.deepEqual(resolution.unsupported.map((item) => item.model), ["google/lyria-3-pro-preview", "openrouter/free"]);
   assert.equal(resolution.matched, 5);
@@ -286,8 +299,8 @@ test("plan shows what a selector resolves to; a dry cook writes nothing; an exec
 
   const planned = await plan(root, selection);
   assert.equal(planned.configurationSpec.selector, true);
-  assert.deepEqual(planned.configurationSpec.configurations.map((item) => [item.id, item.status, item.free]), [["hermes-openrouter-google-gemma-4-31b-it-free-high-clean", "materialize", true]]);
-  assert.deepEqual(planned.plans.map((item) => [item.variant.id, item.supported.length]), [["hermes-openrouter-google-gemma-4-31b-it-free-high-clean", 1]]);
+  assert.deepEqual(planned.configurationSpec.configurations.map((item) => [item.id, item.status, item.free]), [["hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean", "materialize", true]]);
+  assert.deepEqual(planned.plans.map((item) => [item.variant.id, item.supported.length]), [["hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean", 1]]);
   const dry = await cook(root, { ...selection, intent: "fill-missing" });
   assert.equal(dry.mode, "dry-run");
   assert.equal(dry.cooks[0].planned.length, 1);
@@ -299,10 +312,10 @@ test("plan shows what a selector resolves to; a dry cook writes nothing; an exec
     return { results: [], accepted: [], failed: [], unsupported: [] };
   };
   const executed = await cook(root, { ...selection, intent: "fill-missing", execute: true, env: { ...env, TASTE_ALLOW_MODEL_RUNS: "1" }, executePlan });
-  assert.deepEqual(executed.materialized, ["hermes-openrouter-google-gemma-4-31b-it-free-high-clean"]);
+  assert.deepEqual(executed.materialized, ["hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean"]);
   const catalog = await loadCatalog(root);
   const written = catalog.configurations.at(-1);
-  assert.equal(written.id, "hermes-openrouter-google-gemma-4-31b-it-free-high-clean");
+  assert.equal(written.id, "hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean");
   assert.equal(written.materialized.template, "hermes-openrouter-clean");
   // The Dish would carry the hash of the catalog as written, and the configuration's ordinary hash.
   assert.deepEqual(ran, [{ id: written.id, hash: computeConfigHash(written), catalogHash: catalog.catalogHash }]);
@@ -358,4 +371,78 @@ test("a missing price is unknown, not free", () => {
   assert.equal(describeOpenRouterModel({ ...base, pricing: { prompt: null, completion: null } }).free, false);
   assert.equal(describeOpenRouterModel({ ...base, pricing: { prompt: "0", completion: "0" } }).free, true);
   assert.equal(describeOpenRouterModel({ ...base, id: "acme/thing-1:free" }).free, true);
+});
+
+test("a materialized OpenRouter id carries its upstream pin, so a provider move adds a second configuration beside the first", async (t) => {
+  const { env } = await discoveryEnv(t);
+  const catalog = await loadCatalog(repoRoot);
+  const first = (await resolveConfigurationSpec(catalog, "hermes:openrouter/google/gemma-4-31b-it:free@high", { env })).entries[0].configuration;
+  assert.equal(first.id, "hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean");
+  // The model moves: OpenRouter now lists another sole provider for it.
+  const moved = await discoveryEnv(t, { endpoints: { "google/gemma-4-31b-it:free": [{ tag: "chutes/bf16", provider_name: "Chutes" }] } });
+  const withFirst = catalogWithConfigurations(catalog, [first]);
+  const resolution = await resolveConfigurationSpec(withFirst, "hermes:openrouter/google/gemma-4-31b-it:free@high", { env: moved.env });
+  assert.deepEqual(resolution.entries.map((entry) => [entry.status, entry.configuration.id, entry.configuration.executionProfile.upstream]), [["materialize", "hermes-openrouter-google-gemma-4-31b-it-free-chutes-high-clean", "chutes"]]);
+  assert.notEqual(resolution.entries[0].configHash, computeConfigHash(first));
+  // A selector over the moved model does the same, rather than excluding it.
+  const selected = await resolveConfigurationSpec(withFirst, "hermes:openrouter/google/*@auto+free", { env: moved.env });
+  assert.deepEqual(selected.entries.map((entry) => entry.configuration.id), ["hermes-openrouter-google-gemma-4-31b-it-free-chutes-high-clean"]);
+  assert.deepEqual(selected.unsupported.map((item) => item.model), ["google/lyria-3-pro-preview"], "the moved model is not excluded as a clash");
+  // A hand-written entry keeps its id: a spec that names it by hash resolves to it as it is.
+  const existing = await resolveConfigurationSpec(catalog, "hermes:openrouter/anthropic/claude-opus-5.5@high", { env });
+  assert.equal(existing.entries[0].configuration.id, "hermes-openrouter-opus-5-5-high-clean");
+});
+
+test("a spec or selector on any key route resolves through the route template; a route Kitchen cannot proxy says why", async (t) => {
+  const { env } = await discoveryEnv(t);
+  const catalog = await loadCatalog(repoRoot);
+  const now = () => new Date("2026-11-09T12:00:00Z");
+  const one = await resolveConfigurationSpec(catalog, "hermes:opencode-go/glm-5.3@high", { env, now });
+  const [entry] = one.entries;
+  assert.equal(entry.status, "materialize");
+  const glm = entry.configuration;
+  assert.deepEqual([glm.id, glm.label, glm.provider, glm.model, glm.reasoningEffort], ["hermes-opencode-go-glm-5-3-high-clean", "GLM-5.3 · High · via Hermes · clean (OpenCode Go)", "z-ai", "glm-5.3", "high"]);
+  assert.deepEqual([glm.executionProfile.id, glm.executionProfile.route, glm.executionProfile.environment, glm.executionProfile.upstream], ["hermes-linux-host-clean-route-v1", "opencode-go", "clean", undefined]);
+  assert.deepEqual(glm.materialized, { template: "hermes-route-clean", spec: "hermes:opencode-go/glm-5.3@high:clean", at: "2026-11-09T12:00:00.000Z", contextLength: 200000, source: "hermes:provider_models_cache.json" });
+  assert.deepEqual(materializedProblems(glm), []);
+  assert.match(materializedProblems({ ...glm, materialized: { ...glm.materialized, spec: "hermes:nous/glm-5.3@high:clean" } }).join(";"), /does not name this configuration/);
+  assert.doesNotThrow(() => resolveHarnessAdapter(glm));
+  assert.equal(hermesRoute(glm).auth, KEY_PROXY_AUTH);
+  // A model nobody has a maker for keeps the route as its provider: the route is all Kitchen knows of where it comes from.
+  const free = await resolveConfigurationSpec(catalog, "hermes:opencode-go/*@auto+free", { env, now });
+  assert.deepEqual(free.entries.map((item) => [item.configuration.id, item.configuration.provider, item.configuration.reasoningEffort, item.configuration.materialized.free]), [["hermes-opencode-go-beam-free-high-clean", "opencode-go", "high", true]]);
+  assert.deepEqual(free.unsupported, [{ model: "odd/slash-free", reason: "not a plain model id on this route" }]);
+  const all = await resolveConfigurationSpec(catalog, "hermes:opencode-go/*@auto", { env, now });
+  assert.deepEqual(all.unsupported.map((item) => item.model), ["mimo-v2.5", "odd/slash-free"]);
+  await assert.rejects(resolveConfigurationSpec(catalog, "hermes:opencode-go/nothing@high", { env }), /Hermes lists no nothing on the opencode-go route/);
+  await assert.rejects(resolveConfigurationSpec(catalog, "hermes:opencode-go/glm-5.3@high", { env, upstream: "z-ai" }), /--upstream applies only to the OpenRouter route/);
+  await assert.rejects(resolveConfigurationSpec(catalog, "hermes:nous/x-ai/grok-4.7@high", { env }), /nous.*OAuth/);
+  await assert.rejects(resolveConfigurationSpec(catalog, "hermes:opencode-go/glm-5.3@high:snapshot", { env }), /No configuration template for hermes on the opencode-go route in the snapshot environment/);
+});
+
+test("a Menu that declares its configurations is cooked with them when no --config is given", async (t) => {
+  const { env } = await discoveryEnv(t);
+  const root = await fixtureRepository(t);
+  const recipe = JSON.parse(await readFile(path.join(root, "catalog", "recipes", "ui-visual", "responsive-product-launch", "recipe.json"), "utf8"));
+  const menu = { schemaVersion: 1, id: "free-launch", title: "Free models launch a product", summary: "One launch page, every free model.", cuisines: recipe.cuisines, recipes: [recipe.id], configurations: ["hermes:openrouter/google/*@auto+free", "hermes-openrouter-opus-5-5-high-clean"] };
+  await writeFile(path.join(root, "catalog", "menus", "free-launch.json"), `${JSON.stringify(menu, null, 2)}\n`);
+  const planned = await plan(root, { menuId: "free-launch", env });
+  assert.deepEqual(planned.configurations, menu.configurations);
+  assert.deepEqual(planned.plans.map((item) => item.configuration), menu.configurations);
+  assert.deepEqual(planned.plans[0].configurationSpec.configurations.map((item) => item.id), ["hermes-openrouter-google-gemma-4-31b-it-free-google-ai-studio-high-clean"]);
+  assert.equal(planned.plans[1].variant.id, "hermes-openrouter-opus-5-5-high-clean");
+  const before = await readFile(path.join(root, "catalog", "configurations.json"), "utf8");
+  const dry = await cook(root, { menuId: "free-launch", env, intent: "fill-missing" });
+  assert.equal(dry.mode, "dry-run");
+  assert.deepEqual(dry.cooks.map((item) => item.configuration), menu.configurations);
+  assert.equal(dry.cooks[0].cooks[0].planned.length, 1);
+  assert.equal(await readFile(path.join(root, "catalog", "configurations.json"), "utf8"), before, "a dry run writes nothing");
+  // An explicit --config still wins, and a Menu that declares none needs one.
+  assert.equal((await plan(root, { menuId: "free-launch", configurationId: "hermes-openrouter-opus-5-5-high-clean", env })).variant.id, "hermes-openrouter-opus-5-5-high-clean");
+  await assert.rejects(plan(root, { menuId: "standard-web", env }), /Menu standard-web declares no configurations; name one with --config/);
+  // One declared configuration that cannot be planned is reported beside the rest, as in cook.
+  await writeFile(path.join(root, "catalog", "menus", "free-launch.json"), `${JSON.stringify({ ...menu, configurations: ["hermes:nous/x-ai/grok-4.7@high", "hermes-openrouter-opus-5-5-high-clean"] }, null, 2)}\n`);
+  const partial = await plan(root, { menuId: "free-launch", env });
+  assert.match(partial.plans[0].error, /nous.*OAuth/);
+  assert.equal(partial.plans[1].variant.id, "hermes-openrouter-opus-5-5-high-clean");
 });

@@ -104,7 +104,8 @@ test("Claude Code tags only an exhausted turn budget or a structured refusal, an
   const variant = { model, personality: "default", serviceTier: "default", executionProfile: { environment: "clean" } };
   const sessionId = "11111111-1111-4111-8111-111111111111";
   const init = { type: "system", subtype: "init", model, permissionMode: "bypassPermissions", cwd: "/attempt/workspace", tools: [...CLAUDE_CODE_TOOLS], mcp_servers: [], session_id: sessionId, claude_code_version: "2.1.312", output_style: "default", plugins: [], skills: ["simplify"], agents: ["general-purpose"] };
-  const options = { variant, workspaces: ["/attempt/workspace"], cliVersion: "claude-code 2.1.312" };
+  // Kitchen pinned the Recipe's turn budget, so spending it can be the model's (taste-budget covers the unpinned case).
+  const options = { variant, workspaces: ["/attempt/workspace"], cliVersion: "claude-code 2.1.312", turnBudget: 40 };
   const turn = (message) => ({ type: "assistant", message: { model, ...message } });
   const spent = { type: "result", subtype: "error_max_turns", is_error: true };
   assert.equal(claudeChefFault(jsonl(init, spent), options), "out-of-turns");
@@ -422,9 +423,12 @@ test("only a broken output contract is the model's; a symlink or filesystem erro
   await rm(path.join(workspace, "out/extra.html"));
   await writeFile(path.join(workspace, "out/index.html"), "<p>this is too many bytes</p>");
   await assert.rejects(selectArtifactFiles(workspace, output), (error) => error instanceof ArtifactContractError && /bytes; limit is 10/.test(error.message));
-  // A symlink anywhere in the workspace (an npm install's .bin links) is not the model breaking the contract.
+  // Equipment the delivery never includes (an npm install's .bin links, a mounted engine's dependencies) is not walked.
   await writeFile(path.join(workspace, "out/index.html"), "<p>hi</p>");
   await mkdir(path.join(workspace, "node_modules/.bin"), { recursive: true });
   await symlink("../pkg/cli.js", path.join(workspace, "node_modules/.bin/tool"));
+  assert.deepEqual((await selectArtifactFiles(workspace, output)).files, ["out/index.html"]);
+  // A symlink inside what the Recipe delivers is not the model breaking the contract either: Kitchen refuses it as its own fault.
+  await symlink("index.html", path.join(workspace, "out/alias.html"));
   await assert.rejects(selectArtifactFiles(workspace, output), (error) => !(error instanceof ArtifactContractError));
 });

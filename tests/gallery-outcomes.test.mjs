@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { isDish, isNoDish, noDishLabel, outcomeOf, passedNoDishLabel, plateCountLabel, platesOf, standingVerdict } from '../src/lib/outcomes.ts';
+import { budgetLabel, durationLabel, isDish, isNoDish, noDishLabel, outcomeOf, passedNoDishLabel, plateCountLabel, platesOf, standingVerdict } from '../src/lib/outcomes.ts';
 import { resolveRecipeSelection } from '../src/lib/selection.ts';
 import { readGalleryState, writeGalleryState } from '../src/lib/url-state.ts';
 import { dishesFor } from '../src/lib/registry.ts';
@@ -91,4 +91,16 @@ test('the gallery renders No Dishes in panes and on the counter, and shows the v
   // Distinct but not shaming: a No Dish never uses the danger colour.
   const css = readFileSync(new URL('../src/styles/app.css', import.meta.url), 'utf8');
   assert.doesNotMatch(css.split('/* No Dish:')[1] ?? '', /var\(--danger\)/u);
+});
+
+test('a spent budget names itself on the plate', () => {
+  assert.equal(durationLabel(600), '10 min');
+  assert.equal(durationLabel(5400), '1 h 30 min');
+  assert.equal(durationLabel(45), '45 s');
+  assert.equal(budgetLabel({ seconds: 600, modelTurns: 40 }), '10 min · 40 model turns per prompt');
+  assert.equal(budgetLabel({ modelTurns: 1 }), '1 model turn per prompt');
+  const timedOut = { ...noDish('nodish_t', 'c3', '2026-01-05', 'out-of-time', null), fault: { class: 'chef', code: 'out-of-time', stage: 'execution', reason: 'r', budget: { seconds: 600 } } };
+  assert.equal(noDishLabel(timedOut), 'No Dish · Ran out of time (budget 10 min)');
+  const turnedOut = { ...timedOut, fault: { ...timedOut.fault, code: 'out-of-turns', budget: { modelTurns: 40 } } };
+  assert.equal(noDishLabel(turnedOut), 'No Dish · Ran out of turns (budget 40 model turns per prompt)');
 });
