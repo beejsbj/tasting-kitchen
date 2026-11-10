@@ -771,7 +771,7 @@ test("a compression child on the OpenCode Go route is followed through its proxy
   assert.equal(observed.mainLoopCalls, 3);
   assert.equal(observed.routeEvidence.billingProvider, "opencode-go");
 
-  // The child row ends on another route, or lacks the tool source: either is not this run's session.
+  // A compression child that lacks the tool source is not this run's session.
   const b = await attempt(f.root, "go-rotation-source");
   await prepareHermesAttempt({ variant: viaGo, cwd: b.attemptDir, env });
   const foreign = await runHermesSession({ variant: viaGo, recipe, workspace: b.workspace, privateDir: b.privateDir, executable: f.executable, env: { ...env, FAKE_ROTATE: "first", FAKE_SOURCE: "cli", FAKE_SESSION: "20261108_131309_55dddd" }, proxy });
