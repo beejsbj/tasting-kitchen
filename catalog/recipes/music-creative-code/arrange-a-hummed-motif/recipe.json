@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "arrange-a-hummed-motif",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Arrange a hummed motif",
+  "summary": "Turn the owner's seven-note hummed motif into about a minute of music that keeps it recognisable.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "mothers",
+  "originNote": "The motif is the owner's own hum, pitch-tracked and rounded to semitones. The benchmark shape awaits owner acceptance.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound; nothing is fetched from the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "motif",
+        "path": "fixtures/motif.json",
+        "mountAs": "fixtures/motif.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "arrange-motif",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/motif.json and do what the brief asks. Deliver index.html and notes.md."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Press play. Is the hummed motif recognisable throughout? Is the accompaniment sparse, does the piece go somewhere, and does it end rather than stop?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "variation": "One-shot sibling of revise-arrangement-after-listening: same motif, brief and deliverable, without the listening note."
+}
