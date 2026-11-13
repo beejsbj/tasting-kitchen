@@ -12,6 +12,8 @@
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: a page that plays the piece when I press one clearly labelled button, and can be stopped. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words on what you heard in the hum, where you took it, and what to listen for.
 

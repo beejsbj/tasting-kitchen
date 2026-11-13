@@ -75,15 +75,21 @@ test('published Dishes keep their recipe identity and carry verified input and r
   }
 });
 
-test('the seventeen active recipes are cooked and browseable while the old backlog is archived', async () => {
+test('the seventeen cooked recipes are browseable, uncooked ready recipes sit beside them, and the old backlog is archived', async () => {
   const book = await buildRecipeBook(root);
   const archive = JSON.parse(await readFile(path.join(root, 'catalog/archive.json'), 'utf8'));
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
   assert.equal(fresh.length, 4);
   assert.ok(fresh.every(entry => entry.dishCount === 2));
-  assert.equal(book.recipes.length, 17);
-  const webRecipes = book.recipes.filter(entry => entry.recipe.kind === 'web');
-  const sessionRecipes = book.recipes.filter(entry => entry.recipe.kind === 'session');
+  // Ready Recipes that nobody has cooked yet are in the book with no Dishes.
+  const uncooked = book.recipes.filter(entry => entry.dishCount === 0);
+  for (const id of ['write-a-leitmotif', 'grow-a-hummed-seed', 'rework-hummed-seed-after-listening']) {
+    assert.ok(uncooked.some(entry => entry.recipe.id === id), `music recipe ${id} is ready and uncooked`);
+  }
+  const cooked = book.recipes.filter(entry => entry.dishCount > 0);
+  assert.equal(cooked.length, 17);
+  const webRecipes = cooked.filter(entry => entry.recipe.kind === 'web');
+  const sessionRecipes = cooked.filter(entry => entry.recipe.kind === 'session');
   assert.equal(webRecipes.length, 10);
   assert.ok(webRecipes.every(entry => entry.dishCount === 2));
   assert.equal(sessionRecipes.length, 7);
