@@ -10,6 +10,8 @@
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: two clearly labelled buttons, one playing the motif as supplied and one playing your version, in the same plain sound and at the same tempo, so the only difference I hear is your change. Both can be stopped. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words on what is wrong, exactly what you changed, and what you chose to leave alone.
 

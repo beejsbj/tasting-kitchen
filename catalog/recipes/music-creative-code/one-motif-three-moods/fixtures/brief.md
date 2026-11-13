@@ -11,6 +11,8 @@
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: three clearly labelled buttons, one per mood, and a way to stop. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words on what you changed for each mood and what you held fixed so it stays the same motif.
 

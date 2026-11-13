@@ -48,7 +48,7 @@
     {
       "id": "write-scene",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and fixtures/motifs.json and do what the brief asks. Deliver index.html and notes.md."
+      "content": "Read fixtures/brief.md and fixtures/motifs.json and do what the brief asks. Deliver index.html and notes.md in the folder you start in."
     }
   ],
   "output": {

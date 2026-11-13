@@ -47,7 +47,7 @@
     {
       "id": "describe",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and fixtures/piece.html and do what the brief asks. Deliver description.md."
+      "content": "Read fixtures/brief.md and fixtures/piece.html and do what the brief asks. Deliver description.md in the folder you start in."
     }
   ],
   "output": {

@@ -11,4 +11,6 @@
 
 ## What to deliver
 
+Put it in the folder you start in, not in a subfolder.
+
 - `description.md`: no more than 200 words of prose. No headings, no lists.

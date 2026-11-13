@@ -13,6 +13,8 @@ Find the motif in it and make it something I can hear.
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: one clearly labelled button plays your motif. A second clearly labelled button plays the raw contour as a plain sliding tone, so I can hear what you started from. Both can be stopped. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words. List the notes you settled on, then say which wobbles you kept, which you dropped, and the one call you were least sure of.
 

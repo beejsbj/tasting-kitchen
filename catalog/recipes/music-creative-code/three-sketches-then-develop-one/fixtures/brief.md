@@ -2,6 +2,8 @@
 
 This is in two parts. First you offer me three directions. I listen and reply. Then you develop one.
 
+Put every file you deliver in the folder you start in, not in a subfolder.
+
 ## The subject
 
 A night train crossing flat country. Everyone in the carriage is asleep except one passenger, who is going home after a long time away and is not sure of the welcome.

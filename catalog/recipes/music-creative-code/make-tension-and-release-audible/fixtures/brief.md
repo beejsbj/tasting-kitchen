@@ -11,6 +11,8 @@ I am teaching one idea to someone who has never studied music: tension and relea
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: the lesson. Each thing I can listen to has its own clearly labelled button, and the sound can be stopped. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: for me, not the learner. No more than 120 words on why you chose this example and what you left out.
 

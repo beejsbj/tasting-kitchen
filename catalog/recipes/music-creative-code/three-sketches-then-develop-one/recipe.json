@@ -41,12 +41,12 @@
     {
       "id": "three-sketches",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and do the first part only. Deliver sketches.html and sketches.md, then stop."
+      "content": "Read fixtures/brief.md and do the first part only. Deliver sketches.html and sketches.md in the folder you start in, then stop."
     },
     {
       "id": "choose-and-develop",
       "role": "follow-up",
-      "content": "I listened to all three. Take the one that is least like the other two and develop it into the piece the brief describes. Leave sketches.html and sketches.md unchanged. Deliver index.html and notes.md; begin notes.md by naming the sketch you took and what set it apart."
+      "content": "I listened to all three. Take the one that is least like the other two and develop it into the piece the brief describes. Leave sketches.html and sketches.md unchanged. Deliver index.html and notes.md in the folder you start in, beside the sketches; begin notes.md by naming the sketch you took and what set it apart."
     }
   ],
   "output": {

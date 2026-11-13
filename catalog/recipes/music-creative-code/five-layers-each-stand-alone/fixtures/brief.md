@@ -11,6 +11,8 @@ Write a short piece made of five layers that are added one at a time. The test i
 
 ## What to deliver
 
+Put these in the folder you start in, not in a subfolder.
+
 - `index.html`: five clearly labelled buttons, one per stage (layer 1; layers 1 and 2; and so on to all five), and a way to stop. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words naming the five layers in order and what each one adds.
 
