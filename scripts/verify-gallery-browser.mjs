@@ -71,7 +71,8 @@ try {
   assert.equal(await live.getByRole('button', { name: 'Not a good dish', exact: true }).getAttribute('aria-pressed'), 'true', 'Dish votes persist after reload');
   await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
   await live.locator('.recipe-book-card').first().waitFor();
-  assert.equal(await live.locator('.recipe-book-card').count(), 17);
+  const liveBook = await live.evaluate(async () => fetch('/data/recipe-book.json').then(response => response.json()));
+  assert.equal(await live.locator('.recipe-book-card').count(), liveBook.recipes.length, 'Recipe Book shows every active Recipe, cooked or not');
   await save(live, 'active-recipe-book');
   for (const width of [1280, 390]) {
     await live.setViewportSize({ width, height: 900 });
