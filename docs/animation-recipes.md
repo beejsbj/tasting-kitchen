@@ -77,8 +77,10 @@ check `validation/audio-identity.mjs`: lag within 20 ms, every audible
 half-second correlated, nothing added in the excerpt's silences, duration
 matched; a uniform trim is reported, not failed, and every loud half-second
 must carry that same gain within 1 dB, so a fade, level ride or limiter fails.
-The excerpt itself peaks at about +0.4 dBTP, so the brief asks for one uniform
-trim (about −1 dB) to meet the film's true-peak ceiling. The brief also turns
+The excerpt itself peaks at about +0.4 dBTP, so the brief allows one uniform
+trim to meet the film's true-peak ceiling. AAC overshoot means −1 dB is not
+always enough: on the host's FFmpeg, −1 dB still peaked at 0.0 to +2.4 dBTP
+across 96 to 192 kbps, while −6 dB at 128 kbps reached −4.1 dBTP. The brief also turns
 off the engine's default 0.13 s display lead, so words show when they are sung.
 
 ## Before Ready

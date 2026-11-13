@@ -93,7 +93,7 @@ function bandRise(signal, range, frames) {
 }
 
 /** Summed band rises, mean removed: high where something starts. The lowest band's rise is kept for phase. */
-function onsetStrength(signal, frames) {
+export function onsetStrength(signal, frames) {
   const strength = new Float32Array(frames);
   let low = null;
   for (const range of ONSET_BANDS) {
@@ -120,21 +120,35 @@ function settlePhase(beats, low, period) {
   return beats[0] - half >= 0 ? [beats[0] - half, ...moved] : moved;
 }
 
-/** Beat period in frames from the onset autocorrelation under a tempo prior. */
-function estimatePeriod(strength) {
-  let best = { period: Math.round((60 / PRIOR_BPM) * FPS), fit: -Infinity };
-  for (let period = Math.ceil((60 / MAX_BPM) * FPS); period <= Math.floor((60 / MIN_BPM) * FPS); period++) {
-    let sum = 0;
-    for (let f = period; f < strength.length; f++) sum += strength[f] * strength[f - period];
-    const prior = Math.exp(-0.5 * (Math.log2((60 * FPS) / period / PRIOR_BPM) / 1) ** 2);
-    const fit = (sum / (strength.length - period)) * prior;
-    if (fit > best.fit) best = { period, fit };
+/** Onset strength minus its one-second moving average: the pulse without the slow swell. */
+function detrend(strength) {
+  const radius = FPS / 2, out = new Float32Array(strength.length);
+  let sum = 0, count = 0;
+  for (let f = 0; f < Math.min(radius, strength.length); f++) { sum += strength[f]; count++; }
+  for (let f = 0; f < strength.length; f++) {
+    if (f + radius < strength.length) { sum += strength[f + radius]; count++; }
+    if (f - radius - 1 >= 0) { sum -= strength[f - radius - 1]; count--; }
+    out[f] = strength[f] - sum / count;
   }
-  // Refine to a fractional period with a parabola through the neighbours.
-  const at = (period) => { let sum = 0; for (let f = period; f < strength.length; f++) sum += strength[f] * strength[f - period]; return sum / (strength.length - period); };
-  const [a, b, c] = [at(best.period - 1), at(best.period), at(best.period + 1)];
-  const shift = a - 2 * b + c < 0 ? (0.5 * (a - c)) / (a - 2 * b + c) : 0;
-  return best.period + Math.max(-0.5, Math.min(0.5, shift));
+  return out;
+}
+
+/** Tempo candidates (BPM, fit) from the detrended onset autocorrelation under a tempo prior. */
+export function tempoCandidates(strength) {
+  const pulse = detrend(strength);
+  const autocorrelation = (period) => { let sum = 0; for (let f = period; f < pulse.length; f++) sum += pulse[f] * pulse[f - period]; return sum / (pulse.length - period); };
+  const candidates = [];
+  for (let period = Math.ceil((60 / MAX_BPM) * FPS); period <= Math.floor((60 / MIN_BPM) * FPS); period++) {
+    const prior = Math.exp(-0.5 * Math.log2((60 * FPS) / period / PRIOR_BPM) ** 2);
+    candidates.push({ period, fit: autocorrelation(period) * prior, raw: autocorrelation(period) });
+  }
+  // Refine each local maximum to a fractional period with a parabola through its neighbours.
+  const peaks = candidates.filter((c, i) => i > 0 && i < candidates.length - 1 && c.fit >= candidates[i - 1].fit && c.fit >= candidates[i + 1].fit);
+  return peaks.map((c) => {
+    const [a, b, d] = [autocorrelation(c.period - 1), c.raw, autocorrelation(c.period + 1)];
+    const shift = a - 2 * b + d < 0 ? Math.max(-0.5, Math.min(0.5, (0.5 * (a - d)) / (a - 2 * b + d))) : 0;
+    return { period: c.period + shift, bpm: (60 * FPS) / (c.period + shift), fit: c.fit };
+  }).sort((x, y) => y.fit - x.fit);
 }
 
 /** Ellis's dynamic-programming beat tracker on the onset envelope. */
@@ -183,7 +197,9 @@ export function analyze(signal) {
   const envelopes = { rms: normalize(smooth(frameRms(signal, frames))) };
   for (const [name, range] of Object.entries(BANDS)) envelopes[name] = normalize(smooth(frameRms(band(signal, range), frames)));
   const { strength, low } = onsetStrength(signal, frames);
-  const period = estimatePeriod(strength);
+  const candidates = tempoCandidates(strength);
+  if (!candidates.length) throw new Error("No tempo found in the onset envelope");
+  const period = candidates[0].period;
   const beats = settlePhase(trackBeats(strength, period), low, period).map((frame) => frame / FPS);
   const intervals = beats.slice(1).map((beat, i) => beat - beats[i]).sort((a, b) => a - b);
   const beatPeriod = intervals.length ? intervals[intervals.length >> 1] : period / FPS;

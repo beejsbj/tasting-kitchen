@@ -16,7 +16,7 @@ export const THRESHOLDS = Object.freeze({
   minMeanCorrelation: 0.98,
   minGainDb: -6, // a uniform trim is allowed; a remaster or re-mix is not
   maxGainDb: 0.5,
-  maxGainDeviationDb: 1, // each half-second's gain against the overall trim (128 kbps AAC stays within 0.1 dB)
+  maxGainDeviationDb: 1, // each half-second's gain against the overall trim (AAC encodes of the excerpt at 96-192 kbps stay within 0.2 dB)
   steadyRms: 0.01, // -40 dBFS: windows loud enough for a per-window gain to mean anything
   maxDurationDeltaS: 0.05,
   silentRms: 0.001, // -60 dBFS: windows the excerpt leaves silent
