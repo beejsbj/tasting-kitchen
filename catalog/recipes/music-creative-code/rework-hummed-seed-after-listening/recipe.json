@@ -49,7 +49,7 @@
     {
       "id": "grow-seed",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and fixtures/motif.json and do what the brief asks. Deliver index.html and notes.md."
+      "content": "Read fixtures/brief.md and fixtures/motif.json and do what the brief asks. Deliver index.html and notes.md in the folder you start in."
     },
     {
       "id": "listening-note",
