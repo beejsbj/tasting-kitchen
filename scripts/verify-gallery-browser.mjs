@@ -71,7 +71,8 @@ try {
   assert.equal(await live.getByRole('button', { name: 'Not a good dish', exact: true }).getAttribute('aria-pressed'), 'true', 'Dish votes persist after reload');
   await live.goto(`${base}/?view=recipes`, { waitUntil: 'networkidle' });
   await live.locator('.recipe-book-card').first().waitFor();
-  assert.equal(await live.locator('.recipe-book-card').count(), 17);
+  const liveBook = await live.evaluate(async () => fetch('/data/recipe-book.json').then(response => response.json()));
+  assert.equal(await live.locator('.recipe-book-card').count(), liveBook.recipes.length, 'Recipe Book shows every active Recipe, cooked or not');
   await save(live, 'active-recipe-book');
   for (const width of [1280, 390]) {
     await live.setViewportSize({ width, height: 900 });
@@ -455,9 +456,8 @@ try {
   const book = await page.evaluate(async () => fetch("/data/recipe-book.json").then(response => response.json()));
   assert.equal(await page.locator(".recipe-book-card").count(), book.recipes.length, "Recipe Book includes all active definitions");
   const uncooked = book.recipes.filter(entry => !entry.dishCount);
-  assert.equal(uncooked.length, 0, "all seventeen active recipes should have a published Dish");
   await page.getByRole("button", { name: "Not cooked", exact: true }).click();
-  assert.equal(await page.locator(".recipe-book-card").count(), 0);
+  assert.equal(await page.locator(".recipe-book-card").count(), uncooked.length, "the Not cooked filter shows exactly the ready Recipes with no Dish");
   await page.getByRole("button", { name: "Design systems", exact: true }).click();
   const systems = book.recipes.filter(entry => entry.recipe.tags.includes("design-system"));
   assert.equal(await page.locator(".recipe-book-card").count(), systems.length);

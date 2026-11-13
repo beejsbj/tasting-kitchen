@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "three-sketches-then-develop-one",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Three motif sketches, then develop one",
+  "summary": "Offer three distinct motif sketches for one subject, then develop the one the owner's reply singles out, keeping all three sketches.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "The subject is original, written for this Recipe. No musical material is supplied; the three sketches are the model's own.",
+  "tags": [
+    "audio",
+    "writing",
+    "multi-turn"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "three-sketches",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and do the first part only. Deliver sketches.html and sketches.md in the folder you start in, then stop."
+    },
+    {
+      "id": "choose-and-develop",
+      "role": "follow-up",
+      "content": "I listened to all three. Take the one that is least like the other two and develop it into the piece the brief describes. Leave sketches.html and sketches.md unchanged. Deliver index.html and notes.md in the folder you start in, beside the sketches; begin notes.md by naming the sketch you took and what set it apart."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "sketches.html",
+      "sketches.md",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "sketches-kept",
+        "type": "file-exists",
+        "required": true,
+        "description": "The three sketches are kept beside the developed piece.",
+        "target": "sketches.html"
+      },
+      {
+        "id": "sketch-notes-kept",
+        "type": "file-exists",
+        "required": true,
+        "description": "The notes on the three sketches are kept.",
+        "target": "sketches.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page loads nothing from the network: no remote script, style, media, import or fetch. Whether it plays is left to tasting.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const R=\"\\\\s*[\\\"'`]\\\\s*(?:https?:)?\\\\/\\\\/\";const bad=[new RegExp('\\\\bsrc\\\\s*='+R,'i'),new RegExp('<link\\\\b[^>]*\\\\bhref\\\\s*='+R,'i'),new RegExp('\\\\b(?:import|fetch|importScripts|Audio|Worker|addModule)\\\\s*\\\\('+R,'i'),new RegExp('\\\\bfrom'+R,'i'),new RegExp('url\\\\(\\\\s*[\\\"\\']?\\\\s*(?:https?:)?\\\\/\\\\/','i')];if(bad.some(r=>r.test(h)))process.exit(1)"
+        ]
+      },
+      {
+        "id": "sketches-play-offline",
+        "type": "command",
+        "required": true,
+        "description": "The sketches page loads nothing from the network: no remote script, style, media, import or fetch. Whether it plays is left to tasting.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('sketches.html','utf8');const R=\"\\\\s*[\\\"'`]\\\\s*(?:https?:)?\\\\/\\\\/\";const bad=[new RegExp('\\\\bsrc\\\\s*='+R,'i'),new RegExp('<link\\\\b[^>]*\\\\bhref\\\\s*='+R,'i'),new RegExp('\\\\b(?:import|fetch|importScripts|Audio|Worker|addModule)\\\\s*\\\\('+R,'i'),new RegExp('\\\\bfrom'+R,'i'),new RegExp('url\\\\(\\\\s*[\\\"\\']?\\\\s*(?:https?:)?\\\\/\\\\/','i')];if(bad.some(r=>r.test(h)))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Play the three sketches, then the piece. Were the sketches three real directions or one idea three times? Did the model take the one that truly stands apart? Does the piece commit to that sketch and grow it, and does it end?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

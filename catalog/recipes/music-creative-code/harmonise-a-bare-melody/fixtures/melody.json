@@ -1,0 +1,26 @@
+{
+  "source": "Original, written for this Recipe. Eight bars of eight eighths each, melody only.",
+  "tempo": "Slow. One eighth lasts roughly 0.35 seconds.",
+  "notes": [
+    {"pitch": "E4", "eighths": 4},
+    {"pitch": "A4", "eighths": 2},
+    {"pitch": "G4", "eighths": 2},
+    {"pitch": "E4", "eighths": 6},
+    {"pitch": "D4", "eighths": 2},
+    {"pitch": "C4", "eighths": 2},
+    {"pitch": "D4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2},
+    {"pitch": "G4", "eighths": 2},
+    {"pitch": "D4", "eighths": 8},
+    {"pitch": "E4", "eighths": 4},
+    {"pitch": "A4", "eighths": 2},
+    {"pitch": "B4", "eighths": 2},
+    {"pitch": "C5", "eighths": 6},
+    {"pitch": "B4", "eighths": 2},
+    {"pitch": "A4", "eighths": 2},
+    {"pitch": "G4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2},
+    {"pitch": "F#4", "eighths": 2},
+    {"pitch": "E4", "eighths": 8}
+  ]
+}
