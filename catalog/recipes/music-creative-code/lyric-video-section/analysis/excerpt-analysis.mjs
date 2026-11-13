@@ -97,13 +97,13 @@ function onsetStrength(signal, frames) {
 
 /** Beat period in frames from the onset autocorrelation under a tempo prior. */
 function estimatePeriod(strength) {
-  let best = { period: Math.round((60 / PRIOR_BPM) * FPS), score: -Infinity };
+  let best = { period: Math.round((60 / PRIOR_BPM) * FPS), fit: -Infinity };
   for (let period = Math.ceil((60 / MAX_BPM) * FPS); period <= Math.floor((60 / MIN_BPM) * FPS); period++) {
     let sum = 0;
     for (let f = period; f < strength.length; f++) sum += strength[f] * strength[f - period];
     const prior = Math.exp(-0.5 * (Math.log2((60 * FPS) / period / PRIOR_BPM) / 1) ** 2);
-    const score = (sum / (strength.length - period)) * prior;
-    if (score > best.score) best = { period, score };
+    const fit = (sum / (strength.length - period)) * prior;
+    if (fit > best.fit) best = { period, fit };
   }
   // Refine to a fractional period with a parabola through the neighbours.
   const at = (period) => { let sum = 0; for (let f = period; f < strength.length; f++) sum += strength[f] * strength[f - period]; return sum / (strength.length - period); };
@@ -116,19 +116,19 @@ function estimatePeriod(strength) {
 function trackBeats(strength, period) {
   const scale = percentile(strength, 99) || 1;
   const onset = strength.map((value) => value / scale);
-  const score = new Float64Array(onset.length), previous = new Int32Array(onset.length).fill(-1);
+  const total = new Float64Array(onset.length), previous = new Int32Array(onset.length).fill(-1);
   for (let f = 0; f < onset.length; f++) {
     let best = 0, from = -1;
     for (let p = Math.max(0, Math.round(f - 2 * period)); p <= f - Math.round(period / 2); p++) {
-      const candidate = score[p] - TIGHTNESS * Math.log((f - p) / period) ** 2;
+      const candidate = total[p] - TIGHTNESS * Math.log((f - p) / period) ** 2;
       if (from < 0 || candidate > best) { best = candidate; from = p; }
     }
-    score[f] = onset[f] + (from >= 0 ? Math.max(0, best) : 0);
+    total[f] = onset[f] + (from >= 0 ? Math.max(0, best) : 0);
     previous[f] = from >= 0 && best > 0 ? from : -1;
   }
-  // Start from the strongest local score in the last beat period.
+  // Start from the strongest cumulative total in the last beat period.
   let last = onset.length - 1;
-  for (let f = Math.max(0, Math.round(onset.length - period)); f < onset.length; f++) if (score[f] > score[last]) last = f;
+  for (let f = Math.max(0, Math.round(onset.length - period)); f < onset.length; f++) if (total[f] > total[last]) last = f;
   const beats = [];
   for (let f = last; f >= 0; f = previous[f]) beats.unshift(f);
   return beats;
