@@ -131,13 +131,14 @@ A web Dish is shown in `<iframe sandbox="allow-scripts allow-forms">` (no `allow
 `scripts/verify-music-room-browser.mjs` plays two hand-written sample sets through the room, serves the result with exactly those headers (read from `vercel.json`) inside exactly that iframe (the attribute is read from `ArtifactPane.tsx`), and drives it in headless Chromium with every other host made unresolvable. Measured on 2026-11-13 with Chromium 153:
 
 - the frame's origin is `null`, and the only requests are the host page, `index.html` and `worklets.js`;
-- AudioWorklet processors load, and no scheduled event fails, across all eleven sounds of the room;
-- every step of both sets measures sound on an analyser at the output, and pause suspends the audio clock.
+- AudioWorklet processors load, and between them the two sets put all eleven sounds of the room through the synth with no event failing;
+- every step of both sets measures sound on an analyser at the output, and pause suspends the audio clock;
+- with `--full`, one set played from start to finish in real time: all 1877 of its events were scheduled once and none failed.
 
 Two things made this work, and both are constraints on any future player:
 
 - **No inlined worklets.** superdough normally loads its worklets from a `data:` URL, which that policy refuses for scripts. The vendored build points it at `worklets.js` beside the page instead.
-- **The CORS header is load-bearing.** A sandboxed page has an opaque origin, so even its own sibling file is a cross-origin fetch. Without `Access-Control-Allow-Origin` on `/dishes/` the worklets do not load. The script records that case too: the page still plays, and says in a notice which sounds are missing (13 of 109 events failed in the sample).
+- **The CORS header is load-bearing.** A sandboxed page has an opaque origin, so even its own sibling file is a cross-origin fetch. Without `Access-Control-Allow-Origin` on `/dishes/` the worklets do not load. The script records that case too: the page still plays, and says in a notice which sounds are missing (about one event in eight failed in the sample).
 
 The player uses superdough's own synths, so a set sounds as it would in Strudel, but scheduling is the player's own and nobody has yet compared it by ear against the Strudel editor.
 
@@ -189,7 +190,7 @@ Per `AGENTS.md`, for Burooj to accept, change or reject:
 - **Task.** Play a short live set in the music room: twelve steps, hearing each only as numbers.
 - **Why return to it.** It shows how a model behaves over time rather than what it can assemble: whether it listens, how it builds and ends, what it does after a refusal, whether it plans or responds.
 - **Lineage.** Hybrid: a live-coded set is a familiar task; the room and hearing by numbers are his arena idea.
-- **Structure.** One prompt turn. The loop lives inside the turn, driven by the model. A staged sibling would be a different Recipe.
+- **Structure.** One prompt turn. The loop lives inside the turn, driven by the model. A staged sibling would be a different Recipe. It is not on the `music` Menu: those fourteen are made things heard in seconds, and this is a different kind.
 - **Fixture source.** Kitchen-written room; Strudel vendored from its published packages. Nothing private.
 - **Deliverable.** Nothing by hand: the room writes the player, the recording and the worklets.
 - **Acceptance boundary.** `room.mjs check`, described above. Nothing musical.

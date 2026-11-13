@@ -96,6 +96,28 @@ test("playing a step prints what sounded as numbers and records exactly that", a
   assert.deepEqual(room(directory, "status").json, { steps: 12, played: 1, remaining: 11, next: { step: 2, cycles: [8, 16] }, cps: 0.5, seconds: 16, refused: 0, complete: false });
 });
 
+test("the crib in the room's README is true of the engine that is mounted", async (t) => {
+  const directory = await stage(t);
+  const readme = await readFile(path.join(recipeDirectory, "room/README.md"), "utf8");
+  // The example plays as written.
+  const example = readme.match(/```js\n([\s\S]*?)```/u)[1];
+  const played = await playPattern(directory, "01", example);
+  assert.equal(played.status, 0, played.stdout);
+  assert.deepEqual(played.json.bars[0].voices.map((voice) => voice.s), ["sawtooth", "sbd", "triangle", "white"]);
+  assert.equal(played.json.cps, 0.5);
+  // Every function and signal it names exists, as a global or as a pattern method.
+  const names = readme.match(/Pattern functions include (.*?)\. The engine/u)[1].match(/`[a-zA-Z]+`/gu).map((name) => name.slice(1, -1));
+  assert.ok(names.length > 30);
+  const probe = `for (const name of ${JSON.stringify(names).replaceAll('"', "'")}) if (globalThis[name] === undefined && typeof silence[name] !== 'function') throw new Error('missing ' + name);\nsilence\n`;
+  const probed = await playPattern(directory, "02", probe);
+  assert.equal(probed.status, 0, probed.stdout);
+  // Each piece of mini-notation it lists parses and sounds.
+  const mini = await playPattern(directory, "03", 'note("[c3 e3] <g3 a3> c4*2 d4/2 ~ [e3,g3] f3(3,8) g3? a3@3 b3!3").s("sine")\n');
+  assert.equal(mini.status, 0, mini.stdout);
+  // The sounds it lists are the room's sounds.
+  for (const sound of ROOM.sounds) assert.ok(readme.includes(`\`${sound}\``), `${sound} is listed`);
+});
+
 test("unpitched sounds are heard without a pitch, and an oscillator with no note at superdough's default", async (t) => {
   const directory = await stage(t);
   const heard = (await playPattern(directory, "01", 'stack(s("sbd*2"), s("white*4").decay(0.05), s("sawtooth"))\n')).json;

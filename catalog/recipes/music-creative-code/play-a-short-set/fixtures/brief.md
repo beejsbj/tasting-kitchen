@@ -5,7 +5,7 @@ You are in a music room. The instrument is Strudel, the live-coding pattern lang
 ## How the room works
 
 - A set is 12 steps. Each step is 8 cycles of music, about 16 seconds at the starting tempo.
-- To play a step, write a Strudel pattern to a file and run `node room/room.mjs play <file>`.
+- To play a step, write a Strudel pattern to a file and run `node room/room.mjs play <file>` from the folder you start in.
 - The room commits the step and prints what just sounded: for every cycle, the onsets, pitches and sounds, as numbers. There is no audio here. That printout is how you hear.
 - A committed step cannot be changed or played again. This is a performance, not a composition.
 - A pattern the room cannot play is refused with the reason. A refusal does not use a step, and it is kept in the recording.
@@ -19,4 +19,4 @@ Play one step, read what came back, then decide the next.
 
 ## What to deliver
 
-Nothing beyond the twelve played steps. The room writes `index.html`, `recording.json` and `worklets.js` itself. Leave those, and everything under `room/`, as the room made them.
+Nothing beyond the twelve played steps. The room writes `index.html`, `recording.json` and `worklets.js` itself, in the folder you start in. Leave those, and everything under `room/`, as the room made them.

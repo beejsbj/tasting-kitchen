@@ -25,7 +25,7 @@
     ]
   },
   "setup": {
-    "instructions": "Mount the fixtures. room/ is Kitchen's equipment, identical for every model and left unedited: the room program, its Strudel engine and the player. The model plays the set by running the room; the room writes the delivery itself. Node 22 or later is the only tool the room needs.",
+    "instructions": "Your working folder holds fixtures/brief.md and a room/ directory. Read fixtures/brief.md and room/README.md before you start. Run the room from the folder you start in; it needs only Node 22 or later and no network.",
     "fixtures": [
       {
         "id": "brief",
@@ -121,7 +121,7 @@
     {
       "id": "play-set",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and room/README.md, then play the set."
+      "content": "Read fixtures/brief.md and room/README.md, then play the set by running the room from the folder you start in."
     }
   ],
   "output": {

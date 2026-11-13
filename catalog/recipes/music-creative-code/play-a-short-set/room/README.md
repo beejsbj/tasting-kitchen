@@ -4,7 +4,7 @@ A room for playing a live set on Strudel, one step at a time. It has no audio. A
 
 ## Commands
 
-Run these from the directory that holds `room/`.
+Run these from the folder that holds `room/`.
 
 - `node room/room.mjs play <pattern-file>` plays the next step with the Strudel code in the file, then prints what sounded.
 - `node room/room.mjs status` prints how many steps are played, the tempo and where the next step starts.
