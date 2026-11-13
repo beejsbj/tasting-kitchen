@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "harmonise-a-bare-melody",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Harmonise a bare melody",
+  "summary": "Given an eight-bar melody alone, add only a bass line and harmony beneath it, leaving the melody untouched.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "The melody is original, written for this Recipe with several places where more than one harmony would fit. It is not the hummed seed.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "melody",
+        "path": "fixtures/melody.json",
+        "mountAs": "fixtures/melody.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "harmonise",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/melody.json and do what the brief asks. Deliver index.html and notes.md."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Press play. Is the melody untouched and still on top? Does the bass make a line of its own? Is there one moment where the harmony changes how a melody note feels? Did it find something better than the obvious chords?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

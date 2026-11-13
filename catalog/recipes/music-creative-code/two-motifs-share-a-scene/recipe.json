@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "two-motifs-share-a-scene",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Two motifs share a scene",
+  "summary": "Take the motifs of two characters and write a short passage in which they meet, disagree and come to terms.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "Both characters, their motifs and the scene are original, written for this Recipe. The slow, voice-led direction is the owner's own.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "motifs",
+        "path": "fixtures/motifs.json",
+        "mountAs": "fixtures/motifs.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "write-scene",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/motifs.json and do what the brief asks. Deliver index.html and notes.md."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Press play. Can you always tell who is who? Do the two motifs actually meet (answer, overlap, change each other), or do they only take turns? Can you hear the no become a yes, and is it still Maren who says it?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

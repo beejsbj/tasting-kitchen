@@ -1,0 +1,15 @@
+{
+  "source": "Original, written for this Recipe. It is meant to be the first idea of a slow, sung theme, and it does not work yet.",
+  "tempo": "Slow. One eighth lasts roughly 0.3 seconds.",
+  "notes": [
+    {"pitch": "A3", "eighths": 2},
+    {"pitch": "D4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2},
+    {"pitch": "F4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2},
+    {"pitch": "F4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2},
+    {"pitch": "D4", "eighths": 2},
+    {"pitch": "E4", "eighths": 2}
+  ]
+}

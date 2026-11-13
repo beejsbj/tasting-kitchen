@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "one-motif-three-moods",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "One motif, three moods",
+  "summary": "Restate the owner's seven hummed notes as triumph, as grief and as menace, keeping the motif recognisable in all three.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "mothers",
+  "originNote": "The motif is the owner's own hum, the same public seed as grow-a-hummed-seed, pitch-tracked and rounded to semitones. No other material is supplied.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "motif",
+        "path": "fixtures/motif.json",
+        "mountAs": "fixtures/motif.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "three-moods",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/motif.json and do what the brief asks. Deliver index.html and notes.md."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Play the three without looking at the labels. Could you name each mood? Is the motif recognisable in all of them? Did the mood come from the music itself, or only from a louder, sadder or darker sound?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}
