@@ -24,7 +24,7 @@
     ]
   },
   "setup": {
-    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "instructions": "Your working folder holds fixtures/brief.md. Read it before you start. You may download tools while you work; the page you deliver must play without the network.",
     "fixtures": [
       {
         "id": "brief",
