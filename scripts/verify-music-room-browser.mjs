@@ -111,6 +111,10 @@ async function listen(name, { hostingHeaders, whole = false }) {
       const length = steps.at(-1).seconds[1];
       await frame.waitForFunction(() => { const state = window.roomPlayer.state(); return !state.playing && state.position >= state.total; }, null, { timeout: (length + 30) * 1000, polling: 500 });
       const state = await frame.evaluate(() => window.roomPlayer.state());
+      // Replay starts the set again from the top.
+      assert.equal(await frame.locator("#play").innerText(), "Replay");
+      await frame.locator("#play").click();
+      await frame.waitForFunction(() => { const again = window.roomPlayer.state(); return again.playing && again.step === 1 && again.position < 5; }, null, { timeout: 15000 });
       return { name, whole: true, seconds: length, events: state.events, worklets: state.worklets, scheduled: state.scheduled, sounded: state.sounded, failures: state.failures, problems, served: [...new Set(server.served)].sort() };
     }
     const heard = [];
@@ -136,6 +140,15 @@ async function listen(name, { hostingHeaders, whole = false }) {
     await frame.locator("#play").click();
     await sleep(250);
     const paused = await frame.evaluate(() => window.roomPlayer.state());
+    // Paused in the tail after the last event, the button says Replay and starts the set from the top.
+    await frame.locator("#play").click();
+    await frame.evaluate(() => window.roomPlayer.seek(window.roomPlayer.state().total - 0.2));
+    await frame.waitForFunction(() => { const tail = window.roomPlayer.state(); return tail.playing && tail.position > tail.total + 0.3; }, null, { timeout: 15000 });
+    await frame.locator("#play").click();
+    assert.equal(await frame.locator("#play").innerText(), "Replay");
+    await frame.locator("#play").click();
+    await frame.waitForFunction(() => { const again = window.roomPlayer.state(); return again.playing && again.step === 1 && again.position < 5; }, null, { timeout: 15000 });
+    await frame.locator("#play").click();
     if (flagValue("--screenshots")) { await mkdir(flagValue("--screenshots"), { recursive: true }); await page.screenshot({ path: path.join(flagValue("--screenshots"), `${name}${hostingHeaders ? "" : "-bare"}.png`) }); }
     return { name, hostingHeaders, worklets: state.worklets, context: state.context, scheduled: state.scheduled, sounded: state.sounded, failures: state.failures, heard, paused: paused.playing === false && paused.context === "suspended", requests, served: [...new Set(server.served)].sort(), problems, origin };
   } finally {

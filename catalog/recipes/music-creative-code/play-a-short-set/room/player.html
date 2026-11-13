@@ -210,7 +210,8 @@
     paint();
     try {
       await prepare();
-      if (audio.base >= total) seek(0);
+      // Paused in the tail after the last event counts as ended: the button says Replay there.
+      if (position() >= total) seek(0);
       if (audio.origin === null) audio.origin = audio.context.currentTime + 0.06;
       await audio.context.resume();
       audio.playing = true;
