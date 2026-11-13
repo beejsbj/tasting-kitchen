@@ -14,7 +14,7 @@ export const THRESHOLDS = Object.freeze({
   maxLagMs: 20, // audio may not lead or trail the picture by more than this
   minWindowCorrelation: 0.95, // every audible half-second must match after alignment (96 kbps AAC reaches 0.96)
   minMeanCorrelation: 0.98,
-  minGainDb: -6, // a uniform trim is allowed; a remaster or re-mix is not
+  minGainDb: -6.5, // a uniform trim is allowed (the brief says down to -6; AAC drifts ~0.1 dB); a remaster or re-mix is not
   maxGainDb: 0.5,
   maxGainDeviationDb: 1, // each half-second's gain against the overall trim (AAC encodes of the excerpt at 96-192 kbps stay within 0.2 dB)
   steadyRms: 0.01, // -40 dBFS: windows loud enough for a per-window gain to mean anything
