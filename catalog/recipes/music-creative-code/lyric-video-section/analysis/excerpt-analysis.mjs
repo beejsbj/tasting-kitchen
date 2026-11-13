@@ -83,16 +83,41 @@ function normalize(envelope) {
   return Array.from(envelope, (value) => Math.round(Math.min(1, value / reference) * 1000) / 1000);
 }
 
-/** Summed half-wave-rectified rise of log band energy: high where something starts. */
+/** Half-wave-rectified rise of log energy in one band. */
+function bandRise(signal, range, frames) {
+  const energy = frameRms(band(signal, range), frames, 1024);
+  const floor = percentile(energy, 50) * 0.01 + 1e-9;
+  const rise = new Float32Array(frames);
+  for (let f = 1; f < frames; f++) rise[f] = Math.max(0, Math.log(energy[f] + floor) - Math.log(energy[f - 1] + floor));
+  return rise;
+}
+
+/** Summed band rises, mean removed: high where something starts. The lowest band's rise is kept for phase. */
 function onsetStrength(signal, frames) {
   const strength = new Float32Array(frames);
+  let low = null;
   for (const range of ONSET_BANDS) {
-    const energy = frameRms(band(signal, range), frames, 1024);
-    const floor = percentile(energy, 50) * 0.01 + 1e-9;
-    for (let f = 1; f < frames; f++) strength[f] += Math.max(0, Math.log(energy[f] + floor) - Math.log(energy[f - 1] + floor));
+    const rise = bandRise(signal, range, frames);
+    low ??= rise;
+    for (let f = 0; f < frames; f++) strength[f] += rise[f];
   }
   const mean = strength.reduce((sum, value) => sum + value, 0) / frames;
-  return strength.map((value) => Math.max(0, value - mean));
+  return { strength: strength.map((value) => Math.max(0, value - mean)), low };
+}
+
+/**
+ * A tracker can lock onto the off-beat (hats between kicks). Like the upstream
+ * analysis, settle the phase on kick attacks: if the low band rises more half a
+ * beat later, move the grid there.
+ */
+function settlePhase(beats, low, period) {
+  const half = Math.round(period / 2);
+  const near = (f) => Math.max(...[-1, 0, 1].map((d) => low[f + d] ?? 0));
+  const on = beats.reduce((sum, f) => sum + near(f), 0);
+  const off = beats.reduce((sum, f) => sum + near(f + half), 0);
+  if (!(off > 1.25 * on) || beats.length === 0) return beats;
+  const moved = beats.map((f) => f + half).filter((f) => f < low.length);
+  return beats[0] - half >= 0 ? [beats[0] - half, ...moved] : moved;
 }
 
 /** Beat period in frames from the onset autocorrelation under a tempo prior. */
@@ -157,9 +182,9 @@ export function analyze(signal) {
   const frames = Math.ceil(duration * FPS);
   const envelopes = { rms: normalize(smooth(frameRms(signal, frames))) };
   for (const [name, range] of Object.entries(BANDS)) envelopes[name] = normalize(smooth(frameRms(band(signal, range), frames)));
-  const strength = onsetStrength(signal, frames);
+  const { strength, low } = onsetStrength(signal, frames);
   const period = estimatePeriod(strength);
-  const beats = trackBeats(strength, period).map((frame) => frame / FPS);
+  const beats = settlePhase(trackBeats(strength, period), low, period).map((frame) => frame / FPS);
   const intervals = beats.slice(1).map((beat, i) => beat - beats[i]).sort((a, b) => a - b);
   const beatPeriod = intervals.length ? intervals[intervals.length >> 1] : period / FPS;
   return {
@@ -173,7 +198,7 @@ export function analyze(signal) {
     ...envelopes,
     onsets: { mix: pickOnsets(strength) },
     notes: "Kitchen analysis (catalog/recipes/music-creative-code/lyric-video-section/analysis/excerpt-analysis.mjs) of the full mix only. "
-      + "beats: dynamic-programming tracker on a six-band log-energy onset envelope at 100 fps (10 ms resolution); the tempo may read at half or double the felt pulse. "
+      + "beats: dynamic-programming tracker on a six-band log-energy onset envelope at 100 fps (10 ms resolution), phase settled on low-band (kick) attacks; the tempo may read at half or double the felt pulse. "
       + "downbeats and section boundaries are not inferred. rms, low (<150 Hz), mid (150-2000 Hz) and high (>4 kHz): 100 fps, 10 ms attack / 90 ms release, "
       + "each divided by its 99th percentile and clipped to 0..1. No stems: vocal, drums, bass and other are absent and read as 0. "
       + "onsets.mix: [time, strength 0..1] peaks of the onset envelope. Lyric timing is in lyrics.json, not here.",
