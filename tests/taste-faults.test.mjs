@@ -85,19 +85,19 @@ test("every failure path lands in exactly one class, with a reason code and a pl
   }
 });
 
-test("a provider limit carries the reset time the provider stated; no other fault does", () => {
+test("a usage limit carries the reset time the provider stated; no other fault does", () => {
   const message = "codex-cli turn opening failed: Codex exited with code 1: You've hit your usage limit. Try again at Nov 21st, 2026.";
   assert.deepEqual(classifyFailure({ message, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" }), {
     class: "kitchen", code: "usage-limit", stage: "execution", reason: KITCHEN_FAULTS["usage-limit"], retryable: true, resetsAt: "Nov 21st, 2026",
   });
-  assert.equal(classifyFailure({ message: "Direct API returned HTTP 429", resetsAt: "in a minute" }).resetsAt, "in a minute", "a rate limit may state one too");
+  assert.equal("resetsAt" in classifyFailure({ message: "Direct API returned HTTP 429", resetsAt: "in a minute" }), false, "no harness reports a reset for throttling yet");
   // The classifier never reads a reset time out of a message, and keeps none it was not handed as text.
   assert.equal("resetsAt" in classifyFailure({ message }), false);
   for (const resetsAt of ["", null, 1795000000, { at: "Nov 21st" }]) assert.equal("resetsAt" in classifyFailure({ message, kitchenFault: "usage-limit", resetsAt }), false);
   // Without the tag the nonzero exit no longer hides the limit: the message alone names it.
   assert.equal(classifyFailure({ message }).code, "usage-limit");
   assert.equal(classifyFailure({ message: "Codex exited with code 1" }).code, "harness-changed");
-  // Only a provider limit has a reset; a tag cannot hang one on another fault, a chef fault or an interruption.
+  // Only a usage limit has a reset; a tag cannot hang one on another fault, a chef fault or an interruption.
   assert.equal("resetsAt" in classifyFailure({ message: "Codex exited with code 1", resetsAt: "Nov 21st, 2026" }), false);
   assert.equal("resetsAt" in classifyFailure({ message, kitchenFault: "timeout", resetsAt: "Nov 21st, 2026" }), false);
   assert.equal("resetsAt" in classifyFailure({ message, chefFault: "refused", resetsAt: "Nov 21st, 2026" }), false);
@@ -109,6 +109,9 @@ test("the runner keeps an adapter's usage limit and its reset time, even when th
   const failure = { turnId: "opening", message: "Codex exited with code 1", kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" };
   assert.deepEqual(budgetedFailure(failure, { harness: "codex-cli", budget: null, expired: false }), { kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" });
   assert.deepEqual(budgetedFailure(failure, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }), { kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" });
+  // The reset belongs to the usage limit alone: it never rides beside a chef fault or another Kitchen fault.
+  assert.deepEqual(budgetedFailure({ turnId: "opening", message: "x", chefFault: "refused", resetsAt: "Nov 21st, 2026" }, { harness: "codex-cli", budget: null, expired: false }), { chefFault: "refused" });
+  assert.equal("resetsAt" in budgetedFailure({ turnId: "opening", message: "x", resetsAt: "Nov 21st, 2026" }, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }), false);
   // An expired clock with no such evidence is still Kitchen's timeout.
   assert.equal(budgetedFailure({ turnId: "opening", message: "x" }, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }).kitchenFault, "timeout");
 });

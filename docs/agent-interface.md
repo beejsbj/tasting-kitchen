@@ -134,9 +134,11 @@ A provider usage limit is Kitchen's `usage-limit`, apart from `rate-limited`:
 the account's allowance is spent, so retrying before it resets cannot work.
 Codex reports it as an `error` event and a `turn.failed` whose message says
 "usage limit", then exits nonzero; the Codex adapter tags that
-(`failure.kitchenFault`) and, when the message ends "try again at …", records
-those words as the private fault's `resetsAt`. It is the provider's own text,
-not a parsed date. Other harnesses are not tagged yet: Kitchen has no recorded
+(`failure.kitchenFault`) and, when the message says "try again at …", sets
+`failure.resetsAt` to the time stated there. The runner forwards both to the
+classifier, and the private fault carries `resetsAt`. It is the provider's own
+text, not a parsed date, and nothing reads it yet: a plan does not skip the
+configuration until then. Other harnesses are not tagged yet: Kitchen has no recorded
 limit failure from them to read a shape from, so there the code comes from the
 message alone and carries no reset time.
 

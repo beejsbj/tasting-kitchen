@@ -62,6 +62,7 @@ if (process.env.FAKE_HANG_AFTER_ITEM) {
   ].map((record) => JSON.stringify(record)).join("\\n") + "\\n");
   console.log(JSON.stringify({ type: "item.completed", item: { id: "item_0", type: process.env.FAKE_ITEM_TYPE ?? "agent_message", text: "Working." } }));
   if (process.env.FAKE_LINGER) console.log(JSON.stringify({ type: "turn.completed" }));
+  if (process.env.FAKE_EVENT) for (const event of [JSON.parse(process.env.FAKE_EVENT)].flat()) console.log(JSON.stringify(event));
   await new Promise(() => setInterval(() => {}, 1000));
 }
 if (process.env.FAKE_EVENT) for (const event of [JSON.parse(process.env.FAKE_EVENT)].flat()) console.log(JSON.stringify(event));
@@ -357,11 +358,13 @@ test("the Recipe's time budget is the model's on Codex only when it answered and
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const variant = { provider: "openai", model: "gpt-5.6-luna", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE };
   const recipe = { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }] };
-  for (const [name, env, expected] of [
+  for (const [name, env, expected, kitchenFault] of [
     ["serving", {}, "out-of-time"],
     ["another model", { FAKE_ROLLOUT_MODEL: "gpt-5.6-sol" }, undefined],
     ["only an error item", { FAKE_ITEM_TYPE: "error" }, undefined],
     ["finished, then lingered", { FAKE_LINGER: "1" }, undefined],
+    // The account ran out mid-turn: even with the requested model's item in the stream, the stop is not the model's.
+    ["usage limit", { FAKE_EVENT: JSON.stringify([{ type: "error", message: "You've hit your usage limit. Try again at 3:05 PM." }]) }, undefined, "usage-limit"],
   ]) {
     await rm(path.join(f.codexHome, "sessions"), { recursive: true, force: true });
     // Long enough for a loaded machine to start the fake and write its rollout before the budget ends.
@@ -370,6 +373,7 @@ test("the Recipe's time budget is the model's on Codex only when it answered and
     clock.stop();
     assert.match(session.failure.message, /stopped by the Recipe's time budget/, name);
     assert.equal(session.failure.chefFault, expected, name);
+    assert.equal(session.failure.kitchenFault, kitchenFault, name);
   }
 });
 
@@ -382,7 +386,22 @@ test("a usage limit is read from Codex's error events, with the reset time only 
   assert.deepEqual(codexUsageLimit([{ type: "turn.failed", error: { message: USAGE_LIMIT } }]), { message: USAGE_LIMIT, resetsAt: "Nov 21st, 2026" });
   assert.deepEqual(codexUsageLimit([{ type: "error", message: "You've hit your usage limit. Try again at 3:05 PM" }]), { message: "You've hit your usage limit. Try again at 3:05 PM", resetsAt: "3:05 PM" });
   assert.deepEqual(codexUsageLimit([{ type: "error", message: "You've hit your usage limit. Try again later." }]), { message: "You've hit your usage limit. Try again later." });
-  assert.deepEqual(codexUsageLimit([{ type: "error", message: `You've hit your usage limit, try again at ${"x".repeat(81)}` }]), { message: `You've hit your usage limit, try again at ${"x".repeat(81)}` }, "an implausibly long reset is not kept");
+  // The reset is the stated time alone: not an alternative offered after it, not a later line, not words without a time.
+  for (const [tail, resetsAt] of [
+    ["try again at Nov 21st, 2026 or upgrade to Pro (https://example.test/pricing).", "Nov 21st, 2026"],
+    ["try again at 3:05 PM (UTC).", "3:05 PM"],
+    ["try again at 3:05 PM; see your plan.", "3:05 PM"],
+    ["Try again at 3:05 PM.\nRequest id: abc", "3:05 PM"],
+    ["try again at .", undefined],
+    ["try again at a later time.", undefined],
+    [`try again at ${"9".repeat(81)}`, undefined],
+  ]) {
+    const message = `You've hit your usage limit, ${tail}`;
+    assert.deepEqual(codexUsageLimit([{ type: "error", message }]), { message, ...(resetsAt ? { resetsAt } : {}) }, tail);
+  }
+  const started = Date.now();
+  assert.deepEqual(codexUsageLimit([{ type: "error", message: `usage limit, try again at ${" .".repeat(40_000)}\n` }]), { message: `usage limit, try again at ${" .".repeat(40_000)}\n` });
+  assert.ok(Date.now() - started < 1000, "a long message is read in linear time");
   // Only the harness's own error events count: never an item the model wrote, never another error.
   assert.equal(codexUsageLimit([{ type: "item.completed", item: { type: "agent_message", text: USAGE_LIMIT } }]), null);
   assert.equal(codexUsageLimit([{ type: "error", message: "stream disconnected; try again at Nov 21st, 2026" }]), null);
