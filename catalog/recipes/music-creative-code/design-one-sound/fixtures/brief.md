@@ -16,4 +16,4 @@ Put these in the folder you start in, not in a subfolder.
 - `index.html`: one clearly labelled button plays a single note on its own, so I can hear the instrument bare. A second clearly labelled button plays the phrase. Both can be stopped. Once delivered it must play with no network: every file it needs ships beside it, under `assets/` if there are any.
 - `notes.md`: no more than 120 words on how the sound is built, what makes it warm, and exactly what is broken about it.
 
-How you make the sound is your choice: the browser's own audio, a music library, rendered audio files, or anything else. You may download tools while you work, as long as the finished page carries what it needs.
+How you build the sound is your choice. You may download tools while you work, as long as the instrument itself is yours and the finished page carries what it needs.

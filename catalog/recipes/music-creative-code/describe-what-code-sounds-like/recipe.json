@@ -23,7 +23,7 @@
     ]
   },
   "setup": {
-    "instructions": "Mount the fixtures. The model reads the source and writes its description; it is not given a shell and is asked not to run the page.",
+    "instructions": "Mount the fixtures. The model reads the source and writes its description. It is asked not to run the page.",
     "fixtures": [
       {
         "id": "brief",
@@ -75,7 +75,7 @@
         "id": "listening",
         "type": "manual",
         "required": false,
-        "description": "Open fixtures/piece.html, press Play and listen, then read the description. Is what you heard what it says, in that order? What did it miss or get wrong? Is it written for the ear, in no more than 200 words?"
+        "description": "Open fixtures/piece.html, press Play and listen, then read the description. Is what you heard what it says, in that order? What did it miss or get wrong? Does it read as heard, or as worked out from the numbers? Is it written for the ear, in no more than 200 words?"
       }
     ]
   }

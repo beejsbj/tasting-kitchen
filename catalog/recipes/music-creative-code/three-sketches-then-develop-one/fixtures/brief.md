@@ -18,7 +18,7 @@ A night train crossing flat country. Everyone in the carriage is asleep except o
 
 ## Part two: develop one
 
-My reply will tell you which sketch to take. Develop it into a piece:
+My reply will tell you how to choose which sketch to take. Develop that one into a piece:
 
 - About 45 seconds. The motif leads; accompaniment stays sparse. No generic loop underneath.
 - It should go somewhere and then end.

@@ -1,6 +1,6 @@
 # Describe what this code sounds like
 
-`fixtures/piece.html` is a small page that plays about half a minute of music when its button is pressed. Read the source and tell me what I would hear. Do not run it.
+`fixtures/piece.html` is a small page that plays a short piece of music when its button is pressed. Read the source and tell me what I would hear. Do not run it.
 
 ## What I want
 
