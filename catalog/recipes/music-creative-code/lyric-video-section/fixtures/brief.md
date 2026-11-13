@@ -6,8 +6,11 @@ Make one complete 35-second section of a lyric music video for the supplied exce
 
 ## Supplied inputs
 
-- `inputs/excerpt.wav`: the exact 35-second audio, 48 kHz stereo PCM. Use it unaltered; do not time-stretch, re-mix or replace it.
+- `inputs/excerpt.wav`: the exact 35-second audio, 48 kHz stereo PCM. Do not time-stretch, re-mix, re-order or replace it. The one change allowed is a single uniform gain trim: the excerpt itself peaks at about +0.4 dBTP, above the film's −0.1 dBTP ceiling, so lower the whole soundtrack by one constant amount (about −1 dB is enough; anything from −6 to +0.5 dB is accepted). A fade, limiter, compressor or level ride is not a trim.
 - `inputs/lyrics.json`: lines and words with measured onsets (`start`, `end`, seconds in excerpt time), confidence and provenance. It is the source of truth for word timing. You may revise a word's onset only with evidence you record in `evidence.json`.
+- `inputs/audio.json`: Kitchen's music analysis of the excerpt in the engine's `data/audio.json` shape: beats, 100 fps envelopes (`rms`, `low`, `mid`, `high`) and mix onsets. Downbeats, sections and stems are not supplied. Use it as given; beat detection is not part of this task.
+
+Kitchen checks your soundtrack against the supplied excerpt with `validation/audio-identity.mjs`: it must line up with the picture within 20 ms, match the excerpt in every audible half-second, add nothing in its silences, run the same length, and differ from it only by that uniform trim.
 
 ## Visual and motion direction
 
@@ -19,7 +22,7 @@ Exactly 35.000 seconds at 1280 × 720, 30 fps (1050 frames), H.264 with the supp
 
 ## Working protocol
 
-If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and follow its planning, implementation and review process; its examples teach technique and must not be submitted. If no skill is mounted, work from this brief and your own method. The pinned lyric engine is supplied by Kitchen at `engine/` and is the same for every model and layer; do not replace it. All known constraints are provided now. Work independently in one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a style selection or delegate to another model. Use one render job and one browser at a time.
+If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and follow its planning, implementation and review process; its examples teach technique and must not be submitted. If no skill is mounted, work from this brief and your own method. The pinned lyric engine is supplied by Kitchen at `engine/` and is the same for every model and layer; do not replace it. Its `audio/` and `data/` folders arrive empty, without the upstream song: put the supplied inputs there (`audio/track.wav`, `data/lyrics.json`, `data/audio.json`). Words land when they are sung: the engine shows every word 0.13 s early by default (`LYRIC_LEAD`), so turn that lead off (`--lead 0` for `scripts/render.ts`, `?lead=0` in its preview) and record the measured onset as `shownAt`. All known constraints are provided now. Work independently in one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a style selection or delegate to another model. Use one render job and one browser at a time.
 
 ## Deliverable
 
@@ -31,7 +34,7 @@ If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and fol
 - `README.md`: exact rebuild commands, the governing visual idea in two sentences, and honest checks and limitations.
 - `evidence.json`: `words` array with one entry per supplied word in order, each `{ "w", "shownAt", "revision"? }` where `shownAt` is the onset you used and `revision` records the reason for any change over 50 ms; `checks` array of `{ "name", "result", "detail" }` for checks you actually ran, including what you could not do (listening is usually not available to you and must be reported `not-run`).
 
-Fit the delivery within 100 MiB and 500 files. Run `node validation/film.mjs` from the delivery root with fixtures mounted.
+Fit the delivery within 100 MiB and 500 files. Run `node validation/film.mjs` and `node validation/audio-identity.mjs` from the delivery root with fixtures and inputs mounted.
 
 ## Human tasting
 

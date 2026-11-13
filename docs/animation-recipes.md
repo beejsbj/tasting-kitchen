@@ -29,10 +29,13 @@ Kitchen's and identical across layers.
 | `lyric-video-section` | One 35-second section of a supplied song, world invented | 1280×720 · 30 fps | lyric-music-video |
 
 Every film recipe is Hybrid lineage with a fictional fixture. The lyric recipe
-is Mother's lineage and **private**: its excerpt and measured word alignment
-live under `private/fixtures/lyric-video-section/` and its Dishes publish to
+is Mother's lineage and **private**: its excerpt, measured word alignment and
+Kitchen's music analysis (`audio.json`: beats, envelopes and onsets, made by
+the Recipe's `analysis/excerpt-analysis.mjs`) live under
+`private/fixtures/lyric-video-section/` and its Dishes publish to
 `private/dishes/` only. The brief names the song for credit and carries no
-lyric text.
+lyric text. Kitchen supplies the analysis so the Recipe tastes the film, not
+beat detection.
 
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
@@ -72,7 +75,11 @@ lists its own questions. For the lyric recipe, audio identity with the
 supplied excerpt (correlation against the source PCM) is the Kitchen-side
 check `validation/audio-identity.mjs`: lag within 20 ms, every audible
 half-second correlated, nothing added in the excerpt's silences, duration
-matched; a uniform trim is reported, not failed.
+matched; a uniform trim is reported, not failed, and every loud half-second
+must carry that same gain within 1 dB, so a fade, level ride or limiter fails.
+The excerpt itself peaks at about +0.4 dBTP, so the brief asks for one uniform
+trim (about −1 dB) to meet the film's true-peak ceiling. The brief also turns
+off the engine's default 0.13 s display lead, so words show when they are sung.
 
 ## Before Ready
 
@@ -81,7 +88,9 @@ matched; a uniform trim is reported, not failed.
    sanitization and gallery playback, proven with Kitchen-made references.
 2. **Done:** the patched lyric engine at `engine/`, assembled in the image
    from the skill's own `engine.patch` (sha-checked) at the pinned upstream
-   commit, and the audio identity check.
+   commit, and the audio identity check. Kitchen empties the engine's
+   `audio/` and `data/` when it mounts it, so the upstream song's recording
+   and analysis never reach a model or a fallback load.
 3. **Open:** the model's own shell still runs on the host. Kitchen judges and
    plays every film in the image, and supplies the engine from it, but a model
    renders with whatever the host has until a harness can run its tools inside

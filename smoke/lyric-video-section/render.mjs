@@ -22,26 +22,8 @@ copyFileSync(contract.lyricsFixture, "engine/data/lyrics.json");
 copyFileSync(path.join(here, "timeline.ts"), "engine/app/src/timeline.ts");
 copyFileSync(path.join(here, "scenes/words.ts"), "engine/app/src/scenes/words.ts");
 
-// 2. A minimal analysis file the engine requires: duration, an RMS envelope at
-//    100 fps and a placeholder grid. It is not a beat analysis.
-{
-  const pcm = execFileSync("ffmpeg", ["-v", "error", "-i", "inputs/excerpt.wav", "-ac", "1", "-ar", "4800", "-f", "f32le", "-"], { maxBuffer: 1 << 28 });
-  const samples = new Float32Array(pcm.buffer, pcm.byteOffset, pcm.length / 4);
-  const rms = [];
-  for (let i = 0; i + 48 <= samples.length; i += 48) {
-    let sum = 0;
-    for (let k = i; k < i + 48; k++) sum += samples[k] * samples[k];
-    rms.push(Math.sqrt(sum / 48));
-  }
-  const p99 = [...rms].sort((a, b) => a - b)[Math.floor(rms.length * 0.99)] || 1;
-  const beats = Array.from({ length: Math.floor(contract.duration * 2) }, (_, i) => i * 0.5);
-  writeFileSync("engine/data/audio.json", JSON.stringify({
-    duration: contract.duration, bpm: 120, beat_period: 0.5, time_signature: 4,
-    beats, downbeats: beats.filter((_, i) => i % 4 === 0), sections: [{ name: "section", start: 0, end: contract.duration }],
-    fps: 100, rms: rms.map((value) => Math.min(1, value / p99)), onsets: {},
-    notes: "Kitchen smoke placeholder: RMS envelope only; the beat grid is a fixed 120 BPM placeholder, not an analysis.",
-  }));
-}
+// 2. Kitchen's music analysis of the excerpt, supplied to every model as inputs/audio.json.
+copyFileSync("inputs/audio.json", "engine/data/audio.json");
 
 // 3. Render with the engine's offline renderer, words shown on their measured onsets (no display lead).
 const app = path.resolve("engine/app");
@@ -101,6 +83,6 @@ Rebuild from the delivery root, inside the film toolchain image, with engine/ an
 
     node source/render.mjs
 
-Limits: the beat grid is a placeholder; the engine's 1920x1080 frames are scaled to 1280x720; the excerpt is trimmed by ${-TRIM_DB} dB to respect the film check's true-peak ceiling. No listening review was done.
+Limits: the scene ignores the supplied beats; the engine's 1920x1080 frames are scaled to 1280x720; the excerpt is trimmed by ${-TRIM_DB} dB to respect the film check's true-peak ceiling. No listening review was done.
 `);
 console.log(`rendered ${contract.frames} frames and ${words.length} word onsets`);
