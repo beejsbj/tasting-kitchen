@@ -4,6 +4,8 @@ This directory is the music room: equipment Tasting Kitchen supplies, unchanged,
 
 ## What is here
 
+The paths below are the room as it is mounted for a Run. In the repository, `strudel/` and `LICENSE` are kept under `fixtures/upstream/strudel/`, and `recipe.json` mounts them here.
+
 - `room.mjs`, `player.html` and `README.md` were written for Tasting Kitchen.
 - `strudel/` holds Strudel, the live-coding pattern language, by the Strudel contributors (https://codeberg.org/uzu/strudel):
   - `strudel.mjs`: the pattern engine (`@strudel/core`, `@strudel/mini`, `@strudel/tonal`, `@strudel/transpiler`) and its dependencies.
@@ -21,7 +23,7 @@ The patterns a model plays, and the recording of them, are that model's own outp
 
 Everything here is source, or is built unminified from source:
 
-- The room's own files are in the Tasting Kitchen repository, https://github.com/beejsbj/tasting-kitchen, under `catalog/recipes/music-creative-code/play-a-short-set`.
+- The room's own files are in the Tasting Kitchen repository, https://github.com/beejsbj/tasting-kitchen, under `catalog/recipes/music-creative-code/play-a-short-set`. Its tests and browser check there import from `room.mjs` and are offered under the same licence.
 - `scripts/vendor-music-room.mjs` in that repository rebuilds `strudel/` from the exact registry packages `manifest.json` pins.
 - A published Dish carries this directory beside its artifact, under `inputs/room`.
 

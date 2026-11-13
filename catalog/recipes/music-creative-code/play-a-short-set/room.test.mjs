@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { appendFile, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { appendFile, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { scanPublicTree, scanWebArtifactNetwork } from "../../../../lib/taste/files.mjs";
+import { scanPublicTree, scanWebArtifactNetwork, verbatimInputFindings } from "../../../../lib/taste/files.mjs";
 import { canonical, ROOM } from "./room/room.mjs";
 import { mountRoom, playPattern, playSample, recipeDirectory, room, sampleSteps } from "./stage.mjs";
 
@@ -43,6 +44,8 @@ test("the Recipe mounts the whole room and gates on the room's own check", async
   for (const file of await readdir(path.join(recipeDirectory, "fixtures/upstream/strudel"))) assert.ok(mounted.has(`fixtures/upstream/strudel/${file}`), `strudel/${file} is mounted`);
   // Everything the room is made of is supplied read-only: an edit breaks the output contract.
   for (const fixture of recipe.setup.fixtures) assert.equal(fixture.editable, false, fixture.id);
+  // Each is published byte-for-byte in a Dish's inputs/, so each must pass that scan as it stands.
+  for (const fixture of recipe.setup.fixtures) assert.deepEqual(verbatimInputFindings(await readFile(path.join(recipeDirectory, fixture.path))), [], fixture.path);
   assert.deepEqual(recipe.validation.checks.find((check) => check.id === "room-recording").argv, ["node", "room/room.mjs", "check"]);
   assert.deepEqual(recipe.output.include, ["index.html", "recording.json", "worklets.js"]);
 });
@@ -125,6 +128,17 @@ test("unpitched sounds are heard without a pitch, and an oscillator with no note
   assert.deepEqual(heard.pitch, { low: 36, high: 36, mean: 36, classes: [0] });
 });
 
+test("an event is as long as it sounds: clip, legato and duration are heard, recorded and replayed", async (t) => {
+  const directory = await stage(t);
+  const clipped = (await playPattern(directory, "01", 'note("c3 e3").s("sine").clip(0.25)\n')).json;
+  assert.deepEqual(clipped.lengths, [0.125, 0.125]);
+  assert.deepEqual((await recordingOf(directory)).entries[0].events[1].slice(0, 2), [0.5, 0.625]);
+  assert.deepEqual((await playPattern(directory, "02", 'note("c3 e3").s("sine").legato(2)\n')).json.lengths, [1, 1]);
+  assert.deepEqual((await playPattern(directory, "03", 'note("c3 e3").s("sine").duration(0.1)\n')).json.lengths, [0.1, 0.1]);
+  assert.deepEqual((await playPattern(directory, "04", 'note("c3 e3").s("sine")\n')).json.lengths, [0.5, 0.5]);
+  assert.deepEqual(failed(room(directory, "check")), ["steps"]);
+});
+
 test("cycle time and tempo run on across steps, as in a live session", async (t) => {
   const directory = await stage(t);
   const first = (await playPattern(directory, "01", 'setcps(1)\nnote("<c3 e3 g3>").s("triangle")\n')).json;
@@ -158,13 +172,54 @@ test("a pattern the room cannot play is refused, recorded, and uses no step", as
   }
   const recording = await recordingOf(directory);
   assert.deepEqual(recording.entries.map((entry) => entry.kind), refusals.map(() => "refused"));
+  // A reason is the engine's own error, without the advice Strudel appends or the place the room is mounted.
+  assert.equal(recording.entries[3].error, 'expected hap.value to be an object, but got "c".');
+  const elsewhere = await playPattern(directory, "bad-import", "await import('./nope.mjs')\nsilence\n");
+  assert.match(elsewhere.json.error, /Cannot find module '\.\/room\/strudel\/nope\.mjs'/u);
+  for (const entry of (await recordingOf(directory)).entries) {
+    assert.doesNotMatch(entry.error, /Hint|try |should|consider/iu);
+    assert.ok(!entry.error.includes(directory) && !entry.error.includes("file:"), entry.error);
+  }
+  await rm(path.join(directory, "patterns/bad-import.js"));
   assert.equal(recording.entries[0].code, refusals[0][0], "the refused code is kept");
   assert.ok(Buffer.byteLength(recording.entries.at(-1).code) <= ROOM.maxCodeBytes, "oversized code is kept only up to the limit");
   assert.equal((await playPattern(directory, "01", 's("sine")\n')).json.step, 1, "the first accepted pattern is still step 1");
-  assert.equal(room(directory, "status").json.refused, refusals.length);
+  assert.equal(room(directory, "status").json.refused, refusals.length + 1);
   // A missing file is a usage error, not a play: nothing is recorded.
   assert.equal(room(directory, "play", "patterns/none.js").status, 2);
-  assert.equal((await recordingOf(directory)).entries.length, refusals.length + 1);
+  assert.equal((await recordingOf(directory)).entries.length, refusals.length + 2);
+});
+
+test("a play that is killed does not close the room or lose the set", async (t) => {
+  const directory = await stage(t);
+  await playPattern(directory, "01", 's("sine")\n');
+
+  // Killed while evaluating, as a harness command timeout would: the lock names a dead play and is taken over.
+  await writeFile(path.join(directory, "patterns/forever.js"), "for (;;) {}\nsilence\n");
+  const stuck = spawn(process.execPath, ["room/room.mjs", "play", "patterns/forever.js"], { cwd: directory, stdio: "ignore" });
+  const closed = new Promise((resolve) => { stuck.on("close", resolve); });
+  for (let waited = 0; waited < 100 && !(await stat(path.join(directory, ".room/lock")).catch(() => null)); waited += 1) await new Promise((resolve) => { setTimeout(resolve, 50); });
+  assert.match((await playPattern(directory, "02", 's("triangle")\n')).json.error, /the room is busy with another play/u, "a live play holds the room");
+  stuck.kill("SIGKILL");
+  await closed;
+  assert.equal((await playPattern(directory, "02", 's("triangle")\n')).json.step, 2, "the killed play's lock is not honoured");
+
+  // Killed after the journal line and before the recording was put in place: the next use finishes that play.
+  const before = await readFile(path.join(directory, "recording.json"));
+  const third = await playPattern(directory, "03", 's("square")\n');
+  assert.equal(third.json.step, 3);
+  const after = await readFile(path.join(directory, "recording.json"));
+  await writeFile(path.join(directory, ".room/pending.json"), after);
+  await writeFile(path.join(directory, "recording.json"), before);
+  assert.deepEqual(room(directory, "status").json.played, 3);
+  assert.deepEqual(await readFile(path.join(directory, "recording.json")), after);
+  // Killed before the journal line: that play never happened.
+  const fourth = JSON.parse(after);
+  fourth.entries.push({ ...fourth.entries[2], index: 3, hash: "f".repeat(64) });
+  await writeFile(path.join(directory, ".room/pending.json"), JSON.stringify(fourth));
+  assert.equal(room(directory, "status").json.played, 3);
+  assert.equal((await playPattern(directory, "04", 's("pulse")\n')).json.step, 4);
+  assert.deepEqual(failed(room(directory, "check")), ["steps"]);
 });
 
 test("a whole sample set passes the room's check, and the room then takes no more", async (t) => {
@@ -180,7 +235,7 @@ test("a whole sample set passes the room's check, and the room then takes no mor
 
   const checked = room(directory, "check");
   assert.equal(checked.status, 0, checked.stdout);
-  assert.deepEqual(checked.json.checks.map((check) => check.id), ["well-formed", "this-room", "chain", "journal", "steps", "clock", "evaluates", "player"]);
+  assert.deepEqual(checked.json.checks.map((check) => check.id), ["well-formed", "this-room", "chain", "journal", "steps", "evaluates", "player"]);
   assert.equal(checked.json.passed, true);
 
   const more = await playPattern(directory, "13", 's("sine")\n');
@@ -283,6 +338,32 @@ test("the check tells a recording the room made from one that was written or edi
 
   await restore();
   assert.equal(room(directory, "check").status, 0, "the room's own files pass again");
+});
+
+test("code that tries to change the room while the check evaluates it is not a pattern", async (t) => {
+  const directory = await stage(t);
+  const steps = await sampleSteps("tide");
+  // The last step plays normally, but rewrites the player when it is evaluated a second time.
+  const sly = `if (process.argv.includes('reperform')) { const fs = await import('node:fs'); for (const file of ['room/player.html', 'index.html']) fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('A set in the music room', 'The finest set')); }\n${steps[11]}`;
+  for (const [index, code] of [...steps.slice(0, 11), sly].entries()) assert.equal((await playPattern(directory, String(index + 1).padStart(2, "0"), code)).status, 0);
+  const page = await readFile(path.join(directory, "index.html"));
+  const checked = room(directory, "check");
+  assert.equal(checked.status, 1);
+  assert.deepEqual(failed(checked), ["evaluates"]);
+  assert.match(checked.json.checks.find((check) => check.id === "evaluates").detail, /step 12 does not evaluate/u);
+  assert.deepEqual(await readFile(path.join(directory, "index.html")), page, "the evaluation could not write");
+  assert.equal(await readFile(path.join(directory, "room/player.html"), "utf8"), await readFile(path.join(recipeDirectory, "room/player.html"), "utf8"));
+});
+
+test("a recording names the exact room that made it, program and player included", async (t) => {
+  const directory = await stage(t);
+  await playSample(directory, "tide");
+  const recording = await recordingOf(directory);
+  assert.deepEqual(Object.keys(recording.room.program), ["room.mjs", "player.html"]);
+  assert.equal(recording.room.program["player.html"], sha256(await readFile(path.join(recipeDirectory, "room/player.html"))));
+  // A player template changed after the set was played is not the room this recording names.
+  await writeFile(path.join(directory, "room/player.html"), (await readFile(path.join(directory, "room/player.html"), "utf8")).replace("A set in the music room", "Another room"));
+  assert.deepEqual(failed(room(directory, "check")), ["this-room", "player"]);
 });
 
 test("an unfinished set does not pass", async (t) => {

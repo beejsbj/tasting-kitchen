@@ -91,7 +91,8 @@ async function listen(name, { hostingHeaders, whole = false }) {
   const problems = [];
   page.on("request", (request) => requests.push(request.url()));
   page.on("pageerror", (error) => problems.push(`page error: ${error.message}`));
-  page.on("console", (message) => { if (message.type() === "error") problems.push(`console: ${message.text()}`); });
+  // superdough reports an event it had to drop as a warning, not an error.
+  page.on("console", (message) => { if (message.type() === "error" || message.text().includes("cannot schedule sounds in the past")) problems.push(`console: ${message.text()}`); });
   try {
     await page.goto(`${origin}/${name}.html`, { waitUntil: "load" });
     assert.equal(await page.locator("#dish").getAttribute("sandbox"), sandbox);
@@ -116,16 +117,22 @@ async function listen(name, { hostingHeaders, whole = false }) {
     for (const step of steps) {
       // Jump to each step as a listener would, and measure what comes out for a moment.
       await frame.locator(`#steps button[data-index="${step.step - 1}"]`).click();
+      // Up to four seconds for sound to arrive (an audio device can be slow to start), and at least a second of listening.
       let peak = 0;
-      for (let sample = 0; sample < 14; sample += 1) { await sleep(90); peak = Math.max(peak, (await frame.evaluate(() => window.roomPlayer.state())).level); }
+      for (let sample = 0; sample < 45 && (sample < 12 || peak <= 0.002); sample += 1) { await sleep(90); peak = Math.max(peak, (await frame.evaluate(() => window.roomPlayer.state())).level); }
       const state = await frame.evaluate(() => window.roomPlayer.state());
       const shown = await frame.locator("#pane").innerText();
       assert.equal(state.step, step.step, `step ${step.step} is shown while it plays`);
       assert.ok(shown.includes(step.code.trim().split("\n")[0]), `step ${step.step} shows its own code`);
       const sounding = step.events.some(([begin]) => (begin - step.cycles[0]) / step.cps < 0.9);
+      await frame.locator("#tabs button[data-tab=\"heard\"]").focus();
       heard.push({ step: step.step, peak: Number(peak.toFixed(4)), sounding });
     }
     const state = await frame.evaluate(() => window.roomPlayer.state());
+    // Changing step rebuilt nothing the keyboard was on, and seeking left one repaint loop running.
+    assert.equal(await frame.evaluate(() => document.activeElement?.dataset.tab), "heard", "focus stays on a tab across step changes");
+    const repaints = await frame.evaluate(() => new Promise((resolve) => { let count = 0; const original = window.requestAnimationFrame; window.requestAnimationFrame = (callback) => { count += 1; return original(callback); }; setTimeout(() => { window.requestAnimationFrame = original; resolve(count); }, 1000); }));
+    assert.ok(repaints <= 130, `one repaint loop after ${steps.length} seeks (${repaints} frames requested in a second)`);
     await frame.locator("#play").click();
     await sleep(250);
     const paused = await frame.evaluate(() => window.roomPlayer.state());

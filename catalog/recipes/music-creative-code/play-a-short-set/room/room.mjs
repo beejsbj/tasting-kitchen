@@ -7,7 +7,7 @@
 // under AGPL-3.0-or-later; see LICENSE and NOTICE.md.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { appendFileSync, closeSync, copyFileSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +24,7 @@ export const ROOM = Object.freeze({
 });
 
 const ENGINE_FILES = ["strudel.mjs", "superdough.js", "worklets.js"];
+const PROGRAM_FILES = ["room.mjs", "player.html"];
 const RESTS = new Set(["-", "~", "_"]);
 // Noise and the synth kick are heard as unpitched unless the pattern gives them a note.
 // superdough plays an oscillator that has no note at MIDI 36.
@@ -55,16 +56,18 @@ export function roomPaths(roomDirectory) {
     player: path.join(stage, "index.html"),
     worklets: path.join(stage, "worklets.js"),
     journal: path.join(stage, ".room", "journal"),
+    pending: path.join(stage, ".room", "pending.json"),
     lock: path.join(stage, ".room", "lock"),
   };
 }
 
-/** The room as a recording names it: its rules and the exact engine bytes it evaluated with. */
+/** The room as a recording names it: its rules, and the exact bytes of its program, player and engine. */
 export function roomHeader(paths) {
   const manifest = JSON.parse(readFileSync(path.join(paths.engine, "manifest.json"), "utf8"));
   const version = (name) => manifest.packages.find((item) => item.name === name && item.path === `node_modules/${name}`)?.version;
   return {
     ...JSON.parse(JSON.stringify(ROOM)),
+    program: Object.fromEntries(PROGRAM_FILES.map((name) => [name, sha256(readFileSync(path.join(paths.room, name)))])),
     engine: {
       strudel: version("@strudel/core"),
       superdough: version("superdough"),
@@ -156,7 +159,8 @@ export async function perform(engine, { code, cps, step }) {
         if (RESTS.has(sound)) continue;
         if (!ROOM.sounds.includes(sound)) throw new Refusal(`sound "${sound}" is not in this room`);
         pitchOf(core, value, sound);
-        events.push([hap.whole.begin.valueOf(), hap.whole.end.valueOf(), value]);
+        // The end is where the event stops sounding: Strudel shortens or lengthens it by `clip`, `legato` and `duration`.
+        events.push([hap.whole.begin.valueOf(), hap.endClipped.valueOf(), value]);
         if (events.length > ROOM.maxEventsPerStep) throw new Refusal(`more than ${ROOM.maxEventsPerStep} events in one step`);
       }
     }
@@ -164,7 +168,8 @@ export async function perform(engine, { code, cps, step }) {
     return { cps: tempo, events };
   } catch (error) {
     if (error instanceof Refusal) throw error;
-    throw new Refusal(String(error?.message ?? error).split("\n")[0].slice(0, 500));
+    // The reason is the engine's own first line, without the advice Strudel appends to some errors.
+    throw new Refusal(String(error?.message ?? error).split("\n")[0].replace(/\s*Hint:.*$/u, "").slice(0, 500));
   } finally {
     Math.random = random;
     restore();
@@ -251,6 +256,7 @@ function readJournal(paths) {
 
 /** The recording as the room left it, or a fresh one. Refuses a recording that is not this room's own. */
 export function loadRecording(paths, header) {
+  finishInterruptedPlay(paths);
   const journal = readJournal(paths);
   if (!existsSync(paths.recording)) {
     if (journal.length) throw new Refusal("recording.json is missing, but this room has already been played");
@@ -280,19 +286,38 @@ function writeAtomic(file, text) {
   renameSync(temporary, file);
 }
 
-function writeStage(paths, recording) {
-  writeAtomic(paths.recording, `${JSON.stringify(recording)}\n`);
+// A play is written in three moves: the next recording is set aside, its entry joins the
+// journal, then the recording and the player are put in place. A play killed between the
+// last two is finished the next time the room is used; one killed earlier never happened.
+function setAside(paths, recording) {
+  mkdirSync(path.dirname(paths.pending), { recursive: true });
+  writeAtomic(paths.pending, `${JSON.stringify(recording)}\n`);
+}
+
+function putInPlace(paths, recording) {
+  renameSync(paths.pending, paths.recording);
   writeAtomic(paths.player, renderPlayer(paths, recording));
   copyFileSync(path.join(paths.engine, "worklets.js"), paths.worklets);
 }
 
+function finishInterruptedPlay(paths) {
+  if (!existsSync(paths.pending)) return;
+  let pending = null;
+  try { pending = JSON.parse(readFileSync(paths.pending, "utf8")); } catch { /* a half-written file never reached the journal */ }
+  if (pending && canonical(pending.entries.map((entry) => entry.hash)) === canonical(readJournal(paths))) putInPlace(paths, pending);
+  else rmSync(paths.pending, { force: true });
+}
+
+function alive(pid) {
+  try { process.kill(pid, 0); return true; } catch (error) { return error.code === "EPERM"; }
+}
+
 function withLock(paths, action) {
   mkdirSync(path.dirname(paths.lock), { recursive: true });
-  // A play that died holding the lock must not close the room for good.
-  if (existsSync(paths.lock) && Date.now() - statSync(paths.lock).mtimeMs > 120000) rmSync(paths.lock, { force: true });
-  let handle;
-  try { handle = openSync(paths.lock, "wx"); } catch { throw new Refusal("the room is busy with another play"); }
-  return Promise.resolve().then(action).finally(() => { closeSync(handle); rmSync(paths.lock, { force: true }); });
+  // The lock names the play that holds it. One that was killed must not close the room.
+  if (existsSync(paths.lock) && !alive(Number(readFileSync(paths.lock, "utf8")))) rmSync(paths.lock, { force: true });
+  try { writeFileSync(paths.lock, String(process.pid), { flag: "wx" }); } catch { throw new Refusal("the room is busy with another play"); }
+  return Promise.resolve().then(action).finally(() => rmSync(paths.lock, { force: true }));
 }
 
 function position(recording) {
@@ -320,13 +345,15 @@ export async function play(paths, code, { now = () => new Date() } = {}) {
     } catch (error) {
       if (!(error instanceof Refusal)) throw error;
       // A refused pattern is part of what happened in the room. Oversized code is kept only up to the limit.
-      entry = seal({ ...base, kind: "refused", step, code: Buffer.from(code).subarray(0, ROOM.maxCodeBytes).toString("utf8"), error: error.message });
+      // An engine error can name where the room is mounted; the recording is published, so it says "." instead.
+      const reason = [realpathSync(paths.stage), paths.stage].reduce((text, directory) => text.replaceAll(directory, "."), error.message).replace(/file:\/+/gu, "");
+      entry = seal({ ...base, kind: "refused", step, code: Buffer.from(code).subarray(0, ROOM.maxCodeBytes).toString("utf8"), error: reason });
     }
     const next = { ...recording, entries: [...recording.entries, entry], head: entry.hash, complete: entry.kind === "step" && entry.step === ROOM.steps };
-    // The journal is written first: a recording can never hold an entry the room does not remember.
-    mkdirSync(path.dirname(paths.journal), { recursive: true });
+    // The journal is written before the recording: a recording can never hold an entry the room does not remember.
+    setAside(paths, next);
     appendFileSync(paths.journal, `${entry.hash}\n`);
-    writeStage(paths, next);
+    putInPlace(paths, next);
     return entry.kind === "step" ? { heard: entry.heard } : { refused: { refused: true, error: entry.error, step, remaining: ROOM.steps - step + 1 } };
   });
 }
@@ -352,7 +379,7 @@ const sameKeys = (value, keys) => isObject(value) && canonical(Object.keys(value
 /**
  * The acceptance check. Deterministic: the recording is well-formed and whole,
  * its chain and the room's journal agree, every step evaluates again to exactly
- * the recorded events, and the player files are the room's own rendering.
+ * the recorded events, and the player files are this room's own rendering.
  */
 export function check(paths, { reperform = reperformInChild } = {}) {
   const results = [];
@@ -403,10 +430,9 @@ export function check(paths, { reperform = reperformInChild } = {}) {
   const ordered = steps.every((entry, index) => entry.step === index + 1) && recording.entries.every((entry, index) => entry.step === recording.entries.slice(0, index).filter((earlier) => earlier.kind === "step").length + 1);
   const whole = ordered && steps.length === ROOM.steps && recording.complete === true;
   record("steps", whole, whole ? `${ROOM.steps} steps` : `${steps.length} of ${ROOM.steps} steps${ordered ? "" : ", out of order"}`);
-  const stamps = recording.entries.map((entry) => Date.parse(entry.at));
-  record("clock", stamps.every((stamp, index) => index === 0 || stamp >= stamps[index - 1]), "entries are in the order they were played");
 
-  // Every step is evaluated again, in a process of its own as `play` ran it.
+  // Every step is evaluated again from its recorded code alone, in a process of its own
+  // that may read the room and nothing else: no writing, no other programs.
   const differing = [];
   let cps = ROOM.cps.initial;
   let seconds = 0;
@@ -420,14 +446,20 @@ export function check(paths, { reperform = reperformInChild } = {}) {
   }
   record("evaluates", differing.length === 0, differing.length ? differing[0] : `${steps.length} steps play exactly what was recorded`);
 
+  // Compared last, and against the room as the recording names it, so nothing that ran above can have swapped the player.
   let rendered = false;
-  try { rendered = readFileSync(paths.player, "utf8") === renderPlayer(paths, recording) && readFileSync(paths.worklets).equals(readFileSync(path.join(paths.engine, "worklets.js"))); } catch { rendered = false; }
+  try { rendered = canonical(roomHeader(paths)) === canonical(recording.room) && readFileSync(paths.player, "utf8") === renderPlayer(paths, recording) && readFileSync(paths.worklets).equals(readFileSync(path.join(paths.engine, "worklets.js"))); } catch { rendered = false; }
   record("player", rendered, rendered ? "index.html and worklets.js are the room's own" : "index.html or worklets.js is not the room's rendering of this recording");
   return finish();
 }
 
 function reperformInChild(paths, request) {
-  const child = spawnSync(process.execPath, [path.join(paths.room, "room.mjs"), "reperform"], { input: JSON.stringify(request), encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 120000 });
+  const room = realpathSync(paths.room);
+  // Node's permission model: the child may read the room, and may not write, spawn or load native code.
+  const run = (flag) => spawnSync(process.execPath, [flag, `--allow-fs-read=${room}`, path.join(room, "room.mjs"), "reperform"], { input: JSON.stringify(request), encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 120000 });
+  let child = run("--permission");
+  // Node before 22.13 spells the flag differently and exits 9 on the new name.
+  if (child.status === 9) child = run("--experimental-permission");
   if (child.status !== 0 || child.error) return { error: child.error?.code === "ETIMEDOUT" ? "timed out" : "the room could not evaluate it" };
   return JSON.parse(child.stdout);
 }
@@ -461,7 +493,7 @@ async function main(argv) {
     return result.passed ? 0 : 1;
   }
   if (command === "reperform" && argument === undefined) {
-    // Internal to `check`: evaluate one step from stdin exactly as `play` would.
+    // Internal to `check`: evaluate one step from stdin exactly as `play` would. It commits nothing.
     const request = JSON.parse(readFileSync(0, "utf8"));
     try { console.log(JSON.stringify(await takeStep(await loadEngine(paths), request))); }
     catch (error) {

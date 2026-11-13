@@ -25,7 +25,7 @@
     ]
   },
   "setup": {
-    "instructions": "Your working folder holds fixtures/brief.md and a room/ directory. Read fixtures/brief.md and room/README.md before you start. Run the room from the folder you start in; it needs only Node 22 or later and no network.",
+    "instructions": "Your working folder holds fixtures/brief.md and a room/ directory. Read fixtures/brief.md and room/README.md before you start. The room needs only Node 22.13 or later and no network.",
     "fixtures": [
       {
         "id": "brief",
@@ -121,7 +121,7 @@
     {
       "id": "play-set",
       "role": "prompt",
-      "content": "Read fixtures/brief.md and room/README.md, then play the set by running the room from the folder you start in."
+      "content": "Play the set by running the room from the folder you start in."
     }
   ],
   "output": {

@@ -18,7 +18,8 @@ Run these from the folder that holds `room/`.
 - A played step is final. There is no preview and no undo.
 - The tempo starts at 0.5 cycles per second. `setcps(x)` or `setcpm(x)` changes it from that step on, between 0.25 and 1 cycles per second.
 - A pattern is refused, without using a step, if it does not evaluate, uses a sound the room does not have, leaves the tempo range, is over 8192 bytes, or makes more than 2048 events in one step. Every refusal is kept in the recording.
-- `silence` is a valid step.
+- `silence` is a valid step. So is any code that makes no events: it is played as silence.
+- A pattern is one self-contained file. The room's check plays every step again from the recorded code alone, with no access to other files or programs.
 - The room keeps the set in `recording.json` and remembers each play in `.room/`. It writes `index.html` and `worklets.js` so the set can be heard later. Leave all of these, and `room/`, alone.
 
 ## Sounds
@@ -38,9 +39,9 @@ An event with no sound plays `triangle`. An oscillator with no note plays MIDI 3
 - `cycles`, `cps`, `seconds`: where the step sits in the set.
 - `events`, `perCycle`, `perSecond`: how many events started, in all, per cycle and per second.
 - `pitch`: lowest, highest and mean MIDI note, and the pitch classes used (0 is C).
-- `lengths`: shortest and longest event, in cycles.
+- `lengths`: shortest and longest event, in cycles, after `clip`, `legato` and `duration`.
 - `controls`: the lowest and highest value of every numeric control that was set.
-- `bars`: one entry per cycle. Each voice is one sound, with its onsets as positions inside the cycle (0 to 1) and the MIDI note at each onset. `sameAs` means the cycle sounded exactly like an earlier cycle of this step.
+- `bars`: one entry per cycle. Each voice is one sound, with its onsets as positions inside the cycle (0 to 1) and the MIDI note at each onset. `sameAs` means the cycle had the same sounds, onsets and notes as an earlier cycle of this step; its control values and lengths may still differ.
 
 ## Syntax crib
 

@@ -164,6 +164,7 @@
   }
   function report() {
     const lines = [];
+    if (audio.broken) lines.push("Sound could not start here: " + audio.broken);
     if (audio.worklets === false) lines.push("This page could not load worklets.js, so sounds and effects that need it (supersaw, pulse, crush, coarse, shape, distort) are missing.");
     if (audio.failures.length) lines.push(audio.failures.length + " event" + (audio.failures.length === 1 ? "" : "s") + " could not sound. First: " + audio.failures[0].error);
     $("trouble").hidden = lines.length === 0;
@@ -203,15 +204,26 @@
     paint();
   }
   async function play() {
-    await prepare();
-    if (audio.playing) return;
-    if (audio.base >= total) seek(0);
-    if (audio.origin === null) audio.origin = audio.context.currentTime + 0.06;
-    await audio.context.resume();
-    audio.playing = true;
-    audio.timer = setInterval(pump, 40);
-    pump();
+    // A second press while the first is still starting must not start a second clock.
+    if (audio.playing || audio.starting) return;
+    audio.starting = true;
     paint();
+    try {
+      await prepare();
+      if (audio.base >= total) seek(0);
+      if (audio.origin === null) audio.origin = audio.context.currentTime + 0.06;
+      await audio.context.resume();
+      audio.playing = true;
+      audio.timer = setInterval(pump, 40);
+      pump();
+    } catch (error) {
+      audio.ready = null;
+      audio.broken = String(error && error.message ? error.message : error);
+      report();
+    } finally {
+      audio.starting = false;
+      paint();
+    }
   }
 
   // ---- picture ----
@@ -279,14 +291,10 @@
       const previous = recording.entries[step.index - 1];
       fact("played", new Date(step.at).toLocaleTimeString() + (previous ? ", " + Math.round((Date.parse(step.at) - Date.parse(previous.at)) / 1000) + " s after the play before it" : ""));
     }
-    const tabs = $("tabs");
-    tabs.textContent = "";
-    for (const [id, label] of [["code", "Code"], ["heard", "What the room printed"], ["refused", "Refused" + (attempts.length ? " (" + attempts.length + ")" : "")]]) {
-      const button = document.createElement("button");
-      button.type = "button"; button.role = "tab"; button.textContent = label;
-      button.setAttribute("aria-selected", String(tab === id));
-      button.addEventListener("click", () => { tab = id; showStep(shownStep); });
-      tabs.append(button);
+    // The tab buttons are built once, so keyboard focus stays where it is when the step or tab changes.
+    for (const button of $("tabs").children) {
+      button.setAttribute("aria-selected", String(button.dataset.tab === tab));
+      if (button.dataset.tab === "refused") button.textContent = "Refused" + (attempts.length ? " (" + attempts.length + ")" : "");
     }
     const pane = $("pane");
     pane.textContent = "";
@@ -302,12 +310,16 @@
       pane.append(block);
     }
   }
+  let frame = 0;
   function paint() {
+    // One loop at most, however many things ask for a repaint.
+    cancelAnimationFrame(frame);
     const at = position();
-    $("play").textContent = audio.playing ? "Pause" : at >= total && total ? "Replay" : "Play";
+    $("play").textContent = audio.playing ? "Pause" : audio.starting ? "Starting" : at >= total && total ? "Replay" : "Play";
     $("clock").firstChild.textContent = clockText(Math.min(at, total)) + " ";
     $("head").style.left = (total ? Math.min(at / total, 1) * 100 : 0) + "%";
     $("roll").setAttribute("aria-valuenow", String(Math.round(Math.min(at, total))));
+    $("roll").setAttribute("aria-valuetext", clockText(Math.min(at, total)) + " of " + clockText(total));
     const index = steps.length ? stepAt(Math.min(at, total - 0.0001)) : -1;
     if (index !== shownStep) showStep(index);
     if (audio.analyser) {
@@ -316,7 +328,7 @@
       for (const sample of audio.level) sum += sample * sample;
       $("meter").style.width = Math.min(100, Math.sqrt(sum / audio.level.length) * 260) + "%";
     }
-    if (audio.playing) requestAnimationFrame(paint);
+    frame = audio.playing ? requestAnimationFrame(paint) : 0;
   }
 
   // ---- wiring ----
@@ -326,8 +338,16 @@
   $("roll").addEventListener("pointerdown", rollSeek);
   $("roll").addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const next = Math.max(0, Math.min(steps.length - 1, shownStep + (event.key === "ArrowRight" ? 1 : -1))); if (steps[next]) seek(steps[next].seconds[0]); }
+    if (event.key === "Home" && steps.length) { event.preventDefault(); seek(0); }
+    if (event.key === "End" && steps.length) { event.preventDefault(); seek(steps[steps.length - 1].seconds[0]); }
     if (event.key === " " || event.key === "Enter") { event.preventDefault(); $("play").click(); }
   });
+  for (const [id, label] of [["code", "Code"], ["heard", "What the room printed"], ["refused", "Refused"]]) {
+    const button = document.createElement("button");
+    button.type = "button"; button.role = "tab"; button.dataset.tab = id; button.textContent = label;
+    button.addEventListener("click", () => { tab = id; showStep(shownStep); });
+    $("tabs").append(button);
+  }
   for (const [index, step] of steps.entries()) {
     const button = document.createElement("button");
     button.type = "button"; button.dataset.index = String(index); button.textContent = String(step.step);
@@ -346,7 +366,7 @@
   $("foot").textContent = [
     steps.length + " of " + recording.room.steps + " steps" + (recording.complete ? "" : " (unfinished)") + ", " + events.length + " events, " + refusals.length + " refused",
     "played over " + (span >= 60 ? Math.floor(span / 60) + " min " + (span % 60) + " s" : span + " s"),
-    "Strudel " + recording.room.engine.strudel + " and superdough " + recording.room.engine.superdough + ", " + recording.room.engine.license + ". Source, licence and notices are in this Dish's inputs under room.",
+    "Strudel " + recording.room.engine.strudel + " and superdough " + recording.room.engine.superdough + ", " + recording.room.engine.license + ". Source, licence and notices: this Dish's inputs under room, and github.com/beejsbj/tasting-kitchen.",
   ].join(" · ");
   new ResizeObserver(draw).observe(canvas);
   draw();
