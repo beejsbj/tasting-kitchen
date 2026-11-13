@@ -133,7 +133,11 @@ function detrend(strength) {
   return out;
 }
 
-/** Tempo candidates (BPM, fit) from the detrended onset autocorrelation under a tempo prior. */
+/**
+ * Tempo candidates (BPM, fit) from the detrended onset autocorrelation under a tempo prior.
+ * Errors are not only half or double: a 170 BPM half-time groove can read near 3:2.
+ * For the lyric excerpt an independent constant-tempo fit agreed; check another song the same way.
+ */
 export function tempoCandidates(strength) {
   const pulse = detrend(strength);
   const autocorrelation = (period) => { let sum = 0; for (let f = period; f < pulse.length; f++) sum += pulse[f] * pulse[f - period]; return sum / (pulse.length - period); };

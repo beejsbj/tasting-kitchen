@@ -3,7 +3,9 @@
 // as decoded PCM against inputs/excerpt.wav after AAC; a uniform level trim is
 // reported, not failed, because the excerpt itself peaks above the film
 // check's -0.1 dBTP ceiling. Uniform means every audible half-second carries
-// the same gain: a fade, a level ride or a limiter is not a trim.
+// the same gain within 1 dB, so a fade or level ride fails. Light peak limiting
+// moves too little per half-second to see here, and AAC overshoot rules out a
+// peak test; the brief forbids it.
 // Run from the delivery root: node validation/audio-identity.mjs
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -15,7 +17,7 @@ export const THRESHOLDS = Object.freeze({
   minWindowCorrelation: 0.95, // every audible half-second must match after alignment (96 kbps AAC reaches 0.96)
   minMeanCorrelation: 0.98,
   minGainDb: -6.5, // a uniform trim is allowed (the brief says down to -6; AAC drifts ~0.1 dB); a remaster or re-mix is not
-  maxGainDb: 0.5,
+  maxGainDb: 0.5, // the brief says 0; this is room for AAC drift
   maxGainDeviationDb: 1, // each half-second's gain against the overall trim (AAC encodes of the excerpt at 96-192 kbps stay within 0.2 dB)
   steadyRms: 0.01, // -40 dBFS: windows loud enough for a per-window gain to mean anything
   maxDurationDeltaS: 0.05,
@@ -148,7 +150,7 @@ export function assessIdentity(metrics, thresholds = THRESHOLDS) {
   if (Math.abs(metrics.durationDeltaS) > thresholds.maxDurationDeltaS) reasons.push(`soundtrack is ${metrics.candidateSeconds.toFixed(3)} s; the excerpt is ${metrics.sourceSeconds.toFixed(3)} s`);
   if (Math.abs(metrics.lagMs) > thresholds.maxLagMs) reasons.push(`soundtrack is offset ${metrics.lagMs.toFixed(1)} ms from the excerpt`);
   if (!(metrics.gainDb >= thresholds.minGainDb && metrics.gainDb <= thresholds.maxGainDb)) reasons.push(`level changed by ${metrics.gainDb.toFixed(2)} dB; only a uniform trim between ${thresholds.minGainDb} and +${thresholds.maxGainDb} dB is allowed`);
-  if (metrics.maxGainDeviationDb > thresholds.maxGainDeviationDb) reasons.push(`the level of the half-second at ${metrics.worstGainWindow?.toFixed(1)} s differs from the overall trim by ${metrics.maxGainDeviationDb.toFixed(2)} dB; a trim must be uniform, not a fade, level ride or limiter`);
+  if (metrics.maxGainDeviationDb > thresholds.maxGainDeviationDb) reasons.push(`the level of the half-second at ${metrics.worstGainWindow?.toFixed(1)} s differs from the overall trim by ${metrics.maxGainDeviationDb.toFixed(2)} dB; a trim must be uniform, not a fade, level ride or compressor`);
   if (metrics.minWindowCorrelation < thresholds.minWindowCorrelation) reasons.push(`the half-second at ${metrics.worstWindow?.toFixed(1)} s does not match the excerpt (correlation ${metrics.minWindowCorrelation.toFixed(4)})`);
   if (metrics.meanCorrelation < thresholds.minMeanCorrelation) reasons.push(`mean correlation ${metrics.meanCorrelation.toFixed(4)} is below ${thresholds.minMeanCorrelation}`);
   if (metrics.maxAddedRms > thresholds.maxAddedRms) reasons.push(`sound was added where the excerpt is silent (RMS ${metrics.maxAddedRms.toFixed(4)})`);

@@ -76,7 +76,9 @@ supplied excerpt (correlation against the source PCM) is the Kitchen-side
 check `validation/audio-identity.mjs`: lag within 20 ms, every audible
 half-second correlated, nothing added in the excerpt's silences, duration
 matched; a uniform trim is reported, not failed, and every loud half-second
-must carry that same gain within 1 dB, so a fade, level ride or limiter fails.
+must carry that same gain within 1 dB, so a fade or level ride fails. Light
+peak limiting (a few dB on a few peaks) is not detected: AAC overshoot moves
+peaks too much for a peak test, so the brief forbids it and tasting owns it.
 The excerpt itself peaks at about +0.4 dBTP, so the brief allows one uniform
 trim to meet the film's true-peak ceiling. AAC overshoot means −1 dB is not
 always enough: on the host's FFmpeg, −1 dB still peaked at 0.0 to +2.4 dBTP
