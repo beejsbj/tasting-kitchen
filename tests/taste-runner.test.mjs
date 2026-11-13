@@ -5,8 +5,26 @@ import path from "node:path";
 import test from "node:test";
 
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
-import { executePlan, executeRecipe } from "../lib/taste/runner.mjs";
+import { executePlan, executeRecipe, prepareWorkspace } from "../lib/taste/runner.mjs";
 import { otherFilesystem } from "./support/filesystems.mjs";
+
+test("a workspace has an output/ folder only when the Recipe's contract delivers into it", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const prepare = async (name, output) => {
+    const workspace = path.join(f.root, name);
+    await prepareWorkspace(f.root, { ...f.recipe, output: { ...f.recipe.output, ...output } }, workspace, null);
+    return (await readdir(workspace)).sort();
+  };
+  // Collected from the workspace root: only the fixtures are there, so nothing suggests another place to deliver.
+  assert.deepEqual(await prepare("root", { kind: "web", entry: "index.html", include: ["index.html", "assets/**"] }), ["inputs"]);
+  assert.deepEqual(await prepare("project", { kind: "code", entry: "project/src/index.mjs", include: ["project/src/**"] }), ["inputs"]);
+  assert.deepEqual(await prepare("lookalike", { kind: "document", entry: "output.md", include: ["output.md", "outputs/**"] }), ["inputs"]);
+  // The contract names output/: the folder is ready and empty, as before.
+  assert.deepEqual(await prepare("session", {}), ["inputs", "output"]);
+  assert.deepEqual(await readdir(path.join(f.root, "session/output")), []);
+  assert.deepEqual(await prepare("note", { kind: "code", entry: "project/src/index.mjs", include: ["project/src/**", "output/completion.md"] }), ["inputs", "output"]);
+});
 
 async function fixture({ failing = false } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-runner-"));
