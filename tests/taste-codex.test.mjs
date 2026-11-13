@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   CodexExecutionError,
   buildCodexTurnArgs,
+  codexUsageLimit,
   getCodexVersion,
   parseCodexJsonl,
   planCodexTurn,
@@ -14,6 +15,7 @@ import {
   runCodexTurn,
 } from "../lib/taste/codex.mjs";
 import { startBudgetClock } from "../lib/taste/budget.mjs";
+import { classifyFailure } from "../lib/taste/faults.mjs";
 import { getHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 
 const THREAD_ID = "01901234-5678-7abc-8def-0123456789ab";
@@ -60,9 +62,10 @@ if (process.env.FAKE_HANG_AFTER_ITEM) {
   ].map((record) => JSON.stringify(record)).join("\\n") + "\\n");
   console.log(JSON.stringify({ type: "item.completed", item: { id: "item_0", type: process.env.FAKE_ITEM_TYPE ?? "agent_message", text: "Working." } }));
   if (process.env.FAKE_LINGER) console.log(JSON.stringify({ type: "turn.completed" }));
+  if (process.env.FAKE_EVENT) for (const event of [JSON.parse(process.env.FAKE_EVENT)].flat()) console.log(JSON.stringify(event));
   await new Promise(() => setInterval(() => {}, 1000));
 }
-if (process.env.FAKE_EVENT) console.log(JSON.stringify(JSON.parse(process.env.FAKE_EVENT)));
+if (process.env.FAKE_EVENT) for (const event of [JSON.parse(process.env.FAKE_EVENT)].flat()) console.log(JSON.stringify(event));
 else console.log(JSON.stringify({ type: "turn.completed" }));
 if (process.env.FAKE_STDERR) console.error(process.env.FAKE_STDERR);
 process.exit(Number(process.env.FAKE_EXIT ?? 0));
@@ -355,11 +358,13 @@ test("the Recipe's time budget is the model's on Codex only when it answered and
   t.after(() => rm(f.root, { recursive: true, force: true }));
   const variant = { provider: "openai", model: "gpt-5.6-luna", reasoningEffort: "high", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE };
   const recipe = { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }] };
-  for (const [name, env, expected] of [
+  for (const [name, env, expected, kitchenFault] of [
     ["serving", {}, "out-of-time"],
     ["another model", { FAKE_ROLLOUT_MODEL: "gpt-5.6-sol" }, undefined],
     ["only an error item", { FAKE_ITEM_TYPE: "error" }, undefined],
     ["finished, then lingered", { FAKE_LINGER: "1" }, undefined],
+    // The account ran out mid-turn: even with the requested model's item in the stream, the stop is not the model's.
+    ["usage limit", { FAKE_EVENT: JSON.stringify([{ type: "error", message: "You've hit your usage limit. Try again at 3:05 PM." }]) }, undefined, "usage-limit"],
   ]) {
     await rm(path.join(f.codexHome, "sessions"), { recursive: true, force: true });
     // Long enough for a loaded machine to start the fake and write its rollout before the budget ends.
@@ -368,5 +373,61 @@ test("the Recipe's time budget is the model's on Codex only when it answered and
     clock.stop();
     assert.match(session.failure.message, /stopped by the Recipe's time budget/, name);
     assert.equal(session.failure.chefFault, expected, name);
+    assert.equal(session.failure.kitchenFault, kitchenFault, name);
   }
+});
+
+// The shape Codex gave on 2026-11-13: an `error` event, the `turn.failed` that repeats it, then exit 1.
+const USAGE_LIMIT = "You've hit your usage limit. Upgrade to Pro or try again at Nov 21st, 2026.";
+const usageLimitEvents = (message = USAGE_LIMIT) => [{ type: "error", message }, { type: "turn.failed", error: { message } }];
+
+test("a usage limit is read from Codex's error events, with the reset time only when Codex states one", () => {
+  assert.deepEqual(codexUsageLimit(usageLimitEvents()), { message: USAGE_LIMIT, resetsAt: "Nov 21st, 2026" });
+  assert.deepEqual(codexUsageLimit([{ type: "turn.failed", error: { message: USAGE_LIMIT } }]), { message: USAGE_LIMIT, resetsAt: "Nov 21st, 2026" });
+  assert.deepEqual(codexUsageLimit([{ type: "error", message: "You've hit your usage limit. Try again at 3:05 PM" }]), { message: "You've hit your usage limit. Try again at 3:05 PM", resetsAt: "3:05 PM" });
+  assert.deepEqual(codexUsageLimit([{ type: "error", message: "You've hit your usage limit. Try again later." }]), { message: "You've hit your usage limit. Try again later." });
+  // The reset is the stated time alone: not an alternative offered after it, not a later line, not words without a time.
+  for (const [tail, resetsAt] of [
+    ["try again at Nov 21st, 2026 or upgrade to Pro (https://example.test/pricing).", "Nov 21st, 2026"],
+    ["try again at 3:05 PM (UTC).", "3:05 PM"],
+    ["try again at 3:05 PM; see your plan.", "3:05 PM"],
+    ["Try again at 3:05 PM.\nRequest id: abc", "3:05 PM"],
+    ["try again at .", undefined],
+    ["try again at a later time.", undefined],
+    [`try again at ${"9".repeat(81)}`, undefined],
+  ]) {
+    const message = `You've hit your usage limit, ${tail}`;
+    assert.deepEqual(codexUsageLimit([{ type: "error", message }]), { message, ...(resetsAt ? { resetsAt } : {}) }, tail);
+  }
+  const started = Date.now();
+  assert.deepEqual(codexUsageLimit([{ type: "error", message: `usage limit, try again at ${" .".repeat(40_000)}\n` }]), { message: `usage limit, try again at ${" .".repeat(40_000)}\n` });
+  assert.ok(Date.now() - started < 1000, "a long message is read in linear time");
+  // Only the harness's own error events count: never an item the model wrote, never another error.
+  assert.equal(codexUsageLimit([{ type: "item.completed", item: { type: "agent_message", text: USAGE_LIMIT } }]), null);
+  assert.equal(codexUsageLimit([{ type: "error", message: "stream disconnected; try again at Nov 21st, 2026" }]), null);
+  assert.equal(codexUsageLimit([{ type: "error", message: { text: USAGE_LIMIT } }, { type: "turn.failed", error: USAGE_LIMIT }, null, "error"]), null);
+  assert.equal(codexUsageLimit(undefined), null);
+});
+
+test("a Codex turn that ends on a usage limit is Kitchen's usage-limit fault, not harness-changed", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const variant = { model: "gpt-5.6-luna", reasoningEffort: "low", personality: "none", serviceTier: "default", executionProfile: EXECUTION_PROFILE };
+  const recipe = { harness: { workspace: "write", web: "disabled" }, setup: { instructions: "Context" }, turns: [{ id: "opening", content: "One" }, { id: "correction", content: "Two" }] };
+  const run = (name, env) => runCodexSession({ variant, recipe, workspace: f.workspace, codexHome: f.codexHome, privateDir: path.join(f.root, name), executable: f.fake, env: { FAKE_THREAD: THREAD_ID, ...env } });
+
+  const limited = await run("limited", { FAKE_EVENT: JSON.stringify(usageLimitEvents()), FAKE_EXIT: "1" });
+  assert.equal(limited.turns.length, 1, "the next turn is not attempted");
+  assert.deepEqual(limited.failure, { turnId: "opening", message: `Codex exited with code 1: ${USAGE_LIMIT}`, exitCode: 1, signal: null, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" });
+  const fault = classifyFailure({ message: `codex-cli turn opening failed: ${limited.failure.message}`, kitchenFault: limited.failure.kitchenFault, resetsAt: limited.failure.resetsAt });
+  assert.deepEqual({ class: fault.class, code: fault.code, resetsAt: fault.resetsAt }, { class: "kitchen", code: "usage-limit", resetsAt: "Nov 21st, 2026" });
+
+  // The same events with exit 0 are caught while parsing; the message already quotes Codex, so it is not repeated.
+  const parsed = await run("parsed", { FAKE_EVENT: JSON.stringify(usageLimitEvents("You've hit your usage limit.")) });
+  assert.deepEqual(parsed.failure, { turnId: "opening", message: "Codex reported error: You've hit your usage limit.", exitCode: 0, signal: null, kitchenFault: "usage-limit" });
+
+  // Any other failed turn is tagged nothing and reads as before.
+  const other = await run("other", { FAKE_EVENT: JSON.stringify([{ type: "error", message: "stream disconnected" }]), FAKE_EXIT: "1" });
+  assert.deepEqual(other.failure, { turnId: "opening", message: "Codex exited with code 1", exitCode: 1, signal: null });
+  assert.equal(classifyFailure({ message: `codex-cli turn opening failed: ${other.failure.message}` }).code, "harness-changed");
 });
