@@ -399,7 +399,9 @@ A clean session proves that from its own `system/init` event: every plugin must
 be built in (`source` ending `@builtin`), and every agent and skill must be in
 `CLAUDE_CODE_BUNDLED`, the set Claude Code 2.1.312 ships (a built-in plugin's
 own `plugin:skill` names count as bundled). A CLI update that adds a bundled item
-fails clean verification until the list is reviewed; that is the tripwire. The
+fails clean verification until the list is reviewed; that is the tripwire. It
+first fired on the first real clean cook: 2.1.312 reports eight bundled skills
+its binary's allowlist does not name, and they were added after review. The
 verdict, with the names it found, is recorded in `observed.json` and the Dish
 receipt.
 
