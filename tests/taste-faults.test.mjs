@@ -13,7 +13,7 @@ import { loadNoDishes, publishNoDish } from "../lib/taste/no-dishes.mjs";
 import { loadVerdicts, writeVerdict } from "../lib/taste/verdicts.mjs";
 import { recoverAttempt } from "../lib/taste/recovery.mjs";
 import { buildRegistry, loadDishes } from "../lib/taste/registry.mjs";
-import { executeRecipe } from "../lib/taste/runner.mjs";
+import { budgetedFailure, executeRecipe } from "../lib/taste/runner.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 
@@ -33,7 +33,9 @@ const FAILURE_PATHS = [
   { path: "HTTP 401", message: "direct-api turn opening failed: Direct API returned HTTP 401", code: "auth" },
   // Kitchen: throttling
   { path: "HTTP 429", message: "direct-api turn opening failed: Direct API returned HTTP 429", code: "rate-limited" },
-  { path: "usage limit", message: "codex-cli turn opening failed: You've hit your usage limit. Try again later", code: "rate-limited" },
+  // Kitchen: the account's allowance is spent; a retry before the reset cannot work
+  { path: "usage limit", message: "codex-cli turn opening failed: You've hit your usage limit. Try again later", code: "usage-limit" },
+  { path: "usage limit after a nonzero exit", message: "codex-cli turn opening failed: Codex exited with code 1: You've hit your usage limit. Upgrade to Pro or try again at Nov 21st, 2026.", kitchenFault: "usage-limit", code: "usage-limit" },
   { path: "free-tier throttling", message: "hermes turn opening failed: Hermes reported failure: free tier requests are throttled", code: "rate-limited" },
   // Kitchen: network, provider, time
   { path: "fetch failed", message: "direct-api turn opening failed: Direct API request to https://openrouter.ai/api/v1/chat/completions failed: fetch failed", code: "network" },
@@ -81,6 +83,37 @@ test("every failure path lands in exactly one class, with a reason code and a pl
     assert.equal(fault.reason, (row.chef ? CHEF_FAULTS : KITCHEN_FAULTS)[row.code], row.path);
     assert.match(fault.reason, /^[A-Z].*\.$/u, `${row.path} has a plain sentence`);
   }
+});
+
+test("a usage limit carries the reset time the provider stated; no other fault does", () => {
+  const message = "codex-cli turn opening failed: Codex exited with code 1: You've hit your usage limit. Try again at Nov 21st, 2026.";
+  assert.deepEqual(classifyFailure({ message, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" }), {
+    class: "kitchen", code: "usage-limit", stage: "execution", reason: KITCHEN_FAULTS["usage-limit"], retryable: true, resetsAt: "Nov 21st, 2026",
+  });
+  assert.equal("resetsAt" in classifyFailure({ message: "Direct API returned HTTP 429", resetsAt: "in a minute" }), false, "no harness reports a reset for throttling yet");
+  // The classifier never reads a reset time out of a message, and keeps none it was not handed as text.
+  assert.equal("resetsAt" in classifyFailure({ message }), false);
+  for (const resetsAt of ["", null, 1795000000, { at: "Nov 21st" }]) assert.equal("resetsAt" in classifyFailure({ message, kitchenFault: "usage-limit", resetsAt }), false);
+  // Without the tag the nonzero exit no longer hides the limit: the message alone names it.
+  assert.equal(classifyFailure({ message }).code, "usage-limit");
+  assert.equal(classifyFailure({ message: "Codex exited with code 1" }).code, "harness-changed");
+  // Only a usage limit has a reset; a tag cannot hang one on another fault, a chef fault or an interruption.
+  assert.equal("resetsAt" in classifyFailure({ message: "Codex exited with code 1", resetsAt: "Nov 21st, 2026" }), false);
+  assert.equal("resetsAt" in classifyFailure({ message, kitchenFault: "timeout", resetsAt: "Nov 21st, 2026" }), false);
+  assert.equal("resetsAt" in classifyFailure({ message, chefFault: "refused", resetsAt: "Nov 21st, 2026" }), false);
+  assert.deepEqual(classifyFailure({ stage: "interrupted", message, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" }).code, "interrupted");
+  assert.equal("resetsAt" in classifyFailure({ stage: "interrupted", message, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" }), false);
+});
+
+test("the runner keeps an adapter's usage limit and its reset time, even when the Recipe's clock also ran out", () => {
+  const failure = { turnId: "opening", message: "Codex exited with code 1", kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" };
+  assert.deepEqual(budgetedFailure(failure, { harness: "codex-cli", budget: null, expired: false }), { kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" });
+  assert.deepEqual(budgetedFailure(failure, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }), { kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" });
+  // The reset belongs to the usage limit alone: it never rides beside a chef fault or another Kitchen fault.
+  assert.deepEqual(budgetedFailure({ turnId: "opening", message: "x", chefFault: "refused", resetsAt: "Nov 21st, 2026" }, { harness: "codex-cli", budget: null, expired: false }), { chefFault: "refused" });
+  assert.equal("resetsAt" in budgetedFailure({ turnId: "opening", message: "x", resetsAt: "Nov 21st, 2026" }, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }), false);
+  // An expired clock with no such evidence is still Kitchen's timeout.
+  assert.equal(budgetedFailure({ turnId: "opening", message: "x" }, { harness: "codex-cli", budget: { seconds: 600 }, expired: true }).kitchenFault, "timeout");
 });
 
 test("a message never makes a chef fault: without a structured tag, every failure stays Kitchen's", () => {
@@ -249,6 +282,7 @@ test("a validation failure whose turns carry a structured refusal is recorded as
 test("Kitchen faults stay private and retryable: no No Dish, no Dish", async (t) => {
   const kitchenRuns = {
     "rate limited": { runSession: async () => session({ failure: { turnId: "opening", message: "Direct API returned HTTP 429", exitCode: null, signal: null }, turns: [{ finalMessage: null, usage: null, events: [] }] }), code: "rate-limited" },
+    "usage limit": { runSession: async () => session({ failure: { turnId: "opening", message: "Codex exited with code 1: You've hit your usage limit. Try again at Nov 21st, 2026.", exitCode: 1, signal: null, kitchenFault: "usage-limit", resetsAt: "Nov 21st, 2026" }, turns: [{ finalMessage: null, usage: null, events: [] }] }), code: "usage-limit", resetsAt: "Nov 21st, 2026" },
     "login expired": { runSession: async () => { throw new Error("Claude Code access token expires within 5 minutes; run any claude command to refresh the login, then cook"); }, code: "auth" },
     "identity drift": { runSession: async () => session(), verifyIdentity: async () => { throw new Error("Effective Codex identity mismatch: requested gpt-5.6-sol, observed gpt-5.6-luna"); }, code: "identity-drift" },
     "Kitchen crash": { runSession: async () => ({ ...session(), turns: undefined }), code: "kitchen-error" },
@@ -264,6 +298,8 @@ test("Kitchen faults stay private and retryable: no No Dish, no Dish", async (t)
     assert.equal(result.fault.retryable, true, label);
     assert.equal(result.noDishId, undefined, label);
     assert.equal((await state(result)).fault.class, "kitchen", label);
+    assert.equal(result.fault.resetsAt, run.resetsAt, label);
+    assert.equal((await state(result)).fault.resetsAt, run.resetsAt, label);
     assert.equal(await pathExists(path.join(f.root, "no-dishes")), false, label);
   }
 });
