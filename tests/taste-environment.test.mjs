@@ -235,6 +235,7 @@ async function scratchNoDish(scratch, configurationId, { observed = null, setup 
   const catalog = await loadCatalog(scratch);
   const variant = resolveVariant(catalog, configurationId);
   const recipe = catalog.recipes.find((candidate) => candidate.status === "ready" && candidate.visibility !== "private" && candidate.kind === "session");
+  assert.ok(recipe, "the catalog has a ready public session Recipe");
   const attemptId = `attempt_${recipe.id}_${configurationId}_20261113000000000_receipt`;
   const attemptDir = path.join(scratch, "private/runtime/attempts", attemptId);
   await mkdir(attemptDir, { recursive: true });
@@ -273,7 +274,27 @@ test("validate-catalog holds a public No Dish's receipt to the Dish rules: a bad
   // The blocks are read against the receipt's own configuration, so that must be the one the plate ran as.
   assert.match(await check((receipt) => { receipt.configuration.executionProfile.environment = "snapshot"; }), /receipt\.json: configuration does not reproduce identity\.configHash/);
   assert.match(await check((receipt) => { receipt.configuration.id = "someone-else"; }), /configuration id does not match identity\.variantId/);
+  // A receipt that cannot be hashed names its own plate instead of stopping the whole No Dish pass.
+  assert.match(await check((receipt) => { receipt.configuration.capabilities = 5; }), /no-dishes\/nodish_.*receipt\.json: /);
+  // This plate wore no skill layer, so a pin in its receipt binds nothing.
+  assert.match(await check((receipt) => { receipt.skill = { id: "hand-drawn", hash: `sha256:${"c".repeat(64)}` }; }), /receipt\.json: Invalid skill receipt/);
   assert.equal(await check(() => {}), "");
+
+  // The manifest's identity must be the receipt's configuration, field by field, even with a consistent hash.
+  const manifestFile = path.join(plate.directory, "no-dish.json");
+  const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+  for (const key of ["provider", "requestedModel", "harness", "reasoningEffort", "serviceTier"]) {
+    const edited = structuredClone(manifest);
+    delete edited.noDishHash;
+    edited.identity[key] = "another";
+    await writeFile(manifestFile, JSON.stringify({ ...edited, noDishHash: hashCanonical(edited) }));
+    assert.match(await validate("--public-checkout"), new RegExp(`identity\\.${key} does not match the recorded configuration`, "u"), key);
+  }
+  await writeFile(manifestFile, JSON.stringify(manifest));
+  assert.equal(await validate("--public-checkout"), "");
+  // A plate without a receipt is left alone, as a Dish without one is.
+  await rm(path.join(plate.directory, "receipt.json"));
+  assert.equal(await validate("--public-checkout"), "");
 });
 
 test("owner validation holds a private No Dish's receipt to the same rules; a public checkout never reads it", async (t) => {
