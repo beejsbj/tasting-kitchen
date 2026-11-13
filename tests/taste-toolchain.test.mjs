@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -10,6 +11,7 @@ import { runChecks } from "../lib/taste/checks.mjs";
 import {
   assertToolchainImage,
   loadToolchains,
+  ENGINE_MOUNT_SCRIPT,
   mountToolchainEngine,
   renderToolchainPin,
   toolchainArgv,
@@ -164,4 +166,25 @@ echo '${JSON.stringify(engine)}'`);
 echo '${JSON.stringify({ ...engine, patchSha256: "0".repeat(64) })}'`);
   await assert.rejects(mountToolchainEngine(recipe, workspace, { processEnv: drifted.env }), /Rebuild the toolchain image/u);
   assert.equal(await mountToolchainEngine({ id: "plain" }, workspace, { processEnv: good.env }), null);
+});
+
+test("the mounted engine carries no upstream song: audio/ and data/ arrive empty", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-engine-mount-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const source = path.join(root, "opt", "engine");
+  for (const file of ["audio/pdoom.mp3", "data/audio.json", "data/lyrics.approx.json", "app/src/main.ts", "analysis/analyze.py"]) {
+    await mkdir(path.dirname(path.join(source, file)), { recursive: true });
+    await writeFile(path.join(source, file), "upstream");
+  }
+  await writeFile(path.join(root, "opt", "engine.json"), "{}");
+  const target = path.join(root, "work", "engine");
+  await mkdir(path.dirname(target));
+  const result = spawnSync("sh", ["-c", ENGINE_MOUNT_SCRIPT, "mount-engine", target], { env: { ...process.env, KITCHEN_ENGINE: source }, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), "{}");
+  assert.deepEqual(await readdir(path.join(target, "audio")), []);
+  assert.deepEqual(await readdir(path.join(target, "data")), []);
+  assert.equal(await readFile(path.join(target, "app/src/main.ts"), "utf8"), "upstream", "the engine itself is kept");
+  assert.equal(await readFile(path.join(target, "analysis/analyze.py"), "utf8"), "upstream");
+  assert.deepEqual((await readdir(path.join(source, "data"))).sort(), ["audio.json", "lyrics.approx.json"], "the image's copy is untouched");
 });
