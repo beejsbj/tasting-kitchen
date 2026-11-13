@@ -41,6 +41,20 @@ test("the exact excerpt, or a uniform trim of it, is the excerpt", () => {
   const trimmed = compareAudio(source, map(source, (i) => at(source, i).map((value) => value * 10 ** (-1 / 20))));
   assert(Math.abs(trimmed.gainDb + 1) < 0.01, "a -1 dB trim is measured and reported");
   assert.equal(assessIdentity(trimmed).passed, true);
+  assert(trimmed.maxGainDeviationDb < 0.01, "a uniform trim is uniform in every half-second");
+  const deepest = compareAudio(source, map(source, (i) => at(source, i).map((value) => value * 10 ** (-6 / 20))));
+  assert.equal(assessIdentity(deepest).passed, true, "the brief's deepest trim, -6 dB, is accepted");
+});
+
+test("a fade, a level ride or a trim past -6 dB is not a uniform trim", () => {
+  const fade = verdict(map(source, (i) => { const t = i / RATE; return at(source, i).map((value) => value * (t > 6 ? 10 ** ((-6 * (t - 6)) / 2 / 20) : 1)); }));
+  assert.equal(fade.passed, false);
+  assert.match(fade.reasons.join(), /half-second at 7\.5 s differs from the overall trim/u);
+
+  const ride = verdict(map(source, (i) => { const t = i / RATE; return at(source, i).map((value) => value * (t >= 2 && t < 4 ? 10 ** (-3 / 20) : 1)); }));
+  assert.equal(ride.passed, false, "two seconds pulled down 3 dB is a level ride");
+
+  assert.match(verdict(map(source, (i) => at(source, i).map((value) => value * 10 ** (-7 / 20)))).reasons.join(), /level changed by -7\.00 dB/u);
 });
 
 test("a late, stretched, louder, shortened, replaced or overdubbed soundtrack is not the excerpt", () => {
