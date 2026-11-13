@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "id": "grow-a-hummed-seed",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Grow a piece from a hummed seed",
   "summary": "Take seven notes the owner hummed as a seed and grow about a minute of music out of them.",
   "cuisines": [
     "music-creative-code"
   ],
   "origin": "mothers",
-  "originNote": "The seed is the owner's own hum, pitch-tracked and rounded to semitones. The benchmark shape awaits owner acceptance.",
+  "originNote": "The seed is the owner's own hum, pitch-tracked and rounded to semitones.",
   "tags": [
     "audio",
     "writing"

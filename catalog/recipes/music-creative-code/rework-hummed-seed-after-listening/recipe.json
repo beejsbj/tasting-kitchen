@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "id": "rework-hummed-seed-after-listening",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Rework a hummed-seed piece after a listening note",
   "summary": "Grow a piece from the owner's hummed seed, then rework it when told where the music will be used.",
   "cuisines": [
     "music-creative-code"
   ],
   "origin": "mothers",
-  "originNote": "The seed is the owner's own hum, pitch-tracked and rounded to semitones. The benchmark shape awaits owner acceptance.",
+  "originNote": "The seed is the owner's own hum, pitch-tracked and rounded to semitones.",
   "tags": [
     "audio",
     "writing",

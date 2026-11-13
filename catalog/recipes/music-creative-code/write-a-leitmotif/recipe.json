@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "id": "write-a-leitmotif",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Write a leitmotif",
   "summary": "Write a short, singable theme for a character and make it audible, then bring it back once changed.",
   "cuisines": [
     "music-creative-code"
   ],
   "origin": "hybrid",
-  "originNote": "Original fictional character; the slow, voice-led direction is the owner's own. The benchmark shape awaits owner acceptance.",
+  "originNote": "Original fictional character; the slow, voice-led direction is the owner's own.",
   "tags": [
     "audio",
     "writing"
