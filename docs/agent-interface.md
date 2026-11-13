@@ -147,9 +147,10 @@ Recipe, configuration or model. `TASTE_RUNTIME_ROOT` overrides the root.
 The workspace starts with the Recipe's fixtures, its workspace skill layer and
 any toolchain engine, and nothing else. Artifacts are collected from the
 workspace root by the output contract's `entry` and `include`. An `output/`
-folder is there at the start only when that contract delivers into it
-(`output/session.json`, `output/completion.md`): an empty one in every
-workspace led a model to put its files where the contract does not look.
+folder is there at the start only when that contract names a path under it
+(for example `output/session.json`, which Kitchen writes itself, or
+`output/completion.md`): an empty one in every workspace led a model to put
+its files where the contract does not look.
 
 The default is not `$XDG_STATE_HOME`: a harness user's home holds `.codex` and
 `.cursor` (and on the Kitchen host `~/.local` holds a `package.json`), so a

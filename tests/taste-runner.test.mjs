@@ -20,6 +20,8 @@ test("a workspace has an output/ folder only when the Recipe's contract delivers
   assert.deepEqual(await prepare("root", { kind: "web", entry: "index.html", include: ["index.html", "assets/**"] }), ["inputs"]);
   assert.deepEqual(await prepare("project", { kind: "code", entry: "project/src/index.mjs", include: ["project/src/**"] }), ["inputs"]);
   assert.deepEqual(await prepare("lookalike", { kind: "document", entry: "output.md", include: ["output.md", "outputs/**"] }), ["inputs"]);
+  assert.deepEqual(await prepare("glob", { kind: "document", entry: "notes.md", include: ["**"] }), ["inputs"]);
+  assert.deepEqual(await prepare("file", { kind: "document", entry: "output", include: ["output"] }), ["inputs"]);
   // The contract names output/: the folder is ready and empty, as before.
   assert.deepEqual(await prepare("session", {}), ["inputs", "output"]);
   assert.deepEqual(await readdir(path.join(f.root, "session/output")), []);
