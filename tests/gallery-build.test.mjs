@@ -54,10 +54,12 @@ test("the static gallery preserves the cooked public catalog", async () => {
   for (const gone of ["recipeRevisions", "configurationRevisions", "skillRevisions", "menuRevisions"]) assert.equal(registry[gone], undefined, gone);
   assert.ok(registry.dishes.every((dish) => dish.inputs && dish.receipt), "every published Dish carries its input and receipt sidecars");
   assert.equal(registry.menus.length, 5);
-  assert.equal(recipeBook.recipes.length, 17);
+  // The book also lists ready Recipes nobody has cooked yet; the counts below are the cooked ones.
+  const cookedRecipes = recipeBook.recipes.filter((entry) => entry.dishCount > 0);
+  assert.equal(cookedRecipes.length, 17);
   assert.equal(recipeBook.archivedCount, 54);
-  const webRecipes = recipeBook.recipes.filter((entry) => entry.recipe.kind === "web");
-  const sessionRecipes = recipeBook.recipes.filter((entry) => entry.recipe.kind === "session");
+  const webRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "web");
+  const sessionRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "session");
   assert.equal(webRecipes.length, 10);
   assert.ok(webRecipes.every((entry) => entry.dishCount === 2));
   assert.equal(sessionRecipes.length, 7);

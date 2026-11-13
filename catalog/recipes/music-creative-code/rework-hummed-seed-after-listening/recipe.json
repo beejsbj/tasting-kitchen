@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "rework-hummed-seed-after-listening",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Rework a hummed-seed piece after a listening note",
+  "summary": "Grow a piece from the owner's hummed seed, then rework it when told where the music will be used.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "mothers",
+  "originNote": "The seed is the owner's own hum, pitch-tracked and rounded to semitones.",
+  "tags": [
+    "audio",
+    "writing",
+    "multi-turn"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Your working folder holds fixtures/brief.md and fixtures/motif.json. Read them before you start. You may download tools while you work; the page you deliver must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "motif",
+        "path": "fixtures/motif.json",
+        "mountAs": "fixtures/motif.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "grow-seed",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/motif.json and do what the brief asks. Deliver index.html and notes.md in the folder you start in."
+    },
+    {
+      "id": "listening-note",
+      "role": "follow-up",
+      "content": "I listened. I now know where this goes: under a scene where two people talk quietly. Keep what you made as before.html, unchanged. Rework index.html so it is still clearly the same piece but leaves room for the voices. Update notes.md, in no more than 120 words, to say what you changed and what you kept."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "before.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "first-version-kept",
+        "type": "file-exists",
+        "required": true,
+        "description": "The first version is kept beside the revision.",
+        "target": "before.html"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Play before.html, then index.html. Is it still the same piece? Did the rework make room for speech by rethinking the music, or only by turning it down? Is before.html the first version, untouched?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "variation": "Staged sibling of grow-a-hummed-seed: same seed, brief and deliverable, plus one listening note that brings new information."
+}
