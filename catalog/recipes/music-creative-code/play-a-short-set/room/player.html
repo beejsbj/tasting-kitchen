@@ -134,7 +134,7 @@
   // ---- sound ----
   // One clock: set-time `base` sits at `origin` on the audio clock. Pausing suspends the audio
   // clock itself, so everything already sounding or scheduled freezes and resumes in place.
-  const audio = { context: null, ready: null, worklets: null, analyser: null, level: null, playing: false, base: 0, origin: null, cursor: 0, timer: null, scheduled: 0, failures: [] };
+  const audio = { context: null, ready: null, worklets: null, analyser: null, level: null, playing: false, base: 0, origin: null, cursor: 0, timer: null, scheduled: 0, sounded: new Set(), failures: [] };
   const position = () => (audio.origin === null ? audio.base : Math.max(audio.base, Math.min(audio.base + (audio.context.currentTime - audio.origin), total + TAIL)));
 
   function tap() {
@@ -178,6 +178,7 @@
       if (event.at < at - 0.05) continue;
       const when = Math.max(audio.origin + (event.at - audio.base), now + 0.005);
       audio.scheduled += 1;
+      audio.sounded.add(event.sound);
       try { Promise.resolve(RoomAudio.superdough({ ...event.value }, when, event.length, event.cps, event.cycle)).catch((error) => fail(event, error)); }
       catch (error) { fail(event, error); }
     }
@@ -358,7 +359,7 @@
     state: () => {
       let level = 0;
       if (audio.analyser) { audio.analyser.getFloatTimeDomainData(audio.level); for (const sample of audio.level) level += sample * sample; level = Math.sqrt(level / audio.level.length); }
-      return { steps: steps.length, events: events.length, total, playing: audio.playing, position: position(), step: shownStep + 1, context: audio.context ? audio.context.state : null, worklets: audio.worklets, scheduled: audio.scheduled, failures: audio.failures.slice(0, 20), level };
+      return { steps: steps.length, events: events.length, total, playing: audio.playing, position: position(), step: shownStep + 1, context: audio.context ? audio.context.state : null, worklets: audio.worklets, scheduled: audio.scheduled, sounded: [...audio.sounded].sort(), failures: audio.failures.slice(0, 20), level };
     },
   };
 })();

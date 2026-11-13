@@ -3,7 +3,8 @@
 // iframe with no network: play the hand-written sample sets through the room, serve the
 // result as /dishes/ is served in production, and measure the sound the player makes.
 // usage: node scripts/verify-music-room-browser.mjs [--chrome] [--screenshots DIR]
-//        node scripts/verify-music-room-browser.mjs --serve     keep serving, to listen by hand
+//        node scripts/verify-music-room-browser.mjs --full NAME   also play one sample set from start to finish, in real time
+//        node scripts/verify-music-room-browser.mjs --serve       keep serving, to listen by hand
 // CHROME_PATH names a browser binary; --chrome uses the installed Google Chrome.
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -13,6 +14,7 @@ import path from "node:path";
 
 import { chromium } from "playwright";
 
+import { ROOM } from "../catalog/recipes/music-creative-code/play-a-short-set/room/room.mjs";
 import { mountRoom, playSample, room } from "../catalog/recipes/music-creative-code/play-a-short-set/stage.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -81,7 +83,7 @@ const browser = await chromium.launch({
 });
 report.browser = `${flags.includes("--chrome") ? "Google Chrome" : "Chromium"} ${browser.version()}`;
 
-async function listen(name, { hostingHeaders }) {
+async function listen(name, { hostingHeaders, whole = false }) {
   const server = await serve({ hostingHeaders });
   const origin = `http://127.0.0.1:${server.address().port}`;
   const page = await browser.newPage({ viewport: { width: 1100, height: 760 } });
@@ -103,6 +105,13 @@ async function listen(name, { hostingHeaders }) {
 
     await frame.locator("#play").click();
     await frame.waitForFunction(() => window.roomPlayer.state().context === "running" && window.roomPlayer.state().scheduled > 0, null, { timeout: 15000 });
+    if (whole) {
+      // The whole set in real time: every event is scheduled once, and the player stops itself at the end.
+      const length = steps.at(-1).seconds[1];
+      await frame.waitForFunction(() => { const state = window.roomPlayer.state(); return !state.playing && state.position >= state.total; }, null, { timeout: (length + 30) * 1000, polling: 500 });
+      const state = await frame.evaluate(() => window.roomPlayer.state());
+      return { name, whole: true, seconds: length, events: state.events, worklets: state.worklets, scheduled: state.scheduled, sounded: state.sounded, failures: state.failures, problems, served: [...new Set(server.served)].sort() };
+    }
     const heard = [];
     for (const step of steps) {
       // Jump to each step as a listener would, and measure what comes out for a moment.
@@ -121,7 +130,7 @@ async function listen(name, { hostingHeaders }) {
     await sleep(250);
     const paused = await frame.evaluate(() => window.roomPlayer.state());
     if (flagValue("--screenshots")) { await mkdir(flagValue("--screenshots"), { recursive: true }); await page.screenshot({ path: path.join(flagValue("--screenshots"), `${name}${hostingHeaders ? "" : "-bare"}.png`) }); }
-    return { name, hostingHeaders, worklets: state.worklets, context: state.context, scheduled: state.scheduled, failures: state.failures, heard, paused: paused.playing === false && paused.context === "suspended", requests, served: [...new Set(server.served)].sort(), problems, origin };
+    return { name, hostingHeaders, worklets: state.worklets, context: state.context, scheduled: state.scheduled, sounded: state.sounded, failures: state.failures, heard, paused: paused.playing === false && paused.context === "suspended", requests, served: [...new Set(server.served)].sort(), problems, origin };
   } finally {
     await page.close();
     server.close();
@@ -139,6 +148,17 @@ try {
     assert.deepEqual(run.failures, [], `${name}: every scheduled event could sound`);
     for (const step of run.heard) if (step.sounding) assert.ok(step.peak > 0.002, `${name} step ${step.step} makes sound (peak ${step.peak})`);
     assert.ok(run.paused, `${name}: pause suspends the audio clock`);
+  }
+  // Between them the sample sets put every sound of the room through the synth.
+  const canonicalName = { sin: "sine", tri: "triangle", sqr: "square", saw: "sawtooth" };
+  const sounded = new Set(report.runs.flatMap((run) => run.sounded));
+  assert.deepEqual([...sounded].sort(), [...new Set(ROOM.sounds.map((sound) => canonicalName[sound] ?? sound))].sort(), "every sound of the room was scheduled, and none failed");
+  if (flagValue("--full")) {
+    const full = await listen(flagValue("--full"), { hostingHeaders: true, whole: true });
+    report.runs.push(full);
+    assert.deepEqual(full.problems, [], "the whole set plays without page or console errors");
+    assert.deepEqual(full.failures, [], "every event of the whole set could sound");
+    assert.equal(full.scheduled, full.events, "every event of the set was scheduled exactly once");
   }
   // Without the /dishes/ headers the sandboxed page cannot fetch worklets.js (no CORS for an opaque origin).
   // Recorded, not required: it shows what a host that forgets the headers would get.
