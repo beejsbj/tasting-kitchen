@@ -130,6 +130,16 @@ a No Dish and counts as coverage; recovery refuses it. A new adapter that can
 see a refusal or an exhausted turn budget in its own stream should tag it the
 same way, and must not tag anything the route could have caused.
 
+A provider usage limit is Kitchen's `usage-limit`, apart from `rate-limited`:
+the account's allowance is spent, so retrying before it resets cannot work.
+Codex reports it as an `error` event and a `turn.failed` whose message says
+"usage limit", then exits nonzero; the Codex adapter tags that
+(`failure.kitchenFault`) and, when the message ends "try again at …", records
+those words as the private fault's `resetsAt`. It is the provider's own text,
+not a parsed date. Other harnesses are not tagged yet: Kitchen has no recorded
+limit failure from them to read a shape from, so there the code comes from the
+message alone and carries no reset time.
+
 `taste verdict --dish ID --failed|--passed --note TEXT` records Burooj's verdict
 beside a Dish or No Dish in `verdicts/`, then rebuilds the registry. It never
 edits the plate. A No Dish (`nodish_…`) takes only `--passed`: overruling checks
