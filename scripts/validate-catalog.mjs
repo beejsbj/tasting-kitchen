@@ -14,7 +14,7 @@ import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { BUDGET_KEYS, BUDGET_LIMITS, recipeBudget } from "../lib/taste/budget.mjs";
 import { loadToolchains, toolchainPinFindings } from "../lib/taste/toolchains.mjs";
 import { CHEF_FAULTS } from "../lib/taste/faults.mjs";
-import { loadNoDishes, loadPrivateNoDishes } from "../lib/taste/no-dishes.mjs";
+import { loadNoDishes, loadPrivateNoDishes, NO_DISH_MANIFEST } from "../lib/taste/no-dishes.mjs";
 import { JUDGE_RANK, loadPrivateVerdicts, loadVerdicts, VERDICT_VALUES } from "../lib/taste/verdicts.mjs";
 import { loadPrivateDishes } from "../lib/taste/registry.mjs";
 import { INPUTS_MANIFEST, inputsMatchRecipe, RECEIPT_MANIFEST, validateSkillReceipt, verifyInputs } from "../lib/taste/receipts.mjs";
@@ -729,20 +729,21 @@ async function hasPersonalReceipt(dishDirectory) {
 const SETUP_RECEIPT_KEYS = new Set(["environment", "harnessProfile", "memory", "connections", "digest", "digestAtStart", "entries", "toolsets", "loaded"]);
 // A snapshot Dish names the setup it saw in identity.setupDigest (part of dishHash); its receipt must agree,
 // and only a snapshot carries one. A receipt's setup summary must match the recorded configuration.
-function validateSetupReceipt(receipt, configuration, dish, relative, receiptRelative) {
+// `plate` is "Dish" or "No Dish": both carry the same receipt, and a No Dish is held to the same rules.
+function validateSetupReceipt(receipt, configuration, dish, relative, receiptRelative, plate = "Dish") {
   const environment = configuration.executionProfile?.environment;
   const digest = dish.identity.setupDigest;
   if (environment === "snapshot") {
     string(digest, `${relative}.identity.setupDigest`, { pattern: SHA256 });
     if (receipt.setup?.digest !== digest) fail(receiptRelative, "setup digest does not match identity.setupDigest");
-  } else if (digest !== undefined) fail(relative, "identity.setupDigest belongs only to a snapshot Dish");
+  } else if (digest !== undefined) fail(relative, `identity.setupDigest belongs only to a snapshot ${plate}`);
   if (receipt.setup === undefined) {
-    if (PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, `a ${environment} Dish must record its setup`);
+    if (PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, `a ${environment} ${plate} must record its setup`);
     return;
   }
   if (!object(receipt.setup, `${receiptRelative}.setup`)) return;
   onlyKeys(receipt.setup, SETUP_RECEIPT_KEYS, `${receiptRelative}.setup`);
-  if (!PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, "only a snapshot or live Dish records a setup");
+  if (!PERSONAL_ENVIRONMENTS.includes(environment)) fail(receiptRelative, `only a snapshot or live ${plate} records a setup`);
   for (const key of ["environment", "harnessProfile", "memory", "connections"]) {
     if (receipt.setup[key] !== configuration.executionProfile?.[key]) fail(receiptRelative, `setup.${key} does not match the recorded configuration`);
   }
@@ -751,12 +752,12 @@ function validateSetupReceipt(receipt, configuration, dish, relative, receiptRel
 // A clean Dish may carry its harness's own proof that it loaded nothing from outside the cook directory:
 // which record proved it, and the bundled names it found. Older clean Dishes have none.
 const ISOLATION_EVIDENCE = { "codex-cli": "codex-rollout", "claude-code": "claude-code-init" };
-function validateIsolationReceipt(receipt, configuration, receiptRelative) {
+function validateIsolationReceipt(receipt, configuration, receiptRelative, plate = "Dish") {
   if (receipt.isolation === undefined) return;
   const label = `${receiptRelative}.isolation`;
   if (!object(receipt.isolation, label)) return;
   onlyKeys(receipt.isolation, new Set(["evidence", "skills", "agents", "plugins"]), label);
-  if (configuration.executionProfile?.environment !== "clean") fail(receiptRelative, "only a clean Dish records isolation");
+  if (configuration.executionProfile?.environment !== "clean") fail(receiptRelative, `only a clean ${plate} records isolation`);
   const evidence = ISOLATION_EVIDENCE[configuration.harness];
   if (receipt.isolation.evidence !== evidence) fail(label, evidence ? `evidence must be ${evidence} for ${configuration.harness}` : `${configuration.harness} records no isolation`);
   const lists = configuration.harness === "claude-code" ? ["skills", "agents", "plugins"] : ["skills"];
@@ -764,6 +765,22 @@ function validateIsolationReceipt(receipt, configuration, receiptRelative) {
   for (const key of lists) {
     if (array(receipt.isolation[key], `${label}.${key}`)) for (const name of receipt.isolation[key]) string(name, `${label}.${key}[]`, { max: 200 });
   }
+}
+
+// A No Dish carries the same receipt.json as a Dish. The loader checks its manifest, bytes and public
+// scan; this holds its `setup` and `isolation` blocks to the Dish rules. They are read against the
+// receipt's own configuration, so that configuration must first reproduce the plate's configuration hash.
+async function validateNoDishReceipt(plate, directory) {
+  const relative = path.join(directory, NO_DISH_MANIFEST);
+  const receiptRelative = path.join(directory, RECEIPT_MANIFEST);
+  if (!await exists(path.join(root, receiptRelative))) return;
+  const receipt = await json(receiptRelative);
+  const configuration = receipt?.configuration;
+  if (!receipt || !object(configuration, `${receiptRelative}.configuration`)) return;
+  if (computeConfigHash(configuration) !== plate.identity.configHash) fail(receiptRelative, "configuration does not reproduce identity.configHash");
+  if (configuration.id !== plate.identity.variantId) fail(receiptRelative, "configuration id does not match identity.variantId");
+  validateSetupReceipt(receipt, configuration, plate, relative, receiptRelative, "No Dish");
+  validateIsolationReceipt(receipt, configuration, receiptRelative, "No Dish");
 }
 
 async function validateDish(relative, recipeRecords, { privateDish = false } = {}) {
@@ -1116,6 +1133,8 @@ try {
     if (dishes.has(plate.id) || allDishIds.has(plate.id)) fail(`no-dishes/${plate.id}`, "id collides with a Dish");
     if (!recipeRecords.has(plate.recipe.id)) fail(`no-dishes/${plate.id}`, `unknown recipe ${plate.recipe.id}`);
   }
+  for (const plate of publicNoDishes) await validateNoDishReceipt(plate, path.join("no-dishes", plate.id));
+  for (const plate of privateNoDishes) await validateNoDishReceipt(plate, path.join("private", "no-dishes", plate.id));
   noDishCount = noDishes.length;
 } catch (error) {
   fail("no-dishes", error.message);

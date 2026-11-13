@@ -7,11 +7,13 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { computeConfigHash, computeRecipeHash, hashCanonical, sha256 } from "../lib/taste/catalog.mjs";
+import { computeConfigHash, computeRecipeHash, hashCanonical, loadCatalog, resolveVariant, sha256 } from "../lib/taste/catalog.mjs";
 import { collectSetupChildren, collectSetupDirectory, collectSetupFile, createSetupBudget, setupDigest, setupSummary, writeSetupFiles } from "../lib/taste/environments.mjs";
+import { classifyFailure } from "../lib/taste/faults.mjs";
 import { pathExists } from "../lib/taste/files.mjs";
 import { OPTIONAL_PROFILE_KEYS } from "../lib/taste/harness-adapters.mjs";
 import { cook } from "../lib/taste/index.mjs";
+import { publishNoDish } from "../lib/taste/no-dishes.mjs";
 import { finalizeAttempt } from "../lib/taste/publication.mjs";
 import { configurationFromRequest } from "../lib/taste/recovery.mjs";
 import { requestedManifest } from "../lib/taste/runner.mjs";
@@ -226,6 +228,70 @@ test("validate-catalog accepts a clean Dish's isolation proof only in its harnes
   assert.match(await withIsolation({ evidence: "codex-rollout", skills: [7] }), /isolation\.skills\[\]/);
   assert.match(await withIsolation({ evidence: "codex-rollout", skills: [], paths: ["/home/someone"] }), /unknown key paths/);
   assert.match(await withIsolation({ evidence: "codex-rollout", skills: [] }, null), /only a clean Dish records isolation/);
+});
+
+/** Publish a refused No Dish into a scratch tree for one catalog configuration, and return where it landed. */
+async function scratchNoDish(scratch, configurationId, { observed = null, setup = null } = {}) {
+  const catalog = await loadCatalog(scratch);
+  const variant = resolveVariant(catalog, configurationId);
+  const recipe = catalog.recipes.find((candidate) => candidate.status === "ready" && candidate.visibility !== "private" && candidate.kind === "session");
+  const attemptId = `attempt_${recipe.id}_${configurationId}_20261113000000000_receipt`;
+  const attemptDir = path.join(scratch, "private/runtime/attempts", attemptId);
+  await mkdir(attemptDir, { recursive: true });
+  const published = await publishNoDish({
+    repoRoot: scratch, catalog, recipe, variant, attemptId, attemptDir, workspace: path.join(attemptDir, "absent-workspace"),
+    result: { cliVersion: "9.9.9-fake", failure: { turnId: recipe.turns[0].id }, turns: [{ finalMessage: null }] },
+    observed, setup, fault: classifyFailure({ chefFault: "refused" }), executedAt: "2026-11-13T00:00:00.000Z",
+  });
+  await rm(path.join(scratch, "private/runtime"), { recursive: true });
+  const receiptFile = path.join(published.directory, "receipt.json");
+  const pristine = JSON.parse(await readFile(receiptFile, "utf8"));
+  /** Rewrite the receipt from the published one and return what the validator says. */
+  const withReceipt = async (edit, validate) => {
+    const receipt = structuredClone(pristine);
+    edit(receipt);
+    await writeFile(receiptFile, `${JSON.stringify(receipt, null, 2)}\n`);
+    return validate();
+  };
+  return { ...published, withReceipt };
+}
+
+test("validate-catalog holds a public No Dish's receipt to the Dish rules: a bad isolation or setup block fails", async (t) => {
+  const { scratch, validate } = await scratchCatalog(t);
+  const plate = await scratchNoDish(scratch, "codex-sol-high-clean", { observed: { model: "gpt-5.6-sol", isolation: { evidence: "codex-rollout", skills: ["imagegen"], roots: 3 } } });
+  assert.equal(plate.directory, path.join(scratch, "no-dishes", plate.noDishId));
+  const check = (edit) => plate.withReceipt(edit, () => validate("--public-checkout"));
+  assert.equal(await check(() => {}), "", "the published receipt validates");
+  assert.equal(await check((receipt) => { delete receipt.isolation; }), "", "an older clean plate has no isolation block");
+  assert.match(await check((receipt) => { receipt.isolation = { evidence: "claude-code-init", skills: [] }; }), /no-dishes\/nodish_.*receipt\.json\.isolation: evidence must be codex-rollout for codex-cli/);
+  assert.match(await check((receipt) => { receipt.isolation.agents = []; }), /codex-cli records no agents/);
+  assert.match(await check((receipt) => { receipt.isolation.skills = [7]; }), /isolation\.skills\[\]/);
+  assert.match(await check((receipt) => { receipt.isolation.paths = ["somewhere"]; }), /unknown key paths/);
+  assert.match(await check((receipt) => { receipt.isolation = "clean"; }), /receipt\.json\.isolation/);
+  assert.match(await check((receipt) => { receipt.setup = { environment: "clean" }; }), /only a snapshot or live No Dish records a setup/);
+  assert.match(await check((receipt) => { receipt.setup = { environment: "clean", files: ["notes"] }; }), /unknown key files/);
+  // The blocks are read against the receipt's own configuration, so that must be the one the plate ran as.
+  assert.match(await check((receipt) => { receipt.configuration.executionProfile.environment = "snapshot"; }), /receipt\.json: configuration does not reproduce identity\.configHash/);
+  assert.match(await check((receipt) => { receipt.configuration.id = "someone-else"; }), /configuration id does not match identity\.variantId/);
+  assert.equal(await check(() => {}), "");
+});
+
+test("owner validation holds a private No Dish's receipt to the same rules; a public checkout never reads it", async (t) => {
+  const { scratch, validate } = await scratchCatalog(t);
+  const setup = { environment: "snapshot", memory: "on", connections: "off", digest: DIGEST, entries: [] };
+  const plate = await scratchNoDish(scratch, "claude-code-opus-5-5-high-snapshot", { setup });
+  assert.equal(plate.directory, path.join(scratch, "private/no-dishes", plate.noDishId));
+  assert.equal(plate.manifest.identity.setupDigest, DIGEST);
+  // Owner mode also reports this scratch tree's missing provenance; only the No Dish lines matter here.
+  const check = (edit) => plate.withReceipt(edit, async () => (await validate()).split("\n").filter((line) => line.includes("no-dishes")).join("\n"));
+  assert.equal(await check(() => {}), "", "the published receipt validates");
+  assert.match(await check((receipt) => { receipt.setup.memory = "off"; }), /private\/no-dishes\/nodish_.*receipt\.json: setup\.memory does not match the recorded configuration/);
+  assert.match(await check((receipt) => { receipt.setup.digest = `sha256:${"b".repeat(64)}`; }), /setup digest does not match identity\.setupDigest/);
+  assert.match(await check((receipt) => { delete receipt.setup; }), /a snapshot No Dish must record its setup/);
+  assert.match(await check((receipt) => { receipt.setup.files = ["CLAUDE.md"]; }), /unknown key files/);
+  assert.match(await check((receipt) => { receipt.isolation = { evidence: "claude-code-init", skills: [], agents: [], plugins: [] }; }), /only a clean No Dish records isolation/);
+  // The same bad receipt is invisible to a public checkout, which skips the private tree.
+  assert.equal(await plate.withReceipt((receipt) => { delete receipt.setup; }, () => validate("--public-checkout")), "");
 });
 
 test("fill-missing counts a snapshot cell covered only by a Dish that saw his setup as it is now; Repeats need the same digest", async (t) => {
