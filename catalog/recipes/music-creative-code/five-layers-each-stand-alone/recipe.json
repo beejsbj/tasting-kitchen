@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "five-layers-each-stand-alone",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Build a piece in five layers that each stand alone",
+  "summary": "Write a short piece as five additive layers so that every stage, from the first layer alone to all five, sounds complete.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original task with no supplied material; the slow, voice-led direction is the owner's own.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "build-layers",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and do what it asks. Deliver index.html and notes.md."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "notes.md",
+      "assets/**"
+    ],
+    "limits": {
+      "maxFiles": 20,
+      "maxBytes": 10485760
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "page-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The playable page exists.",
+        "target": "index.html"
+      },
+      {
+        "id": "notes-exist",
+        "type": "file-exists",
+        "required": true,
+        "description": "The listening notes exist.",
+        "target": "notes.md"
+      },
+      {
+        "id": "plays-offline",
+        "type": "command",
+        "required": true,
+        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "argv": [
+          "node",
+          "-e",
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Play the stages in order. Does the first layer alone sound like music, or like a part waiting for the rest? Does each new layer earn its place? At five, is there still air, and does a melody still lead?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}
