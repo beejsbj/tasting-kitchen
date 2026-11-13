@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "id": "play-a-short-set",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Play a short set",
+  "summary": "Play a live set of twelve steps in the music room, hearing each step only as the numbers the room prints back.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "A live-coded set is a familiar task; the supplied room, its step loop and hearing by numbers are the owner's arena idea. The benchmark shape awaits owner acceptance.",
+  "tags": [
+    "audio",
+    "strudel",
+    "shell-use"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. room/ is Kitchen's equipment, identical for every model and left unedited: the room program, its Strudel engine and the player. The model plays the set by running the room; the room writes the delivery itself. Node 22 or later is the only tool the room needs.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "room-readme",
+        "path": "room/README.md",
+        "mountAs": "room/README.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "room-program",
+        "path": "room/room.mjs",
+        "mountAs": "room/room.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "room-player",
+        "path": "room/player.html",
+        "mountAs": "room/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "room-notice",
+        "path": "room/NOTICE.md",
+        "mountAs": "room/NOTICE.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "room-license",
+        "path": "fixtures/upstream/strudel/LICENSE",
+        "mountAs": "room/LICENSE",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/plain"
+      },
+      {
+        "id": "strudel-engine",
+        "path": "fixtures/upstream/strudel/strudel.mjs",
+        "mountAs": "room/strudel/strudel.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "strudel-synth",
+        "path": "fixtures/upstream/strudel/superdough.js",
+        "mountAs": "room/strudel/superdough.js",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "strudel-worklets",
+        "path": "fixtures/upstream/strudel/worklets.js",
+        "mountAs": "room/strudel/worklets.js",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "strudel-manifest",
+        "path": "fixtures/upstream/strudel/manifest.json",
+        "mountAs": "room/strudel/manifest.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "strudel-notices",
+        "path": "fixtures/upstream/strudel/THIRD-PARTY-NOTICES.md",
+        "mountAs": "room/strudel/THIRD-PARTY-NOTICES.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "play-set",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and room/README.md, then play the set."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "recording.json",
+      "worklets.js"
+    ],
+    "limits": {
+      "maxFiles": 3,
+      "maxBytes": 16777216
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "recording-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The room's recording exists.",
+        "target": "recording.json"
+      },
+      {
+        "id": "room-recording",
+        "type": "command",
+        "required": true,
+        "description": "The recording is well-formed, holds all twelve steps, matches the room's own hash chain and journal, every step evaluates again to exactly the recorded events, and the player is the room's own rendering.",
+        "argv": [
+          "node",
+          "room/room.mjs",
+          "check"
+        ]
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Press play and listen to the whole set while the code changes. Does it open, go somewhere and end? Did the model respond to what it was told it had played, or carry out a plan regardless? Would you listen again?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

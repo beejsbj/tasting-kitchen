@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<!--
+  Music room player. Replays a set recorded by room.mjs as sound and shows the code changing step by step.
+  The room sets superdough (Strudel's Web Audio synth) and the recording into this page; nothing is fetched but worklets.js beside it.
+  This page and the synth inside it are licensed under AGPL-3.0-or-later. Source, licence text and notices: the room directory
+  this page was rendered from (room.mjs, player.html, strudel, LICENSE, NOTICE.md), published with every Dish as its inputs.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A set in the music room</title>
+<style>
+  :root {
+    --canvas: #eeeee8; --surface: #fffef8; --soft: #e0e6ed; --ink: #193a70; --muted: #596373; --line: #bdc6cb;
+    --signal: #244ca0; --signal-ink: #fffef8; --mother: #994a30; --mark: #fff1c9;
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif; --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; flex-direction: column; background: var(--canvas); color: var(--ink); font: 14px/1.4 var(--sans); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+  .deck { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .play { min-width: 5.5rem; height: 2.5rem; padding: 0 1rem; border: 0; border-radius: 99rem; background: var(--signal); color: var(--signal-ink); font-weight: 700; letter-spacing: .02em; cursor: pointer; }
+  .play:active { transform: translateY(1px); }
+  .clock { font: 600 1.05rem var(--mono); font-variant-numeric: tabular-nums; }
+  .clock small { font-weight: 400; color: var(--muted); }
+  .where { font-weight: 600; }
+  .meter { flex: 1 1 4rem; min-width: 3rem; max-width: 9rem; height: .5rem; border-radius: 99rem; background: var(--soft); overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--signal); }
+  .volume { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .volume input { width: 5rem; accent-color: var(--signal); }
+
+  .roll { position: relative; flex: 0 0 auto; height: clamp(110px, 30vh, 240px); background: var(--surface); border-bottom: 1px solid var(--line); cursor: pointer; touch-action: none; }
+  .roll canvas { display: block; width: 100%; height: 100%; }
+  .head { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; margin-left: -1px; background: var(--mother); pointer-events: none; }
+  .steps { display: flex; flex: 0 0 auto; background: var(--soft); border-bottom: 1px solid var(--line); }
+  .steps button { flex: 1 1 0; min-width: 0; height: 1.9rem; padding: 0; border: 0; border-right: 1px solid var(--line); background: transparent; font: 600 12px var(--mono); cursor: pointer; }
+  .steps button:last-child { border-right: 0; }
+  .steps button[aria-current="true"] { background: var(--ink); color: var(--signal-ink); }
+  .steps sup { margin-left: 2px; color: var(--mother); font-weight: 400; }
+  .steps button[aria-current="true"] sup { color: #ffd9c9; }
+
+  .now { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+  .facts { display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 8px 14px 0; color: var(--muted); font-size: 12px; }
+  .facts b { color: var(--ink); font-weight: 600; }
+  .tabs { display: flex; gap: 4px; padding: 8px 14px 0; }
+  .tabs button { padding: 4px 10px; border: 1px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0; background: var(--soft); font-size: 12px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--surface); font-weight: 700; }
+  .pane { flex: 1 1 auto; min-height: 6rem; margin: 0 14px; padding: 10px 0; overflow: auto; background: var(--surface); border: 1px solid var(--line); font: 12.5px/1.55 var(--mono); }
+  .pane pre { margin: 0; font: inherit; white-space: pre; tab-size: 2; }
+  .line { display: block; min-height: 1.55em; padding: 0 12px; border-left: 3px solid transparent; }
+  .line.new { background: var(--mark); border-left-color: var(--mother); }
+  .attempt { padding: 0 0 10px; margin: 0 0 10px; border-bottom: 1px dashed var(--line); }
+  .attempt p { margin: 0 12px 4px; color: var(--mother); font-family: var(--sans); }
+  .empty { margin: 0 12px; color: var(--muted); font-family: var(--sans); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 14px 0; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: .7em; height: .7em; margin-right: 4px; border-radius: 2px; }
+  .trouble { margin: 6px 14px 0; padding: 6px 10px; border: 1px solid var(--mother); border-radius: 8px; color: var(--mother); font-size: 12px; }
+  footer { flex: 0 0 auto; padding: 8px 14px 10px; color: var(--muted); font-size: 11px; }
+  [hidden] { display: none !important; }
+</style>
+
+<header class="deck">
+  <button class="play" id="play" type="button">Play</button>
+  <span class="clock" id="clock" aria-live="off">0:00 <small></small></span>
+  <span class="where" id="where"></span>
+  <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+  <label class="volume">Volume <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8"></label>
+</header>
+<div class="roll" id="roll" role="slider" tabindex="0" aria-label="Position in the set" aria-valuemin="0" aria-valuenow="0">
+  <canvas id="canvas"></canvas>
+  <div class="head" id="head"></div>
+</div>
+<nav class="steps" id="steps" aria-label="Steps of the set"></nav>
+<main class="now">
+  <div class="legend" id="legend"></div>
+  <p class="trouble" id="trouble" hidden></p>
+  <div class="facts" id="facts"></div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="pane" id="pane" role="tabpanel" tabindex="0"></div>
+</main>
+<footer id="foot"></footer>
+
+<script>/*ROOM_AUDIO*/</script>
+<script type="application/json" id="recording">/*ROOM_RECORDING*/</script>
+<script>
+(() => {
+  "use strict";
+  const recording = JSON.parse(document.getElementById("recording").textContent);
+  const $ = (id) => document.getElementById(id);
+  const steps = recording.entries.filter((entry) => entry.kind === "step");
+  const refusals = recording.entries.filter((entry) => entry.kind === "refused");
+  const total = steps.length ? steps[steps.length - 1].seconds[1] : 0;
+  const TAIL = 3;
+  const COLORS = { sine: "#244ca0", sin: "#244ca0", triangle: "#3b6d57", tri: "#3b6d57", square: "#6a4c93", sqr: "#6a4c93", sawtooth: "#b5532f", saw: "#b5532f", supersaw: "#d08a1e", pulse: "#0f7c8a", sbd: "#193a70", white: "#7b8794", pink: "#c06c84", brown: "#7a5c3e", crackle: "#8f9a2c" };
+  const NOTE_FOR = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+
+  const soundOf = (value) => String((value.bank ? value.bank + "_" : "") + (value.s == null ? "triangle" : value.s)).toLowerCase();
+  const unpitched = (sound) => ["white", "pink", "brown", "crackle", "sbd"].includes(sound);
+  function midiOf(value, sound) {
+    const octave = typeof value.octave === "number" ? value.octave : 0;
+    if (typeof value.freq === "number" && value.freq > 0) return 69 + 12 * Math.log2((value.freq * 2 ** octave) / 440);
+    const note = value.note || (unpitched(sound) ? null : 36);
+    if (note === null) return null;
+    if (typeof note === "number") return note + 12 * octave;
+    const parts = String(note).toLowerCase().match("^([a-g])([#bsf]*)(-?[0-9]*)$");
+    if (!parts) return null;
+    let midi = NOTE_FOR[parts[1]] + (parts[3] === "" ? 4 : Number(parts[3]) + 1) * 12;
+    for (const accidental of parts[2]) midi += accidental === "#" || accidental === "s" ? 1 : -1;
+    return midi + 12 * octave;
+  }
+
+  // Every event of the set on one clock, in seconds.
+  const events = [];
+  for (const step of steps) {
+    for (const [begin, end, value] of step.events) {
+      const sound = soundOf(value);
+      events.push({ at: step.seconds[0] + (begin - step.cycles[0]) / step.cps, length: (end - begin) / step.cps, cycle: begin, cps: step.cps, value, sound, midi: midiOf(value, sound) });
+    }
+  }
+  events.sort((a, b) => a.at - b.at);
+  const sounds = [...new Set(events.map((event) => event.sound))];
+  const lanes = sounds.filter((sound) => events.some((event) => event.sound === sound && event.midi === null));
+  const pitches = events.filter((event) => event.midi !== null).map((event) => event.midi);
+  const low = pitches.length ? Math.min(...pitches) - 2 : 34;
+  const high = pitches.length ? Math.max(...pitches) + 2 : 62;
+
+  const clockText = (seconds) => Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
+  const stepAt = (seconds) => { const found = steps.findIndex((step) => seconds < step.seconds[1]); return found === -1 ? steps.length - 1 : found; };
+
+  // ---- sound ----
+  // One clock: set-time `base` sits at `origin` on the audio clock. Pausing suspends the audio
+  // clock itself, so everything already sounding or scheduled freezes and resumes in place.
+  const audio = { context: null, ready: null, worklets: null, analyser: null, level: null, playing: false, base: 0, origin: null, cursor: 0, timer: null, scheduled: 0, failures: [] };
+  const position = () => (audio.origin === null ? audio.base : Math.max(audio.base, Math.min(audio.base + (audio.context.currentTime - audio.origin), total + TAIL)));
+
+  function tap() {
+    const output = RoomAudio.getSuperdoughAudioController().output.destinationGain;
+    output.gain.value = Number($("volume").value);
+    audio.analyser = audio.context.createAnalyser();
+    audio.analyser.fftSize = 1024;
+    audio.level = new Float32Array(audio.analyser.fftSize);
+    output.connect(audio.analyser);
+  }
+  function prepare() {
+    if (audio.ready) return audio.ready;
+    audio.context = RoomAudio.getAudioContext();
+    audio.ready = (async () => {
+      await audio.context.resume();
+      await RoomAudio.initAudio();
+      RoomAudio.registerSynthSounds();
+      try { new AudioWorkletNode(audio.context, "lfo-processor").disconnect(); audio.worklets = true; } catch { audio.worklets = false; }
+      tap();
+      report();
+    })();
+    return audio.ready;
+  }
+  function fail(event, error) {
+    audio.failures.push({ at: Number(event.at.toFixed(3)), sound: event.sound, error: String(error && error.message ? error.message : error) });
+    report();
+  }
+  function report() {
+    const lines = [];
+    if (audio.worklets === false) lines.push("This page could not load worklets.js, so sounds and effects that need it (supersaw, pulse, crush, coarse, shape, distort) are missing.");
+    if (audio.failures.length) lines.push(audio.failures.length + " event" + (audio.failures.length === 1 ? "" : "s") + " could not sound. First: " + audio.failures[0].error);
+    $("trouble").hidden = lines.length === 0;
+    $("trouble").textContent = lines.join(" ");
+  }
+  function pump() {
+    const now = audio.context.currentTime;
+    const at = audio.base + (now - audio.origin);
+    const horizon = at + (document.hidden ? 1.6 : 0.3);
+    while (audio.cursor < events.length && events[audio.cursor].at < horizon) {
+      const event = events[audio.cursor++];
+      if (event.at < at - 0.05) continue;
+      const when = Math.max(audio.origin + (event.at - audio.base), now + 0.005);
+      audio.scheduled += 1;
+      try { Promise.resolve(RoomAudio.superdough({ ...event.value }, when, event.length, event.cps, event.cycle)).catch((error) => fail(event, error)); }
+      catch (error) { fail(event, error); }
+    }
+    if (at >= total + TAIL) { halt(); seek(total); }
+  }
+  function halt() {
+    audio.playing = false;
+    clearInterval(audio.timer);
+    if (audio.context) audio.context.suspend();
+    paint();
+  }
+  // Move to `seconds`, dropping everything that is sounding or already scheduled.
+  function seek(seconds) {
+    audio.base = Math.max(0, Math.min(seconds, total));
+    const next = events.findIndex((event) => event.at >= audio.base - 0.0005);
+    audio.cursor = next === -1 ? events.length : next;
+    if (audio.analyser) {
+      RoomAudio.getSuperdoughAudioController().reset();
+      tap();
+      audio.origin = audio.context.currentTime + 0.06;
+    }
+    paint();
+  }
+  async function play() {
+    await prepare();
+    if (audio.playing) return;
+    if (audio.base >= total) seek(0);
+    if (audio.origin === null) audio.origin = audio.context.currentTime + 0.06;
+    await audio.context.resume();
+    audio.playing = true;
+    audio.timer = setInterval(pump, 40);
+    pump();
+    paint();
+  }
+
+  // ---- picture ----
+  const canvas = $("canvas");
+  function draw() {
+    const box = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(box.width * ratio));
+    canvas.height = Math.max(1, Math.round(box.height * ratio));
+    const pen = canvas.getContext("2d");
+    pen.setTransform(ratio, 0, 0, ratio, 0, 0);
+    pen.clearRect(0, 0, box.width, box.height);
+    if (!total) return;
+    const laneHeight = lanes.length ? Math.min(9, (box.height * 0.3) / lanes.length) : 0;
+    const floor = box.height - lanes.length * laneHeight - (lanes.length ? 6 : 0);
+    const x = (seconds) => (seconds / total) * box.width;
+    const row = Math.max(2, Math.min(7, (floor - 8) / (high - low + 1)));
+    pen.fillStyle = "#e0e6ed";
+    for (const step of steps) pen.fillRect(Math.round(x(step.seconds[0])), 0, 1, box.height);
+    if (lanes.length) pen.fillRect(0, floor + 2, box.width, 1);
+    for (const event of events) {
+      pen.fillStyle = COLORS[event.sound] || "#596373";
+      const gain = typeof event.value.gain === "number" ? event.value.gain : 0.8;
+      pen.globalAlpha = Math.max(0.3, Math.min(1, 0.25 + gain * 0.75));
+      const width = Math.max(1.5, x(event.length) - 0.5);
+      if (event.midi === null) pen.fillRect(x(event.at), floor + 6 + lanes.indexOf(event.sound) * laneHeight, Math.min(width, 3), Math.max(2, laneHeight - 2));
+      else pen.fillRect(x(event.at), 4 + (1 - (event.midi - low) / (high - low)) * (floor - 8) - row / 2, width, row);
+    }
+    pen.globalAlpha = 1;
+  }
+
+  let shownStep = -1;
+  let tab = "code";
+  function printout(heard) {
+    const lines = [];
+    for (const key of Object.keys(heard)) if (key !== "bars") lines.push(" " + JSON.stringify(key) + ": " + JSON.stringify(heard[key]) + ",");
+    const bars = heard.bars.map((bar) => (bar.voices && bar.voices.length ? "  {\"cycle\": " + bar.cycle + ", \"voices\": [\n" + bar.voices.map((voice) => "   " + JSON.stringify(voice)).join(",\n") + "]}" : "  " + JSON.stringify(bar)));
+    return "{\n" + lines.join("\n") + "\n \"bars\": [\n" + bars.join(",\n") + "\n ]\n}";
+  }
+  function codeBlock(code, before) {
+    const known = new Set(before === null ? [] : before.split("\n").map((line) => line.trim()));
+    const pre = document.createElement("pre");
+    for (const line of code.replace(/\n$/, "").split("\n")) {
+      const row = document.createElement("span");
+      row.className = "line" + (before !== null && line.trim() && !known.has(line.trim()) ? " new" : "");
+      row.textContent = line || " ";
+      pre.append(row);
+    }
+    return pre;
+  }
+  function showStep(index) {
+    shownStep = index;
+    const step = steps[index];
+    const attempts = step ? refusals.filter((entry) => entry.step === step.step) : [];
+    for (const button of $("steps").children) button.setAttribute("aria-current", String(Number(button.dataset.index) === index));
+    $("where").textContent = step ? "Step " + step.step + " of " + recording.room.steps : "";
+    const facts = $("facts");
+    facts.textContent = "";
+    const fact = (label, value) => { const item = document.createElement("span"); item.append(label + " "); const strong = document.createElement("b"); strong.textContent = value; item.append(strong); facts.append(item); };
+    if (step) {
+      fact("cycles", step.cycles[0] + " to " + step.cycles[1]);
+      fact("tempo", step.cps + " cps");
+      fact("events", String(step.heard.events));
+      if (step.heard.pitch) fact("pitch", step.heard.pitch.low + " to " + step.heard.pitch.high);
+      const previous = recording.entries[step.index - 1];
+      fact("played", new Date(step.at).toLocaleTimeString() + (previous ? ", " + Math.round((Date.parse(step.at) - Date.parse(previous.at)) / 1000) + " s after the play before it" : ""));
+    }
+    const tabs = $("tabs");
+    tabs.textContent = "";
+    for (const [id, label] of [["code", "Code"], ["heard", "What the room printed"], ["refused", "Refused" + (attempts.length ? " (" + attempts.length + ")" : "")]]) {
+      const button = document.createElement("button");
+      button.type = "button"; button.role = "tab"; button.textContent = label;
+      button.setAttribute("aria-selected", String(tab === id));
+      button.addEventListener("click", () => { tab = id; showStep(shownStep); });
+      tabs.append(button);
+    }
+    const pane = $("pane");
+    pane.textContent = "";
+    pane.scrollTop = 0;
+    if (!step) { const empty = document.createElement("p"); empty.className = "empty"; empty.textContent = "No step has been played yet."; pane.append(empty); return; }
+    if (tab === "code") pane.append(codeBlock(step.code, index > 0 ? steps[index - 1].code : null));
+    else if (tab === "heard") { const pre = document.createElement("pre"); pre.className = "line"; pre.textContent = printout(step.heard); pane.append(pre); }
+    else if (!attempts.length) { const empty = document.createElement("p"); empty.className = "empty"; empty.textContent = "The room refused nothing before this step."; pane.append(empty); }
+    else for (const attempt of attempts) {
+      const block = document.createElement("div"); block.className = "attempt";
+      const reason = document.createElement("p"); reason.textContent = "Refused: " + attempt.error;
+      block.append(reason, codeBlock(attempt.code, null));
+      pane.append(block);
+    }
+  }
+  function paint() {
+    const at = position();
+    $("play").textContent = audio.playing ? "Pause" : at >= total && total ? "Replay" : "Play";
+    $("clock").firstChild.textContent = clockText(Math.min(at, total)) + " ";
+    $("head").style.left = (total ? Math.min(at / total, 1) * 100 : 0) + "%";
+    $("roll").setAttribute("aria-valuenow", String(Math.round(Math.min(at, total))));
+    const index = steps.length ? stepAt(Math.min(at, total - 0.0001)) : -1;
+    if (index !== shownStep) showStep(index);
+    if (audio.analyser) {
+      audio.analyser.getFloatTimeDomainData(audio.level);
+      let sum = 0;
+      for (const sample of audio.level) sum += sample * sample;
+      $("meter").style.width = Math.min(100, Math.sqrt(sum / audio.level.length) * 260) + "%";
+    }
+    if (audio.playing) requestAnimationFrame(paint);
+  }
+
+  // ---- wiring ----
+  $("play").addEventListener("click", () => { if (audio.playing) halt(); else play(); });
+  $("volume").addEventListener("input", () => { if (audio.analyser) RoomAudio.getSuperdoughAudioController().output.destinationGain.gain.value = Number($("volume").value); });
+  const rollSeek = (event) => { const box = $("roll").getBoundingClientRect(); seek(((event.clientX - box.left) / box.width) * total); };
+  $("roll").addEventListener("pointerdown", rollSeek);
+  $("roll").addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const next = Math.max(0, Math.min(steps.length - 1, shownStep + (event.key === "ArrowRight" ? 1 : -1))); if (steps[next]) seek(steps[next].seconds[0]); }
+    if (event.key === " " || event.key === "Enter") { event.preventDefault(); $("play").click(); }
+  });
+  for (const [index, step] of steps.entries()) {
+    const button = document.createElement("button");
+    button.type = "button"; button.dataset.index = String(index); button.textContent = String(step.step);
+    button.style.flexGrow = String(step.seconds[1] - step.seconds[0]);
+    const refusedHere = refusals.filter((entry) => entry.step === step.step).length;
+    button.setAttribute("aria-label", "Go to step " + step.step + (refusedHere ? ", " + refusedHere + " refused before it" : ""));
+    if (refusedHere) { const mark = document.createElement("sup"); mark.textContent = "×" + refusedHere; button.append(mark); }
+    button.addEventListener("click", () => seek(step.seconds[0]));
+    $("steps").append(button);
+  }
+  for (const sound of sounds) { const item = document.createElement("span"); const swatch = document.createElement("i"); swatch.style.background = COLORS[sound] || "#596373"; item.append(swatch, sound); $("legend").append(item); }
+  $("clock").lastChild.textContent = total ? "of " + clockText(total) : "";
+  $("roll").setAttribute("aria-valuemax", String(Math.round(total)));
+  const first = recording.entries[0], last = recording.entries[recording.entries.length - 1];
+  const span = first && last ? Math.round((Date.parse(last.at) - Date.parse(first.at)) / 1000) : 0;
+  $("foot").textContent = [
+    steps.length + " of " + recording.room.steps + " steps" + (recording.complete ? "" : " (unfinished)") + ", " + events.length + " events, " + refusals.length + " refused",
+    "played over " + (span >= 60 ? Math.floor(span / 60) + " min " + (span % 60) + " s" : span + " s"),
+    "Strudel " + recording.room.engine.strudel + " and superdough " + recording.room.engine.superdough + ", " + recording.room.engine.license + ". Source, licence and notices are in this Dish's inputs under room.",
+  ].join(" · ");
+  new ResizeObserver(draw).observe(canvas);
+  draw();
+  showStep(steps.length ? 0 : -1);
+  paint();
+
+  // What a check from outside can read: no sound is claimed that was not measured.
+  window.roomPlayer = {
+    play, pause: halt, seek,
+    state: () => {
+      let level = 0;
+      if (audio.analyser) { audio.analyser.getFloatTimeDomainData(audio.level); for (const sample of audio.level) level += sample * sample; level = Math.sqrt(level / audio.level.length); }
+      return { steps: steps.length, events: events.length, total, playing: audio.playing, position: position(), step: shownStep + 1, context: audio.context ? audio.context.state : null, worklets: audio.worklets, scheduled: audio.scheduled, failures: audio.failures.slice(0, 20), level };
+    },
+  };
+})();
+</script>
+</html>
