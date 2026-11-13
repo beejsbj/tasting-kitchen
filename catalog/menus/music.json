@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "music",
+  "title": "Music you can hear in seconds",
+  "summary": "Fourteen small music tasks: writing, growing, fixing, harmonising, ending and describing. Each Dish plays on a button press; compare models within each recipe by ear.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "recipes": [
+    "write-a-leitmotif",
+    "grow-a-hummed-seed",
+    "rework-hummed-seed-after-listening",
+    "hum-to-motif",
+    "fix-a-weak-motif",
+    "five-layers-each-stand-alone",
+    "make-tension-and-release-audible",
+    "one-motif-three-moods",
+    "two-motifs-share-a-scene",
+    "harmonise-a-bare-melody",
+    "give-a-loop-an-ending",
+    "design-one-sound",
+    "describe-what-code-sounds-like",
+    "three-sketches-then-develop-one"
+  ]
+}
