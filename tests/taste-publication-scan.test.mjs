@@ -84,6 +84,11 @@ test("in a public trace only the model's response may use ranking words; prompts
     assert.equal(publicTraceFindings(trace({ response: `${SCORE} ${text}` })).includes(RANKING_LANGUAGE), false, text);
     assert.ok(publicTraceFindings(trace({ prompt: text })).includes(reason), `prompt: ${text}`);
   }
+  // A turn the model never answered has no response; the turns beside it are read as before.
+  const turns = (...list) => JSON.stringify({ schemaVersion: 1, recipeId: "demo", partial: true, turns: list });
+  assert.deepEqual(publicTraceFindings(turns({ id: "opening", prompt: "Write a theme.", response: SCORE }, { id: "correction", prompt: "Shorten it.", response: null })), []);
+  assert.deepEqual(publicTraceFindings(turns({ id: "opening", prompt: "Write a theme.", response: SCORE }, { id: "correction", prompt: "Give it a score.", response: null })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicTraceFindings(turns({ id: "opening", prompt: "Write a theme.", response: SCORE }, null, "a score")), [RANKING_LANGUAGE]);
   // Text that is not a trace gets every rule.
   for (const text of ["a score", JSON.stringify("a score"), JSON.stringify({ response: "a score" }), JSON.stringify({ turns: "a score" }), JSON.stringify([{ response: "a score" }])]) {
     assert.deepEqual(publicTraceFindings(text), [RANKING_LANGUAGE], text);
@@ -107,6 +112,13 @@ test("a plate scan relaxes ranking words only for the delivered files and the tr
   await assert.rejects(scanPublicTree(root, { verbatim: PLATE_SCAN.verbatim }), /artifact\/notes\.md \(numerical ranking language\)/);
   await assert.doesNotReject(scanPublicTree(path.join(root, "artifact"), { chefAuthored: true }));
   await assert.rejects(scanPublicTree(path.join(root, "artifact")), /numerical ranking language/);
+
+  // Fixtures keep the rule even when the whole tree is called the model's, and entries must be named as arrays.
+  await write("inputs/brief.md", "Give it a score.\n");
+  await assert.rejects(scanPublicTree(root, { verbatim: ["inputs"], chefAuthored: true }), /inputs\/brief\.md \(numerical ranking language\)/);
+  await write("inputs/brief.md", "Write a theme.\n");
+  await assert.rejects(scanPublicTree(root, { ...PLATE_SCAN, chefAuthored: "artifact" }), /entries as arrays/);
+  await assert.rejects(scanPublicTree(root, { ...PLATE_SCAN, verbatim: "inputs" }), /entries as arrays/);
 
   // Kitchen's and the owner's files keep the rule: fixtures, the manifest, receipts, the validation report, a stray note.
   for (const relative of ["inputs/brief.md", "inputs/data.csv", "dish.json", "no-dish.json", "receipt.json", "inputs.json", "validation.json", "notes.md", "verdict.json", "other/notes.md"]) {
