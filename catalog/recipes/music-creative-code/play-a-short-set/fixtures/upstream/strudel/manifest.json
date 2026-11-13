@@ -1,0 +1,598 @@
+{
+  "schemaVersion": 1,
+  "id": "music-room-strudel",
+  "license": "AGPL-3.0-or-later",
+  "repository": "https://codeberg.org/uzu/strudel",
+  "registry": "https://registry.npmjs.org",
+  "modifications": [
+    "2026-11-13: superdough loads its AudioWorklet processors from worklets.js beside the page instead of an inlined data: URL.",
+    "2026-11-13: the shared-worker scheduler (NeoCyclist) of @strudel/core is replaced by a stub; the room never schedules in real time."
+  ],
+  "builtWith": {
+    "vite": "8.2.1"
+  },
+  "outputs": {
+    "strudel.mjs": {
+      "sha256": "c5f2f69d11ca53d2c9b506a65084751bf9a727856fbc9c3d028b5d55435b881b",
+      "bytes": 1025976
+    },
+    "superdough.js": {
+      "sha256": "a88fe894f3a47171a3f487720a9dfd329b7f9c3f8caa016dea0707f0eafdde90",
+      "bytes": 89313
+    },
+    "worklets.js": {
+      "sha256": "9ea7f14dcca2acd8e3983f9382d865b2bd20a32159fb4257e276625575d99779",
+      "bytes": 84320
+    }
+  },
+  "packages": [
+    {
+      "path": "node_modules/@babel/runtime",
+      "name": "@babel/runtime",
+      "version": "7.29.14",
+      "license": "MIT",
+      "sha512": "639b6a7af41a500661863f3606960c342d6cb2f2d04d501fc0a766f22cbcab09a1bc2dbf0a9700bbc382f9012d8ccee9324ee49f1f37bb5423f20ce489cc9e97",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@kabelsalat/core",
+      "name": "@kabelsalat/core",
+      "version": "0.4.0",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "e7357c9e1f077df5bc69ec4e6d7b39a44d3180bd236f5707737a3c50de80bcad2606df3b7e366f5bae44e2b32c947caaf8eb82b1ca01256ec1dcc6d87d6af031",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@kabelsalat/lib",
+      "name": "@kabelsalat/lib",
+      "version": "0.4.1",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "8010a3ad9283f61b9328d26e042e815cce0f3104a0f28b4bf00fefa7c8fdf0ff6feb25935f54eec9aa9d2e0ff53eb200315e21956a1abfd643dd830596bbe8bb",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@kabelsalat/web",
+      "name": "@kabelsalat/web",
+      "version": "0.4.1",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "01290585e3c92f1dc68da7583ae788eec1ca5c16d13e4fdad697ec945790348f6053bc99abf2ab9e498e98bae0aed8b102ccbb8328b5bd6aa499146f1f72a2eb",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@strudel/core",
+      "name": "@strudel/core",
+      "version": "1.2.6",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "140e4ac6fdd4f9484d44b21eb84a57724da8d89e408c765b90075200af50d8ddc0cf51bd56773e6d75df803172637c911fd9975d0bd37abcfc8ebf3bea91869e",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@strudel/mini",
+      "name": "@strudel/mini",
+      "version": "1.2.6",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "2391853cb1c8dd33dc26e0f645d0dcbab03e953a206924344c1f848a6293804b5201b53a64c12449439764814ee5e68070970cb9c80a6817264caa43e286633c",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@strudel/tonal",
+      "name": "@strudel/tonal",
+      "version": "1.2.6",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "2367afd082459aabc3b7fbc590bf2f2035cd6a72b911917e30d8658a8de71edd5dea7819649c823730b53b1a1a8902b164d37bfa6a46202dc2c7fcdc042df079",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@strudel/transpiler",
+      "name": "@strudel/transpiler",
+      "version": "1.2.6",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "3739b24034b806a8da7ce3f31c6168c3120b0f1dd94403c3e3b62ccf135a3c1ecf820300dab328f6ddeb2f3f341b41b1034640c8c6d5311de9c7d8c35a727986",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/abc-notation",
+      "name": "@tonaljs/abc-notation",
+      "version": "4.9.3",
+      "license": "MIT",
+      "sha512": "b75987d7ba8f103487a926b8f9e9ea7983c47ffeaf2d90fc69abec3066357a25c650ede521ceac8e4236b244049a11653024c4c7a1cefdd2502f70deb7b5362b",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/array",
+      "name": "@tonaljs/array",
+      "version": "4.8.6",
+      "license": "MIT",
+      "sha512": "cc12d6655bd912d6de92e575fbad1cc792d9713f2d314d5f6b5386cf157b673d16b9a9dc90cc395a6d2ff4b5021e75b1bc13165e522ca169ba5bdf00e8c8fb6e",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/chord",
+      "name": "@tonaljs/chord",
+      "version": "4.10.2",
+      "license": "MIT",
+      "sha512": "665aadaba73a4f8cbe12abf01d1429f627048c7ab29e20a99c8c300858396a68004305e65b36aba2e38e4a671d27522cf76784bdc3d5b82a0b89552d6a34b7d0",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/chord-detect",
+      "name": "@tonaljs/chord-detect",
+      "version": "4.9.3",
+      "license": "MIT",
+      "sha512": "2faa85b693368455ccecd7b1ab510f33eeafb79b44958cc57ed9ad1f651bb709a94b67faf8bc7d88f0bc841baedc72d4165779bce77eee8ee1cb369b0c09ac0e",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/chord-detect/node_modules/@tonaljs/chord-type",
+      "name": "@tonaljs/chord-type",
+      "version": "5.2.1",
+      "license": "MIT",
+      "sha512": "66bd47029b122c59254785453a5c6733eede08b43555910e4814ee48b6b771df98fcb2ec6ce23ec43c6b6aca5c01f3cfded809ce24059334fceb8785e3b718df",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/chord-type",
+      "name": "@tonaljs/chord-type",
+      "version": "4.8.2",
+      "license": "MIT",
+      "sha512": "1b34938d09998e451d3e1c9eb050de25bc695bc47b2ff6c0137e04f00a46021f4531c298a51757dd39fe82496e46c5ce89131f5b4ee9dc4d00771e1b8edc8df9",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/collection",
+      "name": "@tonaljs/collection",
+      "version": "4.9.1",
+      "license": "MIT",
+      "sha512": "c5c591c5c5f5eeac0c284040729929d74d1e15e45b367b74f05128a260266df92983b8b7de2370b11f0514727d0a792831c1152aa2d51065b985d1173128e30a",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/core",
+      "name": "@tonaljs/core",
+      "version": "4.10.4",
+      "license": "MIT",
+      "sha512": "3e11a543626ceab150e82b9f912881a442683d2f1020885b5d25e14f853ee5f7ea724962f9805944ddb8be36780042ae5fcc6860398209b97eafa6a06aebf39b",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/core/node_modules/@tonaljs/pitch-distance",
+      "name": "@tonaljs/pitch-distance",
+      "version": "5.0.2",
+      "license": "MIT",
+      "sha512": "0cfc5f18909fe01bdf215471976bf5e36b6e08a23388ce8fa263814f4feced4e68f99e6a140216d2d371fcc2b22fcde0b95ef8a7e5c87f9548d30d5f9665f10c",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/core/node_modules/@tonaljs/pitch-note",
+      "name": "@tonaljs/pitch-note",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "26c3e0a8f6bc559759b5fc2f8281c9cfdf7a059ab3be59d1c5417a73f43dabc1348aadf450704489dd18e9795d2be87ab6e20436c1b76bd8f2bcd37146a21e63",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/duration-value",
+      "name": "@tonaljs/duration-value",
+      "version": "4.9.1",
+      "license": "MIT",
+      "sha512": "c17dd0dd0334b530b664fed1c96c6739c1e1e3b677cdff7751a2a2d16f519e83695d6c728985b319e84f7b417315185c8c4861d85978a8df4ce857a8f7e7ad8a",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/interval",
+      "name": "@tonaljs/interval",
+      "version": "4.8.2",
+      "license": "MIT",
+      "sha512": "f5212e26ea85766bbd967bcc989b716d1790710bd9d581d7842731685e917b6dffc3e06a889bef92f35985f587fa7d7e834b9a49d4ecbaf31f6a6a7b840bcf33",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/key",
+      "name": "@tonaljs/key",
+      "version": "4.11.4",
+      "license": "MIT",
+      "sha512": "32177e90d370de5d2498f7f8239c32df35c85ea3e3d7f401d5b73bf196fe1f9b43013f761b27296b7be56e22af559aeae8eb14705f7ed933573be3f54926c9df",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/midi",
+      "name": "@tonaljs/midi",
+      "version": "4.10.4",
+      "license": "MIT",
+      "sha512": "a442308d35222725657d52651b4a582d3482438c685a8f8d60b0a114c21caeafca52376bb463b081b1557c3da3c9f7f9aa00e61f4e6b46b24126c544d60c0892",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/mode",
+      "name": "@tonaljs/mode",
+      "version": "4.9.4",
+      "license": "MIT",
+      "sha512": "f7d9242045711327d3c0b14efe350975a1cd1f34cb7bd07e5386e355c82318115a4046299fd0d93bcff7f876c531f92e731db0b72a35b98fc94b66064ff13f03",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/mode/node_modules/@tonaljs/interval",
+      "name": "@tonaljs/interval",
+      "version": "5.1.1",
+      "license": "MIT",
+      "sha512": "66aa3097bc88952038e626cc595e0a71bfd531dd3a2f4197c62e907f6a64e8445435b46dc7e0fed12da69881cb3bf55cc247a7cb252b694ae261398b88f1125c",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/mode/node_modules/@tonaljs/interval/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/mode/node_modules/@tonaljs/interval/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/note",
+      "name": "@tonaljs/note",
+      "version": "4.12.3",
+      "license": "MIT",
+      "sha512": "52119770b80bca69caec036f742ce2d43d675bed5b8f83a10c67b427cd8ed95fa87d855d04229cd30e5aefd99f184b74d6898a011696780cdfdeb812128a7011",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/note/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@tonaljs/note/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@tonaljs/pcset",
+      "name": "@tonaljs/pcset",
+      "version": "4.10.3",
+      "license": "MIT",
+      "sha512": "2e1ca7b851328e03c91f84fd544343471d424aa291f64276b71593ab2c7052808c9cd2f723b51dcb114a3e28ebd95d4810ca6526c93f1b54da3cc61554276aa0",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pcset/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pcset/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.1",
+      "license": "MIT",
+      "sha512": "e476241788466348d2db2e55dc77f980d1575f8ea44f8700708ec92c49fea906fd375754f46cfd92823d762d260f54db6a6fa4be271e882b09978597fc5a988c",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-distance",
+      "name": "@tonaljs/pitch-distance",
+      "version": "5.0.7",
+      "license": "MIT",
+      "sha512": "c7eb42d62cc8d7ee5dce11dfd4945556080de2914429391b00d48b4581305ba3e6526deeb8f3ec0f01f21c2584f62c2520473d6291bc29cd62a1e5c688243dc6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-distance/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-distance/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "5.0.2",
+      "license": "MIT",
+      "sha512": "6d09b179e9d114dbae001b3d98373e6d2529df2486c3c238f691cca060dd09cae8f67dcc0cdf08b12c21bcaa0639812b14cc7beab367d6dfbb58bf2e929bd7e7",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-note",
+      "name": "@tonaljs/pitch-note",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "c4db545d1e83bc5307c972a07b0174405bfd50801df17c5cd3b1c858e00120616e2859a04f7ce73764db0024a71c91882957d2a098703de9f67a893a51d382c2",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/pitch-note/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/progression",
+      "name": "@tonaljs/progression",
+      "version": "4.9.4",
+      "license": "MIT",
+      "sha512": "004c17955ced76528d807143b1c479701cdb0a41958cb399fe0367c533826e3def61aab0f3e15e93be99082c13d5e56472e0fe0baf740204c43eb31e984348d6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/chord",
+      "name": "@tonaljs/chord",
+      "version": "6.2.1",
+      "license": "MIT",
+      "sha512": "ecae09f01eb1bfcbac4e4289fc583faf9032e8d7344f159cfa3af6e628d83c966cb491fc82758c1b1b168c59ea8d9562bbc96b1716b8177f38889b52f97f30f9",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/chord/node_modules/@tonaljs/chord-type",
+      "name": "@tonaljs/chord-type",
+      "version": "5.2.1",
+      "license": "MIT",
+      "sha512": "66bd47029b122c59254785453a5c6733eede08b43555910e4814ee48b6b771df98fcb2ec6ce23ec43c6b6aca5c01f3cfded809ce24059334fceb8785e3b718df",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/chord/node_modules/@tonaljs/interval",
+      "name": "@tonaljs/interval",
+      "version": "5.1.1",
+      "license": "MIT",
+      "sha512": "66aa3097bc88952038e626cc595e0a71bfd531dd3a2f4197c62e907f6a64e8445435b46dc7e0fed12da69881cb3bf55cc247a7cb252b694ae261398b88f1125c",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/chord/node_modules/@tonaljs/interval/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/progression/node_modules/@tonaljs/pitch-interval/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/range",
+      "name": "@tonaljs/range",
+      "version": "4.9.4",
+      "license": "MIT",
+      "sha512": "d990c0cb91e60c6b75af24a592a4be8db5ac4b086e749270559ec92137422b3e1953d4b4c5b1ac2af83f8e346ffec1626842f711e08a4800ba0b8796cfc63b56",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/roman-numeral",
+      "name": "@tonaljs/roman-numeral",
+      "version": "4.9.3",
+      "license": "MIT",
+      "sha512": "3279d5628b28b35ba77a965141dddf18a5791505cd5ecd628d410dd692fae46b8094484a222903511f2736097b228484a7add3a4484a5d95caede7d9b757bde7",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/roman-numeral/node_modules/@tonaljs/pitch",
+      "name": "@tonaljs/pitch",
+      "version": "5.0.3",
+      "license": "MIT",
+      "sha512": "d8ea712bfa7435a3b2995765c60271aee140b76a477c52243f1910dcf290a8c5e16b36be4971b52b1a68d23a6e023c3de3a2e54372810be1894529dc8d8b6828",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/roman-numeral/node_modules/@tonaljs/pitch-interval",
+      "name": "@tonaljs/pitch-interval",
+      "version": "6.1.2",
+      "license": "MIT",
+      "sha512": "a1b3106f5675acfe7804c8899aba02792b47b10c980ae236330c5a7408ef15897af61d82bfec811f9fc0f4c8aadb98508bf336c8b8c166d9b59c4f68a4bf4bb6",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/scale",
+      "name": "@tonaljs/scale",
+      "version": "4.13.6",
+      "license": "MIT",
+      "sha512": "61bfa05978f91b89d367c8e6f91c05beea5592f676361acb3693efe565bc9c55e362d31db0647cf1f83b160ddb0318d04a8300745639f725cdbfb35b7d0d2b4a",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/scale-type",
+      "name": "@tonaljs/scale-type",
+      "version": "4.9.4",
+      "license": "MIT",
+      "sha512": "cae1b874b0ab03dab65fe0e920caf3fb84bef022c21430569be59087fb09801694d800d42e36a3b989d63d669c0403e904355761881bbe6f106ece84ccb1afae",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/scale/node_modules/@tonaljs/chord-type",
+      "name": "@tonaljs/chord-type",
+      "version": "5.2.1",
+      "license": "MIT",
+      "sha512": "66bd47029b122c59254785453a5c6733eede08b43555910e4814ee48b6b771df98fcb2ec6ce23ec43c6b6aca5c01f3cfded809ce24059334fceb8785e3b718df",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/time-signature",
+      "name": "@tonaljs/time-signature",
+      "version": "4.10.1",
+      "license": "MIT",
+      "sha512": "963000f31d428583266004e100f7d4bb32cdac559df9e56ebe58d4cdb820dc59e6be39f08382604e4bb490af70a8365cecdb1d9e01654b7da4cc0392d9e5019b",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@tonaljs/tonal",
+      "name": "@tonaljs/tonal",
+      "version": "4.10.0",
+      "license": "MIT",
+      "sha512": "1764fd162cbe8f4315a5e77cf640ab5f55c5ebc99038b5279f2e290ce1eb21ff8e92b8ed2d03b3cda48ead7d6dc74a3bd96530426d649f3e83d5de7b6fd5f51c",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/@types/estree",
+      "name": "@types/estree",
+      "version": "1.0.10",
+      "license": "MIT",
+      "sha512": "953c8e32739c991073742bfaff8cd4642ac4855d31aea422519059b5571b98b1c15ca2e737cabcf6fff029117f4341dbc15b2a6c81b7a391c3a0597db1db8cfa",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/acorn",
+      "name": "acorn",
+      "version": "8.19.0",
+      "license": "MIT",
+      "sha512": "a09940dd78919bb0b293aa850f6267f1a93d07b8d2cb4ab2d340033b7fbc7694f42d28c58a1418bf80b4d8b142498255dd0dfbc58c30472e66f88a48894cea5b",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/chord-voicings",
+      "name": "chord-voicings",
+      "version": "0.0.1",
+      "license": "ISC",
+      "sha512": "4aeb6007fe329e492e88aeaa750fe4dd0bc215c1f4563f02878b7a2db4724506d5ccffd33b3b620a4de4bd7779d7a519e9faa4ee28c34442c415c28dfba57cb0",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/djipevents",
+      "name": "djipevents",
+      "version": "2.0.7",
+      "license": "Apache-2.0",
+      "sha512": "28d158694f398a6c4e08a394b0847bd08cfd135f6bf7afd7ecb487faed2d4a865da56701773a2ab53b14fb0b8b85ce86329485a1bf8a22791901b7ca8b4d418e",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/escodegen",
+      "name": "escodegen",
+      "version": "2.1.0",
+      "license": "BSD-2-Clause",
+      "sha512": "d8d9480d3c145893749913d039db500736d41ef7466363f55574b253cdd0df12b133b5875f6425f1d2aaefcd90f5381050d38b133118bbd6f32cd8f5abcf08e7",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/esprima",
+      "name": "esprima",
+      "version": "4.0.1",
+      "license": "BSD-2-Clause",
+      "sha512": "786b85170ed4a5d6be838a7e407be75b44724d7fd255e2410ccfe00ad30044ed1c2ee4f61dc10a9d33ef86357a6867aaac207fb1b368a742acce6d23b1a594e0",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/estraverse",
+      "name": "estraverse",
+      "version": "5.3.0",
+      "license": "BSD-2-Clause",
+      "sha512": "30c74046e54443388d4de243f0380caa6870475d41450fdc04ffa92ed61d4939dfdcc20ef1f15e8883446d7dfa65d3657d4ffb03d7f7814c38f41de842cbf004",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/estree-walker",
+      "name": "estree-walker",
+      "version": "3.0.3",
+      "license": "MIT",
+      "sha512": "ed150a7d781230c933b7a66e5e6a9aa4ebab2c63cf7e08fa97db9167b9511a896f934cb6ca871cdf92dd731282e4f419767d8332a8a8010d8da1672b4ca9a6ea",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/esutils",
+      "name": "esutils",
+      "version": "2.0.3",
+      "license": "BSD-2-Clause",
+      "sha512": "915b1ca97938382a7af126747648042958baffc8a3df4d0a0564c9ab7d8ffdd61e5934b02b8d56c93c5a94dd5e46603967d514fcb5fd0fb1564a657d480631ea",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/fraction.js",
+      "name": "fraction.js",
+      "version": "5.3.4",
+      "license": "MIT",
+      "sha512": "d57d4d4ed889a61af29ffb8b433df086d63a8caddf4eaa04de884ab34b53f948ebd56e7da28a719a8121ecbbb9a7abc168f6e0a0cd1bcef7805b8422e51c960d",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/jazz-midi",
+      "name": "jazz-midi",
+      "version": "1.7.9",
+      "license": "MIT",
+      "sha512": "73c738041830c5db08af58959b9de769d0abb47ec15259d7dd5f797222bf81bbd737f9dd139f8f3ac9016a55e0aa573fafda765d46dd2d3ae0ac2e9fa2ee69f7",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/jzz",
+      "name": "jzz",
+      "version": "1.9.6",
+      "license": "MIT",
+      "sha512": "27b10d2e15f07e6d8134329152b2fc78ab4f8544bf0ad301a6269fc501c305c3964a870b85e6ab0ca11d87eca59d915caf939759379dd208fa97fb7179003dbe",
+      "bundled": false
+    },
+    {
+      "path": "node_modules/nanostores",
+      "name": "nanostores",
+      "version": "0.11.4",
+      "license": "MIT",
+      "sha512": "935a2254d3788432bc35c34445264b42231f473106b5f9ef66f741bdecb74906e09fc0dcae4d21d48eafa710298dbd743c551f959ae0276584672250fb9bfb61",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/source-map",
+      "name": "source-map",
+      "version": "0.6.1",
+      "license": "BSD-3-Clause",
+      "sha512": "52381aa6e99695b3219018334fb624739617513e3a17488abbc4865ead1b7303f9773fe1d0f963e9e9c9aa3cf565bab697959aa989eb55bc16396332177178ee",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/superdough",
+      "name": "superdough",
+      "version": "1.3.0",
+      "license": "AGPL-3.0-or-later",
+      "sha512": "2e19acac4adcbfd10c14d6fbf7ededbe7ea1ed68332a9e3245ed57b53dbe79163da04a55e09cf49dbf43c6297738b68d850e95d85bb03d604b4096f6695b70b9",
+      "bundled": true
+    },
+    {
+      "path": "node_modules/webmidi",
+      "name": "webmidi",
+      "version": "3.3.1",
+      "license": "Apache-2.0",
+      "sha512": "9db24f0f79ad57815bb9a3acbe09b22270409e4537c80d070f389d2ad1512b88307867e8768184168e8481d760c7396b93ea64f3cee6c2093119a7ebb2e8df2c",
+      "bundled": false
+    }
+  ]
+}
