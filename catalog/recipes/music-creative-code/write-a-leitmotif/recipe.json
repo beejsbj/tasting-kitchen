@@ -24,7 +24,7 @@
     ]
   },
   "setup": {
-    "instructions": "Mount the fixtures. The model chooses how to make the sound; nothing is fetched from the network.",
+    "instructions": "Mount the fixtures. The model chooses how to make the sound and may download tools while it works. The delivered page must play without the network.",
     "fixtures": [
       {
         "id": "brief",
