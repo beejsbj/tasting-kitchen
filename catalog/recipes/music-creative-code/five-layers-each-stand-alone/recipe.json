@@ -77,11 +77,11 @@
         "id": "plays-offline",
         "type": "command",
         "required": true,
-        "description": "The page has a button, makes sound through the browser's own audio, and loads nothing from the network.",
+        "description": "The page loads nothing from the network: no remote script, style, media, import or fetch. Whether it plays is left to tasting.",
         "argv": [
           "node",
           "-e",
-          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');if(/(?:src|href)\\s*=\\s*[\"']\\s*(?:https?:)?\\/\\//i.test(h)||/(?:import|fetch|importScripts)\\s*\\(?\\s*[\"'`]\\s*(?:https?:)?\\/\\//i.test(h))process.exit(1);if(!/AudioContext|<audio[\\s>]/i.test(h))process.exit(1);if(!/<button[\\s>]/i.test(h))process.exit(1)"
+          "const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const R=\"\\\\s*[\\\"'`]\\\\s*(?:https?:)?\\\\/\\\\/\";const bad=[new RegExp('\\\\bsrc\\\\s*='+R,'i'),new RegExp('<link\\\\b[^>]*\\\\bhref\\\\s*='+R,'i'),new RegExp('\\\\b(?:import|fetch|importScripts|Audio|Worker|addModule)\\\\s*\\\\('+R,'i'),new RegExp('\\\\bfrom'+R,'i'),new RegExp('url\\\\(\\\\s*[\\\"\\']?\\\\s*(?:https?:)?\\\\/\\\\/','i')];if(bad.some(r=>r.test(h)))process.exit(1)"
         ]
       },
       {
