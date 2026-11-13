@@ -94,6 +94,14 @@
         "public": false,
         "editable": false,
         "mediaType": "application/json"
+      },
+      {
+        "id": "audio-analysis",
+        "path": "audio.json",
+        "mountAs": "inputs/audio.json",
+        "public": false,
+        "editable": false,
+        "mediaType": "application/json"
       }
     ]
   },
@@ -149,7 +157,7 @@
         "id": "audio-identity",
         "type": "command",
         "required": true,
-        "description": "Kitchen-side audio identity: the film's decoded soundtrack must match the supplied excerpt PCM within 20 ms, with every audible half-second correlated and nothing added, stretched or replaced. A uniform level trim is reported, not failed.",
+        "description": "Kitchen-side audio identity: the film's decoded soundtrack must match the supplied excerpt PCM within 20 ms, with every audible half-second correlated and nothing added, stretched or replaced. A uniform level trim is reported, not failed; a fade or level ride that moves any loud half-second more than 1 dB from that trim fails. Light peak limiting is not detected.",
         "argv": [
           "node",
           "validation/audio-identity.mjs"

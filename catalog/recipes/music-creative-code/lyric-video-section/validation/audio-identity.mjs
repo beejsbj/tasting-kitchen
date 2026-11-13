@@ -2,7 +2,11 @@
 // with the picture, neither stretched, re-mixed, replaced nor padded. Compared
 // as decoded PCM against inputs/excerpt.wav after AAC; a uniform level trim is
 // reported, not failed, because the excerpt itself peaks above the film
-// check's -0.1 dBTP ceiling. Run from the delivery root: node validation/audio-identity.mjs
+// check's -0.1 dBTP ceiling. Uniform means every audible half-second carries
+// the same gain within 1 dB, so a fade or level ride fails. Light peak limiting
+// moves too little per half-second to see here, and AAC overshoot rules out a
+// peak test; the brief forbids it.
+// Run from the delivery root: node validation/audio-identity.mjs
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -12,8 +16,10 @@ export const THRESHOLDS = Object.freeze({
   maxLagMs: 20, // audio may not lead or trail the picture by more than this
   minWindowCorrelation: 0.95, // every audible half-second must match after alignment (96 kbps AAC reaches 0.96)
   minMeanCorrelation: 0.98,
-  minGainDb: -6, // a uniform trim is allowed; a remaster or re-mix is not
-  maxGainDb: 0.5,
+  minGainDb: -6.5, // a uniform trim is allowed (the brief says down to -6; AAC drifts ~0.1 dB); a remaster or re-mix is not
+  maxGainDb: 0.5, // the brief says 0; this is room for AAC drift
+  maxGainDeviationDb: 1, // each half-second's gain against the overall trim (AAC encodes of the excerpt at 96-192 kbps stay within 0.2 dB)
+  steadyRms: 0.01, // -40 dBFS: windows loud enough for a per-window gain to mean anything
   maxDurationDeltaS: 0.05,
   silentRms: 0.001, // -60 dBFS: windows the excerpt leaves silent
   maxAddedRms: 0.003, // sound added where the excerpt is silent
@@ -97,12 +103,13 @@ export function compareAudio(source, candidate) {
   const windowLength = Math.round(WINDOW_S * RATE);
   const windows = [];
   for (let start = 0; start + windowLength <= s.length; start += windowLength) {
-    let se = 0, ce = 0;
+    let se = 0, ce = 0, sce = 0;
     for (let i = start; i < start + windowLength; i++) {
       se += s[i] * s[i];
       const j = i + lag;
       const y = j >= 0 && j < c.length ? c[j] : 0;
       ce += y * y;
+      sce += s[i] * y;
     }
     const sourceRms = Math.sqrt(se / windowLength), candidateRms = Math.sqrt(ce / windowLength);
     const silent = sourceRms < THRESHOLDS.silentRms;
@@ -112,10 +119,14 @@ export function compareAudio(source, candidate) {
       sourceRms,
       candidateRms,
       correlation: silent ? null : Math.min(correlation(source, candidate, 2 * lag, 2 * start, 2 * (start + windowLength)), 1),
+      // This half-second's least-squares gain relative to the whole soundtrack's.
+      gainDeviationDb: sourceRms >= THRESHOLDS.steadyRms && sce > 0 && gain > 0 ? 20 * Math.log10(sce / se / gain) : null,
     });
   }
   const audible = windows.filter((window) => !window.silent);
   const correlations = audible.map((window) => window.correlation);
+  const steady = windows.filter((window) => window.gainDeviationDb !== null);
+  const unsteady = steady.reduce((worst, window) => (worst === null || Math.abs(window.gainDeviationDb) > Math.abs(worst.gainDeviationDb) ? window : worst), null);
   return {
     lagSamples: lag,
     lagMs: (lag / RATE) * 1000,
@@ -126,6 +137,9 @@ export function compareAudio(source, candidate) {
     meanCorrelation: correlations.length ? correlations.reduce((sum, value) => sum + value, 0) / correlations.length : 0,
     minWindowCorrelation: correlations.length ? Math.min(...correlations) : 0,
     worstWindow: audible.reduce((worst, window) => (worst === null || window.correlation < worst.correlation ? window : worst), null)?.t ?? null,
+    maxGainDeviationDb: unsteady ? Math.abs(unsteady.gainDeviationDb) : 0,
+    worstGainWindow: unsteady?.t ?? null,
+    steadyWindows: steady.length,
     maxAddedRms: Math.max(0, ...windows.filter((window) => window.silent).map((window) => window.candidateRms)),
     audibleWindows: audible.length,
   };
@@ -136,6 +150,7 @@ export function assessIdentity(metrics, thresholds = THRESHOLDS) {
   if (Math.abs(metrics.durationDeltaS) > thresholds.maxDurationDeltaS) reasons.push(`soundtrack is ${metrics.candidateSeconds.toFixed(3)} s; the excerpt is ${metrics.sourceSeconds.toFixed(3)} s`);
   if (Math.abs(metrics.lagMs) > thresholds.maxLagMs) reasons.push(`soundtrack is offset ${metrics.lagMs.toFixed(1)} ms from the excerpt`);
   if (!(metrics.gainDb >= thresholds.minGainDb && metrics.gainDb <= thresholds.maxGainDb)) reasons.push(`level changed by ${metrics.gainDb.toFixed(2)} dB; only a uniform trim between ${thresholds.minGainDb} and +${thresholds.maxGainDb} dB is allowed`);
+  if (metrics.maxGainDeviationDb > thresholds.maxGainDeviationDb) reasons.push(`the level of the half-second at ${metrics.worstGainWindow?.toFixed(1)} s differs from the overall trim by ${metrics.maxGainDeviationDb.toFixed(2)} dB; a trim must be uniform, not a fade, level ride or compressor`);
   if (metrics.minWindowCorrelation < thresholds.minWindowCorrelation) reasons.push(`the half-second at ${metrics.worstWindow?.toFixed(1)} s does not match the excerpt (correlation ${metrics.minWindowCorrelation.toFixed(4)})`);
   if (metrics.meanCorrelation < thresholds.minMeanCorrelation) reasons.push(`mean correlation ${metrics.meanCorrelation.toFixed(4)} is below ${thresholds.minMeanCorrelation}`);
   if (metrics.maxAddedRms > thresholds.maxAddedRms) reasons.push(`sound was added where the excerpt is silent (RMS ${metrics.maxAddedRms.toFixed(4)})`);
@@ -146,7 +161,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const contract = JSON.parse(readFileSync("fixtures/contract.json", "utf8"));
   const metrics = compareAudio(decodePcm(contract.excerptFixture ?? "inputs/excerpt.wav"), decodePcm("film.mp4"));
   const verdict = assessIdentity(metrics);
-  const summary = `lag ${metrics.lagMs.toFixed(2)} ms, level ${metrics.gainDb.toFixed(2)} dB, correlation mean ${metrics.meanCorrelation.toFixed(4)} / min ${metrics.minWindowCorrelation.toFixed(4)} over ${metrics.audibleWindows} audible half-seconds`;
+  const summary = `lag ${metrics.lagMs.toFixed(2)} ms, level ${metrics.gainDb.toFixed(2)} dB (uniform within ${metrics.maxGainDeviationDb.toFixed(2)} dB), correlation mean ${metrics.meanCorrelation.toFixed(4)} / min ${metrics.minWindowCorrelation.toFixed(4)} over ${metrics.audibleWindows} audible half-seconds`;
   if (!verdict.passed) {
     console.error(`FAIL: audio identity: ${verdict.reasons.join("; ")} (${summary})`);
     process.exit(1);
