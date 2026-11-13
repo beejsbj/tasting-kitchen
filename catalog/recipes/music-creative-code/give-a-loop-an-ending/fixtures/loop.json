@@ -1,0 +1,52 @@
+{
+  "source": "Original, written for this Recipe. A four-bar loop in three parts. Each bar is eight eighths; the last bar leads back into the first.",
+  "tempo": "One eighth lasts roughly 0.3 seconds.",
+  "parts": {
+    "melody": [
+      {"pitch": "A4", "eighths": 3},
+      {"pitch": "F4", "eighths": 1},
+      {"pitch": "G4", "eighths": 2},
+      {"rest": true, "eighths": 2},
+      {"pitch": "A4", "eighths": 3},
+      {"pitch": "C5", "eighths": 1},
+      {"pitch": "G4", "eighths": 4},
+      {"pitch": "F4", "eighths": 3},
+      {"pitch": "D4", "eighths": 1},
+      {"pitch": "E4", "eighths": 2},
+      {"rest": true, "eighths": 2},
+      {"pitch": "G4", "eighths": 2},
+      {"pitch": "A4", "eighths": 2},
+      {"pitch": "C#5", "eighths": 2},
+      {"pitch": "E5", "eighths": 2}
+    ],
+    "chords": [
+      {"rest": true, "eighths": 2},
+      {"pitches": ["D3", "F3", "A3"], "eighths": 1},
+      {"rest": true, "eighths": 3},
+      {"pitches": ["D3", "F3", "A3"], "eighths": 1},
+      {"rest": true, "eighths": 1},
+      {"rest": true, "eighths": 2},
+      {"pitches": ["C3", "E3", "G3"], "eighths": 1},
+      {"rest": true, "eighths": 3},
+      {"pitches": ["C3", "E3", "G3"], "eighths": 1},
+      {"rest": true, "eighths": 1},
+      {"rest": true, "eighths": 2},
+      {"pitches": ["A#2", "D3", "F3"], "eighths": 1},
+      {"rest": true, "eighths": 3},
+      {"pitches": ["A#2", "D3", "F3"], "eighths": 1},
+      {"rest": true, "eighths": 1},
+      {"rest": true, "eighths": 2},
+      {"pitches": ["A2", "C#3", "G3"], "eighths": 1},
+      {"rest": true, "eighths": 3},
+      {"pitches": ["A2", "C#3", "G3"], "eighths": 1},
+      {"rest": true, "eighths": 1}
+    ],
+    "bass": [
+      {"pitch": "D2", "eighths": 8},
+      {"pitch": "C2", "eighths": 8},
+      {"pitch": "A#1", "eighths": 8},
+      {"pitch": "A1", "eighths": 6},
+      {"pitch": "C#2", "eighths": 2}
+    ]
+  }
+}

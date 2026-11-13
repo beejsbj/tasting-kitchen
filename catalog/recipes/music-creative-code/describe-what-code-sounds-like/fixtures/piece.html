@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Piece</title>
+<button id="play">Play</button>
+<button id="stop">Stop</button>
+<script>
+let ctx = null;
+const SCALE = [0, 2, 3, 7, 10];
+const ROOT = 146.83;
+const STEP = 0.42;
+const hz = (semitones) => ROOT * 2 ** (semitones / 12);
+
+function voice(out, at, freq, length, level) {
+  for (const cents of [-7, 7]) {
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    osc.detune.value = cents;
+    amp.gain.setValueAtTime(0, at);
+    amp.gain.linearRampToValueAtTime(level, at + 0.02);
+    amp.gain.exponentialRampToValueAtTime(0.001, at + length);
+    osc.connect(amp).connect(out);
+    osc.start(at);
+    osc.stop(at + length + 0.05);
+  }
+}
+
+function start() {
+  stop();
+  ctx = new AudioContext();
+  const t0 = ctx.currentTime + 0.1;
+  const end = t0 + 48 * STEP;
+
+  const master = ctx.createGain();
+  master.gain.value = 0.5;
+  master.connect(ctx.destination);
+
+  const tone = ctx.createBiquadFilter();
+  tone.type = "lowpass";
+  tone.frequency.setValueAtTime(300, t0);
+  tone.frequency.exponentialRampToValueAtTime(4000, end);
+  tone.connect(master);
+
+  const echo = ctx.createDelay(2);
+  echo.delayTime.value = STEP * 1.5;
+  const again = ctx.createGain();
+  again.gain.value = 0.45;
+  tone.connect(echo);
+  echo.connect(again).connect(echo);
+  echo.connect(master);
+
+  for (let i = 0; i < 48; i++) {
+    if (i % 8 === 6) continue;
+    const degree = (i * 3) % 5;
+    const lift = i % 7 === 0 ? 12 : 0;
+    voice(tone, t0 + i * STEP, hz(SCALE[degree] + 12 + lift), STEP * 0.9, i % 4 === 0 ? 0.5 : 0.25);
+  }
+  for (let bar = 0; bar < 6; bar++) {
+    voice(tone, t0 + bar * 8 * STEP, hz(bar % 2 ? -5 : 0), STEP * 8, 0.4);
+  }
+  for (const semitones of [0, 12, 19]) voice(tone, end, hz(semitones), 4, 0.3);
+}
+
+function stop() {
+  if (ctx) ctx.close();
+  ctx = null;
+}
+
+document.getElementById("play").addEventListener("click", start);
+document.getElementById("stop").addEventListener("click", stop);
+</script>
+</html>

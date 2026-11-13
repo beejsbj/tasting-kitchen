@@ -1,0 +1,19 @@
+{
+  "source": "Original, written for this Recipe. The same notes for everyone, so only the sound differs.",
+  "tempo": "One eighth lasts roughly 0.3 seconds.",
+  "notes": [
+    {"pitch": "G5", "eighths": 2},
+    {"pitch": "B5", "eighths": 2},
+    {"pitch": "D6", "eighths": 2},
+    {"pitch": "B5", "eighths": 1},
+    {"pitch": "A5", "eighths": 1},
+    {"pitch": "G5", "eighths": 2},
+    {"pitch": "E5", "eighths": 2},
+    {"pitch": "D5", "eighths": 4},
+    {"pitch": "E5", "eighths": 2},
+    {"pitch": "G5", "eighths": 2},
+    {"pitch": "A5", "eighths": 3},
+    {"pitch": "B5", "eighths": 1},
+    {"pitch": "G5", "eighths": 6}
+  ]
+}

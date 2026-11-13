@@ -1,0 +1,31 @@
+{
+  "source": "Original, written for this Recipe. Two characters, each with a motif.",
+  "tempo": "One eighth lasts roughly 0.3 seconds.",
+  "characters": [
+    {
+      "name": "Maren",
+      "sketch": "Keeps the lamp shop. Unhurried, certain, hard to move.",
+      "motif": [
+        {"pitch": "D3", "eighths": 4},
+        {"pitch": "A3", "eighths": 4},
+        {"pitch": "F#4", "eighths": 6},
+        {"pitch": "E4", "eighths": 2},
+        {"pitch": "D4", "eighths": 8}
+      ]
+    },
+    {
+      "name": "Tib",
+      "sketch": "Her nephew. Quick, restless, always halfway out of the door.",
+      "motif": [
+        {"pitch": "B4", "eighths": 1},
+        {"pitch": "B4", "eighths": 1},
+        {"pitch": "A#4", "eighths": 1},
+        {"pitch": "B4", "eighths": 1},
+        {"rest": true, "eighths": 1},
+        {"pitch": "D5", "eighths": 1},
+        {"pitch": "C#5", "eighths": 1},
+        {"pitch": "A#4", "eighths": 2}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "describe-what-code-sounds-like",
+  "version": "0.1.0",
+  "status": "ready",
+  "title": "Describe what this code sounds like",
+  "summary": "Read the source of a small music page without running it and describe in plain prose what a listener would hear.",
+  "cuisines": [
+    "music-creative-code"
+  ],
+  "origin": "hybrid",
+  "originNote": "The music page is original, written for this Recipe so that several things in the code combine into something a listener would notice.",
+  "tags": [
+    "audio",
+    "writing"
+  ],
+  "kind": "document",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files"
+    ]
+  },
+  "setup": {
+    "instructions": "Mount the fixtures. The model reads the source and writes its description. It is asked not to run the page.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "piece",
+        "path": "fixtures/piece.html",
+        "mountAs": "fixtures/piece.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      }
+    ]
+  },
+  "turns": [
+    {
+      "id": "describe",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/piece.html and do what the brief asks. Deliver description.md in the folder you start in."
+    }
+  ],
+  "output": {
+    "kind": "document",
+    "entry": "description.md",
+    "include": [
+      "description.md"
+    ],
+    "limits": {
+      "maxFiles": 2,
+      "maxBytes": 1048576
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "description-exists",
+        "type": "file-exists",
+        "required": true,
+        "description": "The description exists.",
+        "target": "description.md"
+      },
+      {
+        "id": "listening",
+        "type": "manual",
+        "required": false,
+        "description": "Open fixtures/piece.html, press Play and listen, then read the description. Is what you heard what it says, in that order? What did it miss or get wrong? Does it read as heard, or as worked out from the numbers? Is it written for the ear, in no more than 200 words?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "source": "Hummed by the Kitchen's owner, pitch-tracked, and rounded to the nearest semitone. The voice slides between pitches; the rounding is an interpretation.",
+  "tempo": "Slow. One eighth lasts roughly 0.3 seconds.",
+  "notes": [
+    {"pitch": "C3", "eighths": 2},
+    {"pitch": "D#3", "eighths": 1},
+    {"pitch": "D3", "eighths": 2},
+    {"pitch": "A#2", "eighths": 2},
+    {"pitch": "A2", "eighths": 1},
+    {"pitch": "C3", "eighths": 1},
+    {"pitch": "G2", "eighths": 2}
+  ]
+}
