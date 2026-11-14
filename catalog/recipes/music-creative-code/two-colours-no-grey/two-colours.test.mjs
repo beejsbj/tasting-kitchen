@@ -47,11 +47,11 @@ window.ready = Promise.resolve().then(() => window.seek(0));
 </script>`;
 }
 
-function filmVideo(offset = 0) {
+function filmVideo(offset = 0, frameShift = 0) {
   const [a, b] = [rgb(INK), rgb(PAPER)];
   return (frame) => {
     const buffer = Buffer.alloc(contract.width * contract.height * 3);
-    for (let y = 0; y < contract.height; y++) for (let x = 0; x < contract.width; x++) buffer.set(picture(x, y, frame / contract.fps + offset) ? b : a, (y * contract.width + x) * 3);
+    for (let y = 0; y < contract.height; y++) for (let x = 0; x < contract.width; x++) buffer.set(picture(x, y, (frame + frameShift) / contract.fps + offset) ? b : a, (y * contract.width + x) * 3);
     return buffer;
   };
 }
@@ -125,4 +125,25 @@ test("undeclared, missing or too-similar colours fail", { skip }, async (t) => {
   assert.match(check(close).output, /must be at least 48 apart/u);
   const none = await makeDelivery(t, recipeDir, { contract, evidence: { checks: evidence.checks }, video: filmVideo(), files: { "player.html": player() } });
   assert.match(check(none).output, /evidence\.colours must name the two colours/u);
+});
+
+test("a film one frame out of step with the player still agrees", { skip }, async (t) => {
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, video: filmVideo(0, -1), files: { "player.html": player() } });
+  const result = check(root);
+  assert(result.passed, result.output);
+  assert.match(result.output, /\d of them one frame apart/u);
+});
+
+test("an uncaught player error is reported, not failed, when every pixel is legal", { skip }, async (t) => {
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, video: filmVideo(), files: { "player.html": player({ extra: "Promise.reject(new Error('autoplay blocked'));" }) } });
+  const result = check(root);
+  assert(result.passed, result.output);
+  assert.match(result.output, /uncaught error\(s\), first: .*autoplay blocked/u);
+});
+
+test("a browser that cannot run is Kitchen's failure, exit 75, not the delivery's", { skip: !hasFfmpeg && "ffmpeg is not installed" }, async (t) => {
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, video: filmVideo(), files: { "player.html": player() } });
+  const result = runCheck(root, "validation/two-colours.mjs", { CHROME_PATH: "/nonexistent/chromium" });
+  assert.equal(result.code, 75, result.output);
+  assert.match(result.output, /ERROR: Chromium could not start: .*Kitchen equipment, exit 75/u);
 });

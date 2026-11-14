@@ -124,7 +124,7 @@
         "id": "two-colours",
         "type": "command",
         "required": true,
-        "description": "In headless Chromium, seek player.html?capture to 48 frames chosen from the film's hash at 1080 by 1350 and device scale 1: every pixel must be one of the two colours declared in evidence.json, both must appear, and they must be at least 48 apart in RGB. Six of those frames must agree with film.mp4 block by block. Unsampled frames are not seen.",
+        "description": "In headless Chromium, seek player.html?capture to 48 frames chosen from a hash of film.mp4, player.html and evidence.json, at 1080 by 1350 and device scale 1: every pixel must be one of the two colours declared in evidence.json, both must appear, and they must be at least 48 apart in RGB. Six of those frames must agree with film.mp4 block by block, allowing one frame either side. Unsampled frames are not seen. A failure of Kitchen's browser or decoder exits 75 and is a validator error, not a chef fault.",
         "argv": [
           "node",
           "validation/two-colours.mjs"

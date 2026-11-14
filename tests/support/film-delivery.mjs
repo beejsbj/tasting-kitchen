@@ -70,5 +70,5 @@ export async function writeFilm(file, { width, height, fps, frames }, { video, v
 /** Run a validation script from the delivery root the way Kitchen does. */
 export function runCheck(root, script, env = {}) {
   const result = spawnSync(process.execPath, [script], { cwd: root, encoding: "utf8", env: { ...process.env, ...env }, timeout: 300000 });
-  return { passed: result.status === 0, output: `${result.stdout}${result.stderr}` };
+  return { passed: result.status === 0, code: result.status, output: `${result.stdout}${result.stderr}` };
 }
