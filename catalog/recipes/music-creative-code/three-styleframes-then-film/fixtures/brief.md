@@ -19,16 +19,18 @@ That phrase is the whole brief for the look. What it means, what the film shows,
 
 ## Part two: the film
 
-My reply will tell you which styleframe to take and add one note. Make the film from it:
+My reply will tell you how to choose a styleframe and add a note. Make the film from the one you take:
 
-- 1080 × 1350, 24 fps, exactly 576 frames (24 seconds), with an original soundtrack.
+- 1080 × 1350, 24 fps, exactly 576 frames (24 seconds), with an original soundtrack. Keep the soundtrack's true peak at or below −0.1 dBTP; AAC encoding can push peaks up, so leave headroom.
 - Keep everything under `styleframes/` exactly as it was.
 
 ## How to work
 
-Work on your own in one autonomous turn, with up to three render, inspect and revise rounds. Make every creative decision yourself; do not ask for approval or delegate to another model. Use one render job and one browser at a time.
+Work on your own within each part, with up to three render, inspect and revise rounds in each. Make every creative decision yourself; do not ask for approval or delegate to another model. Use one render job and one browser at a time.
 
 Draw every visible element in code and synthesize the sound yourself. No external images, generated stills, footage, sampled audio, other models' outputs or borrowed scene code. Type may use the fonts installed in the toolchain. No network calls at playback. Keep randomness seeded so the picture is a pure function of time.
+
+If a skill is mounted at `skill/`, read `skill/SKILL.md` first and follow its process; its examples teach technique and must not be submitted. If none is mounted, work from this brief.
 
 ## Deliverable after part two
 
@@ -38,6 +40,7 @@ Draw every visible element in code and synthesize the sound yourself. No externa
 - `contact.png`: a labelled contact sheet of frames from the film.
 - `source/`: all source you wrote, any engine code it needs and dependency locks.
 - `README.md`: exact rebuild commands, attribution, and the checks you ran with their limits, honestly.
+- `README.md` begins by naming the styleframe you took and what set it apart.
 - `evidence.json`: `chosen`, the styleframe you took (`"a"`, `"b"` or `"c"`); and `checks`: an array of objects with `name`, `result` (`passed`, `failed` or `not-run`) and `detail`, for the checks you actually ran. Playback you did not watch is not a pass.
 - `styleframes/`: unchanged from part one.
 

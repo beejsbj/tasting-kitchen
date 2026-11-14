@@ -92,7 +92,7 @@
     {
       "id": "choose-and-film",
       "role": "follow-up",
-      "content": "I looked at all three. Take the one that is least like the other two. Keep its palette; lose anything literal; it should feel like a memory. Make the film part two of the brief describes from it, and leave everything under styleframes/ unchanged. Begin README.md by naming the styleframe you took and what set it apart, and record it as chosen in evidence.json."
+      "content": "I looked at all three. Take the one that is least like the other two. Keep its palette; lose anything literal; it should feel like a memory. Now do part two of the brief."
     }
   ],
   "output": {

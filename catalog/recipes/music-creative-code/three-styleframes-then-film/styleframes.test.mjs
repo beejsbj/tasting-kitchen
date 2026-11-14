@@ -29,7 +29,8 @@ test("three styleframes and motion tests pass after part one, and with a choice 
   const two = runCheck(root, "validation/styleframes.mjs");
   assert(two.passed, two.output);
   assert.match(two.output, /styleframe taken named/u);
-  await rm(path.join(root, "evidence.json"));
+  await rm(path.join(root, "film.mp4"));
+  await writeFile(path.join(root, "evidence.json"), JSON.stringify({ checks }));
   const one = runCheck(root, "validation/styleframes.mjs");
   assert(one.passed, one.output);
   assert.doesNotMatch(one.output, /styleframe taken named/u);

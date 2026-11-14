@@ -37,13 +37,19 @@ test("the hardest moment may fall anywhere but needs one time and a note", { ski
   assert.match(runCheck(missing, "validation/film.mjs").output, /One evidence time for hardest-moment/u);
 });
 
+test("terse rules, rules with an explanation below, and a byte-order mark are fine", { skip }, async (t) => {
+  const text = `\uFEFF${STYLE.replace("5. The paper grid is visible in every frame and never moves.", "5. **No curves.**\n   Every edge is a straight tally stroke.")}`;
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, files: { "STYLE.md": text } });
+  const result = runCheck(root, "validation/style.mjs");
+  assert(result.passed, result.output);
+});
+
 test("STYLE.md without a name, with four or six rules, or misnumbered fails", { skip }, async (t) => {
   const cases = [
     [STYLE.replace("# Ledger Bloom\n", "Ledger Bloom\n"), /must begin with the style's name/u],
     [STYLE.replace(/^5\..*\n/mu, ""), /exactly 5 numbered rules; found 4/u],
     [`${STYLE}6. A sixth rule sneaks in here.\n`, /exactly 5 numbered rules; found 6/u],
     [STYLE.replace("3. Colour", "4. Colour"), /numbered 1 to 5 in order/u],
-    [STYLE.replace("5. The paper grid is visible in every frame and never moves.", "5. Grid."), /Rule 5 is too short/u],
   ];
   const root = await makeDelivery(t, recipeDir, { contract, evidence });
   assert.match(runCheck(root, "validation/style.mjs").output, /STYLE\.md missing/u);

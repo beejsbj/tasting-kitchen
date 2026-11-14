@@ -1,6 +1,6 @@
 // Styleframes check, run from the delivery root with fixtures mounted: node validation/styleframes.mjs
 // Part one: three PNG styleframes and three H.264 motion tests at the contract's format, and
-// a rationale within its word limit. Part two (once evidence.json exists): the styleframe
+// a rationale within its word limit. Part two (once film.mp4 exists): the styleframe
 // taken is named. That the styleframes are unchanged since part one, three real directions,
 // and that the film follows the one taken is left to tasting.
 import assert from 'node:assert/strict';
@@ -26,8 +26,9 @@ for(const id of s.ids){
 assert(exists(s.notes),s.notes+' missing or empty');
 const words=readFileSync(s.notes,'utf8').split(/\s+/u).filter(w=>/[\p{L}\p{N}]/u.test(w)).length;
 assert(words<=s.maxNoteWords,s.notes+' is '+words+' words; keep it within '+s.maxNoteWords);
+// Part two has begun once the film exists; evidence.json may already be there from part one.
 let part='one';
-if(exists('evidence.json')){
+if(exists('film.mp4')){
  part='two';
  const evidence=JSON.parse(readFileSync('evidence.json','utf8'));
  assert(s.ids.includes(evidence.chosen),'evidence.chosen must be one of '+s.ids.join(', '));
