@@ -37,7 +37,9 @@ assert.equal(decode.stderr.trim(),'','Full decode reported errors: '+decode.stde
 // Loudness is reported for the review; clipping is a renderer defect and fails.
 const ebur=spawnSync('ffmpeg',['-v','info','-i','film.mp4','-vn','-af','ebur128=peak=true','-f','null','-'],{encoding:'utf8',timeout:120000,maxBuffer:8388608});
 assert.equal(ebur.status,0,'loudness measurement');
-const integrated=ebur.stderr.match(/I:\s+(-?[\d.]+) LUFS/)?.[1], peak=ebur.stderr.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1];
+// Read the summary only: ebur128's per-frame lines also carry an I: value, starting at the -70 LUFS gate.
+const summary=ebur.stderr.slice(ebur.stderr.lastIndexOf('Summary:'));
+const integrated=summary.match(/I:\s+(-?[\d.]+) LUFS/)?.[1], peak=summary.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1];
 assert(integrated!==undefined && peak!==undefined,'ebur128 summary missing');
 assert(Number(peak)<=-0.1,'True peak '+peak+' dBTP clips; keep it at or below -0.1 dBTP');
 if(contract.stateFixture){
