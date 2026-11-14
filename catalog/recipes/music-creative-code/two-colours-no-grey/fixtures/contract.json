@@ -10,6 +10,8 @@
     "minDistance": 48,
     "block": 10,
     "maxMeanDifference": 0.06,
-    "maxFarShare": 0.03
+    "maxFarShare": 0.03,
+    "maxMeanOffPalette": 60,
+    "farOffPalette": 96
   }
 }

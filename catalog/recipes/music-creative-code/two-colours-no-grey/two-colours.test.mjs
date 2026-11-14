@@ -8,7 +8,7 @@ import { blockAgreement, colourCensus, sampleFrames } from "./validation/two-col
 const recipeDir = import.meta.dirname;
 const contract = {
   width: 160, height: 200, fps: 24, duration: 2, frames: 48,
-  twoColours: { samples: 12, agreementFrames: 3, minDistance: 48, block: 10, maxMeanDifference: 0.06, maxFarShare: 0.03 },
+  twoColours: { samples: 12, agreementFrames: 3, minDistance: 48, block: 10, maxMeanDifference: 0.06, maxFarShare: 0.03, maxMeanOffPalette: 60, farOffPalette: 96 },
 };
 const INK = "#1b1f3a", PAPER = "#f2c14e";
 const evidence = { colours: [INK, PAPER], checks: [{ name: "test", result: "passed", detail: "test delivery" }] };
@@ -82,6 +82,12 @@ test("block agreement accepts a smeared dither and refuses a different picture",
     other.set((i % width) < 10 ? [0, 0, 0] : [255, 255, 255], i * 3);
   }
   assert(blockAgreement(player, same, width, height, [a, b]).meanDifference < 0.01);
+  assert(blockAgreement(player, same, width, height, [a, b]).meanOffPalette < 1, "the smeared grey lies on the black-white line");
+  const purple = new Uint8Array(width * height * 3);
+  for (let i = 0; i < width * height; i++) purple.set([255, 0, 128], i * 3);
+  const projected = blockAgreement(player, purple, width, height, [a, b]);
+  assert(projected.meanDifference < 0.01, "purple projects onto the line where the dither does");
+  assert(projected.meanOffPalette > 150 && projected.farOffShare === 1, "but it lies far off the line");
   assert.equal(blockAgreement(player, other, width, height, [a, b]).farShare, 1);
 });
 
@@ -116,6 +122,20 @@ test("a film that is not the player's film fails", { skip }, async (t) => {
   const result = check(root);
   assert(!result.passed);
   assert.match(result.output, /film\.mp4 frame \d+ .* does not match player\.html/u);
+});
+
+test("a film in other colours that projects onto the same values fails", { skip }, async (t) => {
+  // Shift both colours 150 units straight off the line between them, towards blue: every
+  // pixel keeps its position along the line, so only the off-palette measure can see it.
+  const [a, b] = [rgb(INK), rgb(PAPER)], d = b.map((value, i) => value - a[i]), dd = d.reduce((sum, value) => sum + value * value, 0);
+  const w = [0, 0, 1].map((value, i) => value - (d[2] / dd) * d[i]), scale = 150 / Math.hypot(...w);
+  const shift = (colour) => colour.map((value, i) => Math.round(value + w[i] * scale));
+  const [ta, tb] = [shift(a), shift(b)];
+  const tinted = (frame) => { const buffer = filmVideo()(frame); for (let i = 0; i < buffer.length; i += 3) buffer.set(buffer[i] === a[0] ? ta : tb, i); return buffer; };
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, video: tinted, files: { "player.html": player() } });
+  const result = check(root);
+  assert(!result.passed);
+  assert.match(result.output, /is not in the declared colours/u);
 });
 
 test("undeclared, missing or too-similar colours fail", { skip }, async (t) => {

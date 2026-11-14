@@ -94,30 +94,36 @@ export function colourCensus({ width, data }) {
  * Block agreement between a player frame (RGBA, exactly the two colours) and a
  * decoded film frame (RGB24). Each pixel becomes its position on the line from
  * colour A (0) to colour B (1); block means survive H.264 and 4:2:0 chroma, so
- * a fine two-colour dither and its smeared encode still agree.
+ * a fine two-colour dither and its smeared encode still agree. Averaging keeps
+ * colours on that line, so each film block's distance from the line (in 8-bit
+ * RGB units) is measured too: a film in other colours cannot match by projection.
  */
-export function blockAgreement(player, film, width, height, [a, b], block = 10) {
+export function blockAgreement(player, film, width, height, [a, b], block = 10, farOff = 96) {
   const [ar, ag, ab] = rgbOf(a), [br, bg, bb] = rgbOf(b);
   const dr = br - ar, dg = bg - ag, db = bb - ab, norm = dr * dr + dg * dg + db * db;
   const along = (r, g, bl) => Math.min(1, Math.max(0, ((r - ar) * dr + (g - ag) * dg + (bl - ab) * db) / norm));
-  let total = 0, far = 0, blocks = 0, worst = 0;
+  const away = (r, g, bl) => { const t = along(r, g, bl); return Math.hypot(r - ar - t * dr, g - ag - t * dg, bl - ab - t * db); };
+  let total = 0, far = 0, blocks = 0, worst = 0, offTotal = 0, offFar = 0;
   for (let by = 0; by < height; by += block) {
     for (let bx = 0; bx < width; bx += block) {
-      let sumPlayer = 0, sumFilm = 0, n = 0;
+      let sumPlayer = 0, sumFilm = 0, sumOff = 0, n = 0;
       for (let y = by; y < Math.min(height, by + block); y++) {
         for (let x = bx; x < Math.min(width, bx + block); x++) {
           const p = (y * width + x) * 4, f = (y * width + x) * 3;
           sumPlayer += along(player[p], player[p + 1], player[p + 2]);
           sumFilm += along(film[f], film[f + 1], film[f + 2]);
+          sumOff += away(film[f], film[f + 1], film[f + 2]);
           n++;
         }
       }
       const difference = Math.abs(sumPlayer - sumFilm) / n;
       total += difference; blocks++; worst = Math.max(worst, difference);
       if (difference > 0.25) far++;
+      offTotal += sumOff / n;
+      if (sumOff / n > farOff) offFar++;
     }
   }
-  return { meanDifference: total / blocks, farShare: far / blocks, worst };
+  return { meanDifference: total / blocks, farShare: far / blocks, worst, meanOffPalette: offTotal / blocks, farOffShare: offFar / blocks };
 }
 
 /**
@@ -297,11 +303,13 @@ export async function checkTwoColours({ root = process.cwd(), chrome = process.e
   const agreement = [];
   for (const frame of agreementFrames) {
     const best = neighbours(frame)
-      .map((n) => ({ offset: n - frame, ...blockAgreement(kept.get(frame), decoded.get(n), width, height, declared, rule.block) }))
+      .map((n) => ({ offset: n - frame, ...blockAgreement(kept.get(frame), decoded.get(n), width, height, declared, rule.block, rule.farOffPalette) }))
       .sort((x, y) => x.meanDifference - y.meanDifference)[0];
     agreement.push({ frame, ...best });
     assert(best.meanDifference <= rule.maxMeanDifference && best.farShare <= rule.maxFarShare,
       `film.mp4 frame ${frame} (${(frame / fps).toFixed(3)} s) does not match player.html, even one frame either side: mean block difference ${best.meanDifference.toFixed(3)} (limit ${rule.maxMeanDifference}), ${(100 * best.farShare).toFixed(1)}% of blocks far apart (limit ${100 * rule.maxFarShare}%)`);
+    assert(best.meanOffPalette <= rule.maxMeanOffPalette && best.farOffShare <= rule.maxFarShare,
+      `film.mp4 frame ${frame} (${(frame / fps).toFixed(3)} s) is not in the declared colours: its blocks sit ${best.meanOffPalette.toFixed(1)} RGB units from the line between them on average (limit ${rule.maxMeanOffPalette}), ${(100 * best.farOffShare).toFixed(1)}% more than ${rule.farOffPalette} away (limit ${100 * rule.maxFarShare}%)`);
   }
   return { colours: evidence.colours, sampled, agreement, problems };
 }
