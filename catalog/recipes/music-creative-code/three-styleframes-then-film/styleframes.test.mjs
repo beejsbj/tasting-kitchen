@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -54,4 +54,10 @@ test("a wrong-size frame, a short motion test, a missing frame, long notes or no
   await partOne(root);
   await rm(path.join(root, "styleframes/c.mp4"));
   assert.match(runCheck(root, "validation/styleframes.mjs").output, /styleframes\/c\.mp4 missing or empty/u);
+  const header = await makeDelivery(t, recipeDir, { contract, evidence: { chosen: "a", checks } });
+  await partOne(header);
+  await writeFile(path.join(header, "styleframes/b.png"), (await readFile(path.join(header, "styleframes/b.png"))).subarray(0, 33));
+  const truncated = runCheck(header, "validation/styleframes.mjs");
+  assert(!truncated.passed);
+  assert.match(truncated.output, /decode styleframes\/b\.png/u, "a PNG with only its header is not a styleframe");
 });

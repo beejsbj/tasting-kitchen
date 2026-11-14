@@ -15,6 +15,8 @@ for(const id of s.ids){
  const head=readFileSync(png).subarray(0,24);
  assert.equal(head.subarray(0,8).toString('hex'),'89504e470d0a1a0a',png+' is not a PNG');
  assert.equal(head.readUInt32BE(16),s.width,png+' width');assert.equal(head.readUInt32BE(20),s.height,png+' height');
+ const still=run(['ffmpeg','-v','error','-xerror','-i',png,'-f','null','-'],'decode '+png);
+ assert.equal(still.stderr.trim(),'',png+' decode reported errors');
  const v=JSON.parse(run(['ffprobe','-v','error','-select_streams','v:0','-count_frames','-show_entries','stream=codec_name,width,height,avg_frame_rate,nb_read_frames','-of','json',mp4],'ffprobe '+mp4).stdout).streams[0];
  assert(v,mp4+' has no video');
  assert.equal(v.codec_name,'h264',mp4+' codec');assert.equal(v.width,s.width,mp4+' width');assert.equal(v.height,s.height,mp4+' height');
