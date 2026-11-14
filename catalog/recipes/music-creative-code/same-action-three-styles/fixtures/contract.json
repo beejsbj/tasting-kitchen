@@ -1,0 +1,11 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "duration": 24,
+  "frames": 576,
+  "files": ["index.html", "film.mp4", "player.html", "contact.png", "README.md", "evidence.json", "edl.json"],
+  "cuts": {
+    "required": [192, 384]
+  }
+}
