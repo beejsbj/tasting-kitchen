@@ -57,7 +57,8 @@ test("the static gallery preserves the cooked public catalog", async () => {
   // The book also lists ready Recipes nobody has cooked yet; the counts below are the cooked ones.
   const cookedRecipes = recipeBook.recipes.filter((entry) => entry.dishCount > 0);
   assert.equal(cookedRecipes.length, 17);
-  assert.equal(recipeBook.archivedCount, 54);
+  // The 54-Recipe backlog in archive.json plus five film drafts archived on 2026-11-14.
+  assert.equal(recipeBook.archivedCount, 59);
   const webRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "web");
   const sessionRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "session");
   assert.equal(webRecipes.length, 10);

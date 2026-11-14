@@ -125,7 +125,7 @@ test("public checkout still rejects catalog and skill tampering", async (t) => {
 test("catalog validation applies the published-inputs scan to public fixtures before any Cook", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));
-  const fixture = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  const fixture = path.join(root, "catalog/recipes/music-creative-code/heavy-little-suitcase/validation/film.mjs");
   // The LUFS regex is shaped like a Windows path; it must stay publishable.
   assert.match(await readFile(fixture, "utf8"), /I:\\s\+/);
   let result = validate(root);
@@ -135,7 +135,7 @@ test("catalog validation applies the published-inputs scan to public fixtures be
   result = validate(root);
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(authentication-token field\)/);
-  const home = path.join(root, "catalog/recipes/music-creative-code/paper-boat-voyage/validation/film.mjs");
+  const home = path.join(root, "catalog/recipes/music-creative-code/heavy-little-suitcase/validation/film.mjs");
   await writeFile(home, "// cache under /mnt/server-ssd/cache\n");
   result = validate(root);
   assert.equal(result.status, 1, result.stderr);
