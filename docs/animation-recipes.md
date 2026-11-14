@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **ten drafts awaiting Burooj's authoring acceptance; none cookable.** `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
+Status: **drafts awaiting Burooj's authoring acceptance; none cookable.** On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`). `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -17,12 +17,7 @@ Kitchen's and identical across layers.
 
 | Recipe | Task | Format | Layers besides *without skill* |
 |---|---|---|---|
-| `paper-boat-voyage` | A Little Voyage: fold, launch, swirl, leaf sail, lantern | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `heavy-little-suitcase` | Mass, effort and a change of plan in one locked shot | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `the-last-seat` | Two-character pantomime without narration | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `paper-garden` | Paper-cut transformations that keep parts connected | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `riso-night-market` | Three-ink print craft with layered parallax | 1080×1080 · 30 fps | procedural (riso-film deferred, see below) |
-| `pixel-rooftop-rescue` | Small sprites conveying intent and contact | 1920×1080 · 60 fps from 320×180 | procedural, code-animations |
+| `heavy-little-suitcase` | Weight and a change of plan, in a visual language the model invents | 1080×1920 · 24 fps | hand-drawn, procedural |
 | `blueprint-marble-sorter` | Explain a mechanism while keeping object identities | 1080×1920 · 24 fps | procedural, code-animations |
 | `words-with-weight` | Four verbs, four motion curves, one type family | 1080×1920 · 60 fps | motion-reel, procedural |
 | `queue-under-pressure` | Backpressure explained from a supplied state trace | 1920×1080 · 30 fps | code-animations, motion-reel |
@@ -40,7 +35,7 @@ beat detection.
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
 plus one Repeat of whichever Burooj prefers. The `animation-styles` Menu holds
-the nine public film recipes as a library, not a quota.
+the public film drafts as a library, not a quota.
 
 ## Shared protocol
 
@@ -64,7 +59,7 @@ from the brief. Comparing layers therefore changes only the mounted guidance.
 codec, dimensions, frame rate, frame count, durations, a complete FFmpeg
 decode with zero errors, a true peak at or below -0.1 dBTP (clipping is a
 renderer defect), and the evidence shape. The film recipes require one
-reported time inside each beat window; the queue recipe additionally checks a
+reported time inside each beat window (the suitcase's three beats may fall anywhere but must be in order); the queue recipe additionally checks a
 pure `stateAt(t)` against the supplied trace; the lyric recipe requires one
 evidence entry per supplied word and a recorded reason for any onset moved by
 more than 50 ms. Integrated loudness is reported, not gated.

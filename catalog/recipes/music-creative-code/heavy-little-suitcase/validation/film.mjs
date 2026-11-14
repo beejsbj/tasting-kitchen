@@ -18,6 +18,7 @@ for(const beat of contract.beats){
  assert.equal(items.length,1,'One evidence time for '+beat.id);
  assert(Number.isFinite(items[0].time) && items[0].time>=beat.start && items[0].time<=beat.end,'Beat window: '+beat.id);
 }
+if(contract.beatsInOrder){const times=contract.beats.map(b=>evidence.beats.find(e=>e.id===b.id).time);assert(times.every((t,i)=>i===0||t>times[i-1]),'Beats in order: '+contract.beats.map(b=>b.id).join(', '));}
 assert(Array.isArray(evidence.checks) && evidence.checks.length>0,'Record checks actually attempted');
 for(const c of evidence.checks){assert(typeof c.name==='string' && c.name.trim());assert(['passed','failed','not-run'].includes(c.result));assert(typeof c.detail==='string' && c.detail.trim());}
 const probe=run(['ffprobe','-v','error','-show_streams','-show_format','-of','json','film.mp4'],'ffprobe');
