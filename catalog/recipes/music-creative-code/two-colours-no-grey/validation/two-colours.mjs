@@ -193,10 +193,10 @@ function launch(chrome, profile) {
     pending.set(id, { resolve, reject });
     child.stdio[3].write(`${JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) })}\0`);
   });
-  const waitFor = (predicate, label, ms) => {
+  const waitFor = (predicate, label, ms, Failure = EquipmentError) => {
     let listener, timer;
     const promise = new Promise((resolve, reject) => {
-      timer = setTimeout(() => { listeners.delete(listener); reject(new EquipmentError(`timed out after ${ms / 1000} s waiting for ${label}`)); }, ms);
+      timer = setTimeout(() => { listeners.delete(listener); reject(new Failure(`timed out after ${ms / 1000} s waiting for ${label}`)); }, ms);
       listener = (message) => { if (predicate(message)) { clearTimeout(timer); listeners.delete(listener); resolve(message); } };
       listeners.add(listener);
     });
@@ -205,11 +205,14 @@ function launch(chrome, profile) {
   return { send, waitFor, listeners, close: async () => { child.kill("SIGKILL"); await exited; } };
 }
 
-// A busy host can stall any of these waits, so running out of time is Kitchen's, not the player's.
-const WAIT = 60000;
-const withTimeout = (promise, label) => {
+// A busy host can stall Chromium's own work (a screenshot), so running out of time there is
+// Kitchen's. Loading the page, window.ready and seek run the delivery's code: a player that
+// never finishes them fails the check, or a broken player would be retried forever as
+// Kitchen's fault. The wait is generous for that reason; Kitchen may shorten it in tests.
+const WAIT = Number(process.env.TWO_COLOURS_WAIT_MS) || 60000;
+const withTimeout = (promise, label, Failure = EquipmentError) => {
   let timer;
-  return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new EquipmentError(`${label} took longer than ${WAIT / 1000} s`)), WAIT); })]).finally(() => clearTimeout(timer));
+  return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Failure(`${label} took longer than ${WAIT / 1000} s`)), WAIT); })]).finally(() => clearTimeout(timer));
 };
 
 /**
@@ -231,12 +234,12 @@ async function capturePlayer({ root, chrome, width, height, fps, frames, inspect
     await send("Page.enable");
     await send("Runtime.enable");
     await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
-    const loaded = browser.waitFor((message) => message.sessionId === sessionId && message.method === "Page.loadEventFired", "player.html to load", WAIT);
+    const loaded = browser.waitFor((message) => message.sessionId === sessionId && message.method === "Page.loadEventFired", "player.html to load", WAIT, Error);
     const navigated = await send("Page.navigate", { url: `http://127.0.0.1:${server.address().port}/player.html?capture` });
     if (navigated.errorText) { loaded.cancel(); assert.fail(`player.html did not load: ${navigated.errorText}`); }
     await loaded.promise;
     const evaluate = async (expression, label) => {
-      const { result, exceptionDetails } = await withTimeout(send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }), label);
+      const { result, exceptionDetails } = await withTimeout(send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }), label, Error);
       assert(!exceptionDetails, `${label} threw: ${exceptionDetails?.exception?.description ?? exceptionDetails?.text}`);
       return result.value;
     };

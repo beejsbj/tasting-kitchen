@@ -33,3 +33,14 @@ test("frames of uneven duration fail even when their count is right", { skip }, 
   assert(!result.passed);
   assert.match(result.output, /Frames must be evenly spaced at 24 fps: frame 1 comes 0\.0208 s/u);
 });
+
+test("alternating long and short frames that average the right rate fail", { skip }, async (t) => {
+  const root = await makeDelivery(t, recipeDir, { contract, evidence });
+  // Frames alternate 1/30 s and 1/20 s: 48 frames still last 2 s and average 24 fps.
+  ffmpeg(["-f", "lavfi", "-i", "testsrc2=s=64x80:r=24:d=2", "-f", "lavfi", "-i", "sine=frequency=330:sample_rate=48000:duration=2",
+    "-vf", "settb=1/120,setpts='floor(N/2)*10+mod(N,2)*4'", "-fps_mode", "passthrough", "-enc_time_base", "1/120",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-video_track_timescale", "120", "-af", "volume=-12dB", "-c:a", "aac", path.join(root, "film.mp4")]);
+  const result = runCheck(root, "validation/film.mjs");
+  assert(!result.passed);
+  assert.match(result.output, /Frames must be evenly spaced at 24 fps: frame 1 comes 0\.0333 s/u);
+});

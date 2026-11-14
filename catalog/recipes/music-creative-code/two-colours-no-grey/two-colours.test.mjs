@@ -167,3 +167,11 @@ test("a browser that cannot run is Kitchen's failure, exit 75, not the delivery'
   assert.equal(result.code, 75, result.output);
   assert.match(result.output, /ERROR: Chromium could not start: .*Kitchen equipment, exit 75/u);
 });
+
+test("a player that never becomes ready fails the delivery, not Kitchen's equipment", { skip }, async (t) => {
+  const stuck = player().replace("window.ready = Promise.resolve().then(() => window.seek(0));", "window.ready = new Promise(() => {});");
+  const root = await makeDelivery(t, recipeDir, { contract, evidence, video: filmVideo(), files: { "player.html": stuck } });
+  const result = runCheck(root, "validation/two-colours.mjs", { CHROME_PATH: chromePath, TWO_COLOURS_WAIT_MS: "3000" });
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /FAIL: window\.ready took longer than 3 s/u);
+});
