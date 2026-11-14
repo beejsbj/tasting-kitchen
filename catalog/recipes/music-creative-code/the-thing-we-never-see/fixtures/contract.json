@@ -1,0 +1,8 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "duration": 25,
+  "frames": 600,
+  "files": ["index.html", "film.mp4", "player.html", "contact.png", "README.md", "evidence.json", "edl.json"]
+}
