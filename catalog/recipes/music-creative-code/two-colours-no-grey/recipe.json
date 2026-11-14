@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "two-colours-no-grey",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Two colours, no grey",
+  "summary": "See what graphic invention a model finds when every pixel of a fast, deep, textured film must be one of two colours.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original task written for this Recipe after Burooj asked that film Recipes taste art style and graphic invention rather than a fixed plot. The subject is left to the model.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "two-colours-check",
+        "path": "validation/two-colours.mjs",
+        "mountAs": "validation/two-colours.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "toolchain": {
+    "id": "film-v1"
+  },
+  "turns": [
+    {
+      "id": "make-film",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md. Make the two-colour film and deliver the movie, live player, source, contact sheet and evidence it specifies. Make every creative decision yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1350, 24fps, 576 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence shape.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "two-colours",
+        "type": "command",
+        "required": true,
+        "description": "In headless Chromium, seek player.html?capture to 48 frames chosen from the film's hash at 1080 by 1350 and device scale 1: every pixel must be one of the two colours declared in evidence.json, both must appear, and they must be at least 48 apart in RGB. Six of those frames must agree with film.mp4 block by block. Unsampled frames are not seen.",
+        "argv": [
+          "node",
+          "validation/two-colours.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Does the film find depth, light and texture in two colours, or does it look like a filter over ordinary drawing? Is the motion fast and still legible? Is the graphic language its own?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}
