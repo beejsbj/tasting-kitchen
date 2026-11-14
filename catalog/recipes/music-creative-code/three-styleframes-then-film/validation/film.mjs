@@ -29,6 +29,9 @@ const p=JSON.parse(probe.stdout),v=p.streams.find(s=>s.codec_type==='video'),a=p
 assert(v && a,'Video and soundtrack required');
 assert.equal(v.codec_name,'h264');assert.equal(a.codec_name,'aac');
 assert.equal(v.width,contract.width);assert.equal(v.height,contract.height);
+// Even spacing: an average frame rate can hide frames of unequal duration.
+const pts=run(['ffprobe','-v','error','-select_streams','v:0','-show_entries','packet=pts_time','-of','csv=p=0','film.mp4'],'frame timestamps').stdout.trim().split(/\s+/).map(Number).sort((x,y)=>x-y);
+for(let i=1;i<pts.length;i++) assert(Math.abs(pts[i]-pts[i-1]-1/contract.fps)<=0.25/contract.fps,'Frames must be evenly spaced at '+contract.fps+' fps: frame '+i+' comes '+(pts[i]-pts[i-1]).toFixed(4)+' s after the one before');
 const [n,d]=v.avg_frame_rate.split('/').map(Number);assert.equal(n/d,contract.fps);
 assert.equal(Number(v.nb_frames),contract.frames);
 assert(Math.abs(Number(v.duration)-contract.duration)<0.05,'Video duration');
