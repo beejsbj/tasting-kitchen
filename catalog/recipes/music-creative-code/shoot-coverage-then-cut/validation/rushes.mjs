@@ -6,6 +6,10 @@
 //   not that neither changed after the first turn. The first turn's reply
 //   names the log's sha256 in the trace; this check prints the delivered one
 //   for the taster to compare, and the cut-1.mp4 hash likewise.
+// - A clip is one take: the cut check's undeclared-cut rule finds no cut
+//   inside it. A light or flash that changes the whole picture at once reads
+//   as a cut, so the log lists such frames in the clip's `changes` and they are
+//   exempt within a frame, as a declared transition is.
 // - Every frame of each cut is compared, as a 48 x 27 RGB thumbnail, with
 //   every rushes frame; it must be within 3 levels (of 255) on average of one
 //   of them. Re-encoding the same frames measures well under 1; a grade, a
@@ -123,6 +127,7 @@ export function readLog(log, files) {
     if (listed.has(clip.file)) problems.push(`${clip.file} is listed twice`);
     listed.add(clip.file);
     if (typeof clip.camera !== "string" || !clip.camera.trim()) problems.push(`${clip.file} needs a camera`);
+    if (clip.changes !== undefined && (!Array.isArray(clip.changes) || !clip.changes.every((frame) => Number.isInteger(frame) && frame > 0))) problems.push(`${clip.file} changes must be a list of frame numbers after the first`);
     if (!files.includes(clip.file)) { problems.push(`${clip.file} is listed but missing`); continue; }
     if (clip.sha256 !== sha256(clip.file)) problems.push(`${clip.file} does not have the sha256 the log records`);
   }
@@ -152,8 +157,10 @@ export function checkRushes(contract, thresholds = RUSHES_THRESHOLDS) {
     const info = probe(clip.file);
     seconds += info.frames / contract.fps;
     if (info.codec !== "h264" || info.width !== contract.width || info.height !== contract.height || info.fps !== contract.fps) reasons.push(`${clip.file} is ${info.codec} ${info.width}x${info.height} at ${info.fps} fps; rushes are h264 ${contract.width}x${contract.height} at ${contract.fps} fps`);
-    const inside = compareCuts(frameDifferences(clip.file), { cuts: [] });
-    if (inside.extra.length) reasons.push(`${clip.file} has a cut inside it at frame ${inside.extra.map((d) => d.frame).join(", ")}; a clip is one take`);
+    const changes = Array.isArray(clip.changes) ? clip.changes.filter(Number.isInteger) : [];
+    for (const frame of changes) if (frame >= info.frames) reasons.push(`${clip.file} lists a change at frame ${frame}; it has ${info.frames} frames`);
+    const inside = compareCuts(frameDifferences(clip.file), { cuts: [], spans: changes.map((frame) => [frame, frame]) });
+    if (inside.extra.length) reasons.push(`${clip.file} has a cut inside it at frame ${inside.extra.map((d) => d.frame).join(", ")}; a clip is one take (list a light or flash that changes the whole picture in the clip's changes)`);
   }
   if (seconds < spec.minSeconds || seconds > spec.maxSeconds) reasons.push(`rushes run ${seconds.toFixed(2)} s; they must total ${spec.minSeconds}-${spec.maxSeconds} s`);
   const index = log.clips.length ? indexRushes(log.clips) : null;

@@ -16,7 +16,7 @@ Exactly 25 seconds at 1920 × 1080, 24 fps (600 frames), H.264 with AAC sound.
 
 List every shot in `edl.json`: `{ "fps": 24, "frames": 600, "shots": [{ "id", "start", "end" }] }`, in frames, `end` exclusive, the shots tiling the film in order. Each shot after the first comes in on a hard cut unless it says `"in": { "transition": "<kind>", "frames": <n> }`. One continuous shot is one entry.
 
-Kitchen finds the hard cuts in the picture with FFmpeg (`validation/cuts.mjs`) and compares them with `edl.json`, within one frame. Declare every hard cut, including a one-frame flash or a light that changes the whole frame at once, and nothing that is not one. Grain or motion as large as the cut itself can hide a cut from the check.
+Kitchen finds the hard cuts in the picture with FFmpeg (`validation/cuts.mjs`) and compares them with `edl.json`, within one frame. Declare every hard cut, including a one-frame flash or a light that changes the whole frame at once, and nothing that is not one. A cut too small to see, or barely larger than the grain or motion around it, can go unconfirmed.
 
 ## Working protocol
 

@@ -9,7 +9,7 @@ What the film shows, and how it looks, is yours to decide.
 ## Supplied inputs
 
 - `inputs/track.wav`: 30 seconds, 48 kHz stereo PCM. It is the film's whole soundtrack, unchanged: same start, same length, same level, encoded as AAC. Add nothing to it, and do not trim, move, fade, re-order or limit it. It peaks at −2 dBFS, so it needs no trim.
-- `inputs/cues.json`: Kitchen's timing for the track, written with it from the composition: the tempo grid (`grid`, 100 BPM), the start of every sound (`onsets`: time, kind, relative strength) and a per-frame loudness envelope (`envelope`). Use it as given; beat detection is not part of this task.
+- `inputs/cues.json`: Kitchen's timing for the track, written with it from the composition: the tempo grid (`grid`, 100 BPM), the start of every sound and the two hard stops into silence (`onsets`: time, kind, relative strength) and a per-frame loudness envelope (`envelope`). Use it as given; beat detection is not part of this task.
 
 Kitchen compares your soundtrack with the track using `validation/audio-identity.mjs`: aligned within 20 ms, matching in every audible half-second, nothing added in its silences, the same length and the same level within 0.5 dB.
 
@@ -21,7 +21,7 @@ Exactly 30 seconds at 1920 × 1080, 24 fps (720 frames), H.264 with the track as
 
 List every shot in `edl.json`: `{ "fps": 24, "frames": 720, "shots": [{ "id", "start", "end" }] }`, in frames, `end` exclusive, the shots tiling the film in order. Each shot after the first comes in on a hard cut unless it says `"in": { "transition": "<kind>", "frames": <n> }`.
 
-Kitchen finds the hard cuts in the picture with FFmpeg (`validation/cuts.mjs`) and compares them with `edl.json`, within one frame. Declare every hard cut, including a one-frame flash or a light that changes the whole frame at once, and nothing that is not one. Grain or motion as large as the cut itself can hide a cut from the check. Kitchen also reports how far each cut falls from the nearest cue; that is for the taster, not a target.
+Kitchen finds the hard cuts in the picture with FFmpeg (`validation/cuts.mjs`) and compares them with `edl.json`, within one frame. Declare every hard cut, including a one-frame flash or a light that changes the whole frame at once, and nothing that is not one. A cut too small to see, or barely larger than the grain or motion around it, can go unconfirmed. Kitchen also reports how far each cut falls from the nearest cue; that is for the taster, not a target.
 
 ## Working protocol
 

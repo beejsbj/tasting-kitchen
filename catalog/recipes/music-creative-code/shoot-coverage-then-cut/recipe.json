@@ -145,7 +145,7 @@
         "id": "cuts",
         "type": "command",
         "required": true,
-        "description": "Kitchen-side cut check: FFmpeg's scene-change measure finds the hard cuts in the picture and they must agree with edl.json within one frame. A declared cut needs a frame change of at least 0.3% and three times the quieter side's level; an undeclared change fails only when unmistakable (at least 6% and three times anything near it). Declared transitions are exempt, not confirmed. Changes in between are reported for tasting. Run on both cuts, each against its own EDL; transitions are refused because their blended frames are not rushes frames.",
+        "description": "Kitchen-side cut check: FFmpeg's scene-change measure finds the hard cuts in the picture and they must agree with edl.json within one frame. A declared cut needs a frame change of at least 0.15% that is three times the quieter side's level or 6% above it; an undeclared change fails only when unmistakable (at least 6% and three times anything near it). Declared transitions are exempt, not confirmed. Changes in between are reported for tasting. Run on both cuts, each against its own EDL; transitions are refused because their blended frames are not rushes frames.",
         "argv": [
           "node",
           "validation/cuts.mjs"
@@ -155,7 +155,7 @@
         "id": "rushes",
         "type": "command",
         "required": true,
-        "description": "Check the rushes: at least four clips from at least four logged camera positions, 60 to 120 seconds in total at the film's format, no cut inside any clip, and each clip's sha256 matching rushes/rushes.json; and that every frame of both cuts is a frame of the rushes (48 by 27 thumbnails within 3 levels of 255). Prints the log's and cut-1.mp4's sha256 to compare with the turn replies, and each cut's conform; Kitchen keeps no copy between turns, so unchanged-since-the-turn is shown by those hashes, not enforced.",
+        "description": "Check the rushes: at least four clips from at least four logged camera positions, 60 to 120 seconds in total at the film's format, no cut inside any clip (a whole-picture light change listed in the log is exempt), and each clip's sha256 matching rushes/rushes.json; and that every frame of both cuts is a frame of the rushes (48 by 27 thumbnails within 3 levels of 255). Prints the log's and cut-1.mp4's sha256 to compare with the turn replies, and each cut's conform; Kitchen keeps no copy between turns, so unchanged-since-the-turn is shown by those hashes, not enforced.",
         "argv": [
           "node",
           "validation/rushes.mjs"

@@ -4,12 +4,19 @@
 // full scale); a hard cut is a spike in it. Burden of proof is asymmetric so an
 // ambiguous picture never fails a film:
 // - a declared cut is confirmed by any change within a frame of it that is at
-//   least 0.3% and three times the quieter side's usual level (a 40 px jump
-//   of a 200 px box on a flat ground measures 0.4%). This is generous: a cut
-//   declared where an abrupt motion or a dissolve starts, or inside animation
-//   held on twos (every drawing change is a step from a still frame), can
-//   pass; one declared in a still or steadily moving stretch cannot. Grain or
-//   motion as large as the cut hides it; the brief says so.
+//   least 0.15% and either three times the quieter side's usual level or 6%
+//   above it. 0.15% is three times the floor a still code-drawn shot encodes
+//   to (a half-second jump of a 60 x 160 px figure in a locked 1080p wide
+//   measures 0.16%); the 6% margin, an unmistakable cut's own size, keeps a
+//   cut confirmed under grain or fast motion that lifts the local level (a
+//   reframe under heavy grain measures 11.5% against 3.9%). Other declared
+//   cuts are left out of the local level, so a run of one-frame shots
+//   confirms; where nothing else is left, each change must reach 6%. This is
+//   generous: a cut declared where an abrupt motion or a dissolve starts, or
+//   inside animation held on twos (every drawing change is a step from a
+//   still frame), can pass; one declared in a still or steadily moving
+//   stretch cannot. A cut smaller than both can go unconfirmed; the brief
+//   says so.
 // - an undeclared cut fails only when it is unmistakable: at least 6% and three
 //   times the largest change on either side, so a pan, a whip, motion that
 //   starts abruptly or animation held on twos and threes never reads as a cut.
@@ -30,8 +37,9 @@ export const CUT_THRESHOLDS = Object.freeze({
   toleranceFrames: 1,
   side: 5, // frames on each side that set the local level (the two beside the change are skipped)
   floor: 0.05, // quietest local level: a still code-drawn shot encodes to 0.00-0.02
-  confirmMafd: 0.3,
+  confirmMafd: 0.15, // three times the floor
   confirmRatio: 3,
+  confirmMargin: 6, // above the local level: an unmistakable cut's size (extraMafd)
   extraMafd: 6,
   extraRatio: 3,
   reportMafd: 1.5,
@@ -53,16 +61,24 @@ function secondSmallest(values) {
 
 /**
  * Each frame's difference against its neighbourhood, skipping k-1 and k+1
- * (a one-frame shot moves both): `quiet` against the quieter side's usual
- * level (second smallest), `isolated` against the largest change on either side.
+ * (a one-frame shot moves both) and any frame in `declared` (another cut is
+ * not the shot's own level): `usual` is the quieter side's usual level (second
+ * smallest), null when every neighbour was a declared cut; `quiet` is the
+ * change against it, `isolated` against the largest change on either side.
  */
-export function discontinuities(mafd, thresholds = CUT_THRESHOLDS) {
+export function discontinuities(mafd, thresholds = CUT_THRESHOLDS, declared = new Set()) {
+  const window = (from, to) => {
+    const indices = [];
+    for (let i = Math.max(1, from); i < Math.min(mafd.length, to); i++) indices.push(i);
+    return { any: indices.length > 0, values: indices.filter((i) => !declared.has(i)).map((i) => mafd[i]) };
+  };
   return mafd.map((value, k) => {
-    if (k === 0) return { frame: 0, mafd: 0, quiet: 0, isolated: 0 };
-    const sides = [mafd.slice(Math.max(1, k - 1 - thresholds.side), Math.max(1, k - 1)), mafd.slice(k + 2, k + 2 + thresholds.side)].filter((side) => side.length);
-    const usual = sides.length ? Math.min(...sides.map(secondSmallest)) : 0;
+    if (k === 0) return { frame: 0, mafd: 0, usual: 0, quiet: 0, isolated: 0 };
+    const windows = [window(k - 1 - thresholds.side, k - 1), window(k + 2, k + 2 + thresholds.side)];
+    const sides = windows.map((side) => side.values).filter((side) => side.length);
+    const usual = sides.length ? Math.min(...sides.map(secondSmallest)) : windows.some((side) => side.any) ? null : 0;
     const largest = sides.length ? Math.max(...sides.flat()) : 0;
-    return { frame: k, mafd: value, quiet: value / Math.max(thresholds.floor, usual), isolated: value / Math.max(thresholds.floor, largest) };
+    return { frame: k, mafd: value, usual, quiet: value / Math.max(thresholds.floor, usual ?? 0), isolated: value / Math.max(thresholds.floor, largest) };
   });
 }
 
@@ -97,6 +113,8 @@ export function readEdl(edl, { fps, frames, transitions = true }) {
     const length = shot.in?.frames;
     if (typeof shot.in?.transition !== "string" || !shot.in.transition.trim() || !Number.isInteger(length) || length < 1) {
       problems.push(`${label} in must be "cut" or { "transition": "<kind>", "frames": <n> }`);
+    } else if (shot.start + length > shot.end) {
+      problems.push(`${label}'s ${shot.in.transition} runs ${length} frames, past the shot's end`);
     } else if (!transitions) {
       problems.push(`${label} comes in on a ${shot.in.transition}; this film takes hard cuts only`);
     } else {
@@ -109,9 +127,13 @@ export function readEdl(edl, { fps, frames, transitions = true }) {
 
 /** Compare declared hard cuts with the picture's discontinuities. */
 export function compareCuts(mafd, { cuts, spans = [] }, thresholds = CUT_THRESHOLDS) {
-  const frames = discontinuities(mafd, thresholds);
+  const frames = discontinuities(mafd, thresholds, new Set(cuts));
   const tolerance = thresholds.toleranceFrames;
-  const confirms = (d) => d && d.frame > 0 && d.mafd >= thresholds.confirmMafd && d.quiet >= thresholds.confirmRatio;
+  const confirms = (d) => {
+    if (!d || d.frame === 0 || d.mafd < thresholds.confirmMafd) return false;
+    if (d.usual === null) return d.mafd >= thresholds.confirmMargin;
+    return d.quiet >= thresholds.confirmRatio || d.mafd - d.usual >= thresholds.confirmMargin;
+  };
   const used = new Set(), confirmed = [], missing = [];
   for (const cut of cuts) {
     const candidates = [cut, cut - 1, cut + 1, cut - 2, cut + 2].filter((k) => Math.abs(k - cut) <= tolerance);

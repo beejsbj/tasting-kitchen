@@ -61,6 +61,27 @@ test("a cut in a fast montage is confirmed against the quieter side", () => {
   assert.deepEqual(compare(curve, cuts).missing, []);
 });
 
+test("a run of one-frame shots confirms; declaring every other frame of steady motion does not", () => {
+  const strobe = withSpikes(still(96), Object.fromEntries(Array.from({ length: 11 }, (_, i) => [30 + i, 40])));
+  const cuts = Array.from({ length: 11 }, (_, i) => 30 + i);
+  assert.deepEqual([compare(strobe, cuts).missing, compare(strobe, cuts).extra], [[], []]);
+  const fake = Array.from({ length: 10 }, (_, i) => 40 + 2 * i);
+  assert.equal(compare(still(96, 9), fake).missing.length, fake.length);
+  // Every frame of steady 3% motion declared a cut: nothing else sets the level, so each must reach 6%.
+  assert.equal(compare(still(96, 3), Array.from({ length: 95 }, (_, i) => i + 1)).missing.length, 95);
+});
+
+test("grain lifts the local level: a cut 6% above it confirms, a smaller change does not", () => {
+  assert.deepEqual(compare(withSpikes(still(96, 3.9), { 40: 11.5 }), [40]).missing, []);
+  assert.equal(compare(withSpikes(still(96, 3.9), { 40: 8 }), [40]).missing.length, 1);
+  assert.deepEqual(compare(withSpikes(still(96, 3.9), { 40: 11.5 }), []).extra, [], "undeclared, the same change is too close to the grain to fail");
+});
+
+test("a small jump on a still wide confirms; a cut declared in a still shot does not", () => {
+  assert.deepEqual(compare(withSpikes(still(96), { 40: 0.16 }), [40]).missing, []);
+  assert.equal(compare(still(96), [40]).missing.length, 1);
+});
+
 test("a small change below the report level is neither a cut nor reported; between levels it is reported", () => {
   assert.deepEqual(compare(withSpikes(still(96), { 30: 1 }), []).unclear, []);
   const middling = compare(withSpikes(still(96), { 30: 3 }), []);
@@ -74,6 +95,7 @@ test("a declared transition is exempt over its span and not a hard cut", () => {
   assert.deepEqual([read.cuts, read.spans, read.problems], [[], [[40, 52]], []]);
   assert.deepEqual(compare(curve, [40], { shots }).extra, []);
   assert.match(readEdl(edl([40], 96, shots), { fps: 24, frames: 96, transitions: false }).problems.join(), /hard cuts only/u);
+  assert.match(readEdl(edl([40], 96, { 1: { in: { transition: "dissolve", frames: 57 } } }), { fps: 24, frames: 96 }).problems.join(), /runs 57 frames, past the shot's end/u);
 });
 
 test("the EDL must tile the film in frames", () => {
@@ -178,4 +200,16 @@ test("real encodes at 1920 x 1080: a pan and a reframing cut on a flat ground", 
   assert.equal(result.passed, true, result.reasons.join("; "));
   assert.equal(checkFilm({ film: file, edl: edl([48], 72), fps: 24, frames: 72 }).passed, true, "the 200-to-400 px reframe (about 3%) is below the undeclared-cut level: reported, not failed");
   assert.deepEqual(checkFilm({ film: file, edl: edl([48], 72), fps: 24, frames: 72 }).unclear.map((d) => d.frame), [24]);
+});
+
+test("real encodes at 1920 x 1080: a reframing cut under heavy grain confirms", { skip: !hasFfmpeg && "ffmpeg is not installed" }, async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "cut-check-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const file = path.join(directory, "grain.mp4");
+  const plate = (x, w) => `color=c=0x1a2238:s=1920x1080:r=24,drawbox=x=${x}:y=${540 - w / 2}:w=${w}:h=${w}:c=0xf0c040:t=fill`;
+  ff(["-f", "lavfi", "-i", plate(860, 200), "-f", "lavfi", "-i", plate(660, 600),
+    "-filter_complex", "[0:v]trim=end_frame=24,setpts=PTS-STARTPTS[a];[1:v]trim=end_frame=24,setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1:a=0,noise=alls=30:allf=t,format=yuv420p[v]",
+    "-map", "[v]", "-c:v", "libx264", "-crf", "23", file]);
+  const result = checkFilm({ film: file, edl: edl([24], 48), fps: 24, frames: 48 });
+  assert.equal(result.passed, true, result.reasons.join("; "));
 });

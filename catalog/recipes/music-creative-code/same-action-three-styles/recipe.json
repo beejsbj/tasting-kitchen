@@ -125,7 +125,7 @@
         "id": "cuts",
         "type": "command",
         "required": true,
-        "description": "Kitchen-side cut check: FFmpeg's scene-change measure finds the hard cuts in the picture and they must agree with edl.json within one frame. A declared cut needs a frame change of at least 0.3% and three times the quieter side's level; an undeclared change fails only when unmistakable (at least 6% and three times anything near it). Declared transitions are exempt, not confirmed. Changes in between are reported for tasting. edl.json must declare hard cuts at frames 192 and 384, and the picture must show them.",
+        "description": "Kitchen-side cut check: FFmpeg's scene-change measure finds the hard cuts in the picture and they must agree with edl.json within one frame. A declared cut needs a frame change of at least 0.15% that is three times the quieter side's level or 6% above it; an undeclared change fails only when unmistakable (at least 6% and three times anything near it). Declared transitions are exempt, not confirmed. Changes in between are reported for tasting. edl.json must declare hard cuts at frames 192 and 384, and the picture must show them.",
         "argv": [
           "node",
           "validation/cuts.mjs"

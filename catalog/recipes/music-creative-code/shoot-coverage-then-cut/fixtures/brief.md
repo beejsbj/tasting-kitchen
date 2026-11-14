@@ -7,9 +7,9 @@ This Recipe has three parts, each its own turn. Do only the part the current tur
 Invent a small event and film it as raw clips from at least four camera positions. Do not edit. Shoot as a director who knows the edit is not settled: later turns cut from these rushes, and there is no going back to film more.
 
 - Put every clip in `rushes/` as `rushes/<name>.mp4`: H.264, 1920 × 1080, 24 fps. Sound is optional.
-- A clip is one continuous take from one camera position. The camera may move during a take; a clip has no cut inside it.
+- A clip is one continuous take from one camera position. The camera may move during a take; a clip has no cut inside it. A light or flash that changes the whole picture at once looks like a cut to Kitchen, so list those frames in the clip's `changes`.
 - The rushes together run 60 to 120 seconds.
-- Log them in `rushes/rushes.json`: `{ "clips": [{ "file": "rushes/<name>.mp4", "camera": "<position>", "sha256": "<hex>" }] }`, one entry per clip, `camera` naming its position. Kitchen counts positions by distinct `camera` names.
+- Log them in `rushes/rushes.json`: `{ "clips": [{ "file": "rushes/<name>.mp4", "camera": "<position>", "sha256": "<hex>", "changes": [<frame>] }] }`, one entry per clip, `camera` naming its position, `changes` only where needed. Kitchen counts positions by distinct `camera` names.
 - Keep the code that renders the rushes in `source/`.
 
 Reply with the sha256 of `rushes/rushes.json`. After this turn, `rushes/` does not change.
@@ -21,7 +21,9 @@ Cut a 30-second film using only the rushes.
 - `cut-1.mp4`: exactly 30 seconds at 1920 × 1080, 24 fps (720 frames), H.264 with AAC sound.
 - Every frame of the cut is a frame of the rushes. Choosing, ordering, trimming, holding, repeating, skipping and reversing frames is editing. Titles, grading, reframing or punching in, frames blended or drawn for the cut, and new footage are not.
 - Sound may come from the rushes or be made for the cut, synthesized; it is not filming.
-- `cut-1.edl.json`: every shot of the cut, `{ "fps": 24, "frames": 720, "shots": [{ "id", "start", "end", "clip", "clipStart" }] }`, in frames, `end` exclusive, tiling the cut in order; `clip` names its rushes file and `clipStart` the clip frame it starts on. Each shot after the first comes in on a hard cut unless it says `"in": { "transition": "<kind>", "frames": <n> }`; a transition's blended frames are not rushes frames, so use none.
+- `cut-1.edl.json`: every shot of the cut, `{ "fps": 24, "frames": 720, "shots": [{ "id", "start", "end" }] }`, in frames, `end` exclusive, tiling the cut in order. Every shot comes in on a hard cut: a transition's blended frames are not rushes frames.
+
+Kitchen finds the hard cuts in the picture with FFmpeg (`validation/cuts.mjs`) and compares them with the EDL, within one frame. Declare every hard cut, including a jump within one clip and a light that changes the whole frame at once, and nothing that is not one. A cut too small to see, or smaller than the grain or motion around it, can go unconfirmed. Kitchen also prints its own conform: which clip and frames each run of the cut came from.
 
 Reply with the sha256 of `cut-1.mp4`. After this turn, `cut-1.mp4` and `cut-1.edl.json` do not change.
 

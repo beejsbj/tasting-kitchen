@@ -126,3 +126,23 @@ test("real encodes: rushes changed after logging, a cut inside a take, or too fe
   assert.match(changed, /rushes\/a\.mp4 does not have the sha256 the log records/u);
   assert.match(changed, /rushes\/a\.mp4 has a cut inside it at frame 36/u);
 });
+
+test("real encodes: a light that changes the whole picture inside a take must be listed in the log", { skip: !hasFfmpeg && "ffmpeg is not installed" }, async (t) => {
+  const { directory } = await delivery(t);
+  // Take c again, with a lamp switched on at frame 36.
+  ff(directory, ["-f", "lavfi", "-i", `${TAKES.c},drawbox=x=0:y=0:w=iw:h=ih:c=white@0.5:t=fill:enable='gte(n,36)'`, "-frames:v", "72", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "rushes/c.mp4"]);
+  cut(directory, "cut-1.mp4", EDIT);
+  cut(directory, "film.mp4", EDIT);
+  const write = (changes) => writeFileSync(path.join(directory, "rushes", "rushes.json"), JSON.stringify({
+    clips: Object.keys(TAKES).map((name, i) => ({ file: `rushes/${name}.mp4`, camera: ["wide", "high", "close", "floor"][i], sha256: sha256(path.join(directory, "rushes", `${name}.mp4`)), ...(name === "c" && changes ? { changes } : {}) })),
+  }));
+  write(null);
+  assert.match(check(directory).stderr, /rushes\/c\.mp4 has a cut inside it at frame 36/u);
+  write([36]);
+  const listed = check(directory);
+  assert.equal(listed.status, 0, listed.stderr);
+  write([200]);
+  assert.match(check(directory).stderr, /lists a change at frame 200; it has 72 frames/u);
+  write(["36"]);
+  assert.match(check(directory).stderr, /changes must be a list of frame numbers/u);
+});

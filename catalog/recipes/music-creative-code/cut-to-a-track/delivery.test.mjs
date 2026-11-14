@@ -2,7 +2,7 @@
 // the contract shapes the four film-editing recipes use, at a small size.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -54,6 +54,31 @@ async function delivery(t, contract) {
   const run = (script) => spawnSync("node", [`validation/${script}`], { cwd, encoding: "utf8" });
   return { cwd, write, run };
 }
+
+// The tests below use small hand-written contracts; this holds the real ones to the same shapes.
+test("each recipe's contract, recipe.json and brief agree", () => {
+  for (const id of ["cut-to-a-track", "shoot-coverage-then-cut", "the-thing-we-never-see", "same-action-three-styles"]) {
+    const dir = path.resolve(here, "..", id);
+    const contract = JSON.parse(readFileSync(path.join(dir, "fixtures", "contract.json"), "utf8"));
+    const recipe = JSON.parse(readFileSync(path.join(dir, "recipe.json"), "utf8"));
+    const brief = readFileSync(path.join(dir, "fixtures", "brief.md"), "utf8");
+    const mounted = new Set(recipe.setup.fixtures.map((fixture) => fixture.mountAs));
+    const included = (file) => recipe.output.include.some((pattern) => pattern === file || (pattern.endsWith("/**") && file.startsWith(pattern.slice(0, -2))));
+    assert.equal(contract.frames, contract.fps * contract.duration, `${id}: frames`);
+    assert.match(brief, new RegExp(`${contract.width} × ${contract.height}, ${contract.fps} fps \\(${contract.frames} frames\\)`, "u"), `${id}: brief format`);
+    assert.match(recipe.validation.checks.find((check) => check.id === "film-contract").description, new RegExp(`${contract.frames} frames`, "u"), `${id}: check description`);
+    for (const check of recipe.validation.checks.filter((c) => c.type === "command")) assert(mounted.has(check.argv[1]), `${id}: ${check.argv[1]} is mounted`);
+    for (const file of [...contract.files, ...(contract.films ?? [])]) assert(included(file), `${id}: ${file} is in output.include`);
+    const cutFilms = contract.cuts?.films ?? [{ film: "film.mp4", edl: "edl.json" }];
+    for (const { film, edl: list } of cutFilms) assert(contract.files.includes(film) && contract.files.includes(list), `${id}: ${film} and ${list} are delivery files`);
+    for (const frame of contract.cuts?.required ?? []) assert(frame > 0 && frame < contract.frames, `${id}: required cut ${frame}`);
+    for (const input of [contract.audio?.fixture, contract.cuts?.cues].filter(Boolean)) assert(mounted.has(input), `${id}: ${input} is mounted`);
+    if (contract.rushes) {
+      assert(included(contract.rushes.log) && contract.rushes.cuts.every((film) => contract.films.includes(film)), `${id}: rushes`);
+      assert(mounted.has("validation/cuts.mjs"), `${id}: rushes.mjs imports cuts.mjs`);
+    }
+  }
+});
 
 const FILES = ["index.html", "film.mp4", "player.html", "contact.png", "README.md", "evidence.json", "edl.json"];
 
