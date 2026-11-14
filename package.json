@@ -18,7 +18,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes --ignore-pattern catalog/skills",
     "typecheck": "tsc --noEmit",
     "test:browser": "node scripts/verify-gallery-browser.mjs",
-    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs catalog/recipes/music-creative-code/lyric-video-section/audio-identity.test.mjs catalog/recipes/music-creative-code/lyric-video-section/excerpt-analysis.test.mjs"
+    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs catalog/recipes/music-creative-code/lyric-video-section/audio-identity.test.mjs catalog/recipes/music-creative-code/lyric-video-section/excerpt-analysis.test.mjs catalog/recipes/music-creative-code/two-colours-no-grey/two-colours.test.mjs catalog/recipes/music-creative-code/invent-a-style-and-hold-it/style.test.mjs catalog/recipes/music-creative-code/three-styleframes-then-film/styleframes.test.mjs catalog/recipes/music-creative-code/titles-for-a-film-that-doesnt-exist/credits.test.mjs catalog/recipes/music-creative-code/film-from-a-written-look/film.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

@@ -1,0 +1,45 @@
+{
+  "title": "The Lending Season",
+  "credits": [
+    {
+      "id": "c1",
+      "role": "Starring",
+      "name": "Maren Oyelaran"
+    },
+    {
+      "id": "c2",
+      "role": "Starring",
+      "name": "Teodor Vashti"
+    },
+    {
+      "id": "c3",
+      "role": "Casting by",
+      "name": "Ruth Allardyce"
+    },
+    {
+      "id": "c4",
+      "role": "Music by",
+      "name": "Hollis Varga"
+    },
+    {
+      "id": "c5",
+      "role": "Edited by",
+      "name": "Paz Okonkwo"
+    },
+    {
+      "id": "c6",
+      "role": "Production design",
+      "name": "Anouk Rahimi"
+    },
+    {
+      "id": "c7",
+      "role": "Cinematography",
+      "name": "Benedek Sørli"
+    },
+    {
+      "id": "c8",
+      "role": "Written and directed by",
+      "name": "Celeste Achterberg"
+    }
+  ]
+}
