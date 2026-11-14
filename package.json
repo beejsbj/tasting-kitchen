@@ -18,7 +18,8 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern public/data --ignore-pattern public/dishes --ignore-pattern catalog/skills",
     "typecheck": "tsc --noEmit",
     "test:browser": "node scripts/verify-gallery-browser.mjs",
-    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs catalog/recipes/music-creative-code/lyric-video-section/audio-identity.test.mjs catalog/recipes/music-creative-code/lyric-video-section/excerpt-analysis.test.mjs"
+    "test:music-room-browser": "node scripts/verify-music-room-browser.mjs",
+    "test:recipes": "node --test catalog/recipes/ui-visual/fresh-*/validator.test.mjs catalog/recipes/ui-visual/standard-*/validator.test.mjs catalog/recipes/music-creative-code/lyric-video-section/audio-identity.test.mjs catalog/recipes/music-creative-code/lyric-video-section/excerpt-analysis.test.mjs catalog/recipes/music-creative-code/play-a-short-set/room.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

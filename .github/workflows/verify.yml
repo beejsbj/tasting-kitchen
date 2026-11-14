@@ -50,3 +50,5 @@ jobs:
           if (result.error) throw result.error;
           process.exit(result.status ?? 1);
           JS
+      - name: Verify the music room player inside the Dish sandbox
+        run: node scripts/verify-music-room-browser.mjs

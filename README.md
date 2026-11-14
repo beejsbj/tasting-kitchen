@@ -92,7 +92,7 @@ Motion is cross-cutting:
 
 - **UI & Visual** — expressive, SVG, scroll, and compositional motion;
 - **UX & Interaction** — gesture, causality, state feedback, recovery, and reduced-motion meaning;
-- **Music & Creative Code** — BPM-synchronized, audio-reactive, and voice-specific motion, plus the [animation and lyric-video recipes](docs/animation-recipes.md) that can be viewed through skill layers.
+- **Music & Creative Code** — BPM-synchronized, audio-reactive, and voice-specific motion, plus the [animation and lyric-video recipes](docs/animation-recipes.md) that can be viewed through skill layers, and the [music room](docs/arena-music-room.md), a pilot arena where a model plays a live set step by step.
 
 ## Safety and interpretation
 
