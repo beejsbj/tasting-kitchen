@@ -1,0 +1,25 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "duration": 30,
+  "frames": 720,
+  "films": ["cut-1.mp4", "film.mp4"],
+  "files": ["index.html", "cut-1.mp4", "cut-1.edl.json", "film.mp4", "edl.json", "contact.png", "README.md", "evidence.json"],
+  "cuts": {
+    "films": [
+      { "film": "cut-1.mp4", "edl": "cut-1.edl.json" },
+      { "film": "film.mp4", "edl": "edl.json" }
+    ],
+    "transitions": false
+  },
+  "rushes": {
+    "log": "rushes/rushes.json",
+    "minClips": 4,
+    "minCameras": 4,
+    "minSeconds": 60,
+    "maxSeconds": 120,
+    "cuts": ["cut-1.mp4", "film.mp4"],
+    "anchors": ["cut-1.mp4"]
+  }
+}
