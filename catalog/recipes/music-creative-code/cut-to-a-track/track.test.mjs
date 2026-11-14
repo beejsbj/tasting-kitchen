@@ -39,17 +39,21 @@ test("the track is 30 s of 48 kHz stereo with the irregularities the brief promi
   assert.deepEqual(cues.envelope.values.slice(Math.ceil(10.5 * 24), 15 * 24).filter((value) => value !== null), []);
   // One hit off the beat: the clang is the only onset more than 40 ms from the sixteenth-note grid.
   const sixteenth = 60 / BPM / 4;
-  const off = cues.onsets.filter((onset) => Math.abs(onset.t / sixteenth - Math.round(onset.t / sixteenth)) * sixteenth > 0.04);
+  const off = cues.onsets.filter((onset) => onset.sound !== "stop" && Math.abs(onset.t / sixteenth - Math.round(onset.t / sixteenth)) * sixteenth > 0.04);
   assert.deepEqual(off.map((onset) => [onset.t, onset.sound]), [[6.97, "clang"]]);
   // A slow rise: each second from 15 s to 25 s is louder than the one before.
   const second = (t) => { const frames = cues.envelope.values.slice(t * 24, (t + 1) * 24).filter((value) => value !== null); return frames.reduce((sum, value) => sum + value, 0) / frames.length; };
+  // Nothing is cued where nothing sounds; the hard stops are cued.
+  assert.deepEqual(cues.onsets.filter((onset) => (onset.t > 10.5 && onset.t < 15) || onset.t > 29.5), []);
+  assert.deepEqual(cues.onsets.filter((onset) => onset.sound === "stop").map((onset) => onset.t), [10.5, 29.5]);
   for (let t = 16; t < 25; t++) assert(second(t) > second(t - 1), `rise between ${t - 1} and ${t} s`);
   for (let i = Math.round(29.5 * RATE); i < 30 * RATE; i++) assert.equal(samples[2 * i] | samples[2 * i + 1], 0, `sample at ${i / RATE}`);
   assert.equal(contract.audio.fixture, "inputs/track.wav");
 });
 
 test("the identity bounds forbid a trim: the film keeps the track's level", () => {
-  const source = decodePcm(path.join(here, "fixtures", "track.wav"));
+  // The WAV's own samples, as FFmpeg would decode them, so this needs no FFmpeg.
+  const source = Float32Array.from(samples, (value) => value / 32768);
   const scaled = (db) => source.map((value) => value * 10 ** (db / 20));
   const bounds = { ...THRESHOLDS, minGainDb: contract.audio.minGainDb, maxGainDb: contract.audio.maxGainDb };
   assert.equal(assessIdentity(compareAudio(source, source), bounds).passed, true);

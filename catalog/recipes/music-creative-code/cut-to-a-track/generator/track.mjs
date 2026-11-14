@@ -122,6 +122,13 @@ export function render() {
   bass(28.8, 1.0, 55, 0.6);
   const tailFrom = at(29.48), tailTo = at(29.5);
   scale(tailFrom, n, (i) => (i < tailTo ? 0.5 + 0.5 * Math.cos((Math.PI * (i - tailFrom)) / (tailTo - tailFrom)) : 0));
+  // A sound scheduled inside a gated span never sounds; the two hard stops are cues of their own.
+  const silent = (t) => (t >= 10.5 && t < 15) || t >= 29.5;
+  const heard = onsets.filter((onset) => !silent(onset.t));
+  onsets.length = 0;
+  onsets.push(...heard);
+  cue(10.5, "stop", 0);
+  cue(29.5, "stop", 0);
 
   let peak = 0;
   for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(left[i]), Math.abs(right[i]));
@@ -149,7 +156,7 @@ function cueSheet(pcm, onsets) {
     grid: Array.from({ length: Math.round(SECONDS / BEAT) }, (_, i) => Math.round(i * BEAT * 1000) / 1000),
     onsets: onsets.map((onset) => ({ ...onset, strength: Math.round((100 * onset.strength) / strongest) / 100 })).sort((a, b) => a.t - b.t || a.sound.localeCompare(b.sound)),
     envelope: { fps: FPS, unit: "dBFS RMS of the mid channel per frame; null is digital silence", values: envelope },
-    notes: "Written by Kitchen with the track, from the composition itself. grid is the tempo grid at 100 BPM from 0 s, including where nothing plays. onsets are every sound's start, strength relative to the strongest.",
+    notes: "Written by Kitchen with the track, from the composition itself. grid is the tempo grid at 100 BPM from 0 s, including where nothing plays. onsets are every sound's start, strength relative to the strongest; a stop (strength 0) is where the sound cuts dead to digital silence.",
   };
 }
 

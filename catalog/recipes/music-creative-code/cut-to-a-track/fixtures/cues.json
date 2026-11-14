@@ -342,8 +342,8 @@
     },
     {
       "t": 10.5,
-      "sound": "hat",
-      "strength": 0.3
+      "sound": "stop",
+      "strength": 0
     },
     {
       "t": 15,
@@ -509,6 +509,11 @@
       "t": 29.1,
       "sound": "pluck",
       "strength": 0.22
+    },
+    {
+      "t": 29.5,
+      "sound": "stop",
+      "strength": 0
     }
   ],
   "envelope": {
@@ -1237,5 +1242,5 @@
       null
     ]
   },
-  "notes": "Written by Kitchen with the track, from the composition itself. grid is the tempo grid at 100 BPM from 0 s, including where nothing plays. onsets are every sound's start, strength relative to the strongest."
+  "notes": "Written by Kitchen with the track, from the composition itself. grid is the tempo grid at 100 BPM from 0 s, including where nothing plays. onsets are every sound's start, strength relative to the strongest; a stop (strength 0) is where the sound cuts dead to digital silence."
 }
