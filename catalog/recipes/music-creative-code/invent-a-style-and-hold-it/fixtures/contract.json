@@ -1,0 +1,17 @@
+{
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "duration": 30,
+  "frames": 900,
+  "beats": [
+    {
+      "id": "hardest-moment",
+      "note": true
+    }
+  ],
+  "style": {
+    "file": "STYLE.md",
+    "rules": 5
+  }
+}
