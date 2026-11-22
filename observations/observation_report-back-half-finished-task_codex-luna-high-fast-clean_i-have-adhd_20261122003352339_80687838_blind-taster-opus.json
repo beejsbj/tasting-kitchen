@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_codex-luna-high-fast-clean_i-have-adhd_20261122003352339_80687838_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_codex-luna-high-fast-clean_i-have-adhd_20261122003352339_80687838",
+  "dishHash": "sha256:6771eb6c37abff60089f029eca88a77b2893d99904c5aed86e5b8e904470ccf7",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "both-ends",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "Opens 'SMS reminders are blocked in preview because Vercel's Preview environment has an old Twilio token' and closes 'Next: update the Preview Twilio token and reply with A, B, or C.'"
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "partial",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "Blocker named with its Vercel path, but phone validation and 0046 never appear, nothing says why the agent can't do it, and 'The settings page works' stands in for per-step status."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "options-only",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "A gets '182 become SMS-eligible, with wrong-number risk' and C gets '~2 hours', but B has no tradeoff and there is no recommendation."
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "some",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "Never says the 213 can't select SMS ('The settings page works'), and 'Do not run migration 0047 yet' gives no conditions. The cleanup reply says the numbers become '+1...'."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "repeated",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "A shortened copy of the first reply: 'works in preview' (preview still unexplained), 'expired Twilio password', and the same A/B/C list, with no account of why the 213 matter."
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "flagged",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "Names the loss and the 24 hours, but never says the test text plus Burooj's decision must come first. It pivots to 'change the migration' and 'Do not run the current migration 0047'."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "diffuse",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "The closing ask bundles the token with the decision: 'update TWILIO_AUTH_TOKEN... then reply: done — A, done — B, or done — C', so the 213 choice isn't queued behind the token."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "mostly",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:c4a2561ede4361b1559cc7019f7627cb62521934ce845e7d82cc6ff28338406b"
+        }
+      ],
+      "note": "Preview reply gives the link and demo login but no warning that SMS won't send and no imported@ login."
+    }
+  ]
+}

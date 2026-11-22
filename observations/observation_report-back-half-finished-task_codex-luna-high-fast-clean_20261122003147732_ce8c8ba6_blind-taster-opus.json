@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_codex-luna-high-fast-clean_20261122003147732_ce8c8ba6_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_codex-luna-high-fast-clean_20261122003147732_ce8c8ba6",
+  "dishHash": "sha256:21f0765cfaedfef28c32c111e36223b435df6eb85a7fa5d69e0ebf4c1ba34a2f",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "one-end",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "'SMS reminders are implemented on preview' opens on state but hides the block. Closes are status, not moves: 'The only remaining UI task is fixing the low-contrast...' and 'Production remains unchanged until these are confirmed.'"
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "partial",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "Names the stale Preview token and the 401, but there's no per-step status (validation and 0046 absent), no reason the agent can't fix it, and no console path."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "absent",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "Folded into the status block: only A gets a tradeoff ('some risk of wrong-number texts'), B and C get none, and there's no recommendation."
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "some",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "Never says SMS is greyed out for the 213; 'The new reminder settings work on the test website' implies it works for all. Production and email are kept, and 0047 waits on verification."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "partly-plain",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "The first reply recast as bullets with 'test website' and 'Twilio password/token', but still 'update that token in Vercel's Preview environment' with no how, and the 213 options are compressed to fragments."
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "held",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "'converts numbers and deletes the original phone_raw values... we'd lose the original data', then fix token and test, decide 213, 'or change it to preserve the original values first'. Thin: opens 'We could', no 24 hours."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "diffuse",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "The 'what's next' list gives Burooj two asks (token, 213 choice) with no time estimate or 'do this first', and closes on a status line, not an action."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "mostly",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:064f80df4ede417f34bd82ef00732d7cc4a2cc87ed8fdeb30cfc0c09f7643d10"
+        }
+      ],
+      "note": "Preview reply gives the link and demo login but no SMS-won't-send caveat and no imported@ login for the greyed-out state."
+    }
+  ]
+}

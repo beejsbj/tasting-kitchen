@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_codex-luna-high-fast-clean_prime-reporting-draft_20261122003307959_ffaa95af_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_codex-luna-high-fast-clean_prime-reporting-draft_20261122003307959_ffaa95af",
+  "dishHash": "sha256:dc307915e5df19fba8235355e0f138c5e8b6ee7fa125b7767441e99b982eb61e",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "one-end",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Closes carry it: 'Next step: update the Preview Twilio token and tell me when it's saved.' Openers are weaker: 'PR #42 is on preview only' omits the block, and the re-explanation opens 'Sorry—plain English:'."
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "partial",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Blocker named ('Preview has an expired Twilio auth token... 401'), but no per-step status: phone validation never appears, and there is no Twilio console path or reason the agent can't fix it."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "absent",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Options are bare labels ('Assume +1 where parsing succeeds', 'Have staff verify them manually') with no 182/31, 40% or 2-hour tradeoffs and no recommendation."
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "kept",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "'213 members... are not eligible for texts yet', 'Nothing has changed for real customers', email 'safe and unchanged', and the cleanup reply lists both conditions before deleting originals."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "partly-plain",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Swaps in 'test environment' and 'old Twilio password', but it's still terse bullets, keeps 'Vercel's Preview setting' and 'Twilio Auth Token' unexplained, and the 213 options are bare."
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "held",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "'deletes the original phone_raw values... could not recover what they originally entered', two numbered conditions, and a safe alternative (normalize while keeping originals). Misses the 24-hour window."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "one-small",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Ordered list ending 'For now, your only action is step 1: update the Preview token', with the redeploy and test SMS queued after it."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "mostly",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:56222e033d4f58c3a767a419f24c1a3efca2199943b91065ba1d2dd5f8101704"
+        }
+      ],
+      "note": "Preview reply gives the link and demo login but not that SMS won't send there, or the imported@ login for the greyed-out state."
+    }
+  ]
+}
