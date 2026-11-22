@@ -212,6 +212,21 @@ test("observation evidence binds actual public Dish files and their manifest has
   }
 });
 
+test("an agent taster names its model and records levels without probabilities", () => {
+  const { observation, options } = observationFixture();
+  observation.source = { kind: "agent", evaluator: { id: "blind-taster-a", label: "Blind taster A", model: "claude-opus-5-5" } };
+  assert.equal(validateObservation(observation, options), observation);
+  for (const evaluator of [{ id: "blind-taster-a", label: "Blind taster A" }, { id: "blind-taster-a", model: "claude-opus-5-5" }, { id: "blind-taster-a", label: "Blind taster A", model: "claude-opus-5-5", provider: "anthropic" }]) {
+    const { observation: missing, options: missingOptions } = observationFixture();
+    missing.source = { kind: "agent", evaluator };
+    assert.throws(() => validateObservation(missing, missingOptions), /evaluator/);
+  }
+  const { observation: guessed, options: guessedOptions } = observationFixture();
+  guessed.source = { kind: "agent", evaluator: { id: "blind-taster-a", label: "Blind taster A", model: "claude-opus-5-5" } };
+  guessed.axes[0].confidence = 0.8;
+  assert.throws(() => validateObservation(guessed, guessedOptions), /must not fabricate model probabilities/);
+});
+
 test("all public observation strings reject credentials, paths, and private evidence", () => {
   const leaks = [
     "-----BEGIN PRIVATE KEY-----", "OPENAI_API_KEY", "AIzaabcdefghijklmnopqrstuvwxyz", "xoxb-abcdefghijklmnop",

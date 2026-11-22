@@ -18,8 +18,11 @@ function rememberSummary(shown: boolean) {
   try { window.localStorage.setItem(SUMMARY_KEY, shown ? "shown" : "hidden"); } catch { /* Preference stays for this view only. */ }
 }
 
+const SOURCE_NAMES = { human: "Human", agent: "Agent", jev: "Jev" } as const;
 function sourceLabel(observation: TasteObservation) {
-  return observation.source.kind === "human" ? "Human observation" : "Jev observation";
+  const name = `${SOURCE_NAMES[observation.source.kind]} observation`;
+  // An agent taster names its model, so its reading is never mistaken for Burooj's own.
+  return observation.source.kind === "agent" && observation.source.evaluator.label ? `${name} · ${observation.source.evaluator.label}` : name;
 }
 
 function AxisResults({ observation, axisSet }: { observation: TasteObservation; axisSet?: AxisSet }) {
@@ -58,7 +61,7 @@ export function TasteObservations({ registry, dish }: { registry: Registry; dish
     {latest && summaryVisible && createPortal(<aside className="observation-float" aria-label="Observation summary">
       <button className="observation-float__dismiss" type="button" aria-label="Hide observation summary" onClick={() => setSummaryVisible(false)}><X size={13} /></button>
       <button className="observation-float__body" type="button" aria-label="Open observation details" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
-        <span className="observation-float__heading"><ScanSearch size={14} />Observations<span>{latest.source.kind === "human" ? "Human" : "Jev"}</span></span>
+        <span className="observation-float__heading"><ScanSearch size={14} />Observations<span>{SOURCE_NAMES[latest.source.kind]}</span></span>
         <span className="observation-float__axes">{latest.axes.map((result) => {
           const axis = latestSet?.axes.find((item) => item.id === result.axisId);
           return <span className="observation-float__axis" key={result.axisId}><span>{axis?.label ?? result.axisId}</span><strong>{axis?.levels.find((level) => level.id === result.levelId)?.label ?? result.levelId}</strong></span>;

@@ -36,7 +36,7 @@
       "additionalProperties": false,
       "required": ["kind", "evaluator"],
       "properties": {
-        "kind": { "enum": ["human", "jev"] },
+        "kind": { "enum": ["human", "agent", "jev"] },
         "evaluator": { "type": "object" }
       }
     },
