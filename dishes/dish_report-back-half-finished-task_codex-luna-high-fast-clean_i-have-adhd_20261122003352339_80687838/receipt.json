@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "id": "codex-luna-high-fast-clean",
+    "label": "Luna · High · Fast · via Codex CLI · clean",
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "reasoningEffort": "high",
+    "serviceTier": "fast",
+    "personality": "none",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "codex-linux-host-clean-v1",
+      "label": "via Codex CLI · clean",
+      "runtime": "linux-host",
+      "sandbox": "danger-full-access",
+      "approvalPolicy": "never",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary",
+      "environment": "clean"
+    },
+    "configHash": "sha256:13579c3ab7f30a8d5861fbd1275e5f9ce47f4382d7b13267be1c06234489e205"
+  },
+  "isolation": {
+    "evidence": "codex-rollout",
+    "skills": [
+      "imagegen",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer"
+    ]
+  },
+  "skill": {
+    "id": "i-have-adhd",
+    "hash": "sha256:189700c844a389f31163bf9a527cddb32836f44239ebe74c42b223069576b824",
+    "source": {
+      "repository": "https://github.com/ayghri/i-have-adhd",
+      "commit": "1ecea1993b7fce257ffbd686c070948b5e07eda6",
+      "path": "skills/i-have-adhd/SKILL.md",
+      "license": "MIT"
+    },
+    "entry": "SKILL.md",
+    "treeHash": "sha256:5f58cbae18af8d9222aca3730383c3ec8ecffee4664e24bd115ef1485de59d42",
+    "delivery": "prompt"
+  }
+}

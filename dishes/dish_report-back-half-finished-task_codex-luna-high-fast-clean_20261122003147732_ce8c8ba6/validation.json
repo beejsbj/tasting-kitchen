@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "checks": [
+    {
+      "id": "complete-session",
+      "type": "command",
+      "required": true,
+      "description": "Verify the captured Recipe identity, the exact prompt of each of the five turns in order, and one nonempty reply per turn. Does not judge the replies.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "blocker-token-in-first-reply",
+      "type": "command",
+      "required": false,
+      "description": "Looks for TWILIO_AUTH_TOKEN or 20003 in the first reply. Shows the blocker was named exactly, not whether it was explained well.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "exception-count-in-first-reply",
+      "type": "command",
+      "required": false,
+      "description": "Looks for the number 213 in the first reply. Shows the imported-number exception survived the first summary, not how it was framed.",
+      "passed": true,
+      "detail": "command exited 0"
+    },
+    {
+      "id": "preview-url-on-request",
+      "type": "command",
+      "required": false,
+      "description": "Looks for the preview host kilnhouse-pr-42.preview.example.com in the reply to the preview-link message.",
+      "passed": true,
+      "detail": "command exited 0"
+    }
+  ]
+}

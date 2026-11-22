@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "id": "claude-code-sonnet-5-5-high-clean",
+    "label": "Sonnet 5.5 · High · via Claude Code · clean",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "harness": "claude-code",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "personality": "default",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "claude-code-linux-host-clean-v1",
+      "label": "via Claude Code · clean",
+      "runtime": "linux-host",
+      "sandbox": "disabled",
+      "approvalPolicy": "bypass-permissions",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary",
+      "environment": "clean"
+    },
+    "configHash": "sha256:b472376d52fea3279f961e15da8bbecf1792a915c41a12577bc49c90b08a1961"
+  },
+  "isolation": {
+    "evidence": "claude-code-init",
+    "skills": [
+      "batch",
+      "claude-api",
+      "code-review",
+      "dataviz",
+      "debug",
+      "deep-research",
+      "design",
+      "design-sync",
+      "doctor",
+      "fewer-permission-prompts",
+      "loop",
+      "plugin-authoring",
+      "run",
+      "run-skill-generator",
+      "schedule",
+      "simplify",
+      "update-config",
+      "verify",
+      "workflow-authoring"
+    ],
+    "agents": [
+      "Explore",
+      "Plan",
+      "claude",
+      "general-purpose"
+    ],
+    "plugins": [
+      "cc-plugin-agents-md",
+      "cc-plugin-plugin-authoring",
+      "cc-plugin-privacy",
+      "cc-plugin-telemetry"
+    ]
+  },
+  "skill": {
+    "id": "prime-reporting-draft",
+    "hash": "sha256:ef7d735c8b7ea7ee56afecb016cc6258bdbd6891d4c1bc4f911b4963cbda3a07",
+    "source": {
+      "repository": "https://github.com/beejsbj/skills",
+      "commit": "724d25cb002a17c124c21a6d1c8e1da501ba320b",
+      "path": "souls/prime/soul.md",
+      "license": "None stated (owner-authored)"
+    },
+    "entry": "soul.md",
+    "treeHash": "sha256:1ad854f4c2b360d1f1e95cf87cc51fd8c9875b2d652ddf72c4c98f70d976c98b",
+    "delivery": "prompt"
+  }
+}

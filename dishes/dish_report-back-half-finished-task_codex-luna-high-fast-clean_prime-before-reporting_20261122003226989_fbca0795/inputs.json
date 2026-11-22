@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "id": "report-back-half-finished-task",
+    "hash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "fixtures": []
+}
