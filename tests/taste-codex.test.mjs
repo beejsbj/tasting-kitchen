@@ -159,7 +159,10 @@ test("Luna default tier stays non-fast", async () => {
 
   assert.ok(configValues(plan.args).includes('service_tier="default"'));
   assert.equal(plan.args.some((arg, index) => arg === "--enable" && plan.args[index + 1] === "fast_mode"), false);
-  assert.deepEqual(plan.args.slice(plan.args.indexOf("--disable"), plan.args.indexOf("--disable") + 2), ["--disable", "fast_mode"]);
+  assert.equal(plan.args[plan.args.indexOf("fast_mode") - 1], "--disable");
+  assert.equal(plan.args.includes("--enable"), false);
+  // A clean run never carries the account's synced plugins or apps (Codex 0.165 syncs them into a fresh home).
+  for (const feature of ["plugins", "apps"]) assert.equal(plan.args[plan.args.indexOf(feature) - 1], "--disable");
 });
 
 test("runner argv maps recipe boundaries and variant identity without execution", async () => {
