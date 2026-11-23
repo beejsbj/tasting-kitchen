@@ -148,6 +148,29 @@ account still spends one attempt. Other harnesses are not tagged yet: Kitchen
 has no recorded limit failure from them to read a shape from, so there the code comes from the
 message alone and carries no reset time.
 
+### Time budgets per harness
+
+A Recipe's declared time budget runs on every harness, and the runner kills
+the harness when it runs out. Whether the overrun is the model's `out-of-time`
+(a public No Dish) or Kitchen's private `timeout` depends on what the harness
+can show. The runner (`budgetedFailure`) lets `out-of-time` stand only on an
+adapter that declares `providerWaits: "reported"`; everywhere else a slow or
+throttled route could have spent the time, and that is never the model's (#62).
+
+| Harness | Reports provider waits | Evidence the model was serving | Can earn `out-of-time` today |
+| --- | --- | --- | --- |
+| Claude Code | Yes: `system/api_retry` (retry delay, no-response wait), credited back | A main-thread message from the requested model, no result yet | Yes |
+| Codex | No | An item the model produced in the stopped turn, and the requested identity in the private rollout | No: Kitchen `timeout` |
+| Hermes | No | A new main-loop call on the requested route in the turn's lineage (the session it started in and every compression child; an empty init on a first turn counts only in a throwaway home) | No: Kitchen `timeout` |
+| Cursor | Not known | None yet: its raw stream format needs a real run to confirm | No: Kitchen `timeout` |
+| T3 | No | None yet | No: Kitchen `timeout` |
+| Direct API | No | None yet | No: Kitchen `timeout` |
+
+The limit on such a `timeout` says which case it was: no evidence the model
+was serving, or the model serving on a harness that reports no waits. A harness
+graduates by reporting its waits (credited back through the budget clock) and
+declaring `providerWaits: "reported"` in `lib/taste/harness-adapters.mjs`.
+
 `taste verdict --dish ID --failed|--passed --note TEXT` records Burooj's verdict
 beside a Dish or No Dish in `verdicts/`, then rebuilds the registry. It never
 edits the plate. A No Dish (`nodish_…`) takes only `--passed`: overruling checks
