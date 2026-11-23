@@ -492,3 +492,60 @@ test("a No Dish keeps a partial artifact whose file is named score, and drops on
   }
   assert.deepEqual((await loadNoDishes(f.root)).map((plate) => plate.id).sort(), ids.sort());
 });
+
+// ---------------------------------------------------------------------------
+// Found by the independent review: JSON that does not parse, or repeats a key, hides nothing either.
+
+test("an escape hides nothing in JSON that does not parse or that repeats a key", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-json-shapes-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, text) => {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), text);
+  };
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  for (const [text, reason] of [
+    [`{"a":"x\\n${token}"`, "credential-like token"],
+    [`{"a":"x\\n${token}","a":"y"}`, "credential-like token"],
+    ['{"a":"\\/home\\/someone","a":"y"}', "absolute home path"],
+    ['{"a":"see \\/etc\\/passwd"', "absolute path"],
+  ]) {
+    await write("artifact/a.json", text);
+    await assert.rejects(scanPublicTree(root, PLATE_SCAN), new RegExp(`artifact/a\\.json \\(${reason}\\)`, "u"), text);
+  }
+  // Ordinary escapes in the model's JSON stay ordinary.
+  await write("artifact/a.json", JSON.stringify({ lines: "First line.\nSecond line.\t\"Quoted\" \\ done.", url: "https://example.com/a/b", score: SCORE }, null, 2));
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+});
+
+test("a repeated key cannot hide a ranking word in Kitchen's fields of a manifest or a trace", () => {
+  for (const text of [
+    '{"artifact":{"files":[{"path":"Score these models","path":"artifact/a.md"}]}}',
+    '{"artifact":{"files":[{"path":"x","label":"score"}]},"artifact":{"files":[{"path":"score"}]}}',
+    '{"artifact":{"files":[{"path":"a.md"}]},"note":"x\\nScore it","note":"y"}',
+  ]) assert.deepEqual(publicManifestFindings(text), [RANKING_LANGUAGE], text);
+  for (const text of [
+    '{"turns":[{"prompt":"rank by score","prompt":"hi","response":"ok"}]}',
+    '{"turns":[{"prompt":"x\\nScore it","prompt":"hi","response":"ok"}]}',
+    '{"turns":[{"prompt":"hi","actions":[{"type":"score","type":"file_change","path":"a.md"}],"response":"ok"}]}',
+  ]) assert.deepEqual(publicTraceFindings(text), [RANKING_LANGUAGE], text);
+  // As Kitchen writes them (indented, no repeated keys), the model's names and responses still pass.
+  const manifest = { id: "dish_demo", artifact: { entry: "artifact/notes.md", files: [{ path: "artifact/notes.md" }, { path: "artifact/assets/score.json" }, { path: "artifact/theme/scoring.py" }] } };
+  assert.deepEqual(publicManifestFindings(JSON.stringify(manifest, null, 2)), []);
+  const trace = { turns: [{ id: "opening", prompt: "Write a theme.", response: `${SCORE}\nScore attached.`, actions: [{ type: "file_change", path: "assets/score.json" }] }] };
+  assert.deepEqual(publicTraceFindings(JSON.stringify(trace, null, 2)), []);
+});
+
+test("a parent path written with an escaped slash is never masked as a safe internal path", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-mask-escape-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "a/b"), { recursive: true });
+  await writeFile(path.join(root, "logic.mjs"), "export const ready = true;\n");
+  await writeFile(path.join(root, "a/b/ok.mjs"), 'import { ready } from "../../logic.mjs";\n');
+  await assert.doesNotReject(scanPublicTree(root, { chefAuthored: true }));
+  await writeFile(path.join(root, "a/b/c.json"), JSON.stringify({ c: "import x from '../..\\/..\\/..\\/..\\/etc\\u002fpasswd'" }).replaceAll("\\\\", "\\"));
+  await assert.rejects(scanPublicTree(root, { chefAuthored: true }), /a\/b\/c\.json \(path traversal\)/);
+  await rm(path.join(root, "a/b/c.json"));
+  await writeFile(path.join(root, "a/b/c.mjs"), "import x from '../..\\/..\\/..\\/..\\/etc/passwd';\n");
+  await assert.rejects(scanPublicTree(root, { chefAuthored: true }), /a\/b\/c\.mjs \(path traversal\)/);
+});
