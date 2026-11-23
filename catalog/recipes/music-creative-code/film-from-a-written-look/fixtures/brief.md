@@ -14,7 +14,7 @@ Make a 24-second film in that look: 1080 × 1350, 24 fps, exactly 576 frames, wi
 
 Work on your own in one autonomous turn, with up to three render, inspect and revise rounds. Make every creative decision yourself; do not ask for approval or delegate to another model. Use one render job and one browser at a time.
 
-Draw every visible element in code and synthesize the sound yourself. No external images, generated stills, footage, sampled audio, other models' outputs or borrowed scene code. Type may use the fonts installed in the toolchain. No network calls at playback. Keep randomness seeded so the picture is a pure function of time.
+Draw every visible element in code and synthesize the sound yourself. No external images, generated stills, footage, sampled audio, other models' outputs or borrowed scene code. Type may use the fonts installed on this machine; Kitchen's image, where the live player is checked, has DejaVu, Liberation and Noto. No network calls at playback. Keep randomness seeded so the picture is a pure function of time.
 
 If a skill is mounted at `skill/`, read `skill/SKILL.md` first and follow its process; its examples teach technique and must not be submitted. If none is mounted, work from this brief.
 

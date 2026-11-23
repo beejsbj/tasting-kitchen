@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **eleven Ready.** On 2026-11-23 Burooj accepted the benchmark shape of `heavy-little-suitcase`, `lyric-video-section` and the nine Recipes under *Direction, editing and style drafts*, and the same day each passed its smoke in the film image (see *Film toolchain*), so all eleven are `ready`. `blueprint-marble-sorter`, `words-with-weight` and `queue-under-pressure` still await his acceptance. On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*.
+Status: **eleven Ready.** On 2026-11-23 Burooj accepted the benchmark shape of `heavy-little-suitcase`, `lyric-video-section` and the nine Recipes under *Direction, editing and style Recipes*, and the same day each passed its smoke in the film image (see *Film toolchain*), so all eleven are `ready`. `blueprint-marble-sorter`, `words-with-weight` and `queue-under-pressure` still await his acceptance. On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -8,10 +8,12 @@ separate Recipes. The earlier two paper-boat drafts are merged into one.
 
 Model fingerprints: the governing idea, shot grammar and staging, density
 judgment, drawing and lettering finesse, and the honesty of the model's own
-evidence. Held constant: duration, format, frame count, the toolchain image,
-compute, review-round cap, effort, and every factual input. A skill is
-guidance mounted at `skill/`; the engine, browser, encoder and fonts are
-Kitchen's and identical across layers.
+evidence. Held constant: duration, format, frame count, review-round cap,
+effort, every factual input, and the pinned image in which Kitchen checks and
+plays every delivery. A skill is guidance mounted at `skill/`; the lyric
+engine is Kitchen's and identical across models and layers. The model's own
+browser, encoder, fonts and compute are the cook machine's, and the briefs
+say so (see *Before Ready*, item 3).
 
 ## Recipes and layers
 
@@ -32,9 +34,9 @@ the Recipe's `analysis/excerpt-analysis.mjs`) live under
 lyric text. Kitchen supplies the analysis so the Recipe tastes the film, not
 beat detection.
 
-## Direction, editing and style drafts (2026-11-14)
+## Direction, editing and style Recipes (2026-11-14)
 
-Nine drafts written after Burooj's note that film Recipes should taste
+Nine Recipes, written as drafts after Burooj's note that film Recipes should taste
 direction, editing and art style. The subject and look are the model's; each
 constraint exists only to sharpen one taste.
 
@@ -51,7 +53,7 @@ constraint exists only to sharpen one taste.
 | `titles-for-a-film-that-doesnt-exist` | an opening title sequence from supplied credits; genre and tone guessable | one | `credits.mjs`, −40 LUFS floor |
 
 **Edits.** Edited films ship `edl.json`; `validation/cuts.mjs` (identical in
-all four editing drafts) compares its hard cuts with FFmpeg's scene-change
+all four editing Recipes) compares its hard cuts with FFmpeg's scene-change
 measure within one frame. Proof is asymmetric: a declared cut is confirmed by
 a change of at least 0.15% that is three times the local level or 6% above
 it; an undeclared change fails only at 6% and three times anything near it.
@@ -69,7 +71,7 @@ failure of Kitchen's own browser or decoder exits 75 and is recorded as a
 private, retryable validator error; a player whose own loading, `window.ready`
 or `seek` never finishes fails the check.
 
-**Shared film check.** These drafts carry a newer `validation/film.mjs`: beats
+**Shared film check.** These Recipes carry a newer `validation/film.mjs`: beats
 without windows, beat notes, frame gaps checked in time-base ticks so uneven
 frames that average the right rate fail, and an optional loudness floor. The
 titles Recipe gates −40 LUFS, so "loudness is reported, not gated" no longer
@@ -85,7 +87,7 @@ No Cook has been made for them.
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
 plus one Repeat of whichever Burooj prefers. The `animation-styles` Menu holds
-the public film drafts as a library, not a quota.
+the public film Recipes as a library, not a quota.
 
 ## Shared protocol
 
@@ -140,11 +142,16 @@ off the engine's default 0.13 s display lead, so words show when they are sung.
    commit, and the audio identity check. Kitchen empties the engine's
    `audio/` and `data/` when it mounts it, so the upstream song's recording
    and analysis never reach a model or a fallback load.
-3. **Open, not a gate:** the model's own shell still runs on the host. Kitchen judges and
-   plays every film in the image, and supplies the engine from it, but a model
-   renders with whatever the host has until a harness can run its tools inside
-   the image. Until then the toolchain is held constant for Kitchen's checks,
-   not for the model's working tools.
+3. **Open, and stated to the model:** the model's own shell still runs on the
+   host. Kitchen judges and plays every film in the image, and supplies the
+   engine from it, but a model renders with whatever the host has until a
+   harness can run its tools inside the image. Until then the toolchain is held
+   constant for Kitchen's checks, not for the model's working tools. Since
+   2026-11-23 every film Recipe's instructions and brief say exactly that
+   ("Kitchen checks and plays your film in a pinned image. You work with the
+   tools this machine has."), as does the toolchain's own summary; earlier
+   text claimed one pinned toolchain and compute profile for every model.
+   Burooj chose to state the gap rather than hold the Recipes back.
 4. **Open, not a gate:** a Claude Code harness configuration if Opus is in the comparison. Opus in
    Claude Code and Sol in Codex are different configurations: same
    brief, browsed together, not a like-for-like pair.

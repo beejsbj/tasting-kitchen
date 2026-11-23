@@ -102,7 +102,7 @@ writeFileSync("README.md", `# Heavy little suitcase: Kitchen smoke reference
 
 This is not a model's Dish. Kitchen made it by hand to prove that the film toolchain image can render, validate, sanitize and play back a delivery of this Recipe's exact contract.
 
-Rebuild from the delivery root, inside the film toolchain image, with fixtures mounted:
+Rebuild from the delivery root, inside the film toolchain image, with fixtures mounted. The image has no playwright-core of its own: set the environment variable \`PLAYWRIGHT_CORE\` to the \`index.mjs\` of playwright-core from a Kitchen checkout's \`node_modules\`, as Kitchen's smoke does, then run:
 
     node source/render.mjs
 
