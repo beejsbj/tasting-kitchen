@@ -136,9 +136,13 @@ Codex reports it as an `error` event and a `turn.failed` whose message says
 "usage limit", then exits nonzero; the Codex adapter tags that
 (`failure.kitchenFault`) and, when the message says "try again at …", sets
 `failure.resetsAt` to the time stated there. The runner forwards both to the
-classifier, and the private fault carries `resetsAt`. It is the provider's own
-text, not a parsed date, and nothing reads it yet: a plan does not skip the
-configuration until then. Other harnesses are not tagged yet: Kitchen has no recorded
+classifier, and the private fault carries `resetsAt`. Within one Cook, once a
+cell fails with `usage-limit`, the configuration's remaining cells are not
+started: the Cook reports each under `notAttempted` (status `not-attempted`,
+with a `reason` naming the attempt that hit the limit and its `resetsAt`, if
+any). Nothing is written for them and their cells stay open. Across Cooks
+nothing reads `resetsAt` yet: it is the provider's own text, not a parsed date,
+so the next `plan` or `fill-missing` does not skip the configuration until then. Other harnesses are not tagged yet: Kitchen has no recorded
 limit failure from them to read a shape from, so there the code comes from the
 message alone and carries no reset time.
 
