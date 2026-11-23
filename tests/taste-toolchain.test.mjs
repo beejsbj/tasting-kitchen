@@ -92,7 +92,7 @@ test("both film recipes are on film-v1 with a current pin, and the catalog resol
   for (const recipe of recipes) {
     assert.equal(recipe.toolchain.id, "film-v1");
     assert.equal(recipe.toolchainRuntime.image, film.image);
-    assert.equal(recipe.status, "draft", "readiness does not accept the benchmark shape");
+    assert.equal(recipe.status, "ready", "the owner accepted the benchmark shape on 2026-11-23 and its smoke passed in the film image");
   }
   assert.equal(recipes.find((recipe) => recipe.id === "lyric-video-section").toolchain.engineMount, "engine");
   assert.deepEqual(await toolchainPinFindings(repoRoot, recipes, toolchains), []);

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "shoot-coverage-then-cut",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Shoot coverage, then cut",
   "summary": "See how a model covers an event it invented, cuts it, then recuts it to a director's note without filming again.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original staged task written for cross-model comparison of coverage and editing; subject and look are left to the model. Both cuts are kept: cut-1.mp4 is delivered in the second turn and left unchanged, film.mp4 is the recut. The benchmark shape awaits owner acceptance.",
+  "originNote": "Original staged task written for cross-model comparison of coverage and editing; subject and look are left to the model. Both cuts are kept: cut-1.mp4 is delivered in the second turn and left unchanged, film.mp4 is the recut. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "editing",

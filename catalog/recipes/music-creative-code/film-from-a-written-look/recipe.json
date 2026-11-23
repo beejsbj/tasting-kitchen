@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "film-from-a-written-look",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "A film from a written look",
   "summary": "Make a 24-second film from one short written look, nothing literal, in a single autonomous turn.",
   "cuisines": [

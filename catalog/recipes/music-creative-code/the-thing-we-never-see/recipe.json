@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "the-thing-we-never-see",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "The thing we never see",
   "summary": "See whether a model can make an event that never appears on screen legible from before, after, sound and reactions.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original task written for cross-model comparison of film direction and editing; subject and look are left to the model. The benchmark shape awaits owner acceptance.",
+  "originNote": "Original task written for cross-model comparison of film direction and editing; subject and look are left to the model. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "audio",

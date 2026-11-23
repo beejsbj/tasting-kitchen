@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "same-action-three-styles",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Same action, three styles",
   "summary": "See how a model re-sees one eight-second action in three radically different visual languages.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original task written for cross-model comparison of film direction and editing; subject and look are left to the model. The benchmark shape awaits owner acceptance.",
+  "originNote": "Original task written for cross-model comparison of film direction and editing; subject and look are left to the model. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "audio",

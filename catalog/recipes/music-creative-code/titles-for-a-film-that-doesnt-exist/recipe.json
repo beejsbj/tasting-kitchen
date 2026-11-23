@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "titles-for-a-film-that-doesnt-exist",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Titles for a film that doesn't exist",
   "summary": "Make a 40-second opening title sequence, with its own music, for a supplied title and eight credits, so the titles alone suggest the film's genre and tone.",
   "cuisines": [

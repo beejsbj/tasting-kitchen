@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "cut-to-a-track",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Cut to a track",
   "summary": "See where a model cuts a picture with a fixed 30-second track and where it cuts against it.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original task written for cross-model comparison of editing to music. Kitchen synthesizes the track and its cue sheet from a committed seeded generator (generator/track.mjs); subject and look are left to the model. The benchmark shape awaits owner acceptance.",
+  "originNote": "Original task written for cross-model comparison of editing to music. Kitchen synthesizes the track and its cue sheet from a committed seeded generator (generator/track.mjs); subject and look are left to the model. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "audio",
