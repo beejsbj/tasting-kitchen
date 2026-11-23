@@ -1,6 +1,6 @@
 # The music room: a pilot arena
 
-Status: **pilot. One draft Recipe (`play-a-short-set`), its shape accepted by Burooj on 2026-11-23; not cookable; no model has played in it.** Built 2026-11-13 for [#79](https://github.com/beejsbj/tasting-kitchen/issues/79).
+Status: **pilot. One Recipe, `play-a-short-set`, ready since 2026-11-23 (#108).** Its shape was accepted by Burooj that day. A Haiku 5.5 test cook (Claude Code, clean) played all 12 steps live, reacting to the printout, and was accepted; that test Dish is kept out of the repo and nobody has listened to it yet. Built 2026-11-13 for [#79](https://github.com/beejsbj/tasting-kitchen/issues/79).
 
 ## What an arena is
 
