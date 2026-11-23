@@ -73,8 +73,10 @@ appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, cwd: process.cwd(), 
 mkdirSync(home, { recursive: true });
 const hang = () => new Promise(() => setInterval(() => {}, 1000));
 // "before": stuck before any model call is recorded; "after": the model answered and is still working.
-if (process.env.FAKE_HANG === "before") await hang();
 const resume = flag("--resume");
+// FAKE_HANG_TURN ("first" or "resume") limits the hang to that turn.
+const hangs = (when) => process.env.FAKE_HANG === when && (!process.env.FAKE_HANG_TURN || process.env.FAKE_HANG_TURN === (resume ? "resume" : "first"));
+if (hangs("before")) await hang();
 const session = resume ?? process.env.FAKE_SESSION;
 const requested = flag("-m");
 const served = (resume ? process.env.FAKE_RESUMED_MODEL : process.env.FAKE_FIRST_MODEL) || requested;
@@ -86,9 +88,10 @@ const effort = process.env.FAKE_EFFORT || flag("--reasoning");
 const addSession = (id, parent) => db.prepare("INSERT OR IGNORE INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, (parent && process.env.FAKE_CHILD_SOURCE) || process.env.FAKE_SOURCE || "tool", requested, JSON.stringify({ reasoning_config: effort === "none" ? { enabled: false } : { enabled: true, effort } }), flag("--provider"), baseUrl, parent);
 addSession(session, null);
 const fellBack = served !== requested;
-if (!(resume && process.env.FAKE_BLOCKED_RESUME)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
 // A context compression ends the session in a child row (parent_session_id) and the turn ends in it; FAKE_ROTATE names the turns that rotate.
 const rotates = (process.env.FAKE_ROTATE ?? "").split(",").includes(resume ? "resume" : "first");
+// FAKE_CHILD_ONLY: the turn compresses before its first call, so every main-loop call lands in the child.
+if (!(resume && process.env.FAKE_BLOCKED_RESUME) && !(rotates && process.env.FAKE_CHILD_ONLY)) db.prepare("INSERT INTO session_model_usage VALUES (?, ?, ?, ?, '', 1) ON CONFLICT DO UPDATE SET api_call_count = api_call_count + 1").run(session, served, fellBack ? "openai-codex" : flag("--provider"), fellBack ? "https://chatgpt.com/backend-api/codex" : baseUrl);
 const ended = rotates ? session + "_r" : session;
 if (rotates) {
   addSession(ended, session);
@@ -107,10 +110,10 @@ const emit = (event) => console.log(JSON.stringify({ ...event, timestamp: 1 }));
 emit({ type: "system", subtype: "init", model: requested, session_id: process.env.FAKE_EMPTY_INIT ? "" : session });
 emit({ type: "tool_use", name: "read_file", input: { path: "inputs/context.txt" } });
 emit({ type: "text", text: "answer" });
-if (process.env.FAKE_HANG === "after") await hang();
+if (hangs("after")) await hang();
 if (process.env.FAKE_FAIL) emit({ type: "result", session_id: reported, exit_code: 1, text: "", error: "provider exploded", tokens: {}, duration_ms: 1 });
 else emit({ type: "result", session_id: reported, exit_code: 0, text: "answer to: " + query, tokens: { input: 3, output: 2, total: 5, cache_read: 0, cache_write: 0 }, duration_ms: 5 });
-if (process.env.FAKE_HANG === "linger") await hang();
+if (hangs("linger")) await hang();
 process.exit(process.env.FAKE_FAIL ? 1 : 0);
 `;
 
@@ -669,6 +672,34 @@ test("the Recipe's time budget stops a hung Hermes; it is the model's only when 
     assert.match(result.failure.message, /time budget/);
     assert.equal(result.turns.length, 1, "the budget ends the Run, not just the turn");
   }
+});
+
+test("a budget stop is the model's through an empty init and a compression child: Hermes's lineage, not the init alone, names the turn's sessions", async (t) => {
+  const f = await setup(t);
+  const stopped = async (name, env, variant = clean) => {
+    const a = await attempt(f.root, name);
+    await prepareHermesAttempt({ variant, cwd: a.attemptDir, env: f.env });
+    const clock = startBudgetClock({ seconds: 3 });
+    const result = await runHermesSession({ variant, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, ...env }, clock });
+    clock.stop();
+    return result;
+  };
+  // A first turn whose init names no session: the throwaway home's own root session carries the call.
+  const empty = await stopped("budget-empty-init", { FAKE_HANG: "after", FAKE_EMPTY_INIT: "1" });
+  assert.equal(empty.failure?.chefFault, "out-of-time");
+  assert.equal(empty.turns.length, 1);
+  // A resumed turn that compressed before its first call: every call is in the child, none in the resumed session.
+  const child = await stopped("budget-child-only", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1" });
+  assert.equal(child.turns.length, 2, "the first turn finished; the budget stopped the second");
+  assert.equal(child.failure?.chefFault, "out-of-time");
+  // The same, with an empty init on the resumed turn: it started in the session it resumed.
+  const both = await stopped("budget-child-only-empty", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1", FAKE_EMPTY_INIT: "1" });
+  assert.equal(both.failure?.chefFault, "out-of-time");
+  // Still nothing without a new main-loop call in the turn's lineage, and a child that is not the run's stains nothing.
+  const none = await stopped("budget-child-before", { FAKE_HANG: "before", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1" });
+  assert.equal(none.failure?.chefFault, undefined);
+  const foreign = await stopped("budget-child-foreign", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1", FAKE_CHILD_SOURCE: "cli" });
+  assert.equal(foreign.failure?.chefFault, undefined);
 });
 
 test("every Hermes route Kitchen can keep behind its key proxy cooks through one route profile; any other route is refused with its reason", () => {
