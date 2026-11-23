@@ -49,7 +49,7 @@ function filmRecipe(id, extra = {}) {
       ...(extra.privateFixture ? [{ id: "excerpt", path: "excerpt.txt", mountAs: "inputs/excerpt.txt", public: false, mediaType: "text/plain" }] : []),
     ] },
     toolchain: { id: "film-v1" },
-    turns: [{ id: "make", role: "prompt", content: "Make it." }],
+    turns: extra.turns ?? [{ id: "make", role: "prompt", content: "Make it." }],
     output: { kind: "web", entry: "index.html", include: ["index.html", "evidence.json"], limits: { maxFiles: 10, maxBytes: 65536 } },
     validation: { mode: "files", checks: [{ id: "contract", type: "command", required: true, description: "Delivery check.", argv: ["node", "validation/check.mjs"] }] },
     presentation: { profile: "static-web-v1", semanticRuntime: null },
@@ -112,6 +112,27 @@ test("a private film smoke keeps its Dish out of the registry and plays it from 
   const inputs = JSON.parse(await readFile(path.join(result.directory, result.steps.publication.dishDirectory, "inputs.json"), "utf8"));
   assert(!JSON.stringify(inputs).includes("private bytes"));
   assert.deepEqual(await readdir(path.join(result.directory, result.steps.publication.dishDirectory, "inputs", "fixtures")).then((names) => names.sort()), ["brief.md", "toolchain.json"]);
+});
+
+test("a staged Recipe's reference carries Kitchen's smoke kit and a note for every turn", async (t) => {
+  const { root, env } = await kitchen(t);
+  const staged = filmRecipe("staged-film", { turns: [{ id: "first", role: "prompt", content: "Part one." }, { id: "second", role: "follow-up", content: "Part two." }] });
+  staged.output.include.push("source/**");
+  await json(path.join(root, "catalog/recipes/film/staged-film/recipe.json"), staged);
+  for (const file of ["fixtures/brief.md", "fixtures/toolchain.json", "validation/check.mjs"]) {
+    await mkdir(path.dirname(path.join(root, "catalog/recipes/film/staged-film", file)), { recursive: true });
+    await writeFile(path.join(root, "catalog/recipes/film/staged-film", file), await readFile(path.join(root, "catalog/recipes/film/public-film", file)));
+  }
+  await mkdir(path.join(root, "smoke/kit"), { recursive: true });
+  await writeFile(path.join(root, "smoke/kit/page.mjs"), "export const page = '<!doctype html><title>film from the kit</title>';\n");
+  await mkdir(path.join(root, "smoke/staged-film"), { recursive: true });
+  await writeFile(path.join(root, "smoke/staged-film/render.mjs"), "import { writeFileSync } from 'node:fs'; import { page } from './kit/page.mjs'; writeFileSync('index.html', page); writeFileSync('evidence.json', '{}');\n");
+  const result = await smokeRecipe({ repoRoot: root, recipeId: "staged-film", processEnv: env });
+  assert.equal(result.passed, true, result.error);
+  const dish = path.join(result.directory, result.steps.publication.dishDirectory);
+  assert.equal(await readFile(path.join(dish, "artifact/source/kit/page.mjs"), "utf8").then((text) => text.includes("film from the kit")), true, "the kit travels in source/");
+  const trace = JSON.parse(await readFile(path.join(dish, "trace.json"), "utf8"));
+  assert.deepEqual(trace.turns.map((turn) => [turn.id, turn.response]), [["first", "Kitchen smoke reference; no model ran."], ["second", "Kitchen smoke reference; no model ran."]]);
 });
 
 test("a smoke refuses an image built from another toolchain pin", async (t) => {
