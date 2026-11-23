@@ -162,7 +162,7 @@ throttled route could have spent the time, and that is never the model's (#62).
 | Claude Code | Yes: `system/api_retry` (retry delay, no-response wait), credited back | A main-thread message from the requested model, no result yet | Yes |
 | Codex | No | An item the model produced in the stopped turn, and the requested identity in the private rollout | No: Kitchen `timeout` |
 | Hermes | No | A new main-loop call on the requested route in the turn's lineage (the session it started in and every compression child; an empty init on a first turn counts only in a throwaway home) | No: Kitchen `timeout` |
-| Cursor | Not known | None yet: its raw stream format needs a real run to confirm | No: Kitchen `timeout` |
+| Cursor | No: Kitchen reads none, and its raw stream format is unconfirmed until a real run | None yet, for the same reason | No: Kitchen `timeout` |
 | T3 | No | None yet | No: Kitchen `timeout` |
 | Direct API | No | None yet | No: Kitchen `timeout` |
 

@@ -265,6 +265,21 @@ test("on a harness that reports no provider waits, even the adapter's evidence o
   assert.equal(result.noDishId, undefined, "a route that may have been throttled never stains the model");
 });
 
+test("an out-of-time tag that arrives by a throw passes the same guard", async (t) => {
+  const f = await fixture({ budget: { seconds: 600 } });
+  const result = await cook(f, t, {
+    budgetClock: quickClock(),
+    runSession: async ({ clock }) => {
+      clock.resume();
+      await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
+      throw Object.assign(new Error("codex-cli was stopped by the Recipe's time budget"), { chefFault: "out-of-time" });
+    },
+  });
+  assert.deepEqual({ class: result.fault.class, code: result.fault.code }, { class: "kitchen", code: "timeout" });
+  assert.match(result.fault.limit, /time budget of 600 s; codex-cli cannot show the overrun was the model's/);
+  assert.equal(result.noDishId, undefined);
+});
+
 test("only a harness that reports provider waits can earn out-of-time: Claude Code today", () => {
   const tagged = { turnId: "opening", message: "stopped by the time budget", chefFault: "out-of-time" };
   const expired = { budget: { seconds: 600 }, expired: true };

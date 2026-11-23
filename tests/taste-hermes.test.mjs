@@ -9,7 +9,7 @@ import test from "node:test";
 import { computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { getHarnessAdapter, resolveHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import {
-  buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, readHermesLineage, resolveHermesRuntime, runHermesSession, verifyHermesIdentity,
+  buildHermesTurnArgs, cleanHermesConfig, currentHermesSetupDigest, hermesEnvironment, hermesProcessEnv, hermesRoute, parseHermesJsonl, prepareHermesAttempt, readHermesLineage, resolveHermesRuntime, runHermesSession, servedBeforeBudget, verifyHermesIdentity,
 } from "../lib/taste/hermes.mjs";
 import { startBudgetClock } from "../lib/taste/budget.mjs";
 import { reconstructResult } from "../lib/taste/recovery.mjs";
@@ -695,11 +695,28 @@ test("a budget stop is the model's through an empty init and a compression child
   // The same, with an empty init on the resumed turn: it started in the session it resumed.
   const both = await stopped("budget-child-only-empty", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1", FAKE_EMPTY_INIT: "1" });
   assert.equal(both.failure?.chefFault, "out-of-time");
-  // Still nothing without a new main-loop call in the turn's lineage, and a child that is not the run's stains nothing.
+  // Still nothing without a new main-loop call in the turn's lineage.
   const none = await stopped("budget-child-before", { FAKE_HANG: "before", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1" });
   assert.equal(none.failure?.chefFault, undefined);
-  const foreign = await stopped("budget-child-foreign", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1", FAKE_CHILD_SOURCE: "cli" });
-  assert.equal(foreign.failure?.chefFault, undefined);
+  // A child in the lineage whose row lacks the run's `--source tool` fails the identity check, so it stains nothing.
+  const untagged = await stopped("budget-child-untagged", { FAKE_HANG: "after", FAKE_HANG_TURN: "resume", FAKE_ROTATE: "resume", FAKE_CHILD_ONLY: "1", FAKE_CHILD_SOURCE: "cli" });
+  assert.equal(untagged.failure?.chefFault, undefined);
+});
+
+test("an empty init on a first turn counts only in a throwaway home: in a live profile it names nothing tied to this Run", async (t) => {
+  const f = await setup(t);
+  // A real database holding a finished, verified session on the requested route: exactly what an earlier Run would leave.
+  const a = await attempt(f.root, "served-live");
+  await prepareHermesAttempt({ variant: clean, cwd: a.attemptDir, env: f.env });
+  const done = await runHermesSession({ variant: clean, recipe, workspace: a.workspace, privateDir: a.privateDir, executable: f.executable, env: { ...f.env, FAKE_EMPTY_INIT: "1" } });
+  assert.equal(done.failure, null);
+  const stateDb = path.join(a.attemptDir, "hermes-home", "state.db");
+  const stdout = `${JSON.stringify({ type: "system", subtype: "init", model: clean.model, session_id: "" })}\n${JSON.stringify({ type: "text", text: "working" })}\n`;
+  const judged = (variant) => servedBeforeBudget({ stdout, variant, stateDb, knownSessions: [], before: 0, threadId: null });
+  // The throwaway home holds only this attempt's sessions, so its root session is the turn's.
+  assert.equal(await judged(clean), true);
+  // A live profile holds his earlier sessions too: the same rows could be another Run's, so the stop stays Kitchen's.
+  assert.equal(await judged({ ...clean, executionProfile: { ...clean.executionProfile, environment: "live" } }), false);
 });
 
 test("every Hermes route Kitchen can keep behind its key proxy cooks through one route profile; any other route is refused with its reason", () => {
