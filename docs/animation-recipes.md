@@ -199,13 +199,14 @@ delivery state, every turn's artifacts present, and each turn's reply in the
 trace is the smoke's note. A contract whose `files` omit `player.html`
 (`shoot-coverage-then-cut`) has its live-player step skipped in playback.
 
-Smokes on 2026-11-23, wall time per Recipe on bjslab's heavy-job queue:
-`the-thing-we-never-see` 46 s, `film-from-a-written-look` 56 s,
-`same-action-three-styles` 58 s, `cut-to-a-track` 59 s,
-`invent-a-style-and-hold-it` 67 s, `heavy-little-suitcase` 87 s,
-`titles-for-a-film-that-doesnt-exist` 88 s, `three-styleframes-then-film`
-113 s, `two-colours-no-grey` 189 s, `shoot-coverage-then-cut` 208 s and
-`lyric-video-section` 36 min.
+Smokes on 2026-11-23, re-run after the toolchain rewording (image rebuilt,
+266 s), wall time per Recipe on bjslab's heavy-job queue:
+`invent-a-style-and-hold-it` 40 s, `the-thing-we-never-see` 43 s,
+`film-from-a-written-look` 46 s, `same-action-three-styles` 46 s,
+`three-styleframes-then-film` 54 s, `cut-to-a-track` 57 s,
+`heavy-little-suitcase` 57 s, `titles-for-a-film-that-doesnt-exist` 59 s,
+`shoot-coverage-then-cut` 137 s, `two-colours-no-grey` 171 s and
+`lyric-video-section` 31 min.
 
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody
 decision before it becomes a catalog layer), Manim, Three.js, a sound-design
