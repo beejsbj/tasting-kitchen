@@ -38,7 +38,7 @@ async function reseal(directory, recording) {
 
 test("the Recipe mounts the whole room and gates on the room's own check", async () => {
   const recipe = JSON.parse(await readFile(path.join(recipeDirectory, "recipe.json"), "utf8"));
-  assert.equal(recipe.status, "draft", "the benchmark shape awaits the owner's acceptance");
+  assert.equal(recipe.status, "ready", "the owner accepted the benchmark shape on 2026-11-23");
   const mounted = new Map(recipe.setup.fixtures.map((fixture) => [fixture.path, fixture]));
   for (const file of await readdir(path.join(recipeDirectory, "room"))) assert.ok(mounted.has(`room/${file}`), `room/${file} is mounted`);
   for (const file of await readdir(path.join(recipeDirectory, "fixtures/upstream/strudel"))) assert.ok(mounted.has(`fixtures/upstream/strudel/${file}`), `strudel/${file} is mounted`);

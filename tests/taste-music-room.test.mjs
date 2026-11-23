@@ -64,15 +64,13 @@ async function cook(t, nonce, perform) {
     now: new Date("2026-11-13T12:00:00.000Z"),
     nonce,
     authPath,
-    // The Recipe is a draft: its benchmark shape awaits the owner, so only a test may run it.
-    allowStatuses: ["draft"],
     runSession: async ({ workspace }) => { await perform(workspace); return session(); },
     verifyIdentity: observed,
   });
 }
 
-test("the music room Recipe is a draft the planner will not cook", () => {
-  assert.equal(recipe.status, "draft");
+test("the music room Recipe is ready: its shape was accepted on 2026-11-23", () => {
+  assert.equal(recipe.status, "ready");
   assert.deepEqual(recipe.harness, { workspace: "write", web: "disabled", capabilities: ["files", "shell"] });
   assert.match(recipe.recipeHash, /^sha256:[a-f0-9]{64}$/u);
 });
