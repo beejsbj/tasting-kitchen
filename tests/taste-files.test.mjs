@@ -24,6 +24,29 @@ test("public scan distinguishes JavaScript regex literals from Unix absolute pat
   assert.ok(publicTextFindings("Open /workspace/output/index.html").includes("absolute path"));
 });
 
+test("an absolute path after a colon is still an absolute path; URLs and colon-joined references are not", () => {
+  // A colon is not a path boundary: a PATH list, an scp-style target, a label or a one-slash URI still names the machine.
+  for (const text of ["see:/etc/hosts", "PATH=/a/bin:/opt/private-tools/bin", "host:/srv/data/notes.txt", "file:/etc/hosts", "jar:file:/opt/app/lib.jar", "notes.txt:/var/tmp/other/secret.txt"]) {
+    assert.ok(publicTextFindings(text).includes("absolute path"), text);
+  }
+  // A URL's path follows `//host`, which the rule already skips; a file:line reference, a time and a module specifier have no rooted path.
+  for (const text of [
+    "See https://example.com/docs/guide/intro.html.",
+    "http://localhost:5173/dishes/demo/index.html",
+    "<svg xmlns='http://www.w3.org/2000/svg'>",
+    "wss://example.com/socket/v1 and s3://bucket/key/part",
+    "git@github.com:owner/repo.git",
+    "lib/taste/files.mjs:12:4 and src/app.ts:30",
+    "at 12:30 and 2026-11-13T12:00:00.000Z",
+    'import { readFile } from "node:fs/promises";',
+    "data:image/svg+xml;utf8,<svg/>",
+  ]) {
+    assert.deepEqual(publicTextFindings(text), [], text);
+  }
+  // A Windows drive path was already refused as one; it stays refused.
+  assert.ok(publicTextFindings("C:/Windows/Fonts/arial.ttf").includes("absolute Windows path"));
+});
+
 test("public scan permits quoted source-root aliases without permitting absolute paths", () => {
   assert.deepEqual(publicTextFindings('import type { Note } from "@/types/music";'), []);
   assert.deepEqual(publicTextFindings('src: url("@/assets/fonts/local.woff2")'), []);

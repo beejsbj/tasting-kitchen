@@ -202,18 +202,32 @@ function globCovers(glob, target) {
   return new RegExp(`^${escaped}$`).test(target);
 }
 
-function publicSafety(value, label, key = "") {
+/**
+ * `chefNamed` holds the labels of strings that are names the model chose (a
+ * delivered file's path): the ranking-language rule skips them, every leak rule
+ * still applies. See publicManifestFindings in lib/taste/files.mjs.
+ */
+function publicSafety(value, label, key = "", chefNamed = new Set()) {
   if (forbiddenKeys.has(key.toLowerCase())) fail(label, `forbidden scoring key ${key}`);
   if (typeof value === "string") {
-    scanText(value, label);
+    scanText(value, label, { chefNamed: chefNamed.has(label) });
     return;
   }
-  if (Array.isArray(value)) return value.forEach((item, index) => publicSafety(item, `${label}[${index}]`));
-  if (isObject(value)) for (const [childKey, child] of Object.entries(value)) publicSafety(child, `${label}.${childKey}`, childKey);
+  if (Array.isArray(value)) return value.forEach((item, index) => publicSafety(item, `${label}[${index}]`, "", chefNamed));
+  if (isObject(value)) for (const [childKey, child] of Object.entries(value)) publicSafety(child, `${label}.${childKey}`, childKey, chefNamed);
 }
 
-function scanText(text, label) {
-  for (const { name, pattern } of publicLeakPatterns) if (pattern.test(text)) fail(label, `public-safety scan matched ${name}`);
+/** Labels of a manifest's `artifact.files[].path` strings, as publicSafety builds them. */
+function deliveredFileNames(manifest, label) {
+  const files = isObject(manifest?.artifact) && Array.isArray(manifest.artifact.files) ? manifest.artifact.files : [];
+  return new Set(files.flatMap((file, index) => (isObject(file) && typeof file.path === "string" ? [`${label}.artifact.files[${index}].path`] : [])));
+}
+
+function scanText(text, label, { chefNamed = false } = {}) {
+  for (const { name, pattern } of publicLeakPatterns) {
+    if (chefNamed && name === "numerical ranking language") continue;
+    if (pattern.test(text)) fail(label, `public-safety scan matched ${name}`);
+  }
 }
 
 async function json(relative) {
@@ -895,7 +909,7 @@ async function validateDish(relative, recipeRecords, { privateDish = false } = {
     if (trace) await regularFile(trace, `${relative}.publicTrace`);
   }
 
-  if (!privateDish) publicSafety(dish, relative);
+  if (!privateDish) publicSafety(dish, relative, "", deliveredFileNames(dish, relative));
   const { dishHash, ...dishWithoutHash } = dish;
   if (dishHash !== hashCanonical(dishWithoutHash)) {
     fail(`${relative}.dishHash`, "does not match the canonical dish manifest");
