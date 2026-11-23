@@ -72,6 +72,12 @@ test("an assistant response that says score is public-safe; one with a credentia
   assert.throws(() => sanitizePublicResponse(`See ${root}-other/notes.md`, options), /assistant response \(absolute path\)/);
   assert.throws(() => sanitizePublicResponse(`See ${root}/scratch/../../secret.txt`, options), /Public artifact scan failed/);
   assert.throws(() => sanitizePublicResponse(`See /srv/elsewhere/notes.md`, options), /assistant response \(absolute path\)/);
+  // A path joined to another by a colon or @ stays absolute and is refused, so nothing after it slips through.
+  for (const joined of [`${root}/workspace/notes.txt:/etc/hosts`, `${root}/scratch:/var/tmp/other/workspace/secret.txt`, `PATH ${root}/bin:/opt/private-tools/bin`, `${root}/scratch@host`]) {
+    assert.throws(() => sanitizePublicResponse(joined, options), /Public artifact scan failed/, joined);
+  }
+  // A cook directory at the filesystem root is never rewritten.
+  assert.equal(sanitizePublicResponse("read //etc/shadow and / done", { workspace: "/workspace", selectedFiles: [] }), "read //etc/shadow and / done");
 });
 
 test("in a public trace only the model's response may use ranking words; prompts and everything else may not", () => {
