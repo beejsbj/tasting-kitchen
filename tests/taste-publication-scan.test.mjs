@@ -549,3 +549,18 @@ test("a parent path written with an escaped slash is never masked as a safe inte
   await writeFile(path.join(root, "a/b/c.mjs"), "import x from '../..\\/..\\/..\\/..\\/etc/passwd';\n");
   await assert.rejects(scanPublicTree(root, { chefAuthored: true }), /a\/b\/c\.mjs \(path traversal\)/);
 });
+
+test("a trace or manifest that does not parse is still read with its escapes decoded", () => {
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  // Broken JSON (a missing brace) with a credential after an escaped newline.
+  const broken = `{"turns":[{"response":"x\\n${token}"}]`;
+  assert.ok(publicTraceFindings(broken).length > 0, "malformed trace");
+  assert.ok(publicManifestFindings(broken).length > 0, "malformed manifest");
+});
+
+test("a delivered JSON file with a very large array is scanned, not crashed on", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-large-json-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(path.join(root, "notes.json"), JSON.stringify(Array.from({ length: 200000 }, (_, index) => index % 2 ? "a" : 1)));
+  assert.deepEqual(await scanPublicTree(root, { chefAuthored: true }), { passed: true, filesScanned: 1 });
+});
