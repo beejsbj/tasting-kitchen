@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "film-v1",
   "label": "Film toolchain v1",
-  "summary": "The one execution image every model and layer of a film Recipe works and is validated in: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine.",
+  "summary": "The pinned image in which Kitchen checks and plays every film Recipe's delivery: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine, which Kitchen also mounts for the lyric Recipe. A model works with its own machine's tools.",
   "image": "tasting-kitchen/film-toolchain:v1",
   "dockerfile": "catalog/toolchains/film/Dockerfile",
   "base": "docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6",
@@ -87,6 +87,6 @@
     },
     "excluded": "The skill's world kit (assets/lib/kit.ts) and example scenes are technique, not engine: they reach a model only through the skill layer."
   },
-  "treeHash": "sha256:844743640884bec6d3f980cde676b26958609f3496e47aadfd14e865af7fc195",
-  "toolchainHash": "sha256:8b25aa151997bf484a4629f66e3546616e858953248d4b55f9e3ec7c14d1fdc0"
+  "treeHash": "sha256:ec792f44790f6752f24ac3b8617ef49958778748cfe855e273c514ed8b7a21e1",
+  "toolchainHash": "sha256:7ca169ab594c6fb31f93675c696445f74f0f31ff0d0bd14105e9869e160e9b10"
 }

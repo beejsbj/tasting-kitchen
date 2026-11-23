@@ -27,7 +27,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model.",
+    "instructions": "Read fixtures/brief.md. Kitchen checks and plays your film in a pinned image (Node 22, Python, Chromium, FFmpeg and fonts). You work with the tools this machine has.",
     "fixtures": [
       {
         "id": "brief",

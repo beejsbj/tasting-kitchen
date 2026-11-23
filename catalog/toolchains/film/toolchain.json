@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "film-v1",
   "label": "Film toolchain v1",
-  "summary": "The one execution image every model and layer of a film Recipe works and is validated in: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine.",
+  "summary": "The pinned image in which Kitchen checks and plays every film Recipe's delivery: Node 22, Python 3 with NumPy and SciPy, Chromium, FFmpeg, Bun and fonts, with the patched lyric engine at /opt/kitchen/engine, which Kitchen also mounts for the lyric Recipe. A model works with its own machine's tools.",
   "image": "tasting-kitchen/film-toolchain:v1",
   "dockerfile": "catalog/toolchains/film/Dockerfile",
   "base": "docker.io/library/node:22-trixie-slim@sha256:be1e2a3dc2c4fd68cdfadad2a696a280e0d2749098bee509230174d72fb768c6",

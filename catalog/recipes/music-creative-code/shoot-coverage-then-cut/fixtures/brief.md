@@ -33,7 +33,7 @@ The third turn brings a note on the cut. It asks for a new 30-second cut, `film.
 
 ## Working protocol
 
-If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and follow its process; its examples teach technique and must not be submitted. If no skill is mounted, work from this brief and your own method. Each turn is one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a direction or delegate to another model. Use one render job and one browser at a time. Kitchen supplies the same pinned toolchain and compute profile to every compared model.
+If a skill directory is mounted at `skill/`, read `skill/SKILL.md` first and follow its process; its examples teach technique and must not be submitted. If no skill is mounted, work from this brief and your own method. Each turn is one autonomous authoring turn, including tool use and up to three render/inspect/revise rounds. Do not ask for a direction or delegate to another model. Use one render job and one browser at a time. Kitchen checks and plays your film in a pinned image; you work with the tools this machine has.
 
 Draw every visible element in code, and synthesize original sound. Do not use external images, generated stills, stock footage, sampled sound, other model outputs or donor scene implementations. Keep randomness seeded.
 

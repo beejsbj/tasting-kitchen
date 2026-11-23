@@ -2,7 +2,7 @@
 // Gallery playback check, run inside the film toolchain image with no network.
 // Serves <root> on loopback with the artifact headers from vercel.json (the
 // rules nginx and the Vite servers mirror), embeds the Dish in the gallery's
-// sandboxed iframe, plays the supplied index.html's first film muted and, when
+// sandboxed iframe, plays the supplied index.html's film.mp4 muted and, when
 // the contract delivers one, opens the live player.html in the same sandbox.
 // usage: node playback.mjs <root> <dish url path> <contract.json> <evidence dir>
 import { createReadStream, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -54,16 +54,18 @@ page.on("console", (message) => { if (message.type() === "error" && !message.tex
 page.on("response", (response) => { if (response.status() >= 400 && !response.url().endsWith("/favicon.ico")) problems.push(`HTTP ${response.status()} ${new URL(response.url()).pathname}`); });
 await page.goto(`${origin}/gallery.html`);
 const pane = await (await page.waitForSelector("#pane")).contentFrame();
-await pane.waitForSelector("video");
+// The delivered film is film.mp4; a supplied player may show other films first
+// (shoot-coverage-then-cut shows its first cut, cut-1.mp4, above the recut).
+await pane.waitForSelector('video[src="film.mp4"]');
 const film = await pane.evaluate(async () => {
-  const video = document.querySelector("video");
+  const video = document.querySelector('video[src="film.mp4"]');
   if (video.readyState < 1) await new Promise((resolve, reject) => { video.onloadedmetadata = resolve; video.onerror = () => reject(new Error(`media error ${video.error?.code}`)); setTimeout(() => reject(new Error("no metadata in 20 s")), 20000); });
   video.muted = true;
   await video.play();
   const begin = performance.now();
   while (video.currentTime < 1.5 && performance.now() - begin < 20000) await new Promise((resolve) => setTimeout(resolve, 100));
   video.pause();
-  return { width: video.videoWidth, height: video.videoHeight, duration: video.duration, currentTime: video.currentTime, error: video.error?.code ?? null, origin: String(window.origin) };
+  return { src: video.getAttribute("src"), width: video.videoWidth, height: video.videoHeight, duration: video.duration, currentTime: video.currentTime, error: video.error?.code ?? null, origin: String(window.origin) };
 });
 await page.screenshot({ path: path.join(evidenceDir, "gallery-playback.png") });
 
@@ -85,7 +87,7 @@ await browser.close();
 server.close();
 
 const checks = [
-  ["film decodes in the gallery sandbox", film.error === null && film.width === contract.width && film.height === contract.height, `${film.width}x${film.height}, error ${film.error}`],
+  ["film decodes in the gallery sandbox", film.error === null && film.width === contract.width && film.height === contract.height, `${film.src}: ${film.width}x${film.height}, error ${film.error}`],
   ["film duration", Math.abs(film.duration - contract.duration) < 0.1, `${film.duration.toFixed(3)} s`],
   ["film plays", film.currentTime >= 1.5, `advanced to ${film.currentTime.toFixed(2)} s`],
   ["artifact origin is opaque", film.origin === "null", `window.origin ${film.origin}`],
