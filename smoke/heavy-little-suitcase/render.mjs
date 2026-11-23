@@ -72,8 +72,8 @@ encoder.stdin.end();
 await encoded;
 
 // Contact sheet: every beat plus the moments between, labelled with time and beat.
-const beats = { "failed-lift": 5.2, reset: 9.0, "corner-pivot": 14.6, landing: 18.45, relief: 21.9 };
-const sheet = [[0.5, "start"], [4.3, "anticipation"], ...Object.entries(beats).map(([id, time]) => [time, id]), [12.8, "tilt"], [16.2, "lever"], [20.0, "climb"], [23.0, "settled"]].sort((a, b) => a[0] - b[0]);
+const beats = { "first-attempt": 5.2, "change-of-plan": 9.0, success: 18.45 };
+const sheet = [[0.5, "start"], [4.3, "anticipation"], ...Object.entries(beats).map(([id, time]) => [time, id]), [12.8, "tilt"], [14.6, "pivot"], [16.2, "lever"], [20.0, "climb"], [21.9, "relief"], [23.0, "settled"]].sort((a, b) => a[0] - b[0]);
 const contact = await page.evaluate((cells) => {
   const cols = 4, w = 270, h = 480, pad = 12, label = 26;
   const out = document.createElement("canvas");

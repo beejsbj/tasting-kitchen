@@ -23,6 +23,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
+      # The film Recipes' check tests encode real films; the runner's Google Chrome plays them.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - run: npm test
       - run: npm run lint
       - run: npx playwright install --with-deps chromium

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "heavy-little-suitcase",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft",
   "title": "Heavy little suitcase",
-  "summary": "See whether a model can make mass, effort and a change of plan legible through motion.",
+  "summary": "See whether a model can make weight and a change of plan legible through motion in a visual language worth remembering.",
   "cuisines": [
     "music-creative-code",
     "ui-visual"
@@ -114,7 +114,7 @@
         "id": "film-contract",
         "type": "command",
         "required": true,
-        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1920, 24fps, 576 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence structure.",
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1920, 24fps, 576 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence structure with the three beats reported in order.",
         "argv": [
           "node",
           "validation/film.mjs"
@@ -124,7 +124,7 @@
         "id": "film-tasting",
         "type": "manual",
         "required": false,
-        "description": "Can you tell the case is heavy with sound muted? Do feet and the pivot stay attached to the ground during force? Does the second attempt visibly use a different strategy? Inspect actual playback, audio, authorship and correspondence between evidence times and visible events."
+        "description": "Would you remember the look, and does it hold during the greatest effort? Can you feel the weight with sound muted? Is the second attempt a different strategy, staged so you see why it works? Inspect actual playback, audio, authorship and correspondence between evidence times and visible events."
       }
     ]
   },

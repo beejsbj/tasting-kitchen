@@ -1,0 +1,24 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "duration": 30,
+  "frames": 720,
+  "files": [
+    "index.html",
+    "film.mp4",
+    "player.html",
+    "contact.png",
+    "README.md",
+    "evidence.json",
+    "edl.json"
+  ],
+  "audio": {
+    "fixture": "inputs/track.wav",
+    "minGainDb": -0.5,
+    "maxGainDb": 0.5
+  },
+  "cuts": {
+    "cues": "inputs/cues.json"
+  }
+}

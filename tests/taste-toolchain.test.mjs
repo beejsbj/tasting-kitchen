@@ -128,6 +128,13 @@ echo 'PASS in image'`);
   const failing = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
 exit 3`);
   assert.equal((await runChecks(recipe, workspace, { env: failing.env })).passed, false);
+  assert.equal((await runChecks(recipe, workspace, { env: failing.env })).checks[0].errored, undefined, "an ordinary failure is the output's");
+  const equipment = await fakeDocker(t, `[ "$1" = image ] && { echo sha256:pinned; exit 0; }
+exit 75`);
+  const broken = await runChecks(recipe, workspace, { env: equipment.env });
+  assert.equal(broken.passed, false);
+  assert.equal(broken.checks[0].errored, true, "exit 75 in the image is Kitchen's equipment failing, a validator error");
+  assert.match(broken.checks[0].detail, /Kitchen's equipment failed/u);
 });
 
 test("an image built from another pin is refused before anything runs in it", async (t) => {

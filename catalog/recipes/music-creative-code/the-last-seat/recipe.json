@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "the-last-seat",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "hidden",
   "title": "The last seat",
   "summary": "Compare two-character staging, attention, social timing and readable gesture without narration.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe; the benchmark shape awaits owner acceptance.",
+  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe; the benchmark shape awaits owner acceptance. Archived 2026-11-14: a fixed plot and look taste instruction-following, not direction or style.",
   "tags": [
     "motion",
     "audio",

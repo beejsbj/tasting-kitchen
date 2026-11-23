@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "id": "titles-for-a-film-that-doesnt-exist",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Titles for a film that doesn't exist",
+  "summary": "Make a 40-second opening title sequence, with its own music, for a supplied title and eight credits, so the titles alone suggest the film's genre and tone.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original task written for this Recipe. The title and credits are fictional, written for this Recipe; genre and tone are left to the model.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "credits",
+        "path": "fixtures/credits.json",
+        "mountAs": "fixtures/credits.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "credits-check",
+        "path": "validation/credits.mjs",
+        "mountAs": "validation/credits.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "toolchain": {
+    "id": "film-v1"
+  },
+  "turns": [
+    {
+      "id": "make-titles",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and fixtures/credits.json. Make the opening title sequence and its music, and deliver the film, live player, source, contact sheet and evidence the brief specifies. Make every creative decision yourself and iterate from rendered evidence."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1920 by 1080, 24fps, 960 frames, 40 seconds, complete decode, true peak at or below -0.1 dBTP, integrated loudness at least -40 LUFS, and evidence shape.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "credits-timed",
+        "type": "command",
+        "required": true,
+        "description": "evidence.json gives on and off times for the title and all eight credits, each inside the film and on screen for at least 1.5 seconds, and names the genre and tone meant. The times are self-reports.",
+        "argv": [
+          "node",
+          "validation/credits.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Before reading intent in evidence.json, guess the genre and tone: were you right? Do type, motion and music agree on one film? Is every credit shown as given and readable for its time on screen?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

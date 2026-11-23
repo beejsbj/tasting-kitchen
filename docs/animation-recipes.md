@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **ten drafts awaiting Burooj's authoring acceptance; none cookable.** `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
+Status: **drafts awaiting Burooj's authoring acceptance; none cookable.** On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*. `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -17,12 +17,7 @@ Kitchen's and identical across layers.
 
 | Recipe | Task | Format | Layers besides *without skill* |
 |---|---|---|---|
-| `paper-boat-voyage` | A Little Voyage: fold, launch, swirl, leaf sail, lantern | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `heavy-little-suitcase` | Mass, effort and a change of plan in one locked shot | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `the-last-seat` | Two-character pantomime without narration | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `paper-garden` | Paper-cut transformations that keep parts connected | 1080×1920 · 24 fps | hand-drawn, procedural |
-| `riso-night-market` | Three-ink print craft with layered parallax | 1080×1080 · 30 fps | procedural (riso-film deferred, see below) |
-| `pixel-rooftop-rescue` | Small sprites conveying intent and contact | 1920×1080 · 60 fps from 320×180 | procedural, code-animations |
+| `heavy-little-suitcase` | Weight and a change of plan, in a visual language the model invents | 1080×1920 · 24 fps | hand-drawn, procedural |
 | `blueprint-marble-sorter` | Explain a mechanism while keeping object identities | 1080×1920 · 24 fps | procedural, code-animations |
 | `words-with-weight` | Four verbs, four motion curves, one type family | 1080×1920 · 60 fps | motion-reel, procedural |
 | `queue-under-pressure` | Backpressure explained from a supplied state trace | 1920×1080 · 30 fps | code-animations, motion-reel |
@@ -37,10 +32,58 @@ the Recipe's `analysis/excerpt-analysis.mjs`) live under
 lyric text. Kitchen supplies the analysis so the Recipe tastes the film, not
 beat detection.
 
+## Direction, editing and style drafts (2026-11-14)
+
+Nine drafts written after Burooj's note that film Recipes should taste
+direction, editing and art style. The subject and look are the model's; each
+constraint exists only to sharpen one taste.
+
+| Recipe | Tastes | Turns | Kitchen-side check beyond `film.mjs` |
+|---|---|---|---|
+| `cut-to-a-track` | cutting with and against a fixed, Kitchen-synthesized 30 s track | one | `audio-identity.mjs`, `cuts.mjs` |
+| `shoot-coverage-then-cut` | coverage, a first cut, and a recut to a director's note with no new filming | three | `rushes.mjs`, `cuts.mjs` |
+| `the-thing-we-never-see` | ellipsis: a decisive event told only by before, after, sound and reactions | one | `unseen.mjs` (README ends `Unseen:`) |
+| `same-action-three-styles` | one 8 s action in three visual languages, hard cuts at 8 s and 16 s | one | `cuts.mjs` |
+| `two-colours-no-grey` | depth, light and motion with exactly two colours | one | `two-colours.mjs` (the live player in Chromium) |
+| `invent-a-style-and-hold-it` | a new style with a name and five rules, held through its hardest moment | one | `style.mjs` |
+| `three-styleframes-then-film` | three styleframes for a written look, then a film from the least alike under a fixed note | two | `styleframes.mjs` |
+| `film-from-a-written-look` | the one-shot sibling of the above: same phrase, same final film | one | — |
+| `titles-for-a-film-that-doesnt-exist` | an opening title sequence from supplied credits; genre and tone guessable | one | `credits.mjs`, −40 LUFS floor |
+
+**Edits.** Edited films ship `edl.json`; `validation/cuts.mjs` (identical in
+all four editing drafts) compares its hard cuts with FFmpeg's scene-change
+measure within one frame. Proof is asymmetric: a declared cut is confirmed by
+a change of at least 0.15% that is three times the local level or 6% above
+it; an undeclared change fails only at 6% and three times anything near it.
+The track and its cue sheet come from the committed seeded
+`generator/track.mjs`; each cut's distance from the nearest cue is reported,
+never gated. `rushes.mjs` checks the rushes log, single takes, and that every
+frame of both cuts is a rushes frame. Kitchen keeps no workspace copy between
+turns, so "unchanged since the turn" (rushes, first cut, styleframes) is shown
+by hashes in the turn replies, not enforced.
+
+**Two colours.** Kitchen drives the image's Chromium over a debugging pipe at
+the film's size, samples 48 frames chosen from a hash of the delivery, and
+checks block by block that `film.mp4` is the same film in the same colours. A
+failure of Kitchen's own browser or decoder exits 75 and is recorded as a
+private, retryable validator error; a player whose own loading, `window.ready`
+or `seek` never finishes fails the check.
+
+**Shared film check.** These drafts carry a newer `validation/film.mjs`: beats
+without windows, beat notes, frame gaps checked in time-base ticks so uneven
+frames that average the right rate fail, and an optional loudness floor. The
+titles Recipe gates −40 LUFS, so "loudness is reported, not gated" no longer
+holds for every film Recipe. The older copies now read loudness from the
+ebur128 summary; they had reported the −70 LUFS gate.
+
+None of these checks has run inside the film image, and no Cook or smoke
+render has been made for them. Each needs a smoke before it can be Ready, and
+Burooj's acceptance of its shape.
+
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
 plus one Repeat of whichever Burooj prefers. The `animation-styles` Menu holds
-the nine public film recipes as a library, not a quota.
+the public film drafts as a library, not a quota.
 
 ## Shared protocol
 
@@ -64,7 +107,7 @@ from the brief. Comparing layers therefore changes only the mounted guidance.
 codec, dimensions, frame rate, frame count, durations, a complete FFmpeg
 decode with zero errors, a true peak at or below -0.1 dBTP (clipping is a
 renderer defect), and the evidence shape. The film recipes require one
-reported time inside each beat window; the queue recipe additionally checks a
+reported time inside each beat window (the suitcase's three beats may fall anywhere but must be in order); the queue recipe additionally checks a
 pure `stateAt(t)` against the supplied trace; the lyric recipe requires one
 evidence entry per supplied word and a recorded reason for any onset moved by
 more than 50 ms. Integrated loudness is reported, not gated.

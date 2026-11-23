@@ -1,0 +1,21 @@
+{
+  "width": 1080,
+  "height": 1350,
+  "fps": 24,
+  "duration": 24,
+  "frames": 576,
+  "styleframes": {
+    "directory": "styleframes",
+    "ids": [
+      "a",
+      "b",
+      "c"
+    ],
+    "width": 1080,
+    "height": 1350,
+    "fps": 24,
+    "frames": 72,
+    "notes": "styleframes/styleframes.md",
+    "maxNoteWords": 150
+  }
+}

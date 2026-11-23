@@ -164,7 +164,7 @@ What this pilot does to meet the AGPL's terms:
 - `room.mjs` and `player.html` link or embed the engine, so `NOTICE.md` offers the whole `room/` directory, and the `index.html` and `worklets.js` the room writes, under the same licence.
 - Every published Dish carries the room as `inputs/room/`, so the source and licence sit beside the object code, and the player's footer says where.
 
-What follows from that, for Burooj to accept or decline:
+What follows from that. Burooj accepted all three on 2026-11-22:
 
 1. **`room.mjs` and `player.html`, Kitchen's own work, become AGPL-3.0-or-later.** They live in one directory with their own notice. The runner and the gallery only copy those files and run the room as a separate program, which the AGPL treats as an aggregate, so it does not extend to them. The room's own tests and browser check import from `room.mjs` and fall under the same notice.
 2. **Every Dish of this Recipe publishes AGPL code** (the player page) on the public gallery, with its source alongside.

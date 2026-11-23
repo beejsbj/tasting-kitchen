@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "shoot-coverage-then-cut",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Shoot coverage, then cut",
+  "summary": "See how a model covers an event it invented, cuts it, then recuts it to a director's note without filming again.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original staged task written for cross-model comparison of coverage and editing; subject and look are left to the model. Both cuts are kept: cut-1.mp4 is delivered in the second turn and left unchanged, film.mp4 is the recut. The benchmark shape awaits owner acceptance.",
+  "tags": [
+    "motion",
+    "editing",
+    "multi-turn",
+    "visual-composition",
+    "verification"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the same pinned toolchain (Node 22 or later, Python, a browser, FFmpeg and fonts) and compute profile to every compared model and layer. Before Ready, that toolchain must be pinned and smoked; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "cut-check",
+        "path": "validation/cuts.mjs",
+        "mountAs": "validation/cuts.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "rushes-check",
+        "path": "validation/rushes.mjs",
+        "mountAs": "validation/rushes.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "toolchain": {
+    "id": "film-v1"
+  },
+  "turns": [
+    {
+      "id": "shoot-rushes",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and any mounted skill, then do part one only: invent a small event and film it as rushes from at least four camera positions. Do not edit. Deliver rushes/ with rushes/rushes.json and the rushes' source, then stop and reply with the sha256 of rushes/rushes.json."
+    },
+    {
+      "id": "first-cut",
+      "role": "follow-up",
+      "content": "Now do part two: cut a 30-second film using only the rushes. Leave rushes/ unchanged. Deliver cut-1.mp4 and cut-1.edl.json, then stop and reply with the sha256 of cut-1.mp4."
+    },
+    {
+      "id": "directors-note",
+      "role": "correction",
+      "content": "Director's note: the audience should only understand what happened in the final shot. Recut. No new filming. Leave rushes/, cut-1.mp4 and cut-1.edl.json unchanged; deliver the recut as film.mp4 with edl.json, and complete the delivery as part three of the brief describes."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "edl.json",
+      "cut-1.mp4",
+      "cut-1.edl.json",
+      "rushes/**",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files including both cuts and their EDLs, unchanged player, PNG signature and, for cut-1.mp4 and film.mp4 each: H.264/AAC, 1920 by 1080, 24fps, 720 frames, 30 seconds, complete decode, true peak at or below -0.1 dBTP; and evidence structure.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "cuts",
+        "type": "command",
+        "required": true,
+        "description": "Kitchen-side cut check: FFmpeg's scene-change measure finds the hard cuts in the picture and they must agree with edl.json within one frame. A declared cut needs a frame change of at least 0.15% that is three times the quieter side's level or 6% above it; an undeclared change fails only when unmistakable (at least 6% and three times anything near it). Declared transitions are exempt, not confirmed. Changes in between are reported for tasting. Run on both cuts, each against its own EDL; transitions are refused because their blended frames are not rushes frames.",
+        "argv": [
+          "node",
+          "validation/cuts.mjs"
+        ]
+      },
+      {
+        "id": "rushes",
+        "type": "command",
+        "required": true,
+        "description": "Check the rushes: at least four clips from at least four logged camera positions, 60 to 120 seconds in total at the film's format, no cut inside any clip (a whole-picture light change listed in the log is exempt), and each clip's sha256 matching rushes/rushes.json; and that every frame of both cuts is a frame of the rushes (48 by 27 thumbnails within 3 levels of 255). Prints the log's and cut-1.mp4's sha256 to compare with the turn replies, and each cut's conform; Kitchen keeps no copy between turns, so unchanged-since-the-turn is shown by those hashes, not enforced.",
+        "argv": [
+          "node",
+          "validation/rushes.mjs"
+        ]
+      },
+      {
+        "id": "coverage-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Compare the rushes' sha256 in the first reply and cut-1.mp4's in the second with what the rushes check prints. Did the rushes cover the event well enough to be cut more than one way? Does the first cut tell the event clearly? Does the recut honour the note, keeping what happened unclear until the final shot, using only what was shot? Which coverage did the recut lean on that the first cut ignored?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  }
+}

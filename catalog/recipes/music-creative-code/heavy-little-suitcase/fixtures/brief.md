@@ -2,21 +2,15 @@
 
 ## Task
 
-A small traveler tries to lift an oversized suitcase onto a low platform. The first pull fails; the traveler resets their stance, tilts the case and levers it up using its lower corner. They climb after it, sit, and let out a relieved breath. Keep one locked camera and one continuous shot. No captions, dialogue, magical strength or sudden size changes.
+Someone small has to get something far too heavy to where it needs to go. The first try fails. The second uses a different strategy and works. That is the whole plot; who, what, where and why are yours.
 
-## Visual and motion direction
+Two things are being tasted. First, the look: make it graphically striking. Commit to a visual language with a point of view, one a viewer would remember and could not mistake for a default, and hold it through the whole film, including the moments of greatest effort. Second, weight: with the sound off, the viewer should feel how heavy the thing is through motion alone.
 
-Soft graphite on warm paper, one restrained accent on the suitcase tag. Preserve the character and prop silhouettes. Show anticipation before force, planted feet during effort, a pivot at the suitcase corner, and a short settle after the landing. Pencil texture may breathe gently; anatomy and contact points must stay coherent.
+Direct it yourself: camera, framing, cuts and pacing are your choices. No captions, dialogue, magical strength or sudden size changes.
 
 ## Timing
 
-Make exactly 24 seconds at 1080 × 1920, 24 fps (576 frames). Choose the detailed timing inside these windows; each required beat must visibly occur in its window. Do not turn the film into a sequence of still title cards.
-
-- `failed-lift`: 4–7 seconds.
-- `reset`: 8–11 seconds.
-- `corner-pivot`: 12–17 seconds.
-- `landing`: 18–20 seconds.
-- `relief`: 21–23.5 seconds.
+Make exactly 24 seconds at 1080 × 1920, 24 fps (576 frames). In `evidence.json`, report when each of these visibly happens, in this order: `first-attempt` (the try that fails), `change-of-plan` (the moment the new strategy begins), `success`. Do not turn the film into a sequence of still title cards.
 
 ## Working protocol
 
@@ -31,15 +25,16 @@ Draw every visible element in code, and synthesize original sound. Do not use ex
 - `index.html`: copy `fixtures/player.html` unchanged; Kitchen supplies the comparison presentation.
 - `contact.png`: a labeled contact sheet with at least one frame per required beat.
 - `source/`: all authored source, needed engine code and dependency locks.
-- `README.md`: exact rebuild commands, source attribution and honest checks/limitations.
+- `README.md`: the visual idea in two sentences, exact rebuild commands, source attribution and honest checks/limitations.
 - `evidence.json`: `beats` array of objects containing `id` and `time` (seconds) for every contract beat; `checks` array containing `name`, `result` (`passed`, `failed` or `not-run`) and `detail`. Report actual checks; unseen playback is not a pass. These are review pointers, not proof that the action looks correct.
 
 Fit the complete delivery within 100 MiB and 500 files. Leave dependency trees, frame caches and provider traces outside it. Run `node validation/film.mjs` from the delivery root with fixtures mounted. Independently inspect complete motion, listen to sound, check the final encoded movie and inspect the native-size or phone-size picture. Record anything unavailable.
 
 ## Human tasting
 
-- Can you tell the case is heavy with sound muted?
-- Do feet and the pivot stay attached to the ground during force?
-- Does the second attempt visibly use a different strategy?
+- Would you remember this look? Is it a choice that shapes every frame, or a filter laid over a default?
+- Does the style hold during the moments of greatest effort, or break down there?
+- With the sound muted, can you feel the weight?
+- Is the second attempt a different strategy, and is it staged so you see why it works?
 
-File validation cannot establish these visual qualities. For the queue task, state validation checks the exported function; human review must also check that the visible film uses it.
+File validation cannot establish these visual qualities.

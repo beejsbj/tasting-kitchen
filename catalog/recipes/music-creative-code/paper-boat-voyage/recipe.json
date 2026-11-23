@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "paper-boat-voyage",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "hidden",
   "title": "A Little Voyage",
   "summary": "Tell the same small paper-boat story; compare staging, motion and artistic choices across models and skill layers.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original fictional paper-boat brief from the first Lab comparison of two public animation skills. Those skills are now layers of one recipe; the benchmark shape awaits owner acceptance.",
+  "originNote": "Original fictional paper-boat brief from the first Lab comparison of two public animation skills. Those skills are now layers of one recipe; the benchmark shape awaits owner acceptance. Archived 2026-11-14: a fixed plot and look taste instruction-following, not direction or style.",
   "tags": [
     "motion",
     "audio",

@@ -94,7 +94,9 @@ test('the seventeen cooked recipes are browseable, uncooked ready recipes sit be
   assert.ok(webRecipes.every(entry => entry.dishCount === 2));
   assert.equal(sessionRecipes.length, 7);
   assert.ok(sessionRecipes.every(entry => entry.dishCount === 1));
-  assert.equal(book.archivedCount, 54);
+  // The 54-Recipe backlog in archive.json, plus five film drafts archived on 2026-11-14 for
+  // dictating their plot and look.
+  assert.equal(book.archivedCount, 59);
   assert.equal(archive.archivedRecipeIds.length, 54);
   for (const id of ['responsive-product-launch', 'shared-result-ritual', 'permission-ladder-publish']) {
     assert.ok(archive.archivedRecipeIds.includes(id));

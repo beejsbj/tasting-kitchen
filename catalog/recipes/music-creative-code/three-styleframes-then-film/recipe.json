@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "id": "three-styleframes-then-film",
+  "version": "0.1.0",
+  "status": "draft",
+  "title": "Three styleframes, then a film",
+  "summary": "Offer three radically different styleframes for one written look, then make a 24-second film from the one the owner's reply singles out, keeping all three.",
+  "cuisines": [
+    "music-creative-code",
+    "ui-visual"
+  ],
+  "origin": "hybrid",
+  "originNote": "Original task written for this Recipe after Burooj asked that film Recipes taste art style and graphic invention. The written look is the only creative input; the selection rule follows three-sketches-then-develop-one.",
+  "tags": [
+    "motion",
+    "audio",
+    "visual-composition",
+    "visual-language",
+    "multi-turn"
+  ],
+  "kind": "web",
+  "harness": {
+    "workspace": "write",
+    "web": "disabled",
+    "capabilities": [
+      "files",
+      "shell"
+    ]
+  },
+  "setup": {
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "fixtures": [
+      {
+        "id": "brief",
+        "path": "fixtures/brief.md",
+        "mountAs": "fixtures/brief.md",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/markdown"
+      },
+      {
+        "id": "player",
+        "path": "fixtures/player.html",
+        "mountAs": "fixtures/player.html",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/html"
+      },
+      {
+        "id": "contract",
+        "path": "fixtures/contract.json",
+        "mountAs": "fixtures/contract.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      },
+      {
+        "id": "film-check",
+        "path": "validation/film.mjs",
+        "mountAs": "validation/film.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "styleframes-check",
+        "path": "validation/styleframes.mjs",
+        "mountAs": "validation/styleframes.mjs",
+        "public": true,
+        "editable": false,
+        "mediaType": "text/javascript"
+      },
+      {
+        "id": "toolchain",
+        "path": "fixtures/toolchain.json",
+        "mountAs": "fixtures/toolchain.json",
+        "public": true,
+        "editable": false,
+        "mediaType": "application/json"
+      }
+    ]
+  },
+  "toolchain": {
+    "id": "film-v1"
+  },
+  "turns": [
+    {
+      "id": "three-styleframes",
+      "role": "prompt",
+      "content": "Read fixtures/brief.md and do part one only. Deliver the three styleframes, their motion tests and styleframes/styleframes.md, then stop."
+    },
+    {
+      "id": "choose-and-film",
+      "role": "follow-up",
+      "content": "I looked at all three. Take the one that is least like the other two. Keep its palette; lose anything literal; it should feel like a memory. Now do part two of the brief."
+    }
+  ],
+  "output": {
+    "kind": "web",
+    "entry": "index.html",
+    "include": [
+      "index.html",
+      "film.mp4",
+      "player.html",
+      "contact.png",
+      "README.md",
+      "evidence.json",
+      "source/**",
+      "styleframes/**"
+    ],
+    "limits": {
+      "maxFiles": 500,
+      "maxBytes": 104857600
+    }
+  },
+  "validation": {
+    "mode": "files",
+    "checks": [
+      {
+        "id": "film-contract",
+        "type": "command",
+        "required": true,
+        "description": "Check delivery files, unchanged player, PNG signature, H.264/AAC, 1080 by 1350, 24fps, 576 frames, 24 seconds, complete decode, true peak at or below -0.1 dBTP and evidence shape.",
+        "argv": [
+          "node",
+          "validation/film.mjs"
+        ]
+      },
+      {
+        "id": "styleframes-kept",
+        "type": "command",
+        "required": true,
+        "description": "Three 1080 by 1350 PNG styleframes and three H.264 motion tests at 1080 by 1350, 24fps, 72 frames that decode cleanly; a rationale of at most 150 words; and the styleframe taken named in evidence.json. Whether they are unchanged since part one is not checked.",
+        "argv": [
+          "node",
+          "validation/styleframes.mjs"
+        ]
+      },
+      {
+        "id": "film-tasting",
+        "type": "manual",
+        "required": false,
+        "description": "Are the three styleframes three real directions, or one idea three times? Did the model take the one that truly stands apart? Does the film keep that look and take the note: nothing literal, like a memory?"
+      }
+    ]
+  },
+  "presentation": {
+    "profile": "static-web-v1",
+    "semanticRuntime": null
+  },
+  "variation": "Staged sibling of film-from-a-written-look: same written look, note and film, reached through three styleframes and a selection."
+}
