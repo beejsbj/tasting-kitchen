@@ -2,8 +2,8 @@
 // Gallery playback check, run inside the film toolchain image with no network.
 // Serves <root> on loopback with the artifact headers from vercel.json (the
 // rules nginx and the Vite servers mirror), embeds the Dish in the gallery's
-// sandboxed iframe, plays the supplied index.html's film muted and opens the
-// live player.html in the same sandbox.
+// sandboxed iframe, plays the supplied index.html's first film muted and, when
+// the contract delivers one, opens the live player.html in the same sandbox.
 // usage: node playback.mjs <root> <dish url path> <contract.json> <evidence dir>
 import { createReadStream, readFileSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -67,15 +67,20 @@ const film = await pane.evaluate(async () => {
 });
 await page.screenshot({ path: path.join(evidenceDir, "gallery-playback.png") });
 
-// The live player opens in the same sandbox and answers seek(t) once ready.
-await pane.goto(`${origin}${dishPath}artifact/player.html`);
-const live = await pane.evaluate(async (duration) => {
-  await window.ready;
-  if (typeof window.seek !== "function") return { seek: false };
-  window.seek(duration / 2);
-  return { seek: true, origin: String(window.origin) };
-}, contract.duration);
-await page.screenshot({ path: path.join(evidenceDir, "live-player.png") });
+// The live player opens in the same sandbox and answers seek(t) once ready. A contract
+// that lists its files without player.html (a Recipe of edits from rushes) has none.
+const hasLivePlayer = !contract.files || contract.files.includes("player.html");
+let live = null;
+if (hasLivePlayer) {
+  await pane.goto(`${origin}${dishPath}artifact/player.html`);
+  live = await pane.evaluate(async (duration) => {
+    await window.ready;
+    if (typeof window.seek !== "function") return { seek: false };
+    window.seek(duration / 2);
+    return { seek: true, origin: String(window.origin) };
+  }, contract.duration);
+  await page.screenshot({ path: path.join(evidenceDir, "live-player.png") });
+}
 await browser.close();
 server.close();
 
@@ -84,7 +89,7 @@ const checks = [
   ["film duration", Math.abs(film.duration - contract.duration) < 0.1, `${film.duration.toFixed(3)} s`],
   ["film plays", film.currentTime >= 1.5, `advanced to ${film.currentTime.toFixed(2)} s`],
   ["artifact origin is opaque", film.origin === "null", `window.origin ${film.origin}`],
-  ["live player seeks", live.seek === true, "window.ready resolved and window.seek ran"],
+  ...(hasLivePlayer ? [["live player seeks", live.seek === true, "window.ready resolved and window.seek ran"]] : []),
   ["no page errors", problems.length === 0, problems.join("; ") || "none"],
 ].map(([name, passed, detail]) => ({ name, passed, detail }));
 writeFileSync(path.join(evidenceDir, "playback.json"), `${JSON.stringify({ checks, film, live }, null, 2)}\n`);

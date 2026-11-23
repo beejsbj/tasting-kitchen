@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "lyric-video-section",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "visibility": "private",
   "title": "Lyric video section",
   "summary": "One complete 35-second lyric-video section of a supplied song excerpt: invent the world, land every word on its onset, with and without the lyric-video skill.",
@@ -11,7 +11,7 @@
     "ui-visual"
   ],
   "origin": "mothers",
-  "originNote": "Burooj's own song material and measured alignment from the Animation Lab pilot. The recording is private; this recipe and its Dishes stay private. Benchmark shape awaits owner acceptance.",
+  "originNote": "Burooj's own song material and measured alignment from the Animation Lab pilot. The recording is private; this recipe and its Dishes stay private. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "audio",
@@ -29,7 +29,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the pinned lyric engine at engine/ (patched pdoom-video, Three.js and Canvas), Node, Bun, a browser and FFmpeg identically to every model and layer. Before Ready, that engine and toolchain must be pinned and smoked inside Kitchen; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the pinned lyric engine at engine/ (patched pdoom-video, Three.js and Canvas), Node, Bun, a browser and FFmpeg identically to every model and layer.",
     "fixtures": [
       {
         "id": "brief",

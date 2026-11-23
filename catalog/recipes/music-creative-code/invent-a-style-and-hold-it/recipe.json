@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "invent-a-style-and-hold-it",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Invent a style and hold it",
   "summary": "See whether a model can invent an unnamed visual style, state its rules, and hold them through a 30-second film including its hardest moment.",
   "cuisines": [
@@ -28,7 +28,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model.",
     "fixtures": [
       {
         "id": "brief",

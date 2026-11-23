@@ -89,6 +89,9 @@ test("one film with an EDL: both checks pass; a missing EDL, a stray beat or a w
   const passed = run("film.mjs");
   assert.equal(passed.status, 0, passed.stderr);
   assert.match(passed.stdout, /PASS: .*film\.mp4 true peak/u);
+  // The summary's integrated loudness, not the first per-frame line's -70 LUFS gate.
+  assert.doesNotMatch(passed.stdout, /integrated loudness -70\.0 LUFS/u);
+  assert.match(passed.stdout, /integrated loudness -\d+\.\d LUFS/u);
   const cut = run("cuts.mjs");
   assert.equal(cut.status, 0, cut.stderr);
   assert.match(cut.stdout, /PASS: film\.mp4 matches edl\.json: 1 hard cuts declared, 1 confirmed/u);
@@ -147,4 +150,16 @@ test("cue report: each cut's distance from the nearest supplied cue is printed, 
   const result = run("cuts.mjs");
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Cuts within a frame of a cue: 0\/1\. Nearest cue per cut: 1\.000 s \+100 ms from kick/u);
+});
+
+test("frames of uneven duration fail in every listed film, even when their count and average rate are right", { skip: !hasFfmpeg && "ffmpeg is not installed" }, async (t) => {
+  const { cwd, write, run } = await delivery(t, { files: FILES });
+  write("edl.json", edl([48]));
+  // Frames alternate 1/30 s and 1/20 s: 48 frames still last 2 s and average 24 fps.
+  ff(cwd, ["-f", "lavfi", "-i", "testsrc2=s=320x180:r=24:d=2", "-f", "lavfi", "-i", "sine=frequency=330:sample_rate=48000:duration=2",
+    "-vf", "settb=1/120,setpts='floor(N/2)*10+mod(N,2)*4'", "-fps_mode", "passthrough", "-enc_time_base", "1/120",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-video_track_timescale", "120", "-af", "volume=-12dB", "-c:a", "aac", "film.mp4"]);
+  const result = run("film.mjs");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /film\.mp4: frames must be evenly spaced at 24 fps: frame 1 comes 0\.0333 s/u);
 });

@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **none cookable yet.** On 2026-11-23 Burooj accepted the benchmark shape of `heavy-little-suitcase`, `lyric-video-section` and the nine drafts under *Direction, editing and style drafts*; each still needs its smoke render before Ready. `blueprint-marble-sorter`, `words-with-weight` and `queue-under-pressure` still await his acceptance. On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*. `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
+Status: **eleven Ready.** On 2026-11-23 Burooj accepted the benchmark shape of `heavy-little-suitcase`, `lyric-video-section` and the nine Recipes under *Direction, editing and style drafts*, and the same day each passed its smoke in the film image (see *Film toolchain*), so all eleven are `ready`. `blueprint-marble-sorter`, `words-with-weight` and `queue-under-pressure` still await his acceptance. On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -74,11 +74,13 @@ without windows, beat notes, frame gaps checked in time-base ticks so uneven
 frames that average the right rate fail, and an optional loudness floor. The
 titles Recipe gates −40 LUFS, so "loudness is reported, not gated" no longer
 holds for every film Recipe. The older copies now read loudness from the
-ebur128 summary; they had reported the −70 LUFS gate.
+ebur128 summary; they had reported the −70 LUFS gate. The four editing
+Recipes carry their own generalised copy (several films, a listed file set);
+on 2026-11-23 it gained the same summary loudness reading and the same
+time-base frame-gap check, per film, which it had lacked.
 
-None of these checks has run inside the film image, and no Cook or smoke
-render has been made for them. Burooj accepted all nine shapes on 2026-11-23;
-each needs a smoke before it can be Ready.
+All nine passed their smoke in the film image on 2026-11-23 and are Ready.
+No Cook has been made for them.
 
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
@@ -130,7 +132,7 @@ off the engine's default 0.13 s display lead, so words show when they are sung.
 
 ## Before Ready
 
-1. **Done for `heavy-little-suitcase` and `lyric-video-section`:** the pinned
+1. **Done for all eleven accepted Recipes (2026-11-23):** the pinned
    film toolchain (`catalog/toolchains/film/`, see below), smoke render, validator,
    sanitization and gallery playback, proven with Kitchen-made references.
 2. **Done:** the patched lyric engine at `engine/`, assembled in the image
@@ -138,17 +140,17 @@ off the engine's default 0.13 s display lead, so words show when they are sung.
    commit, and the audio identity check. Kitchen empties the engine's
    `audio/` and `data/` when it mounts it, so the upstream song's recording
    and analysis never reach a model or a fallback load.
-3. **Open:** the model's own shell still runs on the host. Kitchen judges and
+3. **Open, not a gate:** the model's own shell still runs on the host. Kitchen judges and
    plays every film in the image, and supplies the engine from it, but a model
    renders with whatever the host has until a harness can run its tools inside
    the image. Until then the toolchain is held constant for Kitchen's checks,
    not for the model's working tools.
-4. A Claude Code harness configuration if Opus is in the comparison. Opus in
+4. **Open, not a gate:** a Claude Code harness configuration if Opus is in the comparison. Opus in
    Claude Code and Sol in Codex are different configurations: same
    brief, browsed together, not a like-for-like pair.
 5. Burooj's acceptance of each benchmark shape at the authoring checkpoint
    (given 2026-11-23 for the suitcase, the lyric section and the nine new drafts).
-   Readiness does not flip `status`.
+   Acceptance alone does not flip `status`; acceptance and a passing smoke did.
 
 ## Film toolchain
 
@@ -169,7 +171,7 @@ stale local build is refused with a rebuild instruction.
 ```sh
 node scripts/build-toolchain.mjs film-v1   # labels the image with its toolchain hash
 node scripts/pin-toolchain.mjs            # after any toolchain edit; --check to verify
-node scripts/smoke-recipe.mjs heavy-little-suitcase
+node scripts/smoke-recipe.mjs heavy-little-suitcase   # any film Recipe with smoke/<id>/
 node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine render
 node scripts/smoke-recipe.mjs lyric-video-section --resume private/runtime/smoke/lyric-video-section/<stamp>
 ```
@@ -181,6 +183,23 @@ registry there as if the Recipe were accepted, and plays the Dish in the
 gallery's sandboxed iframe inside the offline image. A private Recipe's Dish
 must stay out of the registry and is played from the private tree.
 
+References under `smoke/<recipe>/` are schematic and cheap: they prove
+equipment, not taste, and each README says it is not a model's Dish. They
+share `smoke/kit/film-kit.mjs` (live player, frame-by-frame Chromium capture,
+FFmpeg encode, contact sheet), which the smoke copies to `source/kit/` so a
+reference rebuilds on its own. A staged Recipe is smoked in its final
+delivery state, every turn's artifacts present, and each turn's reply in the
+trace is the smoke's note. A contract whose `files` omit `player.html`
+(`shoot-coverage-then-cut`) has its live-player step skipped in playback.
+
+Smokes on 2026-11-23, wall time per Recipe on bjslab's heavy-job queue:
+`the-thing-we-never-see` 46 s, `film-from-a-written-look` 56 s,
+`same-action-three-styles` 58 s, `cut-to-a-track` 59 s,
+`invent-a-style-and-hold-it` 67 s, `heavy-little-suitcase` 87 s,
+`titles-for-a-film-that-doesnt-exist` 88 s, `three-styleframes-then-film`
+113 s, `two-colours-no-grey` 189 s, `shoot-coverage-then-cut` 208 s and
+`lyric-video-section` 36 min.
+
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody
 decision before it becomes a catalog layer), Manim, Three.js, a sound-design
 sibling, and a dedicated video presentation profile.
@@ -191,4 +210,5 @@ node bin/taste.mjs plan --config codex-sol-high --recipe heavy-little-suitcase -
 node bin/taste.mjs plan --config codex-sol-high --recipe lyric-video-section --skill lyric-music-video --json
 ```
 
-Each plan reports draft recipes as unsupported, with no Cook started.
+Each plan lists the Ready Recipes as cookable and reports any draft (such as
+`blueprint-marble-sorter`) as unsupported; `plan` starts no Cook.

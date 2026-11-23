@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "two-colours-no-grey",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Two colours, no grey",
   "summary": "See what graphic invention a model finds when every pixel of a fast, deep, textured film must be one of two colours.",
   "cuisines": [
@@ -28,7 +28,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model.",
     "fixtures": [
       {
         "id": "brief",

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "heavy-little-suitcase",
   "version": "0.2.0",
-  "status": "draft",
+  "status": "ready",
   "title": "Heavy little suitcase",
   "summary": "See whether a model can make weight and a change of plan legible through motion in a visual language worth remembering.",
   "cuisines": [
@@ -10,7 +10,7 @@
     "ui-visual"
   ],
   "origin": "hybrid",
-  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe; the benchmark shape awaits owner acceptance.",
+  "originNote": "Original fictional task for cross-model animation comparison. Skill workflows are separate layers of this one recipe. Burooj accepted the benchmark shape on 2026-11-23.",
   "tags": [
     "motion",
     "audio",
@@ -28,7 +28,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the same pinned toolchain (Node 22 or later, Python, a browser, FFmpeg and fonts) and compute profile to every compared model and layer. Before Ready, that toolchain must be pinned and smoked; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the same pinned toolchain (Node 22 or later, Python, a browser, FFmpeg and fonts) and compute profile to every compared model and layer.",
     "fixtures": [
       {
         "id": "brief",

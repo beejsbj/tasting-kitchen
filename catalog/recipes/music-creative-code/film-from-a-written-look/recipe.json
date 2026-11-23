@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "film-from-a-written-look",
   "version": "0.1.0",
-  "status": "draft",
+  "status": "ready",
   "title": "A film from a written look",
   "summary": "Make a 24-second film from one short written look, nothing literal, in a single autonomous turn.",
   "cuisines": [
@@ -27,7 +27,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model.",
     "fixtures": [
       {
         "id": "brief",

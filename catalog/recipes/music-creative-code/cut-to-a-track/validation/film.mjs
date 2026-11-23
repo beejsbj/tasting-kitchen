@@ -41,6 +41,12 @@ for(const film of films){
  assert(v && a,film+': video and soundtrack required');
  assert.equal(v.codec_name,'h264');assert.equal(a.codec_name,'aac');
  assert.equal(v.width,contract.width);assert.equal(v.height,contract.height);
+ // Even spacing: an average frame rate can hide frames of unequal duration. Gaps are compared
+ // in whole ticks of the stream's time base, as in the other film drafts' check: within one
+ // tick where the time base cannot hold a frame exactly, equal where it can.
+ const [tbNum,tbDen]=v.time_base.split('/').map(Number),tick=tbNum/tbDen,frameTicks=1/(contract.fps*tick);
+ const pts=run(['ffprobe','-v','error','-select_streams','v:0','-show_entries','packet=pts','-of','csv=p=0',film],'frame timestamps '+film).stdout.trim().split(/\s+/).map(Number).sort((x,y)=>x-y);
+ for(let i=1;i<pts.length;i++) assert(Math.abs(pts[i]-pts[i-1]-frameTicks)<1-1e-9,film+': frames must be evenly spaced at '+contract.fps+' fps: frame '+i+' comes '+((pts[i]-pts[i-1])*tick).toFixed(4)+' s after the one before');
  const [n,d]=v.avg_frame_rate.split('/').map(Number);assert.equal(n/d,contract.fps);
  assert.equal(Number(v.nb_frames),contract.frames,film+' frame count');
  assert(Math.abs(Number(v.duration)-contract.duration)<0.05,film+' video duration');
@@ -52,7 +58,9 @@ for(const film of films){
  // Loudness is reported for the review; clipping is a renderer defect and fails.
  const ebur=spawnSync('ffmpeg',['-v','info','-i',film,'-vn','-af','ebur128=peak=true','-f','null','-'],{encoding:'utf8',timeout:120000,maxBuffer:8388608});
  assert.equal(ebur.status,0,'loudness measurement '+film);
- const integrated=ebur.stderr.match(/I:\s+(-?[\d.]+) LUFS/)?.[1], peak=ebur.stderr.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1];
+ // Read the summary only: ebur128's per-frame lines also carry an I: value, starting at the -70 LUFS gate.
+ const summary=ebur.stderr.slice(ebur.stderr.lastIndexOf('Summary:'));
+ const integrated=summary.match(/I:\s+(-?[\d.]+) LUFS/)?.[1], peak=summary.match(/Peak:\s+(-?[\d.]+) dBFS/)?.[1];
  assert(integrated!==undefined && peak!==undefined,film+': ebur128 summary missing');
  assert(Number(peak)<=-0.1,film+': true peak '+peak+' dBTP clips; keep it at or below -0.1 dBTP');
  measured.push(film+' true peak '+peak+' dBTP, integrated loudness '+integrated+' LUFS');
