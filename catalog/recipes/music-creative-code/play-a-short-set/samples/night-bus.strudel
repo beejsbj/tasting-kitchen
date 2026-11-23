@@ -1,0 +1,75 @@
+// A hand-written sample set for the music room: a faster, drier groove in C minor that is built up, emptied and closed.
+// Steps are separated by "// --- step N" lines. Written by hand to prove the room's loop, not cooked by a model.
+
+// --- step 1
+setcpm(34)
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("crackle*2").density(0.1).gain(0.2)
+
+// --- step 2
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+
+// --- step 3
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: note("c2 ~ c2 [~ eb2] ~ c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(500).decay(0.15).sustain(0.2).gain(0.5)
+
+// --- step 4
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 ~ c2 [~ eb2] ~ c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(600).decay(0.15).sustain(0.2).gain(0.5)
+
+// --- step 5
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 ~ c2 [~ eb2] ~ c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(600).decay(0.15).sustain(0.2).gain(0.5)
+$: note("~ [g4,c5] ~ ~ ~ [g4,bb4] ~ ~").s("square").lpf(1800).decay(0.1).sustain(0).room(0.3).gain(0.25)
+
+// --- step 6
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 ~ c2 [~ eb2] ~ c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(700).decay(0.15).sustain(0.2).gain(0.5)
+$: chord("<Cm7 Cm7 Ab^7 Bb7>").voicing().s("supersaw").lpf(saw.range(300, 3000).slow(8)).attack(0.05).release(0.3).gain(0.3)
+
+// --- step 7
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").every(4, x => x.ply(2)).decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 c3 c2 [~ eb2] g2 c2 ~ <g1 bb1>").s("pulse").pw(sine.range(0.2, 0.5).slow(4)).lpf(900).decay(0.15).sustain(0.2).gain(0.5)
+$: chord("<Cm7 Cm7 Ab^7 Bb7>").voicing().struct("x ~ ~ x ~ ~ x ~").s("supersaw").lpf(3000).attack(0.01).release(0.2).gain(0.3)
+
+// --- step 8
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15").mask("<1 1 1 [1 0]>")
+$: note("c2 ~ c2 [~ eb2] ~ c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(sine.range(300, 1200).slow(8)).decay(0.15).sustain(0.2).gain(0.55)
+
+// --- step 9
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 c3 c2 [~ eb2] g2 c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(900).decay(0.15).sustain(0.2).gain(0.5)
+$: chord("<Cm7 Cm7 Ab^7 Bb7>").voicing().struct("x ~ ~ x ~ ~ x ~").s("supersaw").lpf(3000).attack(0.01).release(0.2).gain(0.28)
+$: n("<[7 ~ 4 2] [4 ~ ~ ~] [7 ~ 9 7] [4 2 ~ ~]>").scale("C5:minor").s("sine").fm(1.5).decay(0.2).sustain(0.3).delay(0.35).gain(0.4)
+
+// --- step 10
+$: s("white*8").decay(0.04).hpf(7000).gain("0.3 0.15")
+$: s("sbd ~ ~ sbd ~ ~ sbd ~").decay(0.3).gain(0.8)
+$: s("~ pink ~ pink").decay(0.12).hpf(1200).gain(0.35)
+$: note("c2 c3 c2 [~ eb2] g2 c2 ~ <g1 bb1>").s("pulse").pw(0.3).lpf(900).decay(0.15).sustain(0.2).gain(0.5)
+$: chord("<Cm7 Cm7 Ab^7 Bb7>").voicing().struct("x ~ ~ x ~ ~ x ~").s("supersaw").lpf(3000).attack(0.01).release(0.2).gain(0.28)
+$: n("<[7 ~ 4 2] [4 ~ ~ ~] [7 ~ 9 7] [4 2 ~ ~]>").scale("C5:minor").rev().s("sine").fm(1.5).decay(0.2).sustain(0.3).delay(0.35).gain(0.4)
+$: note("<c6 ~ g5 ~>").s("sawtooth").lpf(2500).attack(0.3).release(0.6).room(0.5).gain(0.15)
+
+// --- step 11
+$: s("white*4").decay(0.04).hpf(7000).gain(0.2)
+$: s("sbd ~ ~ ~ ~ ~ sbd ~").decay(0.3).gain(0.75)
+$: note("c2 ~ ~ [~ eb2] ~ c2 ~ ~").s("pulse").pw(0.3).lpf(500).decay(0.15).sustain(0.2).gain(0.45)
+$: n("<[7 ~ 4 2] ~ [4 2 ~ ~] ~>").scale("C5:minor").s("sine").fm(1.5).decay(0.2).sustain(0.3).delay(0.5).gain(0.35)
+
+// --- step 12
+setcpm(30)
+$: s("sbd ~ ~ ~").decay(0.5).gain("<0.7 0.6 0.5 0.4 0.3 0.2 0.1 0>")
+$: chord("<Cm7 ~ ~ ~>/2").voicing().s("supersaw").lpf(1200).attack(0.4).release(2.5).room(0.6).gain(0.25)
