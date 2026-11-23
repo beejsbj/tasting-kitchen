@@ -1,6 +1,6 @@
 # The music room: a pilot arena
 
-Status: **pilot. One draft Recipe (`play-a-short-set`) awaiting Burooj's authoring acceptance; not cookable; no model has played in it.** Built 2026-11-13 for [#79](https://github.com/beejsbj/tasting-kitchen/issues/79).
+Status: **pilot. One draft Recipe (`play-a-short-set`), its shape accepted by Burooj on 2026-11-23; not cookable; no model has played in it.** Built 2026-11-13 for [#79](https://github.com/beejsbj/tasting-kitchen/issues/79).
 
 ## What an arena is
 
@@ -194,7 +194,7 @@ The room is plain Node and must run in any harness with a shell and without Dock
 
 ## Authoring checkpoint for `play-a-short-set`
 
-Per `AGENTS.md`, for Burooj to accept, change or reject:
+Per `AGENTS.md`, for Burooj to accept, change or reject (accepted 2026-11-23):
 
 - **Task.** Play a short live set in the music room: twelve steps, hearing each only as numbers.
 - **Why return to it.** It shows how a model behaves over time rather than what it can assemble: whether it listens, how it builds and ends, what it does after a refusal, whether it plans or responds.

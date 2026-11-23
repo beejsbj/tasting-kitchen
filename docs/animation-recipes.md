@@ -1,6 +1,6 @@
 # Animation and lyric-video recipes
 
-Status: **drafts awaiting Burooj's authoring acceptance; none cookable.** On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*. `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
+Status: **none cookable yet.** On 2026-11-23 Burooj accepted the benchmark shape of `heavy-little-suitcase`, `lyric-video-section` and the nine drafts under *Direction, editing and style drafts*; each still needs its smoke render before Ready. `blueprint-marble-sorter`, `words-with-weight` and `queue-under-pressure` still await his acceptance. On 2026-11-14 Burooj asked that film Recipes taste direction, editing and art style rather than a dictated plot and look: `heavy-little-suitcase` was rewritten to leave the look and staging to the model, and five drafts with a fixed plot and a dictated look were archived (`paper-boat-voyage`, `the-last-seat`, `paper-garden`, `riso-night-market`, `pixel-rooftop-rescue`); nine new drafts are listed under *Direction, editing and style drafts*. `heavy-little-suitcase` and `lyric-video-section` have their Kitchen equipment proven.
 Reshaped on 2026-10-15 so that skills are layers of a Recipe rather than
 separate Recipes. The earlier two paper-boat drafts are merged into one.
 
@@ -77,8 +77,8 @@ holds for every film Recipe. The older copies now read loudness from the
 ebur128 summary; they had reported the −70 LUFS gate.
 
 None of these checks has run inside the film image, and no Cook or smoke
-render has been made for them. Each needs a smoke before it can be Ready, and
-Burooj's acceptance of its shape.
+render has been made for them. Burooj accepted all nine shapes on 2026-11-23;
+each needs a smoke before it can be Ready.
 
 The recommended first Cook is `heavy-little-suitcase` and
 `lyric-video-section`, each without skill and with one layer, for two models,
@@ -146,7 +146,8 @@ off the engine's default 0.13 s display lead, so words show when they are sung.
 4. A Claude Code harness configuration if Opus is in the comparison. Opus in
    Claude Code and Sol in Codex are different configurations: same
    brief, browsed together, not a like-for-like pair.
-5. Burooj's acceptance of each benchmark shape at the authoring checkpoint.
+5. Burooj's acceptance of each benchmark shape at the authoring checkpoint
+   (given 2026-11-23 for the suitcase, the lyric section and the nine new drafts).
    Readiness does not flip `status`.
 
 ## Film toolchain
