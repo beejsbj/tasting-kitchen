@@ -64,8 +64,14 @@ test("an assistant response that says score is public-safe; one with a credentia
   for (const [text, reason] of LEAKS) {
     assert.throws(() => sanitizePublicResponse(`${SCORE} ${text}`, options), new RegExp(`assistant response \\(${reason}\\)`, "u"), text);
   }
-  // An unselected workspace file is still a private path, ranking words or not.
-  assert.throws(() => sanitizePublicResponse(`${SCORE} See ${path.join(workspace, "draft.md")}.`, options), /Public artifact scan failed/);
+  // Any other path inside this attempt's cook directory is shown relative to it, never absolute.
+  assert.equal(sanitizePublicResponse(`${SCORE} See ${path.join(workspace, "draft.md")}.`, options), `${SCORE} See run/workspace/draft.md.`);
+  assert.equal(sanitizePublicResponse(`Patterns are in \`${path.join(root, "scratch")}/\`, outside the folder.`, options), "Patterns are in `run/scratch/`, outside the folder.");
+  assert.equal(sanitizePublicResponse(`Ran node room/room.mjs play ${path.join(root, "scratch", "step01.js")}`, options), "Ran node room/room.mjs play run/scratch/step01.js");
+  // A path that only shares the prefix, climbs out, or lies elsewhere is still refused.
+  assert.throws(() => sanitizePublicResponse(`See ${root}-other/notes.md`, options), /assistant response \(absolute path\)/);
+  assert.throws(() => sanitizePublicResponse(`See ${root}/scratch/../../secret.txt`, options), /Public artifact scan failed/);
+  assert.throws(() => sanitizePublicResponse(`See /srv/elsewhere/notes.md`, options), /assistant response \(absolute path\)/);
 });
 
 test("in a public trace only the model's response may use ranking words; prompts and everything else may not", () => {
