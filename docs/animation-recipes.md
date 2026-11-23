@@ -218,6 +218,13 @@ Smokes on 2026-11-23, re-run after the toolchain rewording (image rebuilt,
 `shoot-coverage-then-cut` 137 s, `two-colours-no-grey` 171 s and
 `lyric-video-section` 31 min.
 
+The lyric render's log ends with two `Failed to load resource: ... 404` lines.
+Both are `/favicon.ico`: the engine's `index.html` declares no icon, so each of
+its two browser sessions (the video pass and the contact-sheet pass) asks the
+Vite server for one. Traced on 2026-11-23 by logging each console message's
+source URL in a short render in the image. No font, data file or audio is
+missing, and the engine is left unchanged.
+
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody
 decision before it becomes a catalog layer), Manim, Three.js, a sound-design
 sibling, and a dedicated video presentation profile.
