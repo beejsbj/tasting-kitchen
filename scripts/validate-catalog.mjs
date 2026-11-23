@@ -630,9 +630,10 @@ async function validateRecipe(relative, cuisines, tags, skills) {
       const bytes = await readFile(source);
       fixtureHashes[fixture.id] = sha256(bytes);
       // Public fixture bytes are published verbatim in each Dish's inputs/.
-      // Apply that scan here so a failure surfaces before a paid Cook.
+      // Apply that scan here, reading the file by its name as publication
+      // does, so a failure surfaces before a paid Cook.
       if (fixture.public !== false) {
-        for (const reason of verbatimInputFindings(bytes)) fail(relative, `fixture ${fixture.id} would fail the published inputs scan (${reason})`);
+        for (const reason of verbatimInputFindings(bytes, { name: fixture.mountAs })) fail(relative, `fixture ${fixture.id} would fail the published inputs scan (${reason})`);
       }
     }
     recipeHash = computeRecipeHash(recipe, fixtureHashes);

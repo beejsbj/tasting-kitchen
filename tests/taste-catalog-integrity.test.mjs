@@ -141,6 +141,11 @@ test("catalog validation applies the published-inputs scan to public fixtures be
   result = validate(root);
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /private Unix home path/);
+  // The fixture is read as publication reads it, by its name: a source file's escaped strings are decoded too (#113).
+  await writeFile(fixture, 'export const key = "x\\nghp_abcdefghijklmnopqrstuvwxyz0123";\n');
+  result = validate(root);
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(credential-like token\)/);
 });
 
 test("official catalog validation rejects tampered publication hashes", async (t) => {

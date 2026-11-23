@@ -372,6 +372,71 @@ test("a JSON file is scanned as raw text and as its decoded keys and string valu
   await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
 });
 
+// Source: an escape inside a quoted string hides text the same way (#113).
+
+test("a delivered source file's quoted strings are also read with their escapes decoded, as JavaScript and as CSS read them", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-source-scan-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, text) => {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), text);
+  };
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  const leaks = [
+    ["artifact/app.js", `const t = "x\\n${token}";\n`, "credential-like token"],
+    ["artifact/app.mjs", `export const k = 'x\\tsk-abcdefghijklmnopqrstu';\n`, "credential-like token"],
+    ["artifact/app.ts", 'const notes = "\\/home\\/someone\\/notes.md";\n', "absolute home path"],
+    ["artifact/app.tsx", "const p = `\\x2fetc\\x2fhosts`;\n", "absolute path"],
+    ["artifact/app.jsx", 'const p = "\\u002fopt\\u002fprivate-tools\\u002fbin";\n', "absolute path"],
+    ["artifact/app.js", 'const p = "\\u{2f}srv\\u{2f}data\\u{2f}x";\n', "absolute path"],
+    ["artifact/style.css", '.a::after { content: "\\2f home\\2f someone"; }\n', "absolute home path"],
+    ["artifact/style.css", '.a::after { content: "\\00002fUsers\\00002fsomeone"; }\n', "absolute home path"],
+    ["artifact/index.html", `<script>const k = 'x\\n${token}';</script>\n`, "credential-like token"],
+    ["artifact/index.html", '<style>.a::after { content: "\\2f etc\\2f hosts"; }</style>\n', "absolute path"],
+    ["artifact/scene.strudel", 'note("c e g").name("x\\nE123")\n', "private evidence identifier"],
+    ["artifact/config.yaml", `key: "x\\n${token}"\n`, "credential-like token"],
+    ["artifact/app.js", "const climb = '\\x2e\\x2e/secret/notes.md';\n", "path traversal"],
+    // A token is still a token after an escape outside a string: in a comment or a regex literal.
+    ["artifact/app.js", `// The fixture key was x\\n${token}\n`, "credential-like token"],
+    ["artifact/app.js", `const re = /x\\n${token}/u;\n`, "credential-like token"],
+  ];
+  for (const [relative, text, reason] of leaks) {
+    // The raw rules alone miss each of these: `\n` reads as `n<token>`, an escaped slash is no slash.
+    assert.ok(!publicTextFindings(text).includes(reason), `raw already finds ${reason}: ${text}`);
+    await write(relative, text);
+    await assert.rejects(scanPublicTree(root, PLATE_SCAN), (error) => {
+      assert.match(error.message, new RegExp(`${relative.replaceAll(".", "\\.")} \\(${reason}\\)`, "u"));
+      return true;
+    }, text);
+    await rm(path.join(root, relative));
+  }
+
+  // Escapes outside a quoted string are not decoded: a regex literal's `\.` and `\/` are not a path.
+  // Inside one, an escaped regex source stays escaped once decoded. Ranking words stay the model's.
+  await write("artifact/app.test.mjs", [
+    'assert.match(run("film.mjs").stderr, /edl\\.json/u);',
+    "assert.match(bad, /rushes\\/b\\.mp4 is in rushes/u);",
+    'if (!/styles\\.css/u.test(entry)) throw new Error("missing");',
+    "const digits = /\\d/u.test(stated);",
+    'const route = new RegExp("^\\\\/api\\\\/users\\\\/(\\\\d+)$");',
+    'const label = "Line one\\nThe score is in 3/4.";',
+    "const path = './assets/img/logo.svg';",
+    "const note = `it's \\`quoted\\``;",
+    // A quote or backtick inside a regex opens no string; a comment's code span is not decoded.
+    "const escapeHtml = (s) => s.replace(/[&<>\"']/g, (c) => \"&#\" + c.charCodeAt(0) + \";\");",
+    "const boundary = /(?:^|[\\s\"'`])\\/edl\\.json/u;",
+    "// Matches `/rushes\\/b\\.mp4/` and `'\\/edl\\.json'` in prose.",
+    "/* A block: `/a\\/b\\/c/` */",
+    "",
+  ].join("\n"));
+  await write("artifact/style.css", '.a::before { content: "\\201C"; } .b { font-family: "Inter\\2c sans"; }\n');
+  await write("artifact/index.html", '<p title="a\\nb">Don\'t / won\'t</p>\n');
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+  // Kitchen's own source text gets the decoded read and every rule, ranking included.
+  await write("notes.js", 'const n = "x\\nScore these.";\n');
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /notes\.js \(numerical ranking language\)/);
+});
+
 test("a public trace finds a credential after an escaped newline in a response or a prompt", () => {
   const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
   const trace = (turn) => JSON.stringify({ schemaVersion: 1, recipeId: "demo", turns: [{ id: "opening", role: "prompt", prompt: "Write a theme.", response: "Done.", usage: null, actions: [], ...turn }] });
