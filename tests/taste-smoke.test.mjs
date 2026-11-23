@@ -24,10 +24,11 @@ for (; i < args.length; i++) {
   else if (["--network", "--memory", "--cpus", "--shm-size", "--user", "--workdir", "--env"].includes(args[i])) i++;
   else if (args[i] !== "--rm") break;
 }
+if (process.env.FAKE_DOCKER_LOG) fs.appendFileSync(process.env.FAKE_DOCKER_LOG, JSON.stringify({ command: args.slice(i + 1), mounts }) + "\\n");
 const command = args.slice(i + 1).map((value) => Object.entries(mounts).reduce((text, [target, host]) => text.startsWith(target) ? host + text.slice(target.length) : text, value));
 if (command[0] === "cat") { console.log("fake toolchain 1"); process.exit(0); }
 if (command.some((value) => value.endsWith("smoke/playback.mjs"))) {
-  fs.writeFileSync(path.join(mounts["/evidence"], "playback.json"), JSON.stringify({ checks: [{ name: "film plays", passed: true, detail: "fake" }], served: fs.readdirSync(path.join(mounts["/serve"], "dishes")) }));
+  fs.writeFileSync(path.join(mounts["/evidence"], "playback.json"), JSON.stringify({ checks: [{ name: "film plays", passed: true, detail: "fake" }], served: Object.keys(mounts).filter((target) => target.startsWith("/serve/")).map((target) => path.basename(target)) }));
   process.exit(0);
 }
 try { execFileSync(command[0], command.slice(1), { cwd: mounts["/work"], stdio: "inherit" }); } catch (error) { process.exit(error.status ?? 1); }
@@ -78,10 +79,20 @@ async function kitchen(t) {
   }
   await mkdir(path.join(root, "private/fixtures/private-film"), { recursive: true });
   await writeFile(path.join(root, "private/fixtures/private-film/excerpt.txt"), "private bytes\n");
+  // The pieces of Kitchen a smoke container may see (SMOKE_EQUIPMENT).
+  await mkdir(path.join(root, "node_modules/playwright-core"), { recursive: true });
+  await writeFile(path.join(root, "node_modules/playwright-core/index.mjs"), "export const chromium = null;\n");
+  await writeFile(path.join(root, "smoke/playback.mjs"), "// fake playback\n");
+  await json(path.join(root, "vercel.json"), { headers: [] });
   const docker = path.join(root, "fake-docker");
   await writeFile(docker, FAKE_DOCKER);
   await chmod(docker, 0o755);
-  return { root, env: { ...process.env, TASTE_DOCKER: docker, FAKE_TOOLCHAIN_HASH: toolchain.toolchainHash } };
+  const dockerLog = path.join(root, "docker.log");
+  return { root, dockerLog, env: { ...process.env, TASTE_DOCKER: docker, FAKE_TOOLCHAIN_HASH: toolchain.toolchainHash, FAKE_DOCKER_LOG: dockerLog } };
+}
+
+async function dockerRuns(dockerLog) {
+  return (await readFile(dockerLog, "utf8")).trim().split("\n").map((line) => JSON.parse(line));
 }
 
 test("a public film smoke publishes, lists and plays a Dish only inside its scratch Kitchen", async (t) => {
@@ -183,4 +194,59 @@ test("resuming a smoke of the same Recipe repeats every step after the render", 
   const again = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, resume: first.directory });
   assert.equal(again.passed, true, again.error);
   assert.equal(again.steps.render.reused, true);
+});
+
+test("no smoke container can see the checkout's private/ tree: only the workspace and named equipment are mounted", async (t) => {
+  const { root, dockerLog, env } = await kitchen(t);
+  // A private file of another Recipe, which no container of this smoke should reach.
+  await mkdir(path.join(root, "private/fixtures/someone-else"), { recursive: true });
+  await writeFile(path.join(root, "private/fixtures/someone-else/secret.txt"), "not yours\n");
+  for (const recipeId of ["public-film", "private-film"]) {
+    await rm(dockerLog, { force: true });
+    const result = await smokeRecipe({ repoRoot: root, recipeId, processEnv: env });
+    assert.equal(result.passed, true, result.error);
+    const runs = await dockerRuns(dockerLog);
+    const render = runs.find((run) => run.command.includes("source/render.mjs"));
+    const playback = runs.find((run) => run.command.some((value) => value.endsWith("smoke/playback.mjs")));
+    assert(render && playback, "the render and playback ran in containers");
+    const allowed = new Set([
+      path.join(result.directory, "workspace"),
+      path.join(result.directory, "evidence"),
+      path.join(root, "node_modules/playwright-core"),
+      path.join(root, "smoke/playback.mjs"),
+      path.join(root, "vercel.json"),
+    ]);
+    for (const run of runs) {
+      for (const [target, source] of Object.entries(run.mounts)) {
+        if (target.startsWith("/serve/dishes/")) {
+          assert.equal(path.basename(source), result.steps.publication.dishId, "only this Dish is served");
+          continue;
+        }
+        assert(allowed.has(source), `${run.command.join(" ")} mounts ${source} at ${target}`);
+        assert.notEqual(source, root, "the checkout root is never mounted");
+      }
+    }
+    // The private Recipe's own declared private fixture reaches its workspace, and nothing else of private/fixtures does.
+    const workspaceFiles = await readdir(path.join(result.directory, "workspace"), { recursive: true });
+    assert.equal(workspaceFiles.includes(path.join("inputs", "excerpt.txt")), recipeId === "private-film");
+    assert(!workspaceFiles.some((file) => file.endsWith("secret.txt")));
+  }
+});
+
+test("a smoke refuses to write outside the private/ tree unless told it may", async (t) => {
+  const { root, env } = await kitchen(t);
+  const outside = await mkdtemp(path.join(os.tmpdir(), "taste-smoke-out-"));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  // private/ itself is not below it, and a path that climbs back out is judged where it lands.
+  for (const outDir of [path.join(outside, "film"), path.join(root, "smoke-out"), path.join(root, "private"), `${root}/private/../dishes`]) {
+    await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir }), /outside .*private.*--out-outside-private/su);
+  }
+  assert.equal(await pathExists(path.join(outside, "film")), false, "nothing is created before the refusal");
+  assert.equal(await pathExists(path.join(root, "smoke-out")), false);
+  await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, resume: path.join(outside, "film") }), /outside .*private/su);
+  const inside = await smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir: path.join(root, "private", "my-smoke") });
+  assert.equal(inside.passed, true, inside.error);
+  const allowed = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, outDir: path.join(outside, "film"), allowOutsidePrivate: true });
+  assert.equal(allowed.passed, true, allowed.error);
+  assert.equal(allowed.directory, path.join(outside, "film"));
 });

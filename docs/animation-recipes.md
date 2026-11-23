@@ -183,7 +183,17 @@ node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine
 node scripts/smoke-recipe.mjs lyric-video-section --resume private/runtime/smoke/lyric-video-section/<stamp>
 ```
 
-A smoke runs no model. It renders `smoke/<recipe>/` in the image, runs the
+A smoke runs no model. Its containers never see the checkout: each gets the
+workspace (the Recipe's declared fixtures, for the lyric Recipe only its own
+declared private inputs, the reference and the toolchain's engine) and, read-only
+under `/kitchen`, only the pieces it needs: `node_modules/playwright-core`,
+`smoke/playback.mjs` and `vercel.json`. Playback serves only the smoke's own Dish.
+The command checks of a real Cook mount the workspace alone, read-only. `--out`
+and `--resume` must name a directory below `private/`, the ignored tree, so a
+private film cannot land where it could be committed; `--out-outside-private`
+overrides that on purpose.
+
+It renders `smoke/<recipe>/` in the image, runs the
 Recipe's required checks there, publishes through the real publication path
 into a scratch Kitchen under ignored `private/runtime/smoke/`, builds the
 registry there as if the Recipe were accepted, and plays the Dish in the
