@@ -152,9 +152,9 @@ off the engine's default 0.13 s display lead, so words show when they are sung.
    tools this machine has."), as does the toolchain's own summary; earlier
    text claimed one pinned toolchain and compute profile for every model.
    Burooj chose to state the gap rather than hold the Recipes back.
-4. **Open, not a gate:** a Claude Code harness configuration if Opus is in the comparison. Opus in
-   Claude Code and Sol in Codex are different configurations: same
-   brief, browsed together, not a like-for-like pair.
+4. **Done:** Claude Code configurations for Opus exist (`claude-code-opus-5-5-high-clean`
+   and others). Opus in Claude Code and Sol in Codex are still different configurations:
+   same brief, browsed together, not a like-for-like pair.
 5. Burooj's acceptance of each benchmark shape at the authoring checkpoint
    (given 2026-11-23 for the suitcase, the lyric section and the nine new drafts).
    Acceptance alone does not flip `status`; acceptance and a passing smoke did.
