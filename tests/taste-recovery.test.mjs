@@ -170,7 +170,7 @@ async function cursorRecoveryFixture({ equivalentSecondTurn = false } = {}) {
   return { ...f, selected, executionFile };
 }
 
-test("sanitizer rewrites only exact selected workspace files and fails closed otherwise", async (t) => {
+test("sanitizer rewrites selected files to artifact/, the cook directory to run/, and fails closed otherwise", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "taste-sanitize-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const workspace = path.join(root, "workspace");
@@ -179,10 +179,12 @@ test("sanitizer rewrites only exact selected workspace files and fails closed ot
   const raw = `See [the artifact](${selected}).`;
   assert.equal(sanitizePublicResponse(raw, { workspace, selectedFiles: ["index.html"] }), "See [the artifact](artifact/index.html).");
   assert.equal(raw.includes(selected), true, "raw evidence is not mutated");
+  // Other paths inside this attempt's cook directory are shown relative to it, never absolute.
+  assert.equal(sanitizePublicResponse(`${workspace}/fixtures/input.json`, { workspace, selectedFiles: ["index.html"] }), "run/workspace/fixtures/input.json");
+  assert.equal(sanitizePublicResponse(`${selected}.backup`, { workspace, selectedFiles: ["index.html"] }), "run/workspace/index.html.backup");
   for (const unsafe of [
-    `${workspace}/fixtures/input.json`,
-    `${selected}.backup`,
     `file://${selected}`,
+    `${root}-sibling/result.txt`,
     "/etc/passwd",
     "~/secret.txt",
     "../private/result.txt",
