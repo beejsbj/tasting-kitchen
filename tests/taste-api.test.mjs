@@ -257,3 +257,22 @@ test("recover rebuilds the registry with the configured base path, and only afte
   await recover(root, { attemptId: "attempt_x", env: { TASTE_BASE_PATH: "/from-env/" }, recoverAttempt: async () => outcome });
   assert.equal(JSON.parse(await readFile(registryFile, "utf8")).basePath, "/from-env/");
 });
+
+test("a Menu Cook gathers each configuration's not-attempted cells at the top level", async (t) => {
+  const root = await fixtureRepository(t);
+  const menu = JSON.parse(await readFile(path.join(root, "catalog", "menus", "fresh-visual-ui.json"), "utf8"));
+  await writeFile(path.join(root, "catalog", "menus", "fresh-visual-ui.json"), `${JSON.stringify({ ...menu, configurations: ["codex-sol-high"] }, null, 2)}\n`);
+  const skipped = { status: "not-attempted", recipeId: "later", reason: "Not attempted: usage limit", blockedBy: { attemptId: "attempt_x", fault: "usage-limit" } };
+  const result = await cook(root, {
+    menuId: "fresh-visual-ui",
+    intent: "repeat",
+    execute: true,
+    allowStatuses: ["draft", "ready"],
+    env: { TASTE_ALLOW_MODEL_RUNS: "1" },
+    pruneCookDirectories: async () => ({ removed: [], kept: [], settled: [], errors: [] }),
+    executePlan: async ({ plan: cooked }) => ({ results: [skipped], accepted: [], failed: [], notAttempted: [skipped], unsupported: cooked.unsupported }),
+  });
+  assert.deepEqual(result.configurations, ["codex-sol-high"]);
+  assert.deepEqual(result.cooks[0].notAttempted, [skipped]);
+  assert.deepEqual(result.notAttempted, [skipped]);
+});

@@ -310,6 +310,73 @@ test("plan execution refuses a recipe whose hash moved since the plan was made",
   await assert.rejects(stat(path.join(f.root, "private/runtime")), /ENOENT/);
 });
 
+function threeRecipePlan(f) {
+  const recipes = ["demo-a", "demo-b", "demo-c"].map((id) => {
+    const recipe = { ...f.recipe, id };
+    recipe.recipeHash = computeRecipeHash(recipe, recipe.fixtureHashes);
+    return recipe;
+  });
+  const catalog = { ...f.catalog, recipes };
+  const plan = { variant: f.variant, skill: null, supported: recipes.map((recipe) => ({ recipeId: recipe.id, recipeHash: recipe.recipeHash })), unsupported: [] };
+  return { recipes, catalog, plan };
+}
+
+const usageLimited = (resetsAt) => ({
+  ...fakeSession(),
+  turns: [],
+  failure: { turnId: "opening", message: `You've hit your usage limit.${resetsAt ? ` Try again at ${resetsAt}.` : ""}`, kitchenFault: "usage-limit", ...(resetsAt ? { resetsAt } : {}) },
+});
+
+test("once a cell hits the usage limit, the configuration's remaining cells in that Cook are not attempted", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const { catalog, plan } = threeRecipePlan(f);
+  const launched = [];
+  const result = await executePlan({
+    repoRoot: f.root, catalog, plan, authPath: f.authPath, verifyIdentity: observed,
+    runSession: async ({ recipe }) => {
+      launched.push(recipe.id);
+      return recipe.id === "demo-a" ? fakeSession() : usageLimited("3:05 PM");
+    },
+  });
+  assert.deepEqual(launched, ["demo-a", "demo-b"], "no harness starts after the limit");
+  assert.deepEqual(result.results.map((item) => item.status), ["accepted", "failed", "not-attempted"]);
+  assert.equal(result.failed[0].fault.code, "usage-limit");
+  assert.equal(result.notAttempted.length, 1);
+  const [skipped] = result.notAttempted;
+  assert.equal(skipped.recipeId, "demo-c");
+  assert.equal(skipped.recipeHash, plan.supported[2].recipeHash);
+  assert.deepEqual(skipped.blockedBy, { attemptId: result.failed[0].attemptId, fault: "usage-limit", resetsAt: "3:05 PM" });
+  assert.match(skipped.reason, /^Not attempted: .*usage limit.*3:05 PM.*stays open/u);
+  // Nothing was written for the skipped cell: only two attempts exist.
+  assert.equal((await readdir(path.join(f.root, "private/runtime/attempts"))).length, 2);
+});
+
+test("a fault other than the usage limit does not stop the rest of the Cook", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const { catalog, plan } = threeRecipePlan(f);
+  const launched = [];
+  const result = await executePlan({
+    repoRoot: f.root, catalog, plan, authPath: f.authPath, verifyIdentity: observed,
+    runSession: async ({ recipe }) => {
+      launched.push(recipe.id);
+      return recipe.id === "demo-a" ? { ...fakeSession(), turns: [], failure: { turnId: "opening", message: "429 Too Many Requests" } } : fakeSession();
+    },
+  });
+  assert.deepEqual(launched, ["demo-a", "demo-b", "demo-c"]);
+  assert.equal(result.failed[0].fault.code, "rate-limited");
+  assert.deepEqual(result.notAttempted, []);
+  // Without a stated reset time the reason still says why, and names no time.
+  const noReset = await executePlan({
+    repoRoot: f.root, catalog, plan, authPath: f.authPath, verifyIdentity: observed,
+    runSession: async () => usageLimited(null),
+  });
+  assert.deepEqual(noReset.results.map((item) => item.status), ["failed", "not-attempted", "not-attempted"]);
+  assert.deepEqual(noReset.notAttempted[0].blockedBy, { attemptId: noReset.failed[0].attemptId, fault: "usage-limit" });
+  assert.doesNotMatch(noReset.notAttempted[0].reason, /try again/u);
+});
+
 test("frozen fixtures reject mutation unless that exact fixture is declared editable", async (t) => {
   const f = await fixture();
   t.after(() => rm(f.root, { recursive: true, force: true }));

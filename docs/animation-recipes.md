@@ -183,7 +183,18 @@ node scripts/smoke-recipe.mjs lyric-video-section   # local only; ~30 min engine
 node scripts/smoke-recipe.mjs lyric-video-section --resume private/runtime/smoke/lyric-video-section/<stamp>
 ```
 
-A smoke runs no model. It renders `smoke/<recipe>/` in the image, runs the
+A smoke runs no model, and its containers never see the checkout. The render
+gets the workspace (the Recipe's declared fixtures, for the lyric Recipe only its
+own declared private inputs, the reference and the toolchain's engine) and,
+read-only, `node_modules/playwright-core` under `/kitchen`. Playback gets the
+workspace read-only, the same driver, `smoke/playback.mjs` and `vercel.json`, the
+smoke's own Dish and nothing else of the served tree, and a writable evidence
+directory. The command checks of a real Cook mount the workspace alone,
+read-only. `--out` and `--resume` must name a directory below `private/`, the
+ignored tree, judged after resolving symlinks, so a private film cannot land
+where it could be committed; `--out-outside-private` overrides that on purpose.
+
+It renders `smoke/<recipe>/` in the image, runs the
 Recipe's required checks there, publishes through the real publication path
 into a scratch Kitchen under ignored `private/runtime/smoke/`, builds the
 registry there as if the Recipe were accepted, and plays the Dish in the
@@ -207,6 +218,13 @@ Smokes on 2026-11-23, re-run after the toolchain rewording (image rebuilt,
 `heavy-little-suitcase` 57 s, `titles-for-a-film-that-doesnt-exist` 59 s,
 `shoot-coverage-then-cut` 137 s, `two-colours-no-grey` 171 s and
 `lyric-video-section` 31 min.
+
+The lyric render's log ends with two `Failed to load resource: ... 404` lines.
+Both are `/favicon.ico`: the engine's `index.html` declares no icon, so each of
+its two browser sessions (the video pass and the contact-sheet pass) asks the
+Vite server for one. Traced on 2026-11-23 by logging each console message's
+source URL in a short render in the image. No font, data file or audio is
+missing, and the engine is left unchanged.
 
 Deferred: the `riso-film` skill (its 45 MB upstream repository needs a custody
 decision before it becomes a catalog layer), Manim, Three.js, a sound-design
