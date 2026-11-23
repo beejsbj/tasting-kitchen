@@ -47,6 +47,43 @@ test("an absolute path after a colon is still an absolute path; URLs and colon-j
   assert.ok(publicTextFindings("C:/Windows/Fonts/arial.ttf").includes("absolute Windows path"));
 });
 
+test("a rooted path after a flag or a bare dash or underscore is still an absolute path; hyphenated relative names are not (#113)", () => {
+  // A compiler or linker flag, or a bare `-`/`_` that starts a token, does not make the path after it relative.
+  for (const text of [
+    "-I/usr/include/foo",
+    "cc -L/opt/lib/x main.c",
+    "gcc -isystem/usr/local/include/x.h",
+    "ld --sysroot/opt/cross/root",
+    '"-L/opt/private-tools/lib"',
+    "(-I/srv/headers/include)",
+    "_/etc/hosts",
+    "-/etc/hosts",
+    "list:\n-/etc/hosts",
+    "--/var/tmp/x",
+    "-Wl,-rpath,-L/opt/lib/x",
+  ]) {
+    assert.ok(publicTextFindings(text).includes("absolute path"), text);
+  }
+  // A hyphen, underscore or dot inside a name still continues a relative path.
+  for (const text of [
+    "my-dir/sub/file",
+    "src/my_module/sub/file.ts",
+    "./assets/img/logo.svg",
+    ".github/workflows/ci.yml",
+    "node_modules/.bin/vite",
+    "re-run/rebuild/restart are verbs",
+    "foo_/bar/baz",
+    "__dirname/x",
+    "https://gitlab.com/group/project/-/blob/main/README.md",
+    "Compare 2026-11/12/13 and v1.2-3/4",
+    "path-to/my-dir/file-name.md",
+    "nextState.replace(/-/g, ' ')",
+    "value.replace(/_/g, '-')",
+  ]) {
+    assert.deepEqual(publicTextFindings(text), [], text);
+  }
+});
+
 test("public scan permits quoted source-root aliases without permitting absolute paths", () => {
   assert.deepEqual(publicTextFindings('import type { Note } from "@/types/music";'), []);
   assert.deepEqual(publicTextFindings('src: url("@/assets/fonts/local.woff2")'), []);
