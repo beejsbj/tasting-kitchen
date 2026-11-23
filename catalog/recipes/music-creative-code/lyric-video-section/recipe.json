@@ -29,7 +29,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the pinned lyric engine at engine/ (patched pdoom-video, Three.js and Canvas), Node, Bun, a browser and FFmpeg identically to every model and layer. Before Ready, that engine and toolchain must be pinned and smoked inside Kitchen; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. If a skill layer is mounted at skill/, read skill/SKILL.md before planning; otherwise work from the brief alone. Kitchen supplies the pinned lyric engine at engine/ (patched pdoom-video, Three.js and Canvas), Node, Bun, a browser and FFmpeg identically to every model and layer.",
     "fixtures": [
       {
         "id": "brief",

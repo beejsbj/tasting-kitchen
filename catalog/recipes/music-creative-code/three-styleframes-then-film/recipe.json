@@ -28,7 +28,7 @@
     ]
   },
   "setup": {
-    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model. Before Ready, this Recipe's checks must be smoked in that toolchain; this draft is not cookable.",
+    "instructions": "Read fixtures/brief.md. Kitchen supplies the same pinned film toolchain (Node 22, Python, Chromium, FFmpeg and fonts) and compute profile to every compared model.",
     "fixtures": [
       {
         "id": "brief",
