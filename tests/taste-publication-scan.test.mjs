@@ -263,10 +263,10 @@ test("a brief that says score is still refused at publication: the trace's promp
   await assert.rejects(finalize(f, "attempt_brief_rating", { response: SCORE }), /trace\.json \(numerical ranking language\)/);
 });
 
-async function noDish(f, attemptId, { response, files }) {
+async function noDish(f, attemptId, { response, files, checks = null }) {
   const { attemptDir, workspace } = await workspaceFor(f, attemptId, files);
   return publishNoDish({
-    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant, attemptId, attemptDir, workspace,
+    repoRoot: f.root, catalog: f.catalog, recipe: f.recipe, variant: f.variant, attemptId, attemptDir, workspace, checks,
     result: { cliVersion: "codex-cli 9.9.9-fake", turns: [{ finalMessage: response }] },
     fault: classifyFailure({ stage: "validation", chefFault: "output-contract" }), executedAt: "2026-11-13T12:00:00.000Z",
   });
@@ -298,4 +298,92 @@ test("the owner's verdict note still may not rank", () => {
   const verdict = createVerdict({ plate: { id: "dish_demo", dishHash: `sha256:${"0".repeat(64)}` }, verdict: "failed", note: "Too long.", now: new Date("2026-11-13T12:00:00.000Z") });
   assert.doesNotThrow(() => validateVerdict(verdict));
   assert.throws(() => validateVerdict({ ...verdict, note: "A low score." }), /numerical ranking language/);
+});
+
+// ---------------------------------------------------------------------------
+// JSON: a `\n` escape must not hide a token from a rule that starts with `\b` (#94).
+
+test("a JSON file is scanned as raw text and as its decoded keys and string values", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-json-scan-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, text) => {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), text);
+  };
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  // The raw rules alone miss each of these: `\n` reads as `n<token>`, `\/` hides a slash.
+  for (const raw of [JSON.stringify({ response: `x\n${token}` }), '{"response":"read \\/etc\\/passwd"}']) assert.deepEqual(publicTextFindings(raw), [], raw);
+
+  await write("trace.json", JSON.stringify({ turns: [{ id: "opening", prompt: "Write a theme.", response: SCORE }] }));
+  await write("dish.json", JSON.stringify({ id: "dish_demo" }));
+  await write("artifact/data.json", JSON.stringify({ notes: `Setup.\n\n${SCORE}` }));
+  await write("inputs/brief.json", JSON.stringify({ brief: "Write a theme." }));
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+
+  // A credential after an escaped newline, in a value or a key, wherever the JSON file sits.
+  for (const [relative, value] of [
+    ["artifact/data.json", { notes: `${SCORE}\n${token}` }],
+    ["artifact/data.json", { [`${SCORE}\n${token}`]: 1 }],
+    ["trace.json", { turns: [{ id: "opening", prompt: "Write a theme.", response: `${SCORE}\n${token}` }] }],
+    ["dish.json", { id: "dish_demo", note: `x\n${token}` }],
+    ["inputs/brief.json", { brief: `x\n${token}` }],
+    ["notes.json", { note: `x\n${token}` }],
+  ]) {
+    const before = await pathExists(path.join(root, relative)) ? await readFile(path.join(root, relative), "utf8") : null;
+    await write(relative, JSON.stringify(value));
+    await assert.rejects(scanPublicTree(root, PLATE_SCAN), (error) => {
+      assert.match(error.message, new RegExp(`${relative.replaceAll(".", "\\.")} \\(credential-like token\\)`, "u"));
+      return true;
+    }, relative);
+    if (before === null) await rm(path.join(root, relative));
+    else await write(relative, before);
+  }
+  // An escaped slash hides nothing either.
+  await write("artifact/data.json", '{"notes":"read \\/etc\\/passwd"}');
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /artifact\/data\.json \(absolute path\)/);
+  await write("artifact/data.json", JSON.stringify({ notes: SCORE }));
+
+  // Decoding does not change where ranking words are allowed: still in the model's files and responses, still not in Kitchen's.
+  await write("dish.json", JSON.stringify({ id: "dish_demo", note: "Setup.\n\nScore the piece." }));
+  assert.deepEqual(publicTextFindings(await readFile(path.join(root, "dish.json"), "utf8")), [], "the raw rule alone misses it");
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /dish\.json \(numerical ranking language\)/);
+  await write("dish.json", JSON.stringify({ id: "dish_demo" }));
+  await write("trace.json", JSON.stringify({ turns: [{ id: "opening", prompt: "Setup.\n\nScore the piece.", response: "Done." }] }));
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /trace\.json \(numerical ranking language\)/);
+  await write("trace.json", JSON.stringify({ turns: [{ id: "opening", prompt: "Write a theme.", response: "Setup.\n\nScore the piece." }] }));
+  await write("artifact/data.json", JSON.stringify({ notes: "Setup.\n\nScore the piece." }));
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+
+  // One finding per file and reason, even when the raw text and the decoded value both trip it.
+  await write("artifact/data.json", JSON.stringify({ notes: `${token} and\n${token}` }));
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), (error) => {
+    assert.equal(error.message, "Public artifact scan failed: artifact/data.json (credential-like token)");
+    return true;
+  });
+  // A `.json` file that does not parse is still scanned as raw text.
+  await write("artifact/data.json", `{"notes": "${token}"`);
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /artifact\/data\.json \(credential-like token\)/);
+  await write("artifact/data.json", '{"notes": "fine"');
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+});
+
+test("a public trace finds a credential after an escaped newline in a response or a prompt", () => {
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  const trace = (turn) => JSON.stringify({ schemaVersion: 1, recipeId: "demo", turns: [{ id: "opening", role: "prompt", prompt: "Write a theme.", response: "Done.", usage: null, actions: [], ...turn }] });
+  assert.deepEqual(publicTraceFindings(trace({ response: `${SCORE}\n${token}` })), ["credential-like token"]);
+  assert.deepEqual(publicTraceFindings(trace({ prompt: `Write.\n${token}` })), ["credential-like token"]);
+  assert.deepEqual(publicTraceFindings(trace({ prompt: "Setup.\n\nScore the piece." })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicTraceFindings(trace({ response: "Setup.\n\nScore the piece." })), []);
+  // Not a trace: every rule, raw and decoded.
+  assert.deepEqual(publicTraceFindings(JSON.stringify({ note: `x\n${token}` })), ["credential-like token"]);
+});
+
+test("a No Dish drops a validation receipt whose check detail hides a credential after an escaped newline", async (t) => {
+  const f = await recipeFixture(t);
+  const checks = (detail) => ({ passed: false, checks: [{ id: "entry", type: "file-exists", required: true, description: "The notes exist.", passed: false, detail }] });
+  const kept = await noDish(f, "attempt_nodish_receipt", { response: "Done.", files: {}, checks: checks("notes.md is missing") });
+  assert.deepEqual(kept.manifest.validation, { passed: false, report: "validation.json" });
+  const dropped = await noDish(f, "attempt_nodish_receipt_leak", { response: "Done.", files: {}, checks: checks("notes.md is missing\nghp_abcdefghijklmnopqrstuvwxyz0123") });
+  assert.equal(dropped.manifest.validation, null, "the receipt is dropped; the plate still publishes");
+  assert.equal(await pathExists(path.join(dropped.directory, "validation.json")), false);
 });
