@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import { pathExists } from "../lib/taste/files.mjs";
 import { loadDishes } from "../lib/taste/registry.mjs";
-import { smokeRecipe } from "../lib/taste/smoke.mjs";
+import { insidePrivateTree, smokeRecipe } from "../lib/taste/smoke.mjs";
 import { loadToolchains, renderToolchainPin } from "../lib/taste/toolchains.mjs";
 
 // A fake docker that runs the in-image command on the host, with the mounted
@@ -241,11 +241,21 @@ test("a smoke refuses to write outside the private/ tree unless told it may", as
   for (const outDir of [path.join(outside, "film"), path.join(root, "smoke-out"), path.join(root, "private"), `${root}/private/../dishes`]) {
     await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir }), /outside .*private.*--out-outside-private/su);
   }
+  // A link inside private/ that leads back into the repo is judged where it lands.
+  await symlink(path.join(root, "catalog"), path.join(root, "private", "back-into-repo"));
+  await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir: path.join(root, "private", "back-into-repo", "film") }), /outside .*private/su);
   assert.equal(await pathExists(path.join(outside, "film")), false, "nothing is created before the refusal");
   assert.equal(await pathExists(path.join(root, "smoke-out")), false);
   await assert.rejects(smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, resume: path.join(outside, "film") }), /outside .*private/su);
-  const inside = await smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir: path.join(root, "private", "my-smoke") });
+  const inside = await smokeRecipe({ repoRoot: root, recipeId: "private-film", processEnv: env, outDir: path.join(root, "private", "..my-smoke") });
   assert.equal(inside.passed, true, inside.error);
+  // private/ may itself be a link (a worktree borrowing the main checkout's): its real path counts as inside.
+  const linked = await mkdtemp(path.join(os.tmpdir(), "taste-smoke-linked-"));
+  t.after(() => rm(linked, { recursive: true, force: true }));
+  await symlink(path.join(root, "private"), path.join(linked, "private"));
+  assert.equal(await insidePrivateTree(linked, path.join(root, "private", "x")), true);
+  assert.equal(await insidePrivateTree(linked, path.join(linked, "private", "x")), true);
+  assert.equal(await insidePrivateTree(linked, path.join(linked, "x")), false);
   const allowed = await smokeRecipe({ repoRoot: root, recipeId: "public-film", processEnv: env, outDir: path.join(outside, "film"), allowOutsidePrivate: true });
   assert.equal(allowed.passed, true, allowed.error);
   assert.equal(allowed.directory, path.join(outside, "film"));

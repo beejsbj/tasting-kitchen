@@ -142,8 +142,10 @@ started: the Cook reports each under `notAttempted` (status `not-attempted`,
 with a `reason` naming the attempt that hit the limit and its `resetsAt`, if
 any). Nothing is written for them and their cells stay open. Across Cooks
 nothing reads `resetsAt` yet: it is the provider's own text, not a parsed date,
-so the next `plan` or `fill-missing` does not skip the configuration until then. Other harnesses are not tagged yet: Kitchen has no recorded
-limit failure from them to read a shape from, so there the code comes from the
+so the next `plan` or `fill-missing` does not skip the configuration until
+then. The skip is per configuration: another configuration on the same spent
+account still spends one attempt. Other harnesses are not tagged yet: Kitchen
+has no recorded limit failure from them to read a shape from, so there the code comes from the
 message alone and carries no reset time.
 
 `taste verdict --dish ID --failed|--passed --note TEXT` records Burooj's verdict
