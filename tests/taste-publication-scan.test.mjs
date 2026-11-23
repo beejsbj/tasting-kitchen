@@ -6,7 +6,7 @@ import test from "node:test";
 
 import { computeConfigHash, computeRecipeHash, sha256 } from "../lib/taste/catalog.mjs";
 import { classifyFailure } from "../lib/taste/faults.mjs";
-import { assertPublicTextSafe, chefTextFindings, pathExists, publicTextFindings, publicTraceFindings, RANKING_LANGUAGE, scanPublicTree } from "../lib/taste/files.mjs";
+import { assertPublicTextSafe, chefTextFindings, pathExists, publicManifestFindings, publicTextFindings, publicTraceFindings, RANKING_LANGUAGE, scanPublicTree } from "../lib/taste/files.mjs";
 import { loadNoDishes, publishNoDish } from "../lib/taste/no-dishes.mjs";
 import { finalizeAttempt, sanitizePublicResponse } from "../lib/taste/publication.mjs";
 import { PLATE_SCAN } from "../lib/taste/receipts.mjs";
@@ -87,7 +87,12 @@ test("in a public trace only the model's response may use ranking words; prompts
   assert.deepEqual(publicTraceFindings(trace({ prompt: "Give the piece a score out of ten." })), [RANKING_LANGUAGE]);
   assert.deepEqual(publicTraceFindings(trace({ prompt: "Give the piece a score out of ten.", response: SCORE })), [RANKING_LANGUAGE]);
   assert.deepEqual(publicTraceFindings(trace({ id: "scoring" })), [RANKING_LANGUAGE]);
-  assert.deepEqual(publicTraceFindings(trace({ actions: [{ event: "item.completed", type: "file_change", path: "score.md" }] })), [RANKING_LANGUAGE]);
+  // An action's path names a file the model chose (#93): the ranking rule skips it, as it skips the response.
+  assert.deepEqual(publicTraceFindings(trace({ actions: [{ event: "item.completed", type: "file_change", path: "score.md" }] })), []);
+  assert.deepEqual(publicTraceFindings(trace({ actions: [{ event: "item.completed", type: "file_change", path: "assets/score.json" }, { type: "tool_call" }] })), []);
+  // The rest of an action is Kitchen's vocabulary and keeps the rule.
+  assert.deepEqual(publicTraceFindings(trace({ actions: [{ event: "scoring", type: "file_change", path: "notes.md" }] })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicTraceFindings(trace({ actions: [{ type: "file_change", path: { score: "x" } }] })), [RANKING_LANGUAGE]);
   assert.deepEqual(publicTraceFindings(trace({}, { note: "Kitchen's rating" })), [RANKING_LANGUAGE]);
   // Only a text `response` is the model's; an object in its place is scanned whole.
   assert.deepEqual(publicTraceFindings(trace({ response: { note: "a score" } })), [RANKING_LANGUAGE]);
@@ -386,4 +391,104 @@ test("a No Dish drops a validation receipt whose check detail hides a credential
   const dropped = await noDish(f, "attempt_nodish_receipt_leak", { response: "Done.", files: {}, checks: checks("notes.md is missing\nghp_abcdefghijklmnopqrstuvwxyz0123") });
   assert.equal(dropped.manifest.validation, null, "the receipt is dropped; the plate still publishes");
   assert.equal(await pathExists(path.join(dropped.directory, "validation.json")), false);
+});
+
+// ---------------------------------------------------------------------------
+// File names the model chose (#93): exempt from the ranking rule only.
+
+/** File names that must never publish, whoever chose them, with the reason they trip. */
+const LEAKING_NAMES = [
+  ["assets/ghp_abcdefghijklmnopqrstuvwxyz0123.json", "credential-like token"],
+  ["assets/sk-proj1234567890abcdefghij.txt", "credential-like token"],
+  ["assets/home/someone/notes.md", "absolute home path"],
+  ["assets/Users/someone/notes.md", "absolute home path"],
+  ["assets/%2e%2e%2fsecret.md", "encoded path traversal"],
+  ["assets/private/notes.md", "private directory reference"],
+  ["assets/CJ123.md", "private evidence identifier"],
+];
+
+test("a file name the model chose may say score in the trace and the manifest; every leak rule still applies to it", () => {
+  const trace = (paths) => JSON.stringify({ schemaVersion: 1, recipeId: "demo", turns: [{ id: "opening", prompt: "Write a theme.", response: "Done.", actions: paths.map((name) => ({ event: "item.completed", type: "file_change", status: "completed", path: name })) }] });
+  const manifest = (paths, extra = {}) => JSON.stringify({ id: "dish_demo", ...extra, artifact: { kind: "document", entry: "artifact/notes.md", files: paths.map((name) => ({ path: `artifact/${name}`, sha256: "0".repeat(64), bytes: 1 })), treeHash: "x" } });
+  assert.deepEqual(publicTraceFindings(trace(["assets/score.json", "scoring.py"])), []);
+  assert.deepEqual(publicManifestFindings(manifest(["notes.md", "assets/score.json", "theme/scoring.py"])), []);
+  // Only the file names: the rest of the manifest is Kitchen's, the entry is the Recipe's.
+  assert.deepEqual(publicManifestFindings(manifest(["notes.md"], { note: "a score" })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicManifestFindings(JSON.stringify({ artifact: { entry: "artifact/score.md", files: [{ path: "artifact/score.md" }] } })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicManifestFindings(JSON.stringify({ artifact: { files: [{ path: "notes.md", kind: "score" }] } })), [RANKING_LANGUAGE]);
+  assert.deepEqual(publicManifestFindings(JSON.stringify({ artifact: { files: [{ path: ["score"] }] } })), [RANKING_LANGUAGE]);
+  // Not manifest-shaped (no artifact files, as in a No Dish without a partial artifact): every rule.
+  for (const text of [JSON.stringify({ artifact: null, note: "a score" }), JSON.stringify({ artifact: { files: "score.md" } }), "a score"]) {
+    assert.deepEqual(publicManifestFindings(text), [RANKING_LANGUAGE], text);
+  }
+  for (const [name, reason] of LEAKING_NAMES) {
+    assert.ok(publicTraceFindings(trace([name])).includes(reason), `trace: ${name}`);
+    assert.ok(publicManifestFindings(manifest(["notes.md", name])).includes(reason), `manifest: ${name}`);
+    // Beside a name that says score, only the leak is reported.
+    assert.deepEqual(publicManifestFindings(manifest(["assets/score.json", name])), publicTextFindings(`artifact/${name}`), name);
+  }
+  // A traversal spelled after a space in a name is still traversal.
+  assert.ok(publicManifestFindings(manifest(["draft ../secret.md"])).includes("path traversal"));
+});
+
+test("a plate scan reads dish.json and no-dish.json as manifests: delivered file names may say score", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-manifest-scan-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, value) => {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), typeof value === "string" ? value : JSON.stringify(value));
+  };
+  const manifest = (name, extra = {}) => ({ id: "dish_demo", ...extra, artifact: { entry: "artifact/notes.md", files: [{ path: "artifact/notes.md" }, { path: `artifact/${name}` }] } });
+  await write("artifact/notes.md", "Notes.\n");
+  for (const file of ["dish.json", "no-dish.json"]) {
+    await write(file, manifest("assets/score.json"));
+    await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN), file);
+    await write(file, manifest("assets/score.json", { note: "Give it a score." }));
+    await assert.rejects(scanPublicTree(root, PLATE_SCAN), new RegExp(`${file.replace(".", "\\.")} \\(numerical ranking language\\)`, "u"));
+    for (const [name, reason] of LEAKING_NAMES) {
+      await write(file, manifest(name));
+      await assert.rejects(scanPublicTree(root, PLATE_SCAN), new RegExp(`${file.replace(".", "\\.")} \\(${reason}\\)`, "u"), name);
+    }
+    await rm(path.join(root, file));
+  }
+  // Only the plate's own manifests: the same file elsewhere, or a tree scanned without the plate's layout, keeps the rule.
+  await write("other/dish.json", manifest("assets/score.json"));
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /other\/dish\.json \(numerical ranking language\)/);
+  await rm(path.join(root, "other"), { recursive: true });
+  await write("dish.json", manifest("assets/score.json"));
+  await assert.rejects(scanPublicTree(root), /dish\.json \(numerical ranking language\)/);
+  await assert.rejects(scanPublicTree(root, { ...PLATE_SCAN, manifests: "dish.json" }), /entries as arrays/);
+});
+
+test("a Dish that delivers a file named score publishes and loads; a file named with a credential or a home path does not", async (t) => {
+  const f = await recipeFixture(t);
+  const published = await finalize(f, "attempt_named_score", { files: { "notes.md": "Notes.\n", "theme/score.md": "D F A\n", "theme/scoring.py": "print(1)\n" } });
+  assert.equal(published.status, "accepted");
+  assert.deepEqual(published.manifest.artifact.files.map((file) => file.path), ["artifact/notes.md", "artifact/theme/score.md", "artifact/theme/scoring.py"]);
+  assert.deepEqual((await loadDishes(f.root)).map((dish) => dish.id), [published.dishId]);
+  for (const [index, [name, reason]] of LEAKING_NAMES.entries()) {
+    const file = name.replace(/^assets\//u, "theme/");
+    await assert.rejects(finalize(f, `attempt_named_leak_${index}`, { files: { "notes.md": "Notes.\n", [file]: "x\n" } }), (error) => {
+      assert.equal(error.stage, "publication");
+      assert.match(error.message, new RegExp(`dish\\.json \\(${reason}\\)`, "u"));
+      return true;
+    }, name);
+  }
+  assert.deepEqual((await loadDishes(f.root)).map((dish) => dish.id), [published.dishId], "nothing else was published");
+});
+
+test("a No Dish keeps a partial artifact whose file is named score, and drops one whose file name leaks", async (t) => {
+  const f = await recipeFixture(t);
+  // The entry (notes.md) is missing: an output-contract fault with a partial artifact.
+  const kept = await noDish(f, "attempt_nodish_named_score", { response: "Done.", files: { "theme/score.json": "{}\n" } });
+  assert.deepEqual(kept.manifest.artifact.files.map((file) => file.path), ["artifact/theme/score.json"]);
+  assert.equal(await pathExists(path.join(kept.directory, "artifact/theme/score.json")), true);
+  const ids = [kept.noDishId];
+  for (const [index, [name]] of LEAKING_NAMES.entries()) {
+    const dropped = await noDish(f, `attempt_nodish_named_leak_${index}`, { response: "Done.", files: { "theme/motif.js": "export default 1;\n", [name.replace(/^assets\//u, "theme/")]: "x\n" } });
+    assert.equal(dropped.manifest.artifact, null, `a leaking name drops the partial artifact: ${name}`);
+    assert.equal(await pathExists(path.join(dropped.directory, "artifact")), false, name);
+    ids.push(dropped.noDishId);
+  }
+  assert.deepEqual((await loadNoDishes(f.root)).map((plate) => plate.id).sort(), ids.sort());
 });

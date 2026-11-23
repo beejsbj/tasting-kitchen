@@ -6,6 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { hashCanonical, loadCatalog } from "../lib/taste/catalog.mjs";
+import { describeTree } from "../lib/taste/files.mjs";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const validator = path.join(projectRoot, "scripts/validate-catalog.mjs");
@@ -177,6 +178,49 @@ test("official catalog validation rejects tampered publication hashes", async (t
       await writeFile(manifestPath, `${JSON.stringify(original, null, 2)}\n`);
     });
   }
+});
+
+test("catalog validation lets a delivered file's name say score, and still refuses a name that leaks", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const dishId = "dish_fresh-system-hem_codex-luna-xhigh_20260906232727988_d6b36aac";
+  const directory = path.join(root, "dishes", dishId);
+  const manifestPath = path.join(directory, "dish.json");
+  const original = await readFile(manifestPath, "utf8");
+  /** Deliver one more file under the Recipe's `assets/**` and re-hash the manifest honestly. */
+  const deliver = async (name) => {
+    await mkdir(path.dirname(path.join(directory, "artifact", name)), { recursive: true });
+    await writeFile(path.join(directory, "artifact", name), "{}\n");
+    const dish = JSON.parse(original);
+    delete dish.dishHash;
+    const described = await describeTree(path.join(directory, "artifact"));
+    dish.artifact.files = described.files.map((file) => ({ ...file, path: `artifact/${file.path}` }));
+    dish.artifact.treeHash = described.treeHash;
+    await writeFile(manifestPath, `${JSON.stringify({ ...dish, dishHash: hashCanonical(dish) }, null, 2)}\n`);
+    const result = validate(root);
+    await rm(path.join(directory, "artifact", "assets"), { recursive: true, force: true });
+    await writeFile(manifestPath, original);
+    return result;
+  };
+  const named = await deliver("assets/score.json");
+  assert.equal(named.status, 0, named.stderr);
+  for (const [name, expected] of [
+    ["assets/ghp_abcdefghijklmnopqrstuvwxyz0123.json", /artifact\.files\[\d+\]\.path: public-safety scan matched API-key-like value/],
+    ["assets/home/someone/notes.json", /artifact\.files\[\d+\]\.path: public-safety scan matched private Unix home path/],
+    ["assets/private/notes.json", /artifact\.files\[\d+\]\.path: public-safety scan matched private directory reference/],
+  ]) {
+    const result = await deliver(name);
+    assert.equal(result.status, 1, name);
+    assert.match(result.stderr, expected, name);
+  }
+  // Only the file names: the same word elsewhere in the manifest is Kitchen's and is still refused.
+  const dish = JSON.parse(original);
+  delete dish.dishHash;
+  dish.identity.variantId = `${dish.identity.variantId}-scoring`;
+  await writeFile(manifestPath, `${JSON.stringify({ ...dish, dishHash: hashCanonical(dish) }, null, 2)}\n`);
+  const kitchen = validate(root);
+  assert.equal(kitchen.status, 1);
+  assert.match(kitchen.stderr, /identity\.variantId: public-safety scan matched numerical ranking language/);
 });
 
 test("official catalog validation requires an honest artifact reviewer kind", async (t) => {
