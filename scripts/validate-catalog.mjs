@@ -8,7 +8,7 @@ import { OPTIONAL_PROFILE_KEYS, adapterSupport } from "../lib/taste/harness-adap
 import { HERMES_EFFORTS } from "../lib/taste/hermes.mjs";
 import { isConfigurationSpec, materializedProblems, parseConfigurationSpec, templateFor } from "../lib/taste/configuration-templates.mjs";
 import { loadDishNotes } from "../lib/taste/dish-notes.mjs";
-import { describeTree, verbatimInputFindings } from "../lib/taste/files.mjs";
+import { chefTextFindings, describeTree, publicTextFindings, verbatimInputFindings } from "../lib/taste/files.mjs";
 import { serviceTiersMatch } from "../lib/taste/identity.mjs";
 import { loadAxisSets, loadObservations } from "../lib/taste/observations.mjs";
 import { BUDGET_KEYS, BUDGET_LIMITS, recipeBudget } from "../lib/taste/budget.mjs";
@@ -54,6 +54,10 @@ const allowedReviewVerdicts = new Set(["pass", "issue", "inconclusive"]);
 const allowedReviewerKinds = new Set(["human", "agent"]);
 
 const forbiddenKeys = new Set(["score", "scores", "rating", "ratings", "rank", "ranking", "winner", "leaderboard"]);
+// The catalog's own patterns predate the shared publication scan
+// (lib/taste/public-text.mjs) and were never reconciled with it; nothing
+// recorded a reason for leaving its path rules out. scanText now applies both,
+// so Recipe text that would fail publication fails here, before a Cook (#113).
 const publicLeakPatterns = [
   { name: "private Unix home path", pattern: /\/(?:home|Users)\/|(?<![A-Za-z0-9._-])\/root\/|(?<![A-Za-z0-9._-])\/mnt\/server-ssd(?![A-Za-z0-9._-])/ },
   { name: "private Windows home path", pattern: /[a-z]:\\Users\\/i },
@@ -206,16 +210,24 @@ function globCovers(glob, target) {
  * `chefNamed` holds the labels of strings that are names the model chose (a
  * delivered file's path): the ranking-language rule skips them, every leak rule
  * still applies. See publicManifestFindings in lib/taste/files.mjs.
+ *
+ * A Recipe's `validation.checks[].argv` strings are Kitchen's validator code
+ * run inline (`node -e …`), the same code a mounted validator fixture holds, so
+ * they get the published-inputs reading: the path-shape rules are relaxed (a
+ * regex such as `/localStorage/.test` is not a path) and every leak rule applies.
  */
 function publicSafety(value, label, key = "", chefNamed = new Set()) {
   if (forbiddenKeys.has(key.toLowerCase())) fail(label, `forbidden scoring key ${key}`);
   if (typeof value === "string") {
-    scanText(value, label, { chefNamed: chefNamed.has(label) });
+    scanText(value, label, { chefNamed: chefNamed.has(label), code: CHECK_ARGV.test(label) ? "check.mjs" : null });
     return;
   }
   if (Array.isArray(value)) return value.forEach((item, index) => publicSafety(item, `${label}[${index}]`, "", chefNamed));
   if (isObject(value)) for (const [childKey, child] of Object.entries(value)) publicSafety(child, `${label}.${childKey}`, childKey, chefNamed);
 }
+
+/** The label publicSafety builds for a Recipe check's argv string. */
+const CHECK_ARGV = /\/recipe\.json\.validation\.checks\[\d+\]\.argv\[\d+\]$/u;
 
 /** Labels of a manifest's `artifact.files[].path` strings, as publicSafety builds them. */
 function deliveredFileNames(manifest, label) {
@@ -223,11 +235,22 @@ function deliveredFileNames(manifest, label) {
   return new Set(files.flatMap((file, index) => (isObject(file) && typeof file.path === "string" ? [`${label}.artifact.files[${index}].path`] : [])));
 }
 
-function scanText(text, label, { chefNamed = false } = {}) {
+/**
+ * The catalog's own patterns and the shared publication rules, each reason
+ * once. `code` names a file of Kitchen code (a check's inline argv, a catalog
+ * source file) and gives it the published-inputs reading: path shapes relaxed,
+ * every leak rule applied, escapes decoded as that file type reads them.
+ */
+function scanText(text, label, { chefNamed = false, code = null } = {}) {
+  const matched = new Set();
   for (const { name, pattern } of publicLeakPatterns) {
     if (chefNamed && name === "numerical ranking language") continue;
-    if (pattern.test(text)) fail(label, `public-safety scan matched ${name}`);
+    if (pattern.test(text)) matched.add(name);
   }
+  const shared = code !== null ? verbatimInputFindings(Buffer.from(text, "utf8"), { name: code })
+    : chefNamed ? chefTextFindings(text) : publicTextFindings(text);
+  for (const reason of shared) matched.add(reason);
+  for (const name of matched) fail(label, `public-safety scan matched ${name}`);
 }
 
 async function json(relative) {
@@ -972,6 +995,10 @@ async function validateReview(relative, dishes) {
 
 // Mounted skill sources are third-party public code. They are scanned for
 // leaked credentials and private machine paths, not for prose conventions.
+// Every other catalog file is Kitchen's code, toolchain or fixture source,
+// which legitimately names container paths (`/opt/kitchen/engine`), routes and
+// regexes shaped like paths, so it gets the published-inputs reading: the
+// path-shape rules are relaxed, every leak rule applies (see scanText).
 const skillSourcePatterns = new Set(["private Unix home path", "private Windows home path", "private key", "provider credential variable", "API-key-like value", "private evidence ID"]);
 
 async function scanPublicCatalog() {
@@ -985,7 +1012,7 @@ async function scanPublicCatalog() {
       for (const { name, pattern } of publicLeakPatterns) if (skillSourcePatterns.has(name) && pattern.test(text)) fail(relative, `public-safety scan matched ${name}`);
       continue;
     }
-    scanText(text, relative);
+    scanText(text, relative, { code: relative });
   }
 }
 

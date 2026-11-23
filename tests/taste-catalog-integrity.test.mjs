@@ -148,6 +148,68 @@ test("catalog validation applies the published-inputs scan to public fixtures be
   assert.match(result.stderr, /fixture film-check would fail the published inputs scan \(credential-like token\)/);
 });
 
+test("catalog validation holds Recipe text to the publication scan's rules; a check's inline code gets the fixture-code reading (#113)", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const target = path.join(root, "catalog/recipes/ux-interaction/recovery-first-onboarding/recipe.json");
+  const original = await readFile(target, "utf8");
+  const edited = async (edit) => {
+    const recipe = JSON.parse(original);
+    edit(recipe);
+    await writeFile(target, JSON.stringify(recipe, null, 2));
+    const result = validate(root);
+    await writeFile(target, original);
+    return result;
+  };
+  // A rooted path, a flag-prefixed one or a climb out of the workspace in a brief would fail publication of every Dish's trace.
+  for (const [text, reason] of [
+    ["Save it under /srv/kitchen/out.", "absolute path"],
+    ["Build with -I/usr/include/flow.", "absolute path"],
+    ["Then read ../../etc/passwd.", "path traversal"],
+    ["Pass access_token = abc to the API.", "authentication-token field"],
+  ]) {
+    const result = await edited((recipe) => { recipe.turns[0].content += ` ${text}`; });
+    assert.equal(result.status, 1, text);
+    assert.match(result.stderr, new RegExp(`recovery-first-onboarding/recipe\\.json\\.turns\\[0\\]\\.content: public-safety scan matched ${reason}`, "u"), text);
+  }
+  // A check's `node -e` code is Kitchen's validator source, like a mounted validator fixture:
+  // a regex such as /localStorage/.test is not a path, but every leak rule still applies.
+  assert.match(JSON.parse(original).validation.checks[1].argv[2], /\/localStorage\/\.test\(/u);
+  assert.equal((await edited(() => {})).status, 0);
+  const leaking = await edited((recipe) => { recipe.validation.checks[1].argv[2] += ";// access_token = abc"; });
+  assert.equal(leaking.status, 1);
+  assert.match(leaking.stderr, /validation\.checks\[1\]\.argv\[2\]: public-safety scan matched authentication-token field/);
+  const home = await edited((recipe) => { recipe.validation.checks[1].argv[2] += ";// /mnt/server-ssd/cache"; });
+  assert.equal(home.status, 1);
+  assert.match(home.stderr, /validation\.checks\[1\]\.argv\[2\]: public-safety scan matched private Unix home path/);
+  // Only the check's argv: the same regex shape in the brief is Recipe text and is refused.
+  const brief = await edited((recipe) => { recipe.turns[0].content += " Test it with /localStorage/.test(s)."; });
+  assert.equal(brief.status, 1);
+  assert.match(brief.stderr, /turns\[0\]\.content: public-safety scan matched absolute path/);
+});
+
+test("catalog source files keep their path shapes but get every shared leak rule (#113)", async (t) => {
+  const root = await makeValidationRepository();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  // Kitchen's toolchain names its container paths; that is not a leak.
+  assert.match(await readFile(path.join(root, "catalog/toolchains/film/toolchain.json"), "utf8"), /\/opt\/kitchen\/engine/u);
+  const source = path.join(root, "catalog/recipes/ui-visual/standard-developer-homepage/validator.test.mjs");
+  const original = await readFile(source, "utf8");
+  for (const [line, reason] of [
+    ["// access_token = example", "authentication-token field"],
+    ["// eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcdefghijklmnop", "JWT-like credential"],
+    ['const key = "x\\nsk-abcdefghijklmnopqrstu";', "credential-like token"],
+  ]) {
+    await writeFile(source, `${original}${line}\n`);
+    const result = validate(root);
+    assert.equal(result.status, 1, line);
+    assert.match(result.stderr, new RegExp(`validator\\.test\\.mjs: public-safety scan matched ${reason}`, "u"), line);
+  }
+  await writeFile(source, `${original}const route = "/srv/fixtures/page";\n`);
+  const routed = validate(root);
+  assert.equal(routed.status, 0, routed.stderr);
+});
+
 test("official catalog validation rejects tampered publication hashes", async (t) => {
   const root = await makeValidationRepository();
   t.after(() => rm(root, { recursive: true, force: true }));
