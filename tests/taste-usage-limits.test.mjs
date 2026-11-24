@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { cook, plan } from "../lib/taste/index.mjs";
+import { cook, coveredCells, plan } from "../lib/taste/index.mjs";
 import { formatLocalTime, latestUsageLimit, usageLimitResetsAt } from "../lib/taste/usage-limits.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
@@ -34,8 +34,11 @@ test("a time-only reset is the first such local time after the fault", () => {
   // Already past on the fault's own day: the next day.
   const evening = local(2026, 10, 21, 16, 0);
   assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: evening }).getTime(), local(2026, 10, 22, 15, 5).getTime());
-  // Exactly at the fault is not after it.
-  assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: local(2026, 10, 21, 15, 5) }).getTime(), local(2026, 10, 22, 15, 5).getTime());
+  // The provider prints the minute and Kitchen records the fault after it spoke: within five minutes it is still today's.
+  assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: local(2026, 10, 21, 15, 5, 40) }).getTime(), local(2026, 10, 21, 15, 5).getTime());
+  assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: local(2026, 10, 21, 15, 9, 59) }).getTime(), local(2026, 10, 21, 15, 5).getTime());
+  assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: local(2026, 10, 21, 15, 10, 1) }).getTime(), local(2026, 10, 22, 15, 5).getTime());
+  assert.equal(usageLimitResetsAt("11:58 PM", { faultAt: local(2026, 10, 22, 0, 1) }).getTime(), local(2026, 10, 21, 23, 58).getTime(), "the grace reaches back across midnight");
   // A time-only form needs the fault's own timestamp to mean anything.
   assert.equal(usageLimitResetsAt("3:05 PM"), null);
   assert.equal(usageLimitResetsAt("3:05 PM", { faultAt: "not a time" }), null);
@@ -69,10 +72,10 @@ async function fixtureRepository(t) {
 }
 
 /** One recorded attempt, as runner.mjs leaves it: requested.json and a terminal state.json. */
-async function attempt(root, { name, configuration = CONFIGURATION, state }) {
+async function attempt(root, { name, configuration = CONFIGURATION, state, startedAt }) {
   const dir = path.join(root, "private", "runtime", "attempts", `attempt_${RECIPE}_${configuration}_${name}`);
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, "requested.json"), JSON.stringify({ identity: { variantId: configuration } }));
+  await writeFile(path.join(dir, "requested.json"), JSON.stringify({ identity: { variantId: configuration }, ...(startedAt ? { startedAt: startedAt.toISOString() } : {}) }));
   await writeFile(path.join(dir, "state.json"), JSON.stringify(state));
   return path.basename(dir);
 }
@@ -147,8 +150,23 @@ test("the latest usage limit decides, and a later served attempt lifts it", asyn
   assert.equal((await latestUsageLimit(root, CONFIGURATION)).attemptId, latest);
   assert.equal((await planAt(root, local(2026, 10, 21, 15, 6))).supported.length, 1, "the latest limit (3:05 PM) has reset, though an older one named a later day");
 
-  await attempt(root, { name: "20261121T110000_e", state: { status: "accepted", dishId: "dish_x", finalizedAt: local(2026, 10, 21, 11, 0).toISOString() } });
+  // A Dish that finished after the limit but started before it says nothing about the account now.
+  await attempt(root, { name: "20261121T090000_e", startedAt: local(2026, 10, 21, 9, 0), state: { status: "accepted", dishId: "dish_x", finalizedAt: local(2026, 10, 21, 10, 5).toISOString() } });
+  assert.equal((await latestUsageLimit(root, CONFIGURATION)).attemptId, latest);
+  // One that started after it was served: the limit lifted.
+  await attempt(root, { name: "20261121T110000_f", startedAt: local(2026, 10, 21, 11, 0), state: { status: "accepted", dishId: "dish_y", finalizedAt: local(2026, 10, 21, 11, 10).toISOString() } });
   assert.equal(await latestUsageLimit(root, CONFIGURATION), null);
+  assert.equal((await planAt(root, local(2026, 10, 21, 12, 0))).supported.length, 1);
+});
+
+test("a No Dish the model earned after the limit lifts it too: the provider served that Run", async (t) => {
+  const root = await fixtureRepository(t);
+  await attempt(root, { name: "20261121T093000_a", state: limited(local(2026, 10, 21, 9, 30), "Nov 25th, 2026") });
+  assert.equal((await planAt(root, local(2026, 10, 21, 12, 0))).supported.length, 0);
+  await attempt(root, {
+    name: "20261121T110000_b", startedAt: local(2026, 10, 21, 11, 0),
+    state: { status: "failed", stage: "execution", failedAt: local(2026, 10, 21, 11, 5).toISOString(), fault: { class: "chef", code: "checks-failed" }, noDishId: "nodish_x" },
+  });
   assert.equal((await planAt(root, local(2026, 10, 21, 12, 0))).supported.length, 1);
 });
 
@@ -173,11 +191,25 @@ test("cook leaves a held configuration's cells open and hands the runner nothing
   assert.equal(overridden.usageLimit.status, "ignored");
 });
 
+test("under fill-missing a held cell that already has a Dish is reported as covered, not usage-limited", () => {
+  const open = { recipeId: "open" };
+  const held = { recipeId: "held", status: "skipped" };
+  const heldCovered = { recipeId: "held-covered", status: "skipped" };
+  const planned = { recipeId: "planned-covered" };
+  const planResult = { supported: [open, planned], usageLimited: [held, heldCovered] };
+  const covered = (item) => item.recipeId.endsWith("-covered");
+  assert.deepEqual(coveredCells(planResult, "fill-missing", covered), { skipped: [planned, heldCovered], usageLimited: [held] });
+  // Repeat never skips as covered: every held cell stays held.
+  assert.deepEqual(coveredCells(planResult, "repeat", covered), { skipped: [], usageLimited: [held, heldCovered] });
+  // No usage limit, no list.
+  assert.deepEqual(coveredCells({ supported: [open] }, "fill-missing", covered), { skipped: [], usageLimited: undefined });
+});
+
 test("the CLI takes --ignore-usage-limit on plan and cook only", () => {
   const run = (...args) => spawnSync(process.execPath, [path.join(repoRoot, "bin", "taste.mjs"), ...args, "--json"], { cwd: repoRoot, encoding: "utf8" });
   const planned = run("plan", "--config", CONFIGURATION, "--recipe", RECIPE, "--ignore-usage-limit");
   assert.equal(planned.status, 0, planned.stderr);
   const listed = run("list", "--ignore-usage-limit");
   assert.notEqual(listed.status, 0);
-  assert.match(listed.stderr, /Unknown flag: --ignore-usage-limit|not.*list|does not apply/iu);
+  assert.match(listed.stderr, /--ignore-usage-limit is not valid for taste list/u);
 });

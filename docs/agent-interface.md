@@ -150,13 +150,15 @@ Across Cooks, `plan` and `cook` skip a configuration while its last recorded
 usage limit holds (`lib/taste/usage-limits.mjs`). They read the configuration's
 attempts under `private/runtime/attempts/` (only `requested.json` and
 `state.json` of those whose id names it) and take the latest `usage-limit`
-fault; a later attempt the provider served (a Dish or a No Dish) lifts it early.
+fault; an attempt that started after it and that the provider served (a Dish
+or a No Dish) lifts it early.
 `resetsAt` is the provider's own text with no zone, so Kitchen reads it in the
 host's local time zone, where the CLI that wrote it ran:
 
 - a date ("Nov 21st, 2026") holds until the end of that local day;
 - a time ("3:05 PM", "15:05") holds until the first such local time after the
-  fault's own `failedAt`;
+  fault's own `failedAt` less five minutes (the provider prints the reset to the
+  minute, and Kitchen records the fault a little after it spoke);
 - a date and a time ("Nov 21st, 2026 3:05 PM") hold until that local moment;
 - anything else, or no `resetsAt`, holds nothing.
 
@@ -167,7 +169,9 @@ carries `usageLimit` whenever a standing limit was found: `status: "holding"`,
 `"ignored"` under `--ignore-usage-limit` (`ignoreUsageLimit: true`), which
 plans and cooks it anyway, or `"unreadable"`, whose `note` says the reset time
 could not be read and the configuration is not skipped. A limit whose reset
-has passed adds nothing. This parsing rule is an orchestrator call and
+has passed adds nothing. Under `fill-missing` a covered cell is reported as
+`skipped`, not usage-limited, and Menu and selector Cooks gather `usageLimited`
+at the top level, as they do `notAttempted`. This parsing rule is an orchestrator call and
 reversible. The skip is per configuration: another configuration on the same
 spent account still spends one attempt. Other harnesses are not tagged yet: Kitchen
 has no recorded limit failure from them to read a shape from, so there the code comes from the
