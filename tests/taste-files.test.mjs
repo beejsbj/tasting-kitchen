@@ -47,6 +47,60 @@ test("an absolute path after a colon is still an absolute path; URLs and colon-j
   assert.ok(publicTextFindings("C:/Windows/Fonts/arial.ttf").includes("absolute Windows path"));
 });
 
+test("a rooted path after a flag or a bare dash or underscore is still an absolute path; hyphenated relative names are not (#113)", () => {
+  // A compiler or linker flag, or a bare `-`/`_` that starts a token, does not make the path after it relative.
+  for (const text of [
+    "-I/usr/include/foo",
+    "cc -L/opt/lib/x main.c",
+    "ld --sysroot/opt/cross/root",
+    '"-L/opt/private-tools/lib"',
+    "(-I/srv/headers/include)",
+    "_/etc/hosts",
+    "-/etc/hosts",
+    "list:\n-/etc/hosts",
+    "--/var/tmp/x",
+    "-Wl,-rpath,-L/opt/lib/x",
+    // A dot directory after a flag or a bare dash is still rooted.
+    "-I/.config/include",
+    "--sysroot/.local/share/x",
+    "-/.ssh/id_rsa",
+  ]) {
+    assert.ok(publicTextFindings(text).includes("absolute path"), text);
+  }
+  // A hyphen, underscore or dot inside a name still continues a relative path.
+  for (const text of [
+    "my-dir/sub/file",
+    "src/my_module/sub/file.ts",
+    "./assets/img/logo.svg",
+    ".github/workflows/ci.yml",
+    "node_modules/.bin/vite",
+    "re-run/rebuild/restart are verbs",
+    "foo_/bar/baz",
+    "__dirname/x",
+    "https://gitlab.com/group/project/-/blob/main/README.md",
+    "Compare 2026-11/12/13 and v1.2-3/4",
+    "path-to/my-dir/file-name.md",
+    "nextState.replace(/-/g, ' ')",
+    "value.replace(/_/g, '-')",
+    // Blank form fields, a one-letter flag glued to a relative path, suffixes in prose.
+    "Date: __/__/____",
+    '<input placeholder="--/--/----">',
+    "CFLAGS = -Isrc/include/foo -Llib/x/y",
+    "Words ending in -ish/-esque/-y are informal.",
+  ]) {
+    assert.deepEqual(publicTextFindings(text), [], text);
+  }
+});
+
+test("the absolute-path rule stays linear on long word runs", () => {
+  // A lookbehind that rescans a whole run at every position is quadratic: a 200 kB hex blob took minutes.
+  for (const text of ["a".repeat(200_000), `-${"a".repeat(200_000)}/x/y`, "-".repeat(200_000), `${"0123456789abcdef".repeat(12_500)}/`]) {
+    const started = performance.now();
+    publicTextFindings(text);
+    assert.ok(performance.now() - started < 2000, `${text.slice(0, 12)}… took ${Math.round(performance.now() - started)} ms`);
+  }
+});
+
 test("public scan permits quoted source-root aliases without permitting absolute paths", () => {
   assert.deepEqual(publicTextFindings('import type { Note } from "@/types/music";'), []);
   assert.deepEqual(publicTextFindings('src: url("@/assets/fonts/local.woff2")'), []);

@@ -372,6 +372,110 @@ test("a JSON file is scanned as raw text and as its decoded keys and string valu
   await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
 });
 
+// Source: an escape inside a quoted string hides text the same way (#113).
+
+test("a delivered source file's quoted strings are also read with their escapes decoded, as JavaScript and as CSS read them", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "taste-source-scan-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const write = async (relative, text) => {
+    await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
+    await writeFile(path.join(root, relative), text);
+  };
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
+  const leaks = [
+    ["artifact/app.js", `const t = "x\\n${token}";\n`, "credential-like token"],
+    ["artifact/app.mjs", `export const k = 'x\\tsk-abcdefghijklmnopqrstu';\n`, "credential-like token"],
+    ["artifact/app.ts", 'const notes = "\\/home\\/someone\\/notes.md";\n', "absolute home path"],
+    ["artifact/app.tsx", "const p = `\\x2fetc\\x2fhosts`;\n", "absolute path"],
+    ["artifact/app.jsx", 'const p = "\\u002fopt\\u002fprivate-tools\\u002fbin";\n', "absolute path"],
+    ["artifact/app.js", 'const p = "\\u{2f}srv\\u{2f}data\\u{2f}x";\n', "absolute path"],
+    ["artifact/style.css", '.a::after { content: "\\2f home\\2f someone"; }\n', "absolute home path"],
+    ["artifact/style.css", '.a::after { content: "\\00002fUsers\\00002fsomeone"; }\n', "absolute home path"],
+    ["artifact/index.html", `<script>const k = 'x\\n${token}';</script>\n`, "credential-like token"],
+    ["artifact/index.html", '<style>.a::after { content: "\\2f etc\\2f hosts"; }</style>\n', "absolute path"],
+    ["artifact/scene.strudel", 'note("c e g").name("x\\nE123")\n', "private evidence identifier"],
+    ["artifact/config.yaml", `key: "x\\n${token}"\n`, "credential-like token"],
+    ["artifact/app.js", "const climb = '\\x2e\\x2e/secret/notes.md';\n", "path traversal"],
+    // A token is still a token after an escape outside a string: in a comment or a regex literal.
+    ["artifact/app.js", `// The fixture key was x\\n${token}\n`, "credential-like token"],
+    ["artifact/app.js", `const re = /x\\n${token}/u;\n`, "credential-like token"],
+    // A closing tag is markup, not the start of a regex that would swallow the string after it.
+    ["artifact/index.html", '<div id="app"></div><script>window.D={"cwd":"\\/Users\\/someone\\/proj"}</script>\n', "absolute home path"],
+    ["artifact/icon.svg", '<svg><g></g><script>const p = "\\/home\\/someone\\/x";</script></svg>\n', "absolute home path"],
+    // A backslash before CRLF continues the string, as before LF.
+    ["artifact/app.js", 'const p = "\\u002fhome\\\r\n\\u002fsomeone";\n', "absolute home path"],
+    // A URL's `//` in CSS is not a comment that hides the string after it.
+    ["artifact/style.css", '.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}\n', "absolute home path"],
+    ["artifact/index.html", '<style>.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}</style>\n', "absolute home path"],
+    // An escaped climb out of the artifact is still traversal once decoded.
+    ["artifact/app.mjs", "import x from '\\x2e\\x2e/\\x2e\\x2e/etc/passwd';\n", "path traversal"],
+    // An unquoted URL attribute's `//` is not a comment that hides the script after it.
+    ["artifact/index.html", "<a href=https://example.test>x</a><script>const cwd = '\\/Users\\/someone\\/proj';</script>\n", "absolute home path"],
+    // A backtick inside a template's ${…} does not end the template.
+    ["artifact/app.js", 'const t = `${q === "`" ? 1 : 2}\\u002fhome\\u002fsomeone`;\n', "absolute home path"],
+  ];
+  for (const [relative, text, reason] of leaks) {
+    // The raw rules alone miss each of these: `\n` reads as `n<token>`, an escaped slash is no slash.
+    assert.ok(!publicTextFindings(text).includes(reason), `raw already finds ${reason}: ${text}`);
+    await write(relative, text);
+    await assert.rejects(scanPublicTree(root, PLATE_SCAN), (error) => {
+      assert.match(error.message, new RegExp(`${relative.replaceAll(".", "\\.")} \\(${reason}\\)`, "u"));
+      return true;
+    }, text);
+    await rm(path.join(root, relative));
+  }
+
+  // Escapes outside a quoted string are not decoded: a regex literal's `\.` and `\/` are not a path.
+  // Inside one, an escaped regex source stays escaped once decoded. Ranking words stay the model's.
+  await write("artifact/app.test.mjs", [
+    'assert.match(run("film.mjs").stderr, /edl\\.json/u);',
+    "assert.match(bad, /rushes\\/b\\.mp4 is in rushes/u);",
+    'if (!/styles\\.css/u.test(entry)) throw new Error("missing");',
+    "const digits = /\\d/u.test(stated);",
+    'const route = new RegExp("^\\\\/api\\\\/users\\\\/(\\\\d+)$");',
+    'const label = "Line one\\nThe score is in 3/4.";',
+    "const path = './assets/img/logo.svg';",
+    "const note = `it's \\`quoted\\``;",
+    // A quote or backtick inside a regex opens no string; a comment's code span is not decoded.
+    "const escapeHtml = (s) => s.replace(/[&<>\"']/g, (c) => \"&#\" + c.charCodeAt(0) + \";\");",
+    "const boundary = /(?:^|[\\s\"'`])\\/edl\\.json/u;",
+    "// Matches `/rushes\\/b\\.mp4/` and `'\\/edl\\.json'` in prose.",
+    "/* A block: `/a\\/b\\/c/` */",
+    // A template's ${…} is code: its regex is not string text.
+    "const u = `${url.replace(/^\\/api\\/v1/, \"\")}`;",
+    // …including an expression with its own braces.
+    "const note = `${format({ valid: /edl\\.json/u.test(name) })} and \\`${{ a: { b: 1 } }.a}\\``;",
+    "",
+  ].join("\n"));
+  // CSS reads `\u002f` as the letter u and the text 002f, not a slash; only a CSS hex escape names one.
+  await write("artifact/plain.css", '.a::after { content: "\\u002fhome\\u002fsomeone"; }\n');
+  // A parent import spelled with escapes that stays inside the artifact is as safe as the plain one.
+  await write("artifact/logic.mjs", "export const ready = true;\n");
+  await write("artifact/source/inside.mjs", "import { ready } from '\\x2e\\x2e/logic.mjs';\n");
+  // YAML decodes escapes only in double quotes; a single-quoted string is literal.
+  await write("artifact/routes.yaml", "path: '^\\/api\\/v1\\/users'\n");
+  await write("artifact/style.css", '.a::before { content: "\\201C"; } .b { font-family: "Inter\\2c sans"; }\n');
+  await write("artifact/index.html", '<p title="a\\nb">Don\'t / won\'t</p>\n');
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+  // A long blob in a source file is scanned in linear time (each read once per decoder).
+  await write("artifact/wasm.js", `export const bytes = "${"0123456789abcdef".repeat(20_000)}";\n`);
+  const started = performance.now();
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+  assert.ok(performance.now() - started < 5000, `a 320 kB string took ${Math.round(performance.now() - started)} ms`);
+  await rm(path.join(root, "artifact/wasm.js"));
+  // So is a line of escaped quotes with no closing one, and the same with backticks across lines.
+  for (const text of ['const s = "x' + '\\"x'.repeat(40_000) + "\n", `const s = \`x${"\\`x\n".repeat(40_000)}`]) {
+    await write("artifact/quotes.js", text);
+    const begun = performance.now();
+    await scanPublicTree(root, PLATE_SCAN).catch(() => {});
+    assert.ok(performance.now() - begun < 5000, `${Math.round(performance.now() - begun)} ms`);
+  }
+  await rm(path.join(root, "artifact/quotes.js"));
+  // Kitchen's own source text gets the decoded read and every rule, ranking included.
+  await write("notes.js", 'const n = "x\\nScore these.";\n');
+  await assert.rejects(scanPublicTree(root, PLATE_SCAN), /notes\.js \(numerical ranking language\)/);
+});
+
 test("a public trace finds a credential after an escaped newline in a response or a prompt", () => {
   const token = "ghp_abcdefghijklmnopqrstuvwxyz0123";
   const trace = (turn) => JSON.stringify({ schemaVersion: 1, recipeId: "demo", turns: [{ id: "opening", role: "prompt", prompt: "Write a theme.", response: "Done.", usage: null, actions: [], ...turn }] });
