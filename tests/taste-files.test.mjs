@@ -60,6 +60,10 @@ test("a rooted path after a flag or a bare dash or underscore is still an absolu
     "list:\n-/etc/hosts",
     "--/var/tmp/x",
     "-Wl,-rpath,-L/opt/lib/x",
+    // A dot directory after a flag or a bare dash is still rooted.
+    "-I/.config/include",
+    "--sysroot/.local/share/x",
+    "-/.ssh/id_rsa",
   ]) {
     assert.ok(publicTextFindings(text).includes("absolute path"), text);
   }

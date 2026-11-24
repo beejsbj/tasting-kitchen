@@ -402,6 +402,13 @@ test("a delivered source file's quoted strings are also read with their escapes 
     // A closing tag is markup, not the start of a regex that would swallow the string after it.
     ["artifact/index.html", '<div id="app"></div><script>window.D={"cwd":"\\/Users\\/someone\\/proj"}</script>\n', "absolute home path"],
     ["artifact/icon.svg", '<svg><g></g><script>const p = "\\/home\\/someone\\/x";</script></svg>\n', "absolute home path"],
+    // A backslash before CRLF continues the string, as before LF.
+    ["artifact/app.js", 'const p = "\\u002fhome\\\r\n\\u002fsomeone";\n', "absolute home path"],
+    // A URL's `//` in CSS is not a comment that hides the string after it.
+    ["artifact/style.css", '.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}\n', "absolute home path"],
+    ["artifact/index.html", '<style>.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}</style>\n', "absolute home path"],
+    // A backtick inside a template's ${…} does not end the template.
+    ["artifact/app.js", 'const t = `${q === "`" ? 1 : 2}\\u002fhome\\u002fsomeone`;\n', "absolute home path"],
   ];
   for (const [relative, text, reason] of leaks) {
     // The raw rules alone miss each of these: `\n` reads as `n<token>`, an escaped slash is no slash.
@@ -432,6 +439,8 @@ test("a delivered source file's quoted strings are also read with their escapes 
     "/* A block: `/a\\/b\\/c/` */",
     // A template's ${…} is code: its regex is not string text.
     "const u = `${url.replace(/^\\/api\\/v1/, \"\")}`;",
+    // …including an expression with its own braces.
+    "const note = `${format({ valid: /edl\\.json/u.test(name) })} and \\`${{ a: { b: 1 } }.a}\\``;",
     "",
   ].join("\n"));
   // YAML decodes escapes only in double quotes; a single-quoted string is literal.
@@ -445,6 +454,14 @@ test("a delivered source file's quoted strings are also read with their escapes 
   await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
   assert.ok(performance.now() - started < 5000, `a 320 kB string took ${Math.round(performance.now() - started)} ms`);
   await rm(path.join(root, "artifact/wasm.js"));
+  // So is a line of escaped quotes with no closing one, and the same with backticks across lines.
+  for (const text of ['const s = "x' + '\\"x'.repeat(40_000) + "\n", `const s = \`x${"\\`x\n".repeat(40_000)}`]) {
+    await write("artifact/quotes.js", text);
+    const begun = performance.now();
+    await scanPublicTree(root, PLATE_SCAN).catch(() => {});
+    assert.ok(performance.now() - begun < 5000, `${Math.round(performance.now() - begun)} ms`);
+  }
+  await rm(path.join(root, "artifact/quotes.js"));
   // Kitchen's own source text gets the decoded read and every rule, ranking included.
   await write("notes.js", 'const n = "x\\nScore these.";\n');
   await assert.rejects(scanPublicTree(root, PLATE_SCAN), /notes\.js \(numerical ranking language\)/);
