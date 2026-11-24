@@ -9,7 +9,11 @@ Import `lib/taste/index.mjs` for cooking and Recipe Book authoring. The authorin
 - `plan(repoRoot, { configurationId, skillId?, recipeIds | menuId, filter })` reports
   supported and unsupported Recipe/configuration cells without side effects.
   `skillId` names a catalog skill layer; omitted or `"none"` cooks without one.
-  Recipes that do not list the layer are reported unsupported.
+  Recipes that do not list the layer are reported unsupported. Cells of a
+  configuration whose provider usage limit has not reset are reported under
+  `usageLimited` ("skipped until <time>: usage limit"), not `supported`;
+  `ignoreUsageLimit: true` (`--ignore-usage-limit`) plans them anyway. See
+  [chef and kitchen faults](#internal-runner-adapters).
 - `cook(repoRoot, { configurationId, recipeIds | menuId, intent, execute })`
   requires `intent: "fill-missing" | "repeat"`. Dry runs report planned,
   skipped-covered, and unsupported cells. Covered means a Dish exists for the
@@ -140,11 +144,36 @@ classifier, and the private fault carries `resetsAt`. Within one Cook, once a
 cell fails with `usage-limit`, the configuration's remaining cells are not
 started: the Cook reports each under `notAttempted` (status `not-attempted`,
 with a `reason` naming the attempt that hit the limit and its `resetsAt`, if
-any). Nothing is written for them and their cells stay open. Across Cooks
-nothing reads `resetsAt` yet: it is the provider's own text, not a parsed date,
-so the next `plan` or `fill-missing` does not skip the configuration until
-then. The skip is per configuration: another configuration on the same spent
-account still spends one attempt. Other harnesses are not tagged yet: Kitchen
+any). Nothing is written for them and their cells stay open.
+
+Across Cooks, `plan` and `cook` skip a configuration while its last recorded
+usage limit holds (`lib/taste/usage-limits.mjs`). They read the configuration's
+attempts under `private/runtime/attempts/` (only `requested.json` and
+`state.json` of those whose id names it) and take the latest `usage-limit`
+fault; an attempt that started after it and that the provider served (a Dish
+or a No Dish) lifts it early.
+`resetsAt` is the provider's own text with no zone, so Kitchen reads it in the
+host's local time zone, where the CLI that wrote it ran:
+
+- a date ("Nov 21st, 2026") holds until the end of that local day;
+- a time ("3:05 PM", "15:05") holds until the first such local time after the
+  fault's own `failedAt` less five minutes (the provider prints the reset to the
+  minute, and Kitchen records the fault a little after it spoke);
+- a date and a time ("Nov 21st, 2026 3:05 PM") hold until that local moment;
+- anything else, or no `resetsAt`, holds nothing.
+
+A held cell leaves `supported` (so `planned`) for `usageLimited`, each with
+`reason: "skipped until 2026-11-21 23:59 -05:00: usage limit"`, `until` (ISO)
+and `blockedBy` (the attempt, its `failedAt` and `resetsAt`). The plan also
+carries `usageLimit` whenever a standing limit was found: `status: "holding"`,
+`"ignored"` under `--ignore-usage-limit` (`ignoreUsageLimit: true`), which
+plans and cooks it anyway, or `"unreadable"`, whose `note` says the reset time
+could not be read and the configuration is not skipped. A limit whose reset
+has passed adds nothing. Under `fill-missing` a covered cell is reported as
+`skipped`, not usage-limited, and Menu and selector Cooks gather `usageLimited`
+at the top level, as they do `notAttempted`. This parsing rule is an orchestrator call and
+reversible. The skip is per configuration: another configuration on the same
+spent account still spends one attempt. Other harnesses are not tagged yet: Kitchen
 has no recorded limit failure from them to read a shape from, so there the code comes from the
 message alone and carries no reset time.
 

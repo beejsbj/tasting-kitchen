@@ -8,7 +8,7 @@ import { axisSetsForContext, buildRegistry, compareRubricsFromFile, cook, discov
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const valueFlags = new Set(["recipe", "menu", "revision", "config", "variant", "skill", "cuisine", "tag", "status", "origin", "kind", "output", "attempt", "intent", "codex", "executable", "dish", "axis-set", "axis-version", "provider", "evaluator", "experiment", "note", "harness", "route", "upstream"]);
-const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed", "free"]);
+const booleanFlags = new Set(["json", "execute", "help", "public-checkout", "publish-personal", "allow-connections", "dry-run", "failed", "passed", "free", "ignore-usage-limit"]);
 
 const commandFlags = {
   help: new Set(),
@@ -17,8 +17,8 @@ const commandFlags = {
   models: new Set(["harness", "route", "free"]),
   inspect: new Set(["recipe", "menu"]),
   list: new Set(["cuisine", "tag", "status", "origin", "kind"]),
-  plan: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind"]),
-  cook: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections"]),
+  plan: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind", "ignore-usage-limit"]),
+  cook: new Set(["recipe", "menu", "config", "variant", "upstream", "skill", "cuisine", "tag", "status", "origin", "kind", "intent", "execute", "codex", "executable", "publish-personal", "allow-connections", "ignore-usage-limit"]),
   axes: new Set(["recipe", "menu"]),
   observations: new Set(["dish"]),
   observe: new Set(["dish", "axis-set", "axis-version", "recipe", "menu", "revision", "provider", "evaluator", "execute"]),
@@ -90,7 +90,7 @@ function selection(options) {
   // A Menu that declares its configurations needs no --config; the library says so if it declares none.
   if (!configurationId && !options.menu) throw new UsageError("--config is required unless --menu names a Menu that declares its configurations (legacy --variant is accepted)");
   if (options.recipe?.length && options.menu) throw new UsageError("Use either --recipe or --menu, not both");
-  return { ...(configurationId ? { configurationId } : {}), ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
+  return { ...(configurationId ? { configurationId } : {}), ...(options["ignore-usage-limit"] ? { ignoreUsageLimit: true } : {}), ...(options.upstream ? { upstream: options.upstream } : {}), ...(options.skill ? { skillId: options.skill } : {}), ...(options.recipe?.length ? { recipeIds: options.recipe } : options.menu ? { menuId: options.menu } : { filter: { status: "ready", ...filterFrom(options) } }) };
 }
 
 function inspectSelection(options) {
@@ -125,8 +125,8 @@ Usage:
   taste models [--harness hermes] [--route ID] [--free] [--json]
   taste inspect --recipe ID|--menu ID [--json]
   taste list [--cuisine ID] [--tag ID] [--status STATUS] [--json]
-  taste plan [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--json]
-  taste cook [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--json]
+  taste plan [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] [filters] [--ignore-usage-limit] [--json]
+  taste cook [--config ID|SPEC|SELECTOR] [--upstream SLUG] [--skill ID|none] [--recipe ID[,ID...]|--menu ID] --intent fill-missing|repeat [--execute] [--executable PATH] [--publish-personal] [--allow-connections] [--ignore-usage-limit] [--json]
   taste axes --recipe ID|--menu ID [--json]
   taste observations --dish ID [--json]
   taste observe --dish ID --axis-set ID --axis-version VERSION --recipe ID|--menu ID --revision RECIPE-HASH [--execute --provider ID]
@@ -148,6 +148,8 @@ Usage:
   --skill mounts one catalog skill layer at the recipe's mount path; the default is none. The layer is part of Dish identity.
   --publish-personal publishes a snapshot or live Dish to the gallery; without it they stay under private/dishes.
   Prune removes the cook directories of accepted attempts, of failed attempts older than TASTE_COOK_RETENTION_DAYS (14 by default), and orphans; every Cook prunes first.
+  Plan and cook skip a configuration whose last provider usage limit has not reset yet ("skipped until <time>: usage limit");
+  the provider's zone-less reset time is read in this host's local time. --ignore-usage-limit plans and cooks it anyway.
   --allow-connections is required to execute a configuration with connections on: its MCP servers and plugins can act in the world.
   A verdict is Burooj's pass or fail on a Dish, written beside it in verdicts/ and shown above the automated checks. A newer verdict replaces it. --dish may also name a No Dish (nodish_…), which takes only --passed: Burooj overruling checks that failed it.
   Cook and observe are dry-run by default. Observe requires an explicit axis-set version; live execution additionally requires TASTE_ALLOW_JEV_RUNS=1.
