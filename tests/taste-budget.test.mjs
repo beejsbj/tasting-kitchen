@@ -9,9 +9,9 @@ import { computeConfigHash, computeRecipeHash, sha256 } from "../lib/taste/catal
 import { CLAUDE_CODE_TOOLS, buildClaudeTurnArgs, claudeChefFault } from "../lib/taste/claude-code.mjs";
 import { runDirectApiSession } from "../lib/taste/direct-api.mjs";
 import { CHEF_FAULTS, classifyFailure, KITCHEN_FAULTS } from "../lib/taste/faults.mjs";
-import { compatibilityFor } from "../lib/taste/harness-adapters.mjs";
+import { compatibilityFor, getHarnessAdapter } from "../lib/taste/harness-adapters.mjs";
 import { loadNoDishes, validateNoDish } from "../lib/taste/no-dishes.mjs";
-import { executeRecipe } from "../lib/taste/runner.mjs";
+import { budgetedFailure, executeRecipe } from "../lib/taste/runner.mjs";
 
 // ---------------------------------------------------------------------------
 // The declared budget and the recipe hash
@@ -223,8 +223,12 @@ test("the session receives the declared budget and the clock; time spent before 
   assert.deepEqual(requested.recipe.budget, { seconds: 600 });
 });
 
-test("an expired time budget with the adapter's evidence is a chef fault, published as a No Dish that names its budget", async (t) => {
+test("an expired time budget with the adapter's evidence is a chef fault on a harness that reports provider waits, published as a No Dish that names its budget", async (t) => {
   const f = await fixture({ budget: { seconds: 600 } });
+  // Codex reports no provider waits (#62); the runner reads that from the adapter, so the test lends it Claude Code's.
+  const codex = getHarnessAdapter("codex-cli");
+  codex.providerWaits = "reported";
+  t.after(() => { delete codex.providerWaits; });
   const result = await cook(f, t, {
     budgetClock: quickClock(),
     runSession: async ({ clock }) => {
@@ -244,6 +248,54 @@ test("an expired time budget with the adapter's evidence is a chef fault, publis
   delete unnamed.budget;
   await assert.rejects(validateNoDish(directory, { ...manifest, fault: unnamed }), /out-of-time fault must name the time budget/);
   await assert.rejects(validateNoDish(directory, { ...manifest, fault: { ...manifest.fault, budget: { modelTurns: 40 } } }), /fault\.budget must name only the seconds budget/);
+});
+
+test("on a harness that reports no provider waits, even the adapter's evidence of an overrun stays Kitchen's private timeout", async (t) => {
+  const f = await fixture({ budget: { seconds: 600 } });
+  const result = await cook(f, t, {
+    budgetClock: quickClock(),
+    runSession: async ({ clock }) => {
+      clock.resume();
+      await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
+      return failedTurn("codex-cli was stopped by the Recipe's time budget", { chefFault: "out-of-time" });
+    },
+  });
+  assert.deepEqual({ class: result.fault.class, code: result.fault.code }, { class: "kitchen", code: "timeout" });
+  assert.match(result.fault.limit, /time budget of 600 s; the requested model was serving, but codex-cli reports no provider waits/);
+  assert.equal(result.noDishId, undefined, "a route that may have been throttled never stains the model");
+});
+
+test("an out-of-time tag that arrives by a throw passes the same guard", async (t) => {
+  const f = await fixture({ budget: { seconds: 600 } });
+  const result = await cook(f, t, {
+    budgetClock: quickClock(),
+    runSession: async ({ clock }) => {
+      clock.resume();
+      await new Promise((resolve) => clock.signal.addEventListener("abort", resolve, { once: true }));
+      throw Object.assign(new Error("codex-cli was stopped by the Recipe's time budget"), { chefFault: "out-of-time" });
+    },
+  });
+  assert.deepEqual({ class: result.fault.class, code: result.fault.code }, { class: "kitchen", code: "timeout" });
+  assert.match(result.fault.limit, /time budget of 600 s; codex-cli cannot show the overrun was the model's/);
+  assert.equal(result.noDishId, undefined);
+});
+
+test("only a harness that reports provider waits can earn out-of-time: Claude Code today", () => {
+  const tagged = { turnId: "opening", message: "stopped by the time budget", chefFault: "out-of-time" };
+  const expired = { budget: { seconds: 600 }, expired: true };
+  const reporting = ["codex-cli", "cursor-agent", "claude-code", "hermes", "t3", "direct-api"].filter((harness) => getHarnessAdapter(harness).providerWaits === "reported");
+  assert.deepEqual(reporting, ["claude-code"]);
+  assert.deepEqual(budgetedFailure(tagged, { harness: "claude-code", ...expired, reportsWaits: true }), { chefFault: "out-of-time" });
+  for (const harness of ["codex-cli", "hermes", "cursor-agent", "t3", "direct-api"]) {
+    const failure = budgetedFailure(tagged, { harness, ...expired, reportsWaits: false });
+    assert.equal(failure.chefFault, undefined, harness);
+    assert.equal(failure.kitchenFault, "timeout", harness);
+    assert.match(failure.limit, new RegExp(`${harness} reports no provider waits`), harness);
+  }
+  // The default is the cautious one: a caller that does not say is treated as a harness that reports nothing.
+  assert.equal(budgetedFailure(tagged, { harness: "claude-code", ...expired }).chefFault, undefined);
+  // Reporting waits does not let a tag stand before the clock ran out.
+  assert.equal(budgetedFailure(tagged, { harness: "claude-code", budget: { seconds: 600 }, expired: false, reportsWaits: true }).chefFault, undefined);
 });
 
 test("an expired time budget without evidence that the requested model was serving stays Kitchen's", async (t) => {
