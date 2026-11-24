@@ -407,6 +407,10 @@ test("a delivered source file's quoted strings are also read with their escapes 
     // A URL's `//` in CSS is not a comment that hides the string after it.
     ["artifact/style.css", '.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}\n', "absolute home path"],
     ["artifact/index.html", '<style>.a{background:url(https://example.com/a);content:"\\2f home\\2f someone"}</style>\n', "absolute home path"],
+    // An escaped climb out of the artifact is still traversal once decoded.
+    ["artifact/app.mjs", "import x from '\\x2e\\x2e/\\x2e\\x2e/etc/passwd';\n", "path traversal"],
+    // An unquoted URL attribute's `//` is not a comment that hides the script after it.
+    ["artifact/index.html", "<a href=https://example.test>x</a><script>const cwd = '\\/Users\\/someone\\/proj';</script>\n", "absolute home path"],
     // A backtick inside a template's ${…} does not end the template.
     ["artifact/app.js", 'const t = `${q === "`" ? 1 : 2}\\u002fhome\\u002fsomeone`;\n', "absolute home path"],
   ];
@@ -443,6 +447,11 @@ test("a delivered source file's quoted strings are also read with their escapes 
     "const note = `${format({ valid: /edl\\.json/u.test(name) })} and \\`${{ a: { b: 1 } }.a}\\``;",
     "",
   ].join("\n"));
+  // CSS reads `\u002f` as the letter u and the text 002f, not a slash; only a CSS hex escape names one.
+  await write("artifact/plain.css", '.a::after { content: "\\u002fhome\\u002fsomeone"; }\n');
+  // A parent import spelled with escapes that stays inside the artifact is as safe as the plain one.
+  await write("artifact/logic.mjs", "export const ready = true;\n");
+  await write("artifact/source/inside.mjs", "import { ready } from '\\x2e\\x2e/logic.mjs';\n");
   // YAML decodes escapes only in double quotes; a single-quoted string is literal.
   await write("artifact/routes.yaml", "path: '^\\/api\\/v1\\/users'\n");
   await write("artifact/style.css", '.a::before { content: "\\201C"; } .b { font-family: "Inter\\2c sans"; }\n');
