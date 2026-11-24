@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_i-have-adhd_20261122003020250_a9a5efa5_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_i-have-adhd_20261122003020250_a9a5efa5",
+  "dishHash": "sha256:f8e01fddc08ed84d28f023939ac5ec0fb8f9a0243ace5a677627a45810c2cdb5",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "one-end",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "Every reply closes on the move ('Next: paste the token, then reply \"done\"...'), but the first line is an order ('Paste the current Twilio Auth Token...'), not what happened. State arrives below."
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "exact",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "'Where things stand (2 of 4 steps done, 1 blocked)', each step labelled, 'not started, on purpose', 401 code 20003, the pre-Oct 3 token, and why the agent can't fix it."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "recommended",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "Lists 'B (my recommendation)' first with full tradeoffs for A/B/C. But the re-explanation then says 'I'll ask you how to handle them once the test text works', contradicting the first ask."
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "kept",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "'For now they are greyed out for SMS', 'members see no change and email reminders are untouched', and 0047 won't run 'until the test SMS succeeds and you've picked A, B or C'."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "plain",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "'Do this one thing: copy a password from Twilio and paste it into Vercel', then Why / What's safe / Later in plain sentences, with one check. It leads with the instruction, not the explanation."
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "held",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "'drops the phone_raw column, which holds what members originally typed. Neon only keeps 24 hours', two failure modes, 'Waiting costs nothing', and an optional split (about 15 minutes)."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "one-small",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "'Next for you: paste the Twilio token into Vercel's Preview environment. About 2 minutes', three click-level steps, and 'After you reply done' queues the rest."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "matched",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:14c595a552b218ef5084a1306b0faeeb86e119d84071fce7d5b32d3eaca45aad"
+        }
+      ],
+      "note": "Preview reply: link, demo login, imported@ login with the exact label, and 'Don't pick SMS and expect a text yet.' Its added 'tell me if the page loads' is a needless ask."
+    }
+  ]
+}

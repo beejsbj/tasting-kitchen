@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "id": "codex-luna-high-fast-clean",
+    "label": "Luna · High · Fast · via Codex CLI · clean",
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "harness": "codex-cli",
+    "reasoningEffort": "high",
+    "serviceTier": "fast",
+    "personality": "none",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "codex-linux-host-clean-v1",
+      "label": "via Codex CLI · clean",
+      "runtime": "linux-host",
+      "sandbox": "danger-full-access",
+      "approvalPolicy": "never",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary",
+      "environment": "clean"
+    },
+    "configHash": "sha256:13579c3ab7f30a8d5861fbd1275e5f9ce47f4382d7b13267be1c06234489e205"
+  },
+  "isolation": {
+    "evidence": "codex-rollout",
+    "skills": [
+      "imagegen",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer"
+    ]
+  },
+  "skill": null
+}

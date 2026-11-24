@@ -6,6 +6,7 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 // Codex and Cursor Dishes cooked in the repo, before the move out of it, carry a disclosure note; later ones do not.
 const COOKED_IN_REPO_BEFORE = "2026-11-09T00:00:00Z";
+const REPORT_BACK = "report-back-half-finished-task";
 const DISCLOSURES = { "codex-cli": ["codex-saw-kitchen-agents-md", "codex-saw-personal-skills"], "cursor-agent": ["cursor-real-home"] };
 
 /** A historical Dish carries a disclosure for its harness; any other Dish carries none. Other notes are allowed. */
@@ -32,13 +33,19 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.deepEqual([...new Set(registry.configurations.filter((configuration) => configuration.harness === "t3").map((configuration) => configuration.harnessPath.join(">")))], ["t3>claude-code", "t3>codex-cli"]);
   assert.equal(registry.configurations.filter((configuration) => configuration.executionProfile.route === "openrouter" && configuration.harness === "hermes").length, 12);
   assert.ok(registry.configurations.filter((configuration) => configuration.harness === "direct-api").every((configuration) => configuration.capabilities.length === 0));
-  assert.equal(registry.recipes.length, 17);
-  assert.equal(registry.dishes.length, 27);
+  assert.equal(registry.recipes.length, 18);
+  assert.equal(registry.dishes.length, 35);
   // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
   assert.ok(registry.dishes.every(carriesItsDisclosure));
   assert.equal(registry.dishes.filter((dish) => dish.notes?.some((note) => note.id === "codex-saw-kitchen-agents-md")).length, 7);
   assert.equal(registry.dishes.filter((dish) => dish.artifact.kind === "web").length, 20);
-  const sessionDishes = registry.dishes.filter((dish) => dish.artifact.kind === "session");
+  // The report-back Recipe was cooked through four skill layers on two models.
+  const reportBack = registry.dishes.filter((dish) => dish.recipe.id === REPORT_BACK);
+  assert.equal(reportBack.length, 8);
+  assert.deepEqual([...new Set(reportBack.map((dish) => dish.skill?.id ?? "none"))].sort(), ["i-have-adhd", "none", "prime-before-reporting", "prime-reporting-draft"]);
+  assert.deepEqual([...new Set(reportBack.map((dish) => dish.identity.variantId))].sort(), ["claude-code-sonnet-5-5-high-clean", "codex-luna-high-fast-clean"]);
+  const earlier = registry.dishes.filter((dish) => dish.recipe.id !== REPORT_BACK);
+  const sessionDishes = earlier.filter((dish) => dish.artifact.kind === "session");
   assert.equal(sessionDishes.length, 7);
   assert.ok(sessionDishes.every((dish) => dish.identity.variantId === "codex-luna-xhigh"));
   assert.ok(registry.dishes.every((dish) => dish.status === "accepted"));
@@ -46,25 +53,29 @@ test("the static gallery preserves the cooked public catalog", async () => {
   assert.equal(registry.dishes.filter((dish) => dish.identity.variantId === "cursor-composer-2-5").length, 10);
   assert.ok(registry.dishes.filter((dish) => dish.identity.variantId === "codex-luna-xhigh").every((dish) => dish.identity.reasoningEffort === "xhigh"));
   assert.ok(registry.dishes.filter((dish) => dish.identity.variantId === "cursor-composer-2-5").every((dish) => dish.identity.reasoningEffort === "adaptive" && dish.identity.requestedModel === "composer-2.5[fast=false]" && dish.identity.observedModel === "Composer 2.5"));
-  assert.ok(registry.dishes.every((dish) => dish.identity.serviceTier === "default"));
+  assert.ok(earlier.every((dish) => dish.identity.serviceTier === "default"));
   assert.deepEqual(registry.reviews, []);
-  assert.equal(registry.axisSets.length, 2);
-  assert.equal(registry.observations.length, 1);
+  assert.equal(registry.axisSets.length, 3);
+  assert.equal(registry.observations.length, 9);
   assert.equal(registry.observations[0].source.kind, "jev");
+  // One blind agent taster read every report-back Dish.
+  const agentObservations = registry.observations.filter((observation) => observation.source.kind === "agent");
+  assert.equal(agentObservations.length, 8);
+  assert.deepEqual(new Set(agentObservations.map((observation) => observation.dishId)), new Set(reportBack.map((dish) => dish.id)));
   for (const gone of ["recipeRevisions", "configurationRevisions", "skillRevisions", "menuRevisions"]) assert.equal(registry[gone], undefined, gone);
   assert.ok(registry.dishes.every((dish) => dish.inputs && dish.receipt), "every published Dish carries its input and receipt sidecars");
   assert.equal(registry.menus.length, 5);
   // The book also lists ready Recipes nobody has cooked yet; the counts below are the cooked ones.
   const cookedRecipes = recipeBook.recipes.filter((entry) => entry.dishCount > 0);
-  assert.equal(cookedRecipes.length, 17);
+  assert.equal(cookedRecipes.length, 18);
   // The 54-Recipe backlog in archive.json plus five film drafts archived on 2026-11-14.
   assert.equal(recipeBook.archivedCount, 59);
   const webRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "web");
   const sessionRecipes = cookedRecipes.filter((entry) => entry.recipe.kind === "session");
   assert.equal(webRecipes.length, 10);
   assert.ok(webRecipes.every((entry) => entry.dishCount === 2));
-  assert.equal(sessionRecipes.length, 7);
-  assert.ok(sessionRecipes.every((entry) => entry.dishCount === 1));
+  assert.equal(sessionRecipes.length, 8);
+  assert.ok(sessionRecipes.every((entry) => entry.dishCount === (entry.recipe.id === REPORT_BACK ? 8 : 1)));
   assert.ok(assets.some((filename) => filename.endsWith(".js")));
   assert.ok(assets.some((filename) => filename.endsWith(".css")));
   const javascript = await Promise.all(
@@ -76,7 +87,7 @@ test("the static gallery preserves the cooked public catalog", async () => {
   )).join("\n");
   assert.match(productionJavaScript, /Agent review/);
   assert.match(productionJavaScript, /Artifact review/);
-  for (const label of ["Human observation", "Jev observation", "Disagreement preserved"]) assert.match(productionJavaScript, new RegExp(label));
+  for (const label of ["Human", "Agent", "Jev", " observation", "Disagreement preserved"]) assert.match(productionJavaScript, new RegExp(label));
   for (const label of ["Session artifact", "Prompt", "Model response", "Tool & action evidence", "Raw session JSON"]) assert.match(productionJavaScript, new RegExp(label.replace("&", "&(?:amp;)?")));
   assert.doesNotMatch(productionJavaScript, /viewer__label/);
   assert.doesNotMatch(productionCss, /viewer__label/);
@@ -86,8 +97,8 @@ test("the static gallery preserves the cooked public catalog", async () => {
 test("the built site publishes only active Dishes and their selected public artifact files", async () => {
   const registry = JSON.parse(await readFile(path.join(root, "dist/data/registry.json"), "utf8"));
   const activeRecipeIds = new Set(registry.recipes.map((recipe) => recipe.id));
-  assert.equal(activeRecipeIds.size, 17);
-  assert.equal(registry.dishes.length, 27);
+  assert.equal(activeRecipeIds.size, 18);
+  assert.equal(registry.dishes.length, 35);
   // Every Dish cooked inside the Kitchen repo carries its disclosure beside it (#35).
   assert.ok(registry.dishes.every(carriesItsDisclosure));
   assert.equal(registry.dishes.filter((dish) => dish.notes?.some((note) => note.id === "codex-saw-kitchen-agents-md")).length, 7);

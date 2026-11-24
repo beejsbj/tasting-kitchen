@@ -63,8 +63,8 @@ test('the public Recipe Book excludes private Ready recipes, including their pro
 test('published Dishes keep their recipe identity and carry verified input and receipt sidecars', async () => {
   const [dishes, catalog] = await Promise.all([loadDishes(root), loadCatalog(root)]);
   const ids = new Set(dishes.map(dish => dish.recipe.id));
-  assert.equal(dishes.length, 42);
-  assert.equal(ids.size, 20);
+  assert.equal(dishes.length, 50);
+  assert.equal(ids.size, 21);
   for (const dish of dishes) {
     assert.ok(catalog.recipes.some(recipe => recipe.id === dish.recipe.id), `${dish.recipe.id} is still in the catalog`);
     const directory = path.join(root, 'dishes', dish.id);
@@ -75,7 +75,7 @@ test('published Dishes keep their recipe identity and carry verified input and r
   }
 });
 
-test('the seventeen cooked recipes are browseable, uncooked ready recipes sit beside them, and the old backlog is archived', async () => {
+test('the eighteen cooked recipes are browseable, uncooked ready recipes sit beside them, and the old backlog is archived', async () => {
   const book = await buildRecipeBook(root);
   const archive = JSON.parse(await readFile(path.join(root, 'catalog/archive.json'), 'utf8'));
   const fresh = book.recipes.filter(entry => entry.recipe.id.startsWith('fresh-'));
@@ -87,13 +87,17 @@ test('the seventeen cooked recipes are browseable, uncooked ready recipes sit be
     assert.ok(uncooked.some(entry => entry.recipe.id === id), `music recipe ${id} is ready and uncooked`);
   }
   const cooked = book.recipes.filter(entry => entry.dishCount > 0);
-  assert.equal(cooked.length, 17);
+  assert.equal(cooked.length, 18);
   const webRecipes = cooked.filter(entry => entry.recipe.kind === 'web');
   const sessionRecipes = cooked.filter(entry => entry.recipe.kind === 'session');
   assert.equal(webRecipes.length, 10);
   assert.ok(webRecipes.every(entry => entry.dishCount === 2));
-  assert.equal(sessionRecipes.length, 7);
-  assert.ok(sessionRecipes.every(entry => entry.dishCount === 1));
+  assert.equal(sessionRecipes.length, 8);
+  // The report-back Recipe was cooked through four skill layers on two models; the journal Recipes once each.
+  const layered = sessionRecipes.filter(entry => entry.recipe.id === 'report-back-half-finished-task');
+  assert.equal(layered.length, 1);
+  assert.equal(layered[0].dishCount, 8);
+  assert.ok(sessionRecipes.filter(entry => entry !== layered[0]).every(entry => entry.dishCount === 1));
   // The 54-Recipe backlog in archive.json, plus five film drafts archived on 2026-11-14 for
   // dictating their plot and look.
   assert.equal(book.archivedCount, 59);

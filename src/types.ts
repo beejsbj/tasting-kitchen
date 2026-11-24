@@ -280,7 +280,7 @@ export type TasteObservation = {
   context: { kind: "recipe" | "menu"; id: string; revisionHash: string };
   axisSet: { id: string; version: string; hash: string };
   source: {
-    kind: "human" | "jev";
+    kind: "human" | "agent" | "jev";
     evaluator: { id: string; label?: string; provider?: string; model?: string; tool?: string; toolVersion?: string };
   };
   observedAt: string;

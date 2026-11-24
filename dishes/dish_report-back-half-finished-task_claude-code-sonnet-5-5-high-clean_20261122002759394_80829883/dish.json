@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_20261122002759394_80829883",
+  "recipe": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "executedAt": "2026-11-22T00:27:59.394Z",
+  "finalizedAt": "2026-11-22T00:28:36.980Z",
+  "identity": {
+    "variantId": "claude-code-sonnet-5-5-high-clean",
+    "provider": "anthropic",
+    "requestedModel": "claude-sonnet-5-5",
+    "observedModel": "claude-sonnet-5-5",
+    "harness": "claude-code",
+    "harnessVersion": "claude-code 2.1.330",
+    "reasoningEffort": "high",
+    "serviceTier": "standard",
+    "requestedServiceTier": "default",
+    "observedServiceTier": "standard",
+    "configHash": "sha256:b472376d52fea3279f961e15da8bbecf1792a915c41a12577bc49c90b08a1961",
+    "catalogHash": "sha256:34d25190927adb3a2461c38ad65b97411b54d13a7d253288183ca8ce433203c3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "session",
+    "entry": "artifact/output/session.json",
+    "files": [
+      {
+        "path": "artifact/output/session.json",
+        "sha256": "90abfbfa92071ef808e1a583032cb3c1bfe374ad5c23e4c3ba4c0e83dc791b15",
+        "bytes": 18327
+      }
+    ],
+    "treeHash": "sha256:c1c96708476bb28c9bc890d2c6f3f227076f1eec2ecb8f908ebd228706a8ef55"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:aecf72befb6124e929dd142cb119224ebeea91e874dc7713b60bfdec8dbf95a1"
+}

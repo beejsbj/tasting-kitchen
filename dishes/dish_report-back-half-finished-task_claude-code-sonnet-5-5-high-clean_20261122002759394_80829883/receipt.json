@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "id": "claude-code-sonnet-5-5-high-clean",
+    "label": "Sonnet 5.5 · High · via Claude Code · clean",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "harness": "claude-code",
+    "reasoningEffort": "high",
+    "serviceTier": "default",
+    "personality": "default",
+    "capabilities": [
+      "files",
+      "shell"
+    ],
+    "executionProfile": {
+      "id": "claude-code-linux-host-clean-v1",
+      "label": "via Claude Code · clean",
+      "runtime": "linux-host",
+      "sandbox": "disabled",
+      "approvalPolicy": "bypass-permissions",
+      "nativeWeb": "disabled",
+      "networkPolicy": "not-enforced",
+      "filesystemBoundary": "not-a-secrecy-boundary",
+      "environment": "clean"
+    },
+    "configHash": "sha256:b472376d52fea3279f961e15da8bbecf1792a915c41a12577bc49c90b08a1961"
+  },
+  "isolation": {
+    "evidence": "claude-code-init",
+    "skills": [
+      "batch",
+      "claude-api",
+      "code-review",
+      "dataviz",
+      "debug",
+      "deep-research",
+      "design",
+      "design-sync",
+      "doctor",
+      "fewer-permission-prompts",
+      "loop",
+      "plugin-authoring",
+      "run",
+      "run-skill-generator",
+      "schedule",
+      "simplify",
+      "update-config",
+      "verify",
+      "workflow-authoring"
+    ],
+    "agents": [
+      "Explore",
+      "Plan",
+      "claude",
+      "general-purpose"
+    ],
+    "plugins": [
+      "cc-plugin-agents-md",
+      "cc-plugin-plugin-authoring",
+      "cc-plugin-privacy",
+      "cc-plugin-telemetry"
+    ]
+  },
+  "skill": null
+}

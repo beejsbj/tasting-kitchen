@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "dish_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_prime-before-reporting_20261122002842385_13aad22d",
+  "recipe": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "skill": {
+    "id": "prime-before-reporting",
+    "hash": "sha256:d59cec3a707d11e076173e35ee0fcf3b21892e0be94a89f92054e8918c3cbb1c"
+  },
+  "executedAt": "2026-11-22T00:28:42.385Z",
+  "finalizedAt": "2026-11-22T00:29:23.457Z",
+  "identity": {
+    "variantId": "claude-code-sonnet-5-5-high-clean",
+    "provider": "anthropic",
+    "requestedModel": "claude-sonnet-5-5",
+    "observedModel": "claude-sonnet-5-5",
+    "harness": "claude-code",
+    "harnessVersion": "claude-code 2.1.330",
+    "reasoningEffort": "high",
+    "serviceTier": "standard",
+    "requestedServiceTier": "default",
+    "observedServiceTier": "standard",
+    "configHash": "sha256:b472376d52fea3279f961e15da8bbecf1792a915c41a12577bc49c90b08a1961",
+    "catalogHash": "sha256:34d25190927adb3a2461c38ad65b97411b54d13a7d253288183ca8ce433203c3"
+  },
+  "status": "accepted",
+  "artifact": {
+    "kind": "session",
+    "entry": "artifact/output/session.json",
+    "files": [
+      {
+        "path": "artifact/output/session.json",
+        "sha256": "61e1e9173cf9d9c8ea167705d148bb3e12b1be0935d2cfb1fcc21fc236e3334b",
+        "bytes": 18679
+      }
+    ],
+    "treeHash": "sha256:8f78b8aabf5559bea719a11121703e4820a13d21a0cb5c62f9ee0b35aa842cbc"
+  },
+  "validation": {
+    "passed": true,
+    "report": "validation.json"
+  },
+  "publicTrace": "trace.json",
+  "dishHash": "sha256:e50b964d0ff85b65f66e7a8a1904e786d7d34c591ae54ead605952fb39fec9b8"
+}

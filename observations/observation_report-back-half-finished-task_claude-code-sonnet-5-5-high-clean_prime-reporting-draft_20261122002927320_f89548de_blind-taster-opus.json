@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_prime-reporting-draft_20261122002927320_f89548de_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_claude-code-sonnet-5-5-high-clean_prime-reporting-draft_20261122002927320_f89548de",
+  "dishHash": "sha256:c9106102409591bfaa08a878626886bb7b7f5154a289fbd987be3105816d4707",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "both-ends",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "'SMS reminders are built and on a preview of PR #42, but no real text has been sent yet, because the Twilio token on preview is out of date.' Closes: 'The next step is the token paste in Vercel.'"
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "exact",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "'Done (preview only)', 'Production: Nothing has changed. PR #42 isn't merged', 401 code 20003, the token from before the Oct 3 rotation, 'can deploy but can't read secrets', the full console path, and 0047 on hold."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "recommended",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "Full A/B/C tradeoffs, then 'My recommendation is B, with C added', plus a sharp caveat: 'these members are probably the ones who don't read email, so the email may reach fewer of them than the 40% figure suggests.'"
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "kept",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "SMS 'greyed out for all 213', email preferences kept for all 1,840, 'Nothing has changed' on production, and 0047 held 'until a real test SMS has gone out and you've chosen an option'."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "plain",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "Explains Twilio as 'the texting service' that needs a password, uses 'test copy of the site', gives the 2-minute steps, and ends with one check: 'Which part is unclear?'"
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "held",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "'deletes the column holding what the member originally typed. Neon only keeps 24 hours', the two conditions, and a non-destructive rewrite that runs 'only on preview first'."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "one-small",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "'Next is the token fix, and only you can do it. It takes about 2 minutes', with the agent's follow-up and 'What can wait' (213 choice, merge) clearly queued."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "matched",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:4402b9336f453492bf0dad5b50df586765d9bd03551c330dfd3f6bffe4b92b1e"
+        }
+      ],
+      "note": "Preview reply: link, demo login, imported@ login and 'you can't test a real text from it yet'. The broad status even puts the link up front."
+    }
+  ]
+}

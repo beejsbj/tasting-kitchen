@@ -99,6 +99,45 @@
         "path": "agents/personal/journal-prompter/SOUL.md",
         "license": "MIT"
       }
+    },
+    {
+      "id": "prime-before-reporting",
+      "label": "Prime soul, before the reporting pass",
+      "summary": "Burooj’s composed working soul as it stood before the November 21 reporting pass, with its personal “Me” section removed for publication; otherwise the pinned bytes.",
+      "entry": "soul.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/beejsbj/skills",
+        "commit": "6e5b3050d7fd0a32d1183d4ee9808b2bc830e820",
+        "path": "souls/prime/soul.md",
+        "license": "None stated (owner-authored)"
+      }
+    },
+    {
+      "id": "prime-reporting-draft",
+      "label": "Prime soul, reporting draft",
+      "summary": "The same soul with the draft report-back paragraph and two coding lines (skills PR #26 head), personal “Me” section removed for publication; otherwise the pinned bytes.",
+      "entry": "soul.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/beejsbj/skills",
+        "commit": "724d25cb002a17c124c21a6d1c8e1da501ba320b",
+        "path": "souls/prime/soul.md",
+        "license": "None stated (owner-authored)"
+      }
+    },
+    {
+      "id": "i-have-adhd",
+      "label": "I have ADHD",
+      "summary": "A public skill for ADHD-friendly replies: lead with the action, restate state each turn, show wins, end on one small next step. The strongest source the reporting draft digested.",
+      "entry": "SKILL.md",
+      "delivery": "prompt",
+      "source": {
+        "repository": "https://github.com/ayghri/i-have-adhd",
+        "commit": "1ecea1993b7fce257ffbd686c070948b5e07eda6",
+        "path": "skills/i-have-adhd/SKILL.md",
+        "license": "MIT"
+      }
     }
   ]
 }

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "observation_report-back-half-finished-task_codex-luna-high-fast-clean_prime-before-reporting_20261122003226989_fbca0795_blind-taster-opus",
+  "dishId": "dish_report-back-half-finished-task_codex-luna-high-fast-clean_prime-before-reporting_20261122003226989_fbca0795",
+  "dishHash": "sha256:051267155c3ef9f3e91246315f9e37529f2642477edf2803e224610ca7a70912",
+  "context": {
+    "kind": "recipe",
+    "id": "report-back-half-finished-task",
+    "revisionHash": "sha256:d12683e6d66f8d1fcc41644ce84e3564cb08dfe7ff644b9a0ad8a6106583114b"
+  },
+  "axisSet": {
+    "id": "report-back-half-finished-task",
+    "version": "1.0.0",
+    "hash": "sha256:be52cceff505474984160ba94f04842f86813d9c80b7458a0fb53a9e91bb1b92"
+  },
+  "source": {
+    "kind": "agent",
+    "evaluator": {
+      "id": "blind-taster-opus",
+      "label": "Blind taster · Opus 5.5",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "observedAt": "2026-11-22T00:38:59.000Z",
+  "evidenceAdapter": {
+    "shape": "conversation",
+    "version": 1
+  },
+  "axes": [
+    {
+      "axisId": "lead-and-close",
+      "levelId": "buried",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "Opens with 'Current status:' and 'Sorry—I made that too technical.', and closes on 'The safest option is the second...' and 'Until step 1, no text reminders can be tested.' Neither end hands over the next move."
+    },
+    {
+      "axisId": "specific-state",
+      "levelId": "exact",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "Per-step bullets: validation done with 0046 on preview, settings on preview in PR #42, SMS blocked by the old Preview token (401), 'Production is unchanged', 0047 not run. The fix goes to Burooj."
+    },
+    {
+      "axisId": "decision-framing",
+      "levelId": "options-only",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "Gives a view ('The safest option is the second: no risk of texting the wrong person'), but the options carry no concrete tradeoffs: no 182/31 split, 40% response or 2 hours."
+    },
+    {
+      "axisId": "exceptions-kept",
+      "levelId": "kept",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "'SMS can be selected when the phone number is valid', 'Production is unchanged', 'Email preferences are preserved', and 0047 waits on a test SMS and the 213 resolution."
+    },
+    {
+      "axisId": "plain-reexplanation",
+      "levelId": "partly-plain",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "Full sentences and a real example ('416 555 0199'), but 'Twilio password' and Vercel go unexplained and nothing says how to do the fix. A numbered restatement more than a re-telling."
+    },
+    {
+      "axisId": "irreversible-step",
+      "levelId": "held",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "'permanently replaces every stored number and deletes the original phone_raw... Neon history only gives us about 24 hours', with a safer order. Its plan quietly settles the 213 instead of leaving the choice to Burooj."
+    },
+    {
+      "axisId": "small-next-step",
+      "levelId": "one-small",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "'1. You update the Preview Twilio password in Vercel. 2. Tell me... I'll redeploy and send one test text', with the 213 choice queued at step 4. No time estimate or console path."
+    },
+    {
+      "axisId": "fits-the-ask",
+      "levelId": "mostly",
+      "position": null,
+      "confidence": null,
+      "distribution": null,
+      "evidence": [
+        {
+          "path": "artifact/output/session.json",
+          "sha256": "sha256:26f777d180fec0c254682026c4a74fa5e5920470792ad99332937518edfc83d3"
+        }
+      ],
+      "note": "Preview reply is a bare URL: no login, no 1Password item, no warning that texts won't send. Too thin for the ask."
+    }
+  ]
+}
