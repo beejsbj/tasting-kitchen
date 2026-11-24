@@ -399,6 +399,9 @@ test("a delivered source file's quoted strings are also read with their escapes 
     // A token is still a token after an escape outside a string: in a comment or a regex literal.
     ["artifact/app.js", `// The fixture key was x\\n${token}\n`, "credential-like token"],
     ["artifact/app.js", `const re = /x\\n${token}/u;\n`, "credential-like token"],
+    // A closing tag is markup, not the start of a regex that would swallow the string after it.
+    ["artifact/index.html", '<div id="app"></div><script>window.D={"cwd":"\\/Users\\/someone\\/proj"}</script>\n', "absolute home path"],
+    ["artifact/icon.svg", '<svg><g></g><script>const p = "\\/home\\/someone\\/x";</script></svg>\n', "absolute home path"],
   ];
   for (const [relative, text, reason] of leaks) {
     // The raw rules alone miss each of these: `\n` reads as `n<token>`, an escaped slash is no slash.
@@ -427,11 +430,21 @@ test("a delivered source file's quoted strings are also read with their escapes 
     "const boundary = /(?:^|[\\s\"'`])\\/edl\\.json/u;",
     "// Matches `/rushes\\/b\\.mp4/` and `'\\/edl\\.json'` in prose.",
     "/* A block: `/a\\/b\\/c/` */",
+    // A template's ${…} is code: its regex is not string text.
+    "const u = `${url.replace(/^\\/api\\/v1/, \"\")}`;",
     "",
   ].join("\n"));
+  // YAML decodes escapes only in double quotes; a single-quoted string is literal.
+  await write("artifact/routes.yaml", "path: '^\\/api\\/v1\\/users'\n");
   await write("artifact/style.css", '.a::before { content: "\\201C"; } .b { font-family: "Inter\\2c sans"; }\n');
   await write("artifact/index.html", '<p title="a\\nb">Don\'t / won\'t</p>\n');
   await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+  // A long blob in a source file is scanned in linear time (each read once per decoder).
+  await write("artifact/wasm.js", `export const bytes = "${"0123456789abcdef".repeat(20_000)}";\n`);
+  const started = performance.now();
+  await assert.doesNotReject(scanPublicTree(root, PLATE_SCAN));
+  assert.ok(performance.now() - started < 5000, `a 320 kB string took ${Math.round(performance.now() - started)} ms`);
+  await rm(path.join(root, "artifact/wasm.js"));
   // Kitchen's own source text gets the decoded read and every rule, ranking included.
   await write("notes.js", 'const n = "x\\nScore these.";\n');
   await assert.rejects(scanPublicTree(root, PLATE_SCAN), /notes\.js \(numerical ranking language\)/);

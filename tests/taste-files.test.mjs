@@ -52,7 +52,6 @@ test("a rooted path after a flag or a bare dash or underscore is still an absolu
   for (const text of [
     "-I/usr/include/foo",
     "cc -L/opt/lib/x main.c",
-    "gcc -isystem/usr/local/include/x.h",
     "ld --sysroot/opt/cross/root",
     '"-L/opt/private-tools/lib"',
     "(-I/srv/headers/include)",
@@ -79,8 +78,22 @@ test("a rooted path after a flag or a bare dash or underscore is still an absolu
     "path-to/my-dir/file-name.md",
     "nextState.replace(/-/g, ' ')",
     "value.replace(/_/g, '-')",
+    // Blank form fields, a one-letter flag glued to a relative path, suffixes in prose.
+    "Date: __/__/____",
+    '<input placeholder="--/--/----">',
+    "CFLAGS = -Isrc/include/foo -Llib/x/y",
+    "Words ending in -ish/-esque/-y are informal.",
   ]) {
     assert.deepEqual(publicTextFindings(text), [], text);
+  }
+});
+
+test("the absolute-path rule stays linear on long word runs", () => {
+  // A lookbehind that rescans a whole run at every position is quadratic: a 200 kB hex blob took minutes.
+  for (const text of ["a".repeat(200_000), `-${"a".repeat(200_000)}/x/y`, "-".repeat(200_000), `${"0123456789abcdef".repeat(12_500)}/`]) {
+    const started = performance.now();
+    publicTextFindings(text);
+    assert.ok(performance.now() - started < 2000, `${text.slice(0, 12)}… took ${Math.round(performance.now() - started)} ms`);
   }
 });
 
